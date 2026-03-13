@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/sentinel_ai_dashboard_FINAL.html"
+    }
+  ]
+}

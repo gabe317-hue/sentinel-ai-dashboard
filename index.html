@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentinel-AI — Sistema Nacional Anticorrupción</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0a1628;
+      --navy-mid: #0f1f3d;
+      --navy-light: #162447;
+      --electric: #00c8ff;
+      --electric-dim: rgba(0,200,255,0.15);
+      --green: #00e676;
+      --amber: #ffab00;
+      --red: #ff3d57;
+      --text: #e8edf5;
+      --text-dim: #7a8ba8;
+      --border: rgba(0,200,255,0.12);
+      --glass: rgba(255,255,255,0.03);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -40%;
+      right: -20%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(0,200,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1000px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -1px;
+    }
+
+    .logo span {
+      color: var(--electric);
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--text-dim);
+      margin-bottom: 48px;
+      font-weight: 400;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: linear-gradient(135deg, var(--glass) 0%, rgba(255,255,255,0.02) 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .card:hover {
+      background: linear-gradient(135deg, rgba(0,200,255,0.1) 0%, rgba(0,200,255,0.05) 100%);
+      border-color: var(--electric);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,200,255,0.1);
+    }
+
+    .card-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .card-description {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .status-badge {
+      display: inline-block;
+      background: var(--electric-dim);
+      border: 1px solid rgba(0,200,255,0.4);
+      color: var(--electric);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 12px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .version-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .info-item {
+      background: rgba(0,200,255,0.05);
+      border: 1px solid rgba(0,200,255,0.1);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+
+    .info-label {
+      color: var(--text-dim);
+      display: block;
+      margin-bottom: 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .info-value {
+      color: var(--electric);
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 28px; }
+      .logo { font-size: 32px; }
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">Sentinel<span>-AI</span></div>
+  <h1>Sistema Nacional Anticorrupción</h1>
+  <p class="subtitle">Procuraduría General de la República — Honduras 2025</p>
+
+  <div class="cards-grid">
+    <!-- MVP Card -->
+    <a href="/mvp.html" class="card">
+      <div class="card-icon">🚀</div>
+      <div class="card-title">MVP Dashboard</div>
+      <div class="card-description">
+        Versión actual en desarrollo. Sistema de alertas anticorrupción conectado a Supabase con datos en tiempo real.
+      </div>
+      <div class="status-badge">● Activo</div>
+    </a>
+
+    <!-- Demo Card -->
+    <a href="/demo.html" class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Demo Dashboard</div>
+      <div class="card-description">
+        Versión completa con datos de demostración. Muestra todas las funcionalidades y módulos implementados.
+      </div>
+      <div class="status-badge">● Referencia</div>
+    </a>
+  </div>
+
+  <div class="footer">
+    <div>The Prieto Group LLC — Desarrollo Sentinel-AI Honduras</div>
+    <div class="version-info">
+      <div class="info-item">
+        <span class="info-label">MVP Versión</span>
+        <span class="info-value">2.1 — Week 3</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Demo Versión</span>
+        <span class="info-value">5.0 — Referencia</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

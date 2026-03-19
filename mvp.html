@@ -333,6 +333,46 @@ body::after {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ─── SEND MODAL ─── */
+.send-modal-box {
+  background: var(--navy-light); border: 1px solid var(--border);
+  border-radius: 16px; padding: 32px; width: 100%; max-width: 560px;
+  position: relative; max-height: 90vh; overflow-y: auto;
+}
+.send-modal-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--electric), var(--cyan)); border-radius: 16px 16px 0 0;
+}
+.alert-summary {
+  background: rgba(0,200,255,0.04); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; margin-bottom: 20px;
+}
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.summary-item { display: flex; flex-direction: column; gap: 2px; }
+.summary-item.full { grid-column: 1 / -1; }
+.summary-key {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;
+}
+.summary-val { font-size: 13px; color: var(--text); font-weight: 500; word-break: break-word; }
+.dest-section-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 10px; display: block;
+}
+.destinations-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+.dest-option {
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+  background: rgba(0,200,255,0.04); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; transition: all 0.15s;
+}
+.dest-option:hover { border-color: rgba(0,200,255,0.3); background: rgba(0,200,255,0.08); }
+.dest-option input[type=checkbox] { accent-color: var(--electric); width: 15px; height: 15px; cursor: pointer; }
+.dest-option.checked { border-color: rgba(0,200,255,0.4); background: rgba(0,200,255,0.1); }
+.dest-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); }
+.dest-full { font-size: 10px; color: var(--text-dim); line-height: 1.2; }
+.send-note-area { resize: vertical; min-height: 60px; }
+
 /* ─── MODAL ─── */
 .modal-overlay {
   display: none; position: fixed; inset: 0;
@@ -611,6 +651,87 @@ body::after {
   </div>
 </div>
 
+<!-- ═══════════════════ SEND MODAL ═══════════════════ -->
+<div class="modal-overlay" id="sendModalOverlay">
+  <div class="send-modal-box">
+    <div class="modal-title">📤 Enviar Alerta</div>
+
+    <!-- Alert summary card -->
+    <div class="alert-summary">
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="summary-key">ID Alerta</span>
+          <span class="summary-val" id="sm-id">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-key">Severidad</span>
+          <span class="summary-val" id="sm-sev">—</span>
+        </div>
+        <div class="summary-item full">
+          <span class="summary-key">Entidad</span>
+          <span class="summary-val" id="sm-entity">—</span>
+        </div>
+        <div class="summary-item full">
+          <span class="summary-key">Descripción</span>
+          <span class="summary-val" id="sm-desc">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-key">Fuente</span>
+          <span class="summary-val" id="sm-source">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-key">Monto</span>
+          <span class="summary-val" id="sm-amount">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-key">Fecha</span>
+          <span class="summary-val" id="sm-date">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Destination selection -->
+    <span class="dest-section-label">Seleccionar destinos *</span>
+    <div class="destinations-grid">
+      <label class="dest-option" id="dest-pgr">
+        <input type="checkbox" value="PGR" onchange="toggleDest(this)">
+        <div><div class="dest-name">PGR</div><div class="dest-full">Procuraduría General</div></div>
+      </label>
+      <label class="dest-option" id="dest-mp">
+        <input type="checkbox" value="MP" onchange="toggleDest(this)">
+        <div><div class="dest-name">MP</div><div class="dest-full">Ministerio Público</div></div>
+      </label>
+      <label class="dest-option" id="dest-tsc">
+        <input type="checkbox" value="TSC" onchange="toggleDest(this)">
+        <div><div class="dest-name">TSC</div><div class="dest-full">Tribunal Superior de Cuentas</div></div>
+      </label>
+      <label class="dest-option" id="dest-atic">
+        <input type="checkbox" value="ATIC" onchange="toggleDest(this)">
+        <div><div class="dest-name">ATIC</div><div class="dest-full">Agencia de Inv. Criminal</div></div>
+      </label>
+      <label class="dest-option" id="dest-iaip">
+        <input type="checkbox" value="IAIP" onchange="toggleDest(this)">
+        <div><div class="dest-name">IAIP</div><div class="dest-full">Acceso a la Información</div></div>
+      </label>
+      <label class="dest-option" id="dest-cna">
+        <input type="checkbox" value="CNA" onchange="toggleDest(this)">
+        <div><div class="dest-name">CNA</div><div class="dest-full">Consejo Anticorrupción</div></div>
+      </label>
+    </div>
+
+    <!-- Optional notes -->
+    <div class="form-row">
+      <label class="form-label">Notas adicionales (opcional)</label>
+      <textarea class="form-textarea send-note-area" id="sm-notes" placeholder="Contexto adicional para los destinatarios..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-save" id="btnSend" onclick="confirmSend()">Confirmar Envío</button>
+      <button class="btn-cancel" onclick="closeSendModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
 
@@ -757,7 +878,7 @@ function render() {
       <td><span class="cell-date">${fmtDate(a.created_at)}</span></td>
       <td>
         <div class="action-group">
-          <button class="btn-action btn-pgr" onclick="sendToPGR(${a.id})" title="Enviar a PGR">📤 PGR</button>
+          <button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta">📤 Enviar</button>
           <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Borrar">🗑️</button>
         </div>
       </td>
@@ -839,7 +960,7 @@ async function saveAlert() {
       description: description,
       entity_name: entity_name,
       severity:    selectedSev,  // Stored as 'Crítica' / 'Alta' / 'Media' / 'Baja'
-      data_source:  alert_type,
+      data_source: alert_type,
       amount:      amount,
       risk_score:  null,
       status:      'Pendiente'
@@ -861,24 +982,86 @@ async function saveAlert() {
 }
 
 // ════════════════════════════════════════════════════════════
-// SEND TO PGR — Updates status field in Supabase
+// SEND MODAL — Open, populate, confirm, close
 // ════════════════════════════════════════════════════════════
-async function sendToPGR(id) {
+let sendTargetId = null;
+
+function openSendModal(id) {
+  const a = allAlerts.find(x => x.id === id);
+  if (!a) return;
+  sendTargetId = id;
+
+  // Populate summary
+  document.getElementById('sm-id').textContent     = a.alert_id || ('#' + a.id);
+  document.getElementById('sm-entity').textContent  = a.entity_name || '—';
+  document.getElementById('sm-desc').textContent    = a.description || '—';
+  document.getElementById('sm-source').textContent  = a.data_source || '—';
+  document.getElementById('sm-date').textContent    = fmtDate(a.created_at);
+  document.getElementById('sm-sev').textContent     = a.severity || '—';
+  document.getElementById('sm-amount').textContent  = a.amount != null
+    ? 'L ' + Number(a.amount).toLocaleString('es-HN', {minimumFractionDigits:2, maximumFractionDigits:2})
+    : '—';
+
+  // Reset checkboxes, notes, button
+  document.querySelectorAll('.dest-option input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.dest-option').classList.remove('checked');
+  });
+  document.getElementById('sm-notes').value = '';
+  document.getElementById('btnSend').disabled = false;
+  document.getElementById('btnSend').textContent = 'Confirmar Envío';
+
+  document.getElementById('sendModalOverlay').classList.add('open');
+}
+
+function closeSendModal() {
+  document.getElementById('sendModalOverlay').classList.remove('open');
+  sendTargetId = null;
+}
+
+function toggleDest(cb) {
+  cb.closest('.dest-option').classList.toggle('checked', cb.checked);
+}
+
+async function confirmSend() {
+  const selected = [...document.querySelectorAll('.dest-option input[type=checkbox]:checked')]
+    .map(cb => cb.value);
+
+  if (selected.length === 0) {
+    showToast('⚠️ Selecciona al menos un destino', 'warn');
+    return;
+  }
+
+  const btn = document.getElementById('btnSend');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  const statusStr = 'Enviado: ' + selected.join(', ');
+
   try {
     const { error } = await db
       .from('alerts')
-      .update({ status: 'Enviado a PGR' })
-      .eq('id', id);
+      .update({ status: statusStr })
+      .eq('id', sendTargetId);
 
     if (error) throw error;
-    showToast('📤 Alerta enviada a PGR');
+
+    closeSendModal();
+    showToast(`📤 Alerta enviada a: ${selected.join(', ')}`);
     await loadAlerts();
 
   } catch (err) {
-    console.error('❌ sendToPGR failed:', err.message);
+    console.error('❌ confirmSend failed:', err.message);
     showToast('❌ Error: ' + err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Confirmar Envío';
   }
 }
+
+// Close send modal on backdrop click
+document.getElementById('sendModalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeSendModal();
+});
 
 // ════════════════════════════════════════════════════════════
 // DELETE ALERT — Removes row from Supabase

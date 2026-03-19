@@ -448,7 +448,7 @@ function displayAlertInTable(alert, tbody, index) {
   const sevClassVal = sevClass[severity] || '';
   const montoFmt = alert.amount ? parseInt(alert.amount).toLocaleString('es-HN') : '—';
   const statusLabel = alert.status || 'Pendiente';
-  const showPGR = severity === 'Crítica' || severity === 'Alta' || severity === 'Media';
+  const showPGR = severity === 'Crítica' || severity === 'Alta' || severity === 'Media' || severity === 'Baja';
   const accion = showPGR ? `<button class="btn-mp" onclick="showMpConfirm('${alert.alert_id}')">📤 Enviar a PGR</button>` : '';
 
   tr.innerHTML = `
@@ -651,7 +651,7 @@ window.registrarAlerta = async function() {
     const sevClass = { baja: 'baja', media: 'media', alta: 'alta', critica: 'critica' };
     const color = sevColors[sev];
     const montoFmt = monto ? parseInt(monto).toLocaleString('es-HN') : '—';
-    const showPGR = sev === 'critica' || sev === 'alta' || sev === 'media';
+    const showPGR = sev === 'critica' || sev === 'alta' || sev === 'media' || sev === 'baja';
     const accion = showPGR ? `<button class="btn-mp" onclick="showMpConfirm('${caseId}')">📤 Enviar a PGR</button>` : '';
 
     tr.innerHTML = `<td style="font-family:'JetBrains Mono',monospace;font-size:11px">#${caseId}</td><td>${desc}</td><td>${entidad}</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px">${montoFmt}</td><td><span class="severity ${sevClass[sev]}" style="color:${color}">${sevLabel[sev]}</span></td><td><span class="source-tag">${fuente}</span></td><td><span class="severity alta">Pendiente</span></td><td>${accion}</td>`;

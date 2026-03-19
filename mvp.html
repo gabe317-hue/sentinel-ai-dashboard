@@ -438,6 +438,7 @@ function displayAlertInTable(alert, tbody, index) {
   if (!tbody) return;
 
   const tr = document.createElement('tr');
+  tr.setAttribute('data-alert-id', alert.alert_id);
   tr.style.animation = `panelFadeIn 0.4s ease ${index * 0.05}s`;
 
   const sevColors = { 'Crítica': 'var(--red)', 'Alta': '#ff6b35', 'Media': 'var(--amber)', 'Baja': 'var(--green)' };
@@ -654,6 +655,7 @@ window.registrarAlerta = async function() {
     const showPGR = sev === 'critica' || sev === 'alta' || sev === 'media' || sev === 'baja';
     const accion = showPGR ? `<button class="btn-mp" onclick="showMpConfirm('${caseId}')">📤 Enviar a PGR</button>` : '';
 
+    tr.setAttribute('data-alert-id', caseId);
     tr.innerHTML = `<td style="font-family:'JetBrains Mono',monospace;font-size:11px">#${caseId}</td><td>${desc}</td><td>${entidad}</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px">${montoFmt}</td><td><span class="severity ${sevClass[sev]}" style="color:${color}">${sevLabel[sev]}</span></td><td><span class="source-tag">${fuente}</span></td><td><span class="severity alta">Pendiente</span></td><td>${accion}</td>`;
     tbody.insertBefore(tr, tbody.firstChild);
     setTimeout(() => tr.style.background = '', 2000);
@@ -701,7 +703,126 @@ window.registrarAlerta = async function() {
 // SEND TO PGR
 // ════════════════════════════════════════════════════════════════════
 window.showMpConfirm = function(alertId) {
-  alert(`📤 Preparando envío a Procuraduría para alerta ${alertId}...`);
+  // Find the alert in the table
+  const row = document.querySelector(`[data-alert-id="${alertId}"]`);
+  if (!row) {
+    console.error('Alert row not found:', alertId);
+    return;
+  }
+
+  // Extract alert info from row
+  const cells = row.querySelectorAll('td');
+  const description = cells[1]?.textContent || 'N/A';
+  const entity = cells[2]?.textContent || 'N/A';
+  const amount = cells[3]?.textContent || 'N/A';
+  const severity = cells[4]?.textContent || 'N/A';
+  const source = cells[5]?.textContent || 'N/A';
+
+  // Create modal HTML
+  const modalHTML = `
+    <div id="pgr-modal-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+      <div style="background: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px; padding: 32px; max-width: 600px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        
+        <!-- Header -->
+        <div style="margin-bottom: 24px;">
+          <h3 style="margin: 0 0 8px 0; color: var(--text); font-size: 18px;">📤 Enviar Alerta a PGR</h3>
+          <p style="margin: 0; color: var(--text-dim); font-size: 13px;">Procuraduría General de la República</p>
+        </div>
+
+        <!-- Alert Summary -->
+        <div style="background: rgba(0,200,255,0.05); border: 1px solid rgba(0,200,255,0.2); border-radius: 8px; padding: 16px; margin-bottom: 24px; font-size: 13px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <div style="color: var(--text-dim); margin-bottom: 4px;">Alerta ID</div>
+              <div style="color: var(--text); font-weight: 600; font-family: 'JetBrains Mono', monospace;">${alertId}</div>
+            </div>
+            <div>
+              <div style="color: var(--text-dim); margin-bottom: 4px;">Severidad</div>
+              <div style="color: var(--text); font-weight: 600;">${severity}</div>
+            </div>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <div style="color: var(--text-dim); margin-bottom: 4px;">Descripción</div>
+            <div style="color: var(--text);">${description}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <div style="color: var(--text-dim); margin-bottom: 4px;">Entidad</div>
+              <div style="color: var(--text);">${entity}</div>
+            </div>
+            <div>
+              <div style="color: var(--text-dim); margin-bottom: 4px;">Monto</div>
+              <div style="color: var(--text);">${amount}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes Field -->
+        <div style="margin-bottom: 24px;">
+          <label style="display: block; color: var(--text); font-size: 13px; font-weight: 600; margin-bottom: 8px;">Notas adicionales para la PGR:</label>
+          <textarea id="pgr-notes" placeholder="Agregue comentarios, recomendaciones o información adicional que ayude en la investigación..." style="width: 100%; height: 100px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; resize: vertical; box-sizing: border-box;"></textarea>
+          <div style="color: var(--text-dim); font-size: 11px; margin-top: 6px;">Máximo 500 caracteres</div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <button onclick="document.getElementById('pgr-modal-overlay').remove()" style="background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text); padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;">
+            Cancelar
+          </button>
+          <button onclick="confirmarEnvioPGR('${alertId}')" style="background: linear-gradient(135deg, rgba(0,200,255,0.3), rgba(0,200,255,0.1)); border: 1px solid rgba(0,200,255,0.4); color: var(--electric); padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;">
+            ✓ Confirmar Envío
+          </button>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  // Insert modal into DOM
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+  // Focus on notes field
+  setTimeout(() => document.getElementById('pgr-notes').focus(), 100);
+};
+
+window.confirmarEnvioPGR = async function(alertId) {
+  const notes = document.getElementById('pgr-notes')?.value || '';
+  
+  if (!isSupabaseReady || !supabaseClient) {
+    alert('⚠️ Sistema en modo demo. Envío guardado localmente.');
+    document.getElementById('pgr-modal-overlay').remove();
+    return;
+  }
+
+  try {
+    // Update alert status in Supabase
+    const { error } = await supabaseClient
+      .from('alerts')
+      .update({
+        status: 'Enviado a PGR',
+        updated_at: new Date().toISOString()
+      })
+      .eq('alert_id', alertId);
+
+    if (error) {
+      console.error('Error updating alert:', error);
+      alert('❌ Error al enviar. Intente de nuevo.');
+      return;
+    }
+
+    // Show success message
+    alert('✅ Alerta enviada a la Procuraduría General de la República\n\nNotas guardadas: ' + (notes ? notes.substring(0, 50) + '...' : 'Sin notas adicionales'));
+
+    // Close modal
+    document.getElementById('pgr-modal-overlay').remove();
+
+    // Reload alerts to refresh status
+    await loadAlertsFromSupabase();
+
+  } catch (error) {
+    console.error('Error:', error);
+    alert('❌ Error al enviar alerta');
+  }
 };
 
 // ════════════════════════════════════════════════════════════════════

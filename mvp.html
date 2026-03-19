@@ -364,31 +364,43 @@ console.log('=== SUPABASE INITIALIZATION ===');
 console.log('URL:', SUPABASE_URL);
 console.log('Key length:', SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.length : 'NOT SET');
 
-// Check if credentials are configured
-if (SUPABASE_URL === 'https://yxvfpeigwthtokqsarvs.supabase.co' && SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmZwZWlnd3RodG9rcXNhcnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzM5MjksImV4cCI6MjA4OTAwOTkyOX0.L0PseYDJV41A1OWzlO0zrth_EJzJCcp5qz8bA8dFl9k') {
-  // Credentials are configured correctly - proceed with initialization
-  try {
-    const { createClient } = window.supabase;
-    if (!createClient) {
-      throw new Error('Supabase library not loaded');
+// Wait for Supabase library to load before initializing
+function initializeSupabase() {
+  if (!window.supabase || !window.supabase.createClient) {
+    console.log('⟳ Waiting for Supabase library to load...');
+    setTimeout(initializeSupabase, 100); // Retry every 100ms
+    return;
+  }
+
+  // Check if credentials are configured
+  if (SUPABASE_URL === 'https://yxvfpeigwthtokqsarvs.supabase.co' && SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmZwZWlnd3RodG9rcXNhcnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzM5MjksImV4cCI6MjA4OTAwOTkyOX0.L0PseYDJV41A1OWzlO0zrth_EJzJCcp5qz8bA8dFl9k') {
+    // Credentials are configured correctly - proceed with initialization
+    try {
+      const { createClient } = window.supabase;
+      supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log('✅ Supabase client initialized successfully');
+      isSupabaseReady = true;
+      
+      // Now that Supabase is ready, load alerts
+      setTimeout(() => loadAlertsFromSupabase(), 500);
+    } catch (error) {
+      console.error('❌ ERROR initializing Supabase client:', error);
+      console.error('Error details:', error.message);
+      isSupabaseReady = false;
     }
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('✅ Supabase client initialized successfully');
-    isSupabaseReady = true;
-  } catch (error) {
-    console.error('❌ ERROR initializing Supabase client:', error);
-    console.error('Error details:', error.message);
+  } else {
+    console.error('❌ ERROR: Supabase credentials not configured!');
+    console.error('📝 Steps to fix:');
+    console.error('1. Go to Supabase project → Settings → API');
+    console.error('2. Copy Project URL and anon public key');
+    console.error('3. Replace SUPABASE_URL and SUPABASE_ANON_KEY in this HTML file');
+    console.error('⚠️ Dashboard will use DEMO mode only.');
     isSupabaseReady = false;
   }
-} else {
-  console.error('❌ ERROR: Supabase credentials not configured!');
-  console.error('📝 Steps to fix:');
-  console.error('1. Go to Supabase project → Settings → API');
-  console.error('2. Copy Project URL and anon public key');
-  console.error('3. Replace SUPABASE_URL and SUPABASE_ANON_KEY in this HTML file');
-  console.error('⚠️ Dashboard will use DEMO mode only.');
-  isSupabaseReady = false;
 }
+
+// Start initialization
+initializeSupabase();
 
 // ════════════════════════════════════════════════════════════════════
 // MODULE SWITCHING
@@ -422,6 +434,7 @@ async function loadAlertsFromSupabase() {
 
     if (error) {
       console.error('❌ Error loading alerts from Supabase:', error.message);
+      // Don't clear table if error - keep existing alerts visible
       return;
     }
 
@@ -430,17 +443,20 @@ async function loadAlertsFromSupabase() {
     const tbody = document.querySelector('#panel-modA .alert-table tbody');
     if (!tbody) return;
 
-    // Only clear and rebuild if alerts exist
+    // Only rebuild table if we successfully got data
+    // This prevents flickering and data loss
     if (alerts && alerts.length > 0) {
-      tbody.innerHTML = ''; // Clear only when we have data to show
+      tbody.innerHTML = ''; // Clear only when we have fresh data to show
       alerts.forEach((alert, index) => {
         displayAlertInTable(alert, tbody, index);
       });
       updateStatsFromAlerts(alerts);
     }
-    // Don't clear if no alerts - keep existing content
+    // If no alerts but data loaded successfully, don't clear - keep showing previous data
+    
   } catch (error) {
     console.error('❌ Error in loadAlertsFromSupabase:', error.message);
+    // On error, don't clear table - preserve visible alerts
   }
 }
 
@@ -902,7 +918,16 @@ document.addEventListener('DOMContentLoaded', async function() {
   console.log('Supabase status:', isSupabaseReady ? '✅ READY' : '❌ NOT READY (DEMO mode)');
   
   if (isSupabaseReady) {
+    // Show loading indicator on first load
+    const tbody = document.querySelector('#panel-modA .alert-table tbody');
+    if (tbody && tbody.children.length === 0) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="8" style="text-align:center; padding:32px; color:var(--text-dim);">⟳ Cargando alertas...</td>';
+      tbody.appendChild(tr);
+    }
+    
     await loadAlertsFromSupabase();
+    
     // Refresh every 60 seconds (increased from 30 to reduce flickering)
     setInterval(loadAlertsFromSupabase, 60000);
     console.log('Alerts auto-refresh enabled (60s interval)');

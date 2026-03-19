@@ -518,6 +518,13 @@ function updateStatsFromAlerts(alerts) {
 // SAVE NEW ALERT TO SUPABASE
 // ════════════════════════════════════════════════════════════════════
 async function saveAlertToSupabase(alertData) {
+  // Wait for Supabase to be ready (with timeout of 5 seconds)
+  let waitCount = 0;
+  while (!isSupabaseReady && waitCount < 50) {
+    await new Promise(r => setTimeout(r, 100)); // Wait 100ms
+    waitCount++;
+  }
+
   if (!isSupabaseReady || !supabaseClient) {
     console.warn('⚠️ Supabase not ready. Alert created locally only (DEMO mode).');
     return true; // Return true to allow local creation
@@ -540,15 +547,16 @@ async function saveAlertToSupabase(alertData) {
 
     if (error) {
       console.error('❌ Error saving alert to Supabase:', error.message);
-      throw error;
+      console.error('Error details:', error);
+      return false; // Return false on actual save error
     }
 
-    console.log('✅ Alert saved successfully');
+    console.log('✅ Alert saved successfully to Supabase');
     return true;
   } catch (error) {
     console.error('❌ Error in saveAlertToSupabase:', error.message);
-    // Still return true to allow local creation as fallback
-    return true;
+    console.error('Full error:', error);
+    return false; // Return false on catch
   }
 }
 
@@ -666,11 +674,18 @@ window.registrarAlerta = async function() {
   if (!saved) {
     const toast = document.createElement('div');
     toast.style.cssText = `position:fixed;bottom:28px;right:28px;z-index:10000;background:linear-gradient(135deg,rgba(255,61,87,0.15),rgba(255,100,120,0.2));border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:14px 20px;color:#ff3d57;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.5px;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:slideUp 0.25s ease;`;
-    toast.innerHTML = `✗ Error al guardar alerta. Intente nuevamente.`;
+    toast.innerHTML = `✗ Error al guardar alerta en Supabase. Verifica tu conexión e intenta de nuevo.`;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3500);
-    return;
+    setTimeout(() => toast.remove(), 4000);
+    return; // IMPORTANT: Don't continue if save failed
   }
+
+  // Only show alert in table if save was successful
+  const successToast = document.createElement('div');
+  successToast.style.cssText = `position:fixed;bottom:28px;right:28px;z-index:10000;background:linear-gradient(135deg,rgba(0,200,255,0.15),rgba(0,150,200,0.2));border:1px solid rgba(0,200,255,0.35);border-radius:12px;padding:14px 20px;color:var(--electric);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.5px;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:slideUp 0.25s ease;`;
+  successToast.innerHTML = `✓ Alerta guardada exitosamente`;
+  document.body.appendChild(successToast);
+  setTimeout(() => successToast.remove(), 2500);
 
   const tbody = document.querySelector('#panel-modA .alert-table tbody');
   if (tbody) {

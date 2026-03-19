@@ -210,17 +210,21 @@ function saveToStorage() {
 // RENDER
 // ════════════════════════════════════════════════════════════════════
 function render() {
-  // Update stats
-  const stats = { critica: 0, alta: 0, media: 0, baja: 0 };
+  // Update stats - using simple string matching without accents
+  let critica = 0, alta = 0, media = 0, baja = 0;
+  
   alerts.forEach(a => {
-    const sev = a.severity.toLowerCase().replace('á', 'a'); // Remove accent
-    if (sev in stats) stats[sev]++;
+    const s = (a.severity || '').toLowerCase();
+    if (s.includes('critica')) critica++;
+    else if (s.includes('alta')) alta++;
+    else if (s.includes('media')) media++;
+    else if (s.includes('baja')) baja++;
   });
   
-  document.getElementById('cnt-critica').textContent = stats.critica;
-  document.getElementById('cnt-alta').textContent = stats.alta;
-  document.getElementById('cnt-media').textContent = stats.media;
-  document.getElementById('cnt-baja').textContent = stats.baja;
+  document.getElementById('cnt-critica').textContent = critica;
+  document.getElementById('cnt-alta').textContent = alta;
+  document.getElementById('cnt-media').textContent = media;
+  document.getElementById('cnt-baja').textContent = baja;
 
   // Render table
   const tb = document.getElementById('tb');

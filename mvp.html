@@ -816,8 +816,14 @@ window.confirmarEnvioPGR = async function(alertId) {
     // Close modal
     document.getElementById('pgr-modal-overlay').remove();
 
-    // Reload alerts to refresh status
-    await loadAlertsFromSupabase();
+    // Update only the specific row's status cell instead of reloading all
+    const row = document.querySelector(`[data-alert-id="${alertId}"]`);
+    if (row) {
+      const statusCell = row.querySelectorAll('td')[6]; // Status is in 7th column (index 6)
+      if (statusCell) {
+        statusCell.innerHTML = '<span class="severity alta">Enviado</span>';
+      }
+    }
 
   } catch (error) {
     console.error('Error:', error);

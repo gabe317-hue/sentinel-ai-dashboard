@@ -269,6 +269,10 @@
         <div class="stat-label">Alertas Medias</div>
         <div class="stat-value">0</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-label">Alertas Bajas</div>
+        <div class="stat-value">0</div>
+      </div>
     </div>
 
     <div style="margin-bottom: 20px;">
@@ -444,7 +448,7 @@ function displayAlertInTable(alert, tbody, index) {
   const sevClassVal = sevClass[severity] || '';
   const montoFmt = alert.amount ? parseInt(alert.amount).toLocaleString('es-HN') : '—';
   const statusLabel = alert.status || 'Pendiente';
-  const showPGR = severity === 'Crítica' || severity === 'Alta';
+  const showPGR = severity === 'Crítica' || severity === 'Alta' || severity === 'Media';
   const accion = showPGR ? `<button class="btn-mp" onclick="showMpConfirm('${alert.alert_id}')">📤 Enviar a PGR</button>` : '';
 
   tr.innerHTML = `
@@ -468,12 +472,14 @@ function updateStatsFromAlerts(alerts) {
   const criticaCount = alerts.filter(a => a.severity === 'Crítica').length;
   const altaCount = alerts.filter(a => a.severity === 'Alta').length;
   const mediaCount = alerts.filter(a => a.severity === 'Media').length;
+  const bajaCount = alerts.filter(a => a.severity === 'Baja').length;
 
   const cards = document.querySelectorAll('#panel-modA .stat-card');
   if (cards.length > 0) {
     if (cards[0]) cards[0].querySelector('.stat-value').textContent = criticaCount;
     if (cards[1]) cards[1].querySelector('.stat-value').textContent = altaCount;
     if (cards[2]) cards[2].querySelector('.stat-value').textContent = mediaCount;
+    if (cards[3]) cards[3].querySelector('.stat-value').textContent = bajaCount;
   }
 }
 
@@ -645,7 +651,7 @@ window.registrarAlerta = async function() {
     const sevClass = { baja: 'baja', media: 'media', alta: 'alta', critica: 'critica' };
     const color = sevColors[sev];
     const montoFmt = monto ? parseInt(monto).toLocaleString('es-HN') : '—';
-    const showPGR = sev === 'critica' || sev === 'alta';
+    const showPGR = sev === 'critica' || sev === 'alta' || sev === 'media';
     const accion = showPGR ? `<button class="btn-mp" onclick="showMpConfirm('${caseId}')">📤 Enviar a PGR</button>` : '';
 
     tr.innerHTML = `<td style="font-family:'JetBrains Mono',monospace;font-size:11px">#${caseId}</td><td>${desc}</td><td>${entidad}</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px">${montoFmt}</td><td><span class="severity ${sevClass[sev]}" style="color:${color}">${sevLabel[sev]}</span></td><td><span class="source-tag">${fuente}</span></td><td><span class="severity alta">Pendiente</span></td><td>${accion}</td>`;
@@ -667,6 +673,10 @@ window.registrarAlerta = async function() {
     card.textContent = v;
   } else if (sev === 'media' && statCards[2]) {
     const card = statCards[2].querySelector('.stat-value');
+    const v = parseInt(card.textContent) + 1;
+    card.textContent = v;
+  } else if (sev === 'baja' && statCards[3]) {
+    const card = statCards[3].querySelector('.stat-value');
     const v = parseInt(card.textContent) + 1;
     card.textContent = v;
   }

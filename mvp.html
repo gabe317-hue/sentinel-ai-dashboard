@@ -744,7 +744,7 @@ function render() {
       <td><span class="cell-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${desc}</span></td>
       <td><span class="cell-entity">${a.entity_name || '—'}</span></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
-      <td><span class="cell-source">${a.alert_type || '—'}</span></td>
+      <td><span class="cell-source">${a.data_source || '—'}</span></td>
       <td><span class="status-badge ${stc}">${a.status || 'Pendiente'}</span></td>
       <td><span class="cell-date">${fmtDate(a.created_at)}</span></td>
       <td>
@@ -828,7 +828,7 @@ async function saveAlert() {
       description: description,
       entity_name: entity_name,
       severity:    selectedSev,  // Stored as 'Crítica' / 'Alta' / 'Media' / 'Baja'
-      alert_type:  alert_type,
+      data_source:  alert_type,
       risk_score:  null,
       status:      'Pendiente'
       // created_at: handled by Supabase DEFAULT CURRENT_TIMESTAMP

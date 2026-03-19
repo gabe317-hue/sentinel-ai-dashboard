@@ -411,22 +411,17 @@ async function loadAlertsFromSupabase() {
     console.log(`✅ Loaded ${alerts.length} alerts from Supabase`);
 
     const tbody = document.querySelector('#panel-modA .alert-table tbody');
-    if (tbody) {
-      tbody.innerHTML = '';
-    }
+    if (!tbody) return;
 
+    // Only clear and rebuild if alerts exist
     if (alerts && alerts.length > 0) {
+      tbody.innerHTML = ''; // Clear only when we have data to show
       alerts.forEach((alert, index) => {
         displayAlertInTable(alert, tbody, index);
       });
       updateStatsFromAlerts(alerts);
-    } else {
-      if (tbody) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="8" style="text-align:center; padding:32px; color:var(--text-dim); font-size:13px;">Sin alertas registradas aún. <button onclick="window.nuevaAlerta()" style="background:none; border:none; color:var(--electric); cursor:pointer; text-decoration:underline;">Crear una nueva alerta</button></td>`;
-        tbody.appendChild(tr);
-      }
     }
+    // Don't clear if no alerts - keep existing content
   } catch (error) {
     console.error('❌ Error in loadAlertsFromSupabase:', error.message);
   }
@@ -704,9 +699,9 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   if (isSupabaseReady) {
     await loadAlertsFromSupabase();
-    // Refresh every 30 seconds
-    setInterval(loadAlertsFromSupabase, 30000);
-    console.log('Alerts auto-refresh enabled (30s interval)');
+    // Refresh every 60 seconds (increased from 30 to reduce flickering)
+    setInterval(loadAlertsFromSupabase, 60000);
+    console.log('Alerts auto-refresh enabled (60s interval)');
   } else {
     console.log('Supabase not configured. Dashboard running in DEMO mode.');
     console.log('All alerts will be stored locally only.');

@@ -170,6 +170,19 @@
   }
   .btn-mp:hover { background: linear-gradient(135deg, rgba(0,200,255,0.3), rgba(0,200,255,0.2)); border-color: var(--electric); }
 
+  .btn-delete {
+    background: linear-gradient(135deg, rgba(255,61,87,0.2), rgba(255,61,87,0.1));
+    border: 1px solid rgba(255,61,87,0.4);
+    color: #ff3d57;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  .btn-delete:hover { background: linear-gradient(135deg, rgba(255,61,87,0.3), rgba(255,61,87,0.2)); border-color: #ff3d57; }
+
   /* Modal styles */
   .modal {
     position: fixed;
@@ -450,7 +463,8 @@ function displayAlertInTable(alert, tbody, index) {
   const montoFmt = alert.amount ? parseInt(alert.amount).toLocaleString('es-HN') : '—';
   const statusLabel = alert.status || 'Pendiente';
   const showPGR = severity === 'Crítica' || severity === 'Alta' || severity === 'Media' || severity === 'Baja';
-  const accion = showPGR ? `<button class="btn-mp" onclick="showMpConfirm('${alert.alert_id}')">📤 Enviar a PGR</button>` : '';
+  const deleteBtn = `<button class="btn-delete" onclick="confirmarBorrarAlerta('${alert.alert_id}', '${alert.description.substring(0, 30)}...')">🗑️ Borrar</button>`;
+  const accion = showPGR ? `<button class="btn-mp" onclick="showMpConfirm('${alert.alert_id}')">📤 Enviar a PGR</button> ${deleteBtn}` : deleteBtn;
 
   tr.innerHTML = `
     <td style="font-family:'JetBrains Mono',monospace;font-size:11px">#${alert.alert_id || 'N/A'}</td>
@@ -460,7 +474,7 @@ function displayAlertInTable(alert, tbody, index) {
     <td><span class="severity ${sevClassVal}" style="color:${color}">● ${severity}</span></td>
     <td><span class="source-tag">${alert.alert_type || 'Sistema'}</span></td>
     <td><span class="severity ${statusLabel.toLowerCase() === 'pendiente' ? 'alta' : 'baja'}">${statusLabel}</span></td>
-    <td>${accion}</td>
+    <td style="display: flex; gap: 8px; flex-wrap: wrap;">${accion}</td>
   `;
 
   tbody.appendChild(tr);
@@ -653,10 +667,11 @@ window.registrarAlerta = async function() {
     const color = sevColors[sev];
     const montoFmt = monto ? parseInt(monto).toLocaleString('es-HN') : '—';
     const showPGR = sev === 'critica' || sev === 'alta' || sev === 'media' || sev === 'baja';
-    const accion = showPGR ? `<button class="btn-mp" onclick="showMpConfirm('${caseId}')">📤 Enviar a PGR</button>` : '';
+    const deleteBtn = `<button class="btn-delete" onclick="confirmarBorrarAlerta('${caseId}', '${desc.substring(0, 30)}...')">🗑️ Borrar</button>`;
+    const accion = showPGR ? `<button class="btn-mp" onclick="showMpConfirm('${caseId}')">📤 Enviar a PGR</button> ${deleteBtn}` : deleteBtn;
 
     tr.setAttribute('data-alert-id', caseId);
-    tr.innerHTML = `<td style="font-family:'JetBrains Mono',monospace;font-size:11px">#${caseId}</td><td>${desc}</td><td>${entidad}</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px">${montoFmt}</td><td><span class="severity ${sevClass[sev]}" style="color:${color}">${sevLabel[sev]}</span></td><td><span class="source-tag">${fuente}</span></td><td><span class="severity alta">Pendiente</span></td><td>${accion}</td>`;
+    tr.innerHTML = `<td style="font-family:'JetBrains Mono',monospace;font-size:11px">#${caseId}</td><td>${desc}</td><td>${entidad}</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px">${montoFmt}</td><td><span class="severity ${sevClass[sev]}" style="color:${color}">${sevLabel[sev]}</span></td><td><span class="source-tag">${fuente}</span></td><td><span class="severity alta">Pendiente</span></td><td style="display: flex; gap: 8px; flex-wrap: wrap;">${accion}</td>`;
     tbody.insertBefore(tr, tbody.firstChild);
     setTimeout(() => tr.style.background = '', 2000);
   }
@@ -829,6 +844,54 @@ window.confirmarEnvioPGR = async function(alertId) {
     console.error('Error:', error);
     alert('❌ Error al enviar alerta');
   }
+};
+
+window.confirmarBorrarAlerta = function(alertId, description) {
+  const confirmed = confirm(`¿Está seguro que desea borrar esta alerta?\n\n"${description}"\n\nEsta acción no se puede deshacer.`);
+  
+  if (!confirmed) return;
+
+  if (!isSupabaseReady || !supabaseClient) {
+    // Demo mode - just remove from table
+    const row = document.querySelector(`[data-alert-id="${alertId}"]`);
+    if (row) {
+      row.style.opacity = '0.5';
+      row.style.textDecoration = 'line-through';
+      setTimeout(() => row.remove(), 300);
+    }
+    alert('✅ Alerta marcada como borrada (modo demo)');
+    return;
+  }
+
+  // Production - delete from Supabase
+  supabaseClient
+    .from('alerts')
+    .delete()
+    .eq('alert_id', alertId)
+    .then(({ error }) => {
+      if (error) {
+        console.error('Error:', error);
+        alert('❌ Error al borrar alerta');
+        return;
+      }
+
+      alert('✅ Alerta eliminada correctamente');
+
+      // Remove row from table with animation
+      const row = document.querySelector(`[data-alert-id="${alertId}"]`);
+      if (row) {
+        row.style.opacity = '0.5';
+        row.style.textDecoration = 'line-through';
+        setTimeout(() => row.remove(), 300);
+      }
+
+      // Update stat cards
+      loadAlertsFromSupabase();
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('❌ Error al borrar alerta');
+    });
 };
 
 // ════════════════════════════════════════════════════════════════════

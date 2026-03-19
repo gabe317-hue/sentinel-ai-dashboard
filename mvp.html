@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
   --navy:       #0a1628;
@@ -89,6 +90,18 @@ body::after {
   font-size: 10px; color: var(--text-dim);
   letter-spacing: 2px; text-transform: uppercase;
   margin-top: 4px;
+}
+.logo-ip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-dim);
+  margin-top: 10px; line-height: 1.4; opacity: 0.7;
+}
+.logo-version {
+  display: inline-block; margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--electric); background: var(--electric-dim);
+  border: 1px solid rgba(0,200,255,0.2);
+  padding: 2px 7px; border-radius: 4px; letter-spacing: 1px;
 }
 .logo-ip {
   font-family: 'JetBrains Mono', monospace;
@@ -202,6 +215,37 @@ body::after {
   border-radius: 8px; padding: 10px 14px;
   display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
 }
+.fri-id { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--electric); }
+.fri-desc { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fri-sev { font-size: 11px; font-weight: 600; }
+
+/* ─── FUENTE PANEL ─── */
+.fuente-panel { display: none; }
+.fuente-panel.open { display: block; }
+.fuente-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-dim); background: none; border: none;
+  cursor: pointer; margin-bottom: 20px; padding: 0; transition: color 0.15s;
+}
+.fuente-back:hover { color: var(--electric); }
+.fuente-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.fuente-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
+.fuente-title span { color: var(--electric); }
+.fuente-stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 28px; }
+.fuente-stat { background: var(--navy-light); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center; }
+.fuente-stat-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
+.fuente-stat-val.c { color: #ff3d57; }
+.fuente-stat-val.a { color: var(--amber); }
+.fuente-stat-val.m { color: var(--electric); }
+.fuente-stat-val.b { color: #4caf50; }
+.fuente-stat-lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; }
+.fuente-charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+.fuente-chart-card { background: var(--navy-light); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.fuente-chart-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+.fuente-recent-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.fuente-recent-list { display: flex; flex-direction: column; gap: 8px; }
+.fuente-recent-item { background: var(--glass); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
 .fri-id { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--electric); }
 .fri-desc { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fri-sev { font-size: 11px; font-weight: 600; }
@@ -558,11 +602,8 @@ body::after {
       <button class="nav-item" id="fnav-TSC" onclick="showFuentePanel('TSC')">
         <span class="nav-icon">🏛️</span> TSC
       </button>
-      <button class="nav-item" id="fnav-La Prensa" onclick="showFuentePanel('La Prensa')">
-        <span class="nav-icon">📰</span> La Prensa
-      </button>
-      <button class="nav-item" id="fnav-Reportero Ciudadano" onclick="showFuentePanel('Reportero Ciudadano')">
-        <span class="nav-icon">📡</span> Reportero Ciudadano
+      <button class="nav-item" id="fnav-News Sources" onclick="showFuentePanel('News Sources')">
+        <span class="nav-icon">📰</span> News Sources
       </button>
       <button class="nav-item" id="fnav-IAIP" onclick="showFuentePanel('IAIP')">
         <span class="nav-icon">🔍</span> IAIP
@@ -1267,8 +1308,11 @@ function showFuentePanel(fuente) {
   const navEl = document.getElementById('fnav-' + fuente);
   if (navEl) navEl.classList.add('active');
 
-  // Filter alerts for this fuente
-  const data = allAlerts.filter(a => (a.data_source || '') === fuente);
+  // News Sources groups all press/media outlets together
+  const NEWS_SOURCES = ['La Prensa', 'Reportero Ciudadano', 'El Heraldo', 'Proceso Digital', 'Criterio'];
+  const data = fuente === 'News Sources'
+    ? allAlerts.filter(a => NEWS_SOURCES.includes(a.data_source || ''))
+    : allAlerts.filter(a => (a.data_source || '') === fuente);
 
   // Counts by severity
   const counts = { critica: 0, alta: 0, media: 0, baja: 0 };
@@ -1282,7 +1326,8 @@ function showFuentePanel(fuente) {
   });
 
   // Populate stat cards
-  document.getElementById('fp-title').innerHTML   = `<span>${fuente}</span> — Resumen`;
+  const displayName = fuente === 'News Sources' ? 'News Sources' : fuente;
+  document.getElementById('fp-title').innerHTML   = `<span>${displayName}</span> — Resumen`;
   document.getElementById('fp-total').textContent   = data.length;
   document.getElementById('fp-critica').textContent = counts.critica;
   document.getElementById('fp-alta').textContent    = counts.alta;

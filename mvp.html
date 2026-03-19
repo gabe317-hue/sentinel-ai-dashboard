@@ -112,7 +112,6 @@
         <th>ID</th>
         <th>Descripción</th>
         <th>Entidad</th>
-        <th>Monto</th>
         <th>Severidad</th>
         <th>Fuente</th>
         <th>Estado</th>
@@ -138,11 +137,6 @@
     <div class="form-group">
       <label>Entidad</label>
       <input type="text" id="input-entity" placeholder="Empresa o individuo">
-    </div>
-
-    <div class="form-group">
-      <label>Monto (L)</label>
-      <input type="number" id="input-amount" placeholder="0">
     </div>
 
     <div class="form-group">
@@ -231,7 +225,6 @@ function renderAlerts() {
       <td>${a.alert_id}</td>
       <td>${(a.description || '').substring(0, 50)}...</td>
       <td>${a.entity_name}</td>
-      <td>${a.amount ? a.amount.toLocaleString() : '—'}</td>
       <td><span class="severity ${a.severity.toLowerCase()}">${a.severity}</span></td>
       <td>${a.source}</td>
       <td>${a.status}</td>
@@ -254,7 +247,6 @@ function openNewAlertModal() {
   selectedSeverity = null;
   document.getElementById('input-desc').value = '';
   document.getElementById('input-entity').value = '';
-  document.getElementById('input-amount').value = '';
   document.querySelectorAll('.severity-btn').forEach(btn => btn.classList.remove('active'));
   document.getElementById('newAlertModal').classList.add('active');
 }
@@ -272,7 +264,6 @@ function selectSeverity(sev) {
 async function saveNewAlert() {
   const desc = document.getElementById('input-desc').value.trim();
   const entity = document.getElementById('input-entity').value.trim();
-  const amount = document.getElementById('input-amount').value;
   const source = document.getElementById('input-source').value;
 
   if (!desc || !entity || !selectedSeverity) {
@@ -286,10 +277,8 @@ async function saveNewAlert() {
     description: desc,
     entity_name: entity,
     severity: severityMap[selectedSeverity],
-    amount: amount ? parseInt(amount) : null,
     source: source,
-    status: 'Pendiente',
-    created_at: new Date().toISOString()
+    status: 'Pendiente'
   };
 
   try {

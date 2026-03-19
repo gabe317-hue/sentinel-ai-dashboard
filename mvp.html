@@ -288,6 +288,7 @@ body::after {
   white-space: nowrap;
 }
 .cell-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.cell-amount { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); white-space: nowrap; text-align: right; }
 
 /* Severity badges — normSev() maps 'Crítica' → 'critica' for CSS class */
 .sev-badge {
@@ -544,6 +545,7 @@ body::after {
             <th>Entidad</th>
             <th>Severidad</th>
             <th>Fuente</th>
+            <th>Monto</th>
             <th>Estado</th>
             <th>Fecha</th>
             <th>Acciones</th>
@@ -551,7 +553,7 @@ body::after {
         </thead>
         <tbody id="alertTbody">
           <tr class="state-row">
-            <td colspan="8"><span class="spinner"></span>Cargando alertas desde Supabase...</td>
+            <td colspan="9"><span class="spinner"></span>Cargando alertas desde Supabase...</td>
           </tr>
         </tbody>
       </table>
@@ -585,6 +587,11 @@ body::after {
         <option value="IAIP">IAIP</option>
         <option value="DGATSC">DGATSC</option>
       </select>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Monto (opcional)</label>
+      <input class="form-input" id="f-amount" type="number" min="0" step="0.01" placeholder="0.00">
     </div>
 
     <div class="form-row">
@@ -723,7 +730,7 @@ function render() {
   const tbody = document.getElementById('alertTbody');
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr class="state-row"><td colspan="8">
+    tbody.innerHTML = `<tr class="state-row"><td colspan="9">
       ${allAlerts.length === 0
         ? 'No hay alertas. Usa el botón ➕ Nueva Alerta para crear la primera.'
         : 'No hay alertas con este filtro de severidad.'}
@@ -745,6 +752,7 @@ function render() {
       <td><span class="cell-entity">${a.entity_name || '—'}</span></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
       <td><span class="cell-source">${a.data_source || '—'}</span></td>
+      <td><span class="cell-amount">${a.amount != null ? 'L ' + Number(a.amount).toLocaleString('es-HN', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—'}</span></td>
       <td><span class="status-badge ${stc}">${a.status || 'Pendiente'}</span></td>
       <td><span class="cell-date">${fmtDate(a.created_at)}</span></td>
       <td>
@@ -776,6 +784,7 @@ function openModal() {
   document.getElementById('f-desc').value = '';
   document.getElementById('f-entity').value = '';
   document.getElementById('f-source').selectedIndex = 0;
+  document.getElementById('f-amount').value = '';
   document.querySelectorAll('.sev-select-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('btnSave').disabled = false;
   document.getElementById('btnSave').textContent = 'Registrar Alerta';
@@ -809,6 +818,8 @@ async function saveAlert() {
   const description = document.getElementById('f-desc').value.trim();
   const entity_name = document.getElementById('f-entity').value.trim();
   const alert_type  = document.getElementById('f-source').value;
+  const amountRaw   = document.getElementById('f-amount').value;
+  const amount      = amountRaw !== '' ? parseFloat(amountRaw) : null;
 
   if (!description || !entity_name || !selectedSev) {
     showToast('⚠️ Completa todos los campos obligatorios (*)', 'warn');
@@ -829,6 +840,7 @@ async function saveAlert() {
       entity_name: entity_name,
       severity:    selectedSev,  // Stored as 'Crítica' / 'Alta' / 'Media' / 'Baja'
       data_source:  alert_type,
+      amount:      amount,
       risk_score:  null,
       status:      'Pendiente'
       // created_at: handled by Supabase DEFAULT CURRENT_TIMESTAMP

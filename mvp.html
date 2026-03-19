@@ -665,6 +665,10 @@ window.registrarAlerta = async function() {
     const card = statCards[1].querySelector('.stat-value');
     const v = parseInt(card.textContent) + 1;
     card.textContent = v;
+  } else if (sev === 'media' && statCards[2]) {
+    const card = statCards[2].querySelector('.stat-value');
+    const v = parseInt(card.textContent) + 1;
+    card.textContent = v;
   }
 
   const modal = document.getElementById('nuevaAlertaModal');

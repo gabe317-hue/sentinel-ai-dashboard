@@ -233,7 +233,7 @@ function render() {
     return;
   }
 
-  tb.innerHTML = alerts.map(a => `
+  tb.innerHTML = alerts.map((a, index) => `
     <tr>
       <td style="font-family: 'JetBrains Mono'; font-size: 12px;">${a.id}</td>
       <td>${a.desc.substring(0, 50)}...</td>
@@ -243,8 +243,8 @@ function render() {
       <td>${a.status}</td>
       <td>
         <div class="action-buttons">
-          <button class="btn-sm btn-pgr" onclick="sendPGR('${a.id}')">📤</button>
-          <button class="btn-sm btn-del" onclick="delAlert('${a.id}')">🗑️</button>
+          <button class="btn-sm btn-pgr" onclick="sendPGR(${index})">📤</button>
+          <button class="btn-sm btn-del" onclick="delAlert(${index})">🗑️</button>
         </div>
       </td>
     </tr>
@@ -308,15 +308,15 @@ function saveAlert() {
 // ════════════════════════════════════════════════════════════════════
 // DELETE & ACTIONS
 // ════════════════════════════════════════════════════════════════════
-function delAlert(id) {
+function delAlert(index) {
   if (!confirm('¿Borrar esta alerta?')) return;
-  alerts = alerts.filter(a => a.id !== id);
+  alerts.splice(index, 1); // Remove 1 element at index
   saveToStorage();
   render();
 }
 
-function sendPGR(id) {
-  const alert = alerts.find(a => a.id === id);
+function sendPGR(index) {
+  const alert = alerts[index];
   if (alert) {
     alert.status = 'Enviado a PGR';
     saveToStorage();

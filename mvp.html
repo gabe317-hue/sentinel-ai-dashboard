@@ -198,8 +198,8 @@ function render() {
   // Update stats
   const stats = { critica: 0, alta: 0, media: 0, baja: 0 };
   alerts.forEach(a => {
-    const key = a.severity.toLowerCase();
-    if (key in stats) stats[key]++;
+    const sev = a.severity.toLowerCase().replace('á', 'a'); // Remove accent
+    if (sev in stats) stats[sev]++;
   });
   
   document.getElementById('cnt-critica').textContent = stats.critica;

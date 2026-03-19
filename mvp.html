@@ -185,6 +185,21 @@ function init() {
 function loadFromStorage() {
   const saved = localStorage.getItem('sentinel_alerts');
   alerts = saved ? JSON.parse(saved) : [];
+  
+  // Fix any severity values that got stored incorrectly
+  alerts.forEach(a => {
+    if (a.severity === 'Crítica' || a.severity === 'crítica' || a.severity === 'CRÍTICA') {
+      a.severity = 'Crítica';
+    } else if (a.severity === 'Alta' || a.severity === 'alta' || a.severity === 'ALTA') {
+      a.severity = 'Alta';
+    } else if (a.severity === 'Media' || a.severity === 'media' || a.severity === 'MEDIA') {
+      a.severity = 'Media';
+    } else if (a.severity === 'Baja' || a.severity === 'baja' || a.severity === 'BAJA') {
+      a.severity = 'Baja';
+    }
+  });
+  
+  saveToStorage(); // Save corrected values
 }
 
 function saveToStorage() {

@@ -322,9 +322,13 @@ function sendPGR(id) {
 }
 
 // ════════════════════════════════════════════════════════════════════
-// START
+// START - Run immediately, not just on DOMContentLoaded
 // ════════════════════════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', init);
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 
 </body>

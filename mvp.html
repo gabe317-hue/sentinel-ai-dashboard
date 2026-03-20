@@ -618,18 +618,26 @@ body::after {
     <div class="stat-card s-critica">
       <div class="stat-value" id="cnt-critica">—</div>
       <div class="stat-label">Críticas</div>
+      <div class="stat-monto" id="cnt-monto-critica">L —</div>
+      <div class="stat-monto" id="cnt-pct-critica" style="opacity:0.55;">— %</div>
     </div>
     <div class="stat-card s-alta">
       <div class="stat-value" id="cnt-alta">—</div>
       <div class="stat-label">Altas</div>
+      <div class="stat-monto" id="cnt-monto-alta">L —</div>
+      <div class="stat-monto" id="cnt-pct-alta" style="opacity:0.55;">— %</div>
     </div>
     <div class="stat-card s-media">
       <div class="stat-value" id="cnt-media">—</div>
       <div class="stat-label">Medias</div>
+      <div class="stat-monto" id="cnt-monto-media">L —</div>
+      <div class="stat-monto" id="cnt-pct-media" style="opacity:0.55;">— %</div>
     </div>
     <div class="stat-card s-baja">
       <div class="stat-value" id="cnt-baja">—</div>
       <div class="stat-label">Bajas</div>
+      <div class="stat-monto" id="cnt-monto-baja">L —</div>
+      <div class="stat-monto" id="cnt-pct-baja" style="opacity:0.55;">— %</div>
     </div>
   </div>
 
@@ -962,20 +970,31 @@ function render() {
   // normSev() converts 'Crítica' → 'critica', 'Alta' → 'alta', etc.
   // Without this, 'crítica'.includes('critica') = false → count stays 0
   const c = { critica: 0, alta: 0, media: 0, baja: 0 };
+  const m = { critica: 0, alta: 0, media: 0, baja: 0 };
   allAlerts.forEach(a => {
     const k = normSev(a.severity);
-    if (k in c) c[k]++;
+    if (k in c) { c[k]++; m[k] += Number(a.amount || 0); }
   });
-  const totalMonto = allAlerts.reduce((sum, a) => sum + Number(a.amount || 0), 0);
-  document.getElementById('cnt-total').textContent      = allAlerts.length;
-  document.getElementById('cnt-critica').textContent    = c.critica;
-  document.getElementById('cnt-alta').textContent       = c.alta;
-  document.getElementById('cnt-media').textContent      = c.media;
-  document.getElementById('cnt-baja').textContent       = c.baja;
-  document.getElementById('cnt-monto-total').textContent =
-    totalMonto > 0
-      ? 'L ' + totalMonto.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-      : 'L —';
+  const totalMonto = Object.values(m).reduce((s, v) => s + v, 0);
+  const fmtL = n => n > 0
+    ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    : 'L —';
+  const fmtPct = (n, total) => total > 0 ? (n / total * 100).toFixed(1) + '% del total' : '— %';
+
+  document.getElementById('cnt-total').textContent         = allAlerts.length;
+  document.getElementById('cnt-critica').textContent       = c.critica;
+  document.getElementById('cnt-alta').textContent          = c.alta;
+  document.getElementById('cnt-media').textContent         = c.media;
+  document.getElementById('cnt-baja').textContent          = c.baja;
+  document.getElementById('cnt-monto-total').textContent   = fmtL(totalMonto);
+  document.getElementById('cnt-monto-critica').textContent = fmtL(m.critica);
+  document.getElementById('cnt-pct-critica').textContent   = fmtPct(m.critica, totalMonto);
+  document.getElementById('cnt-monto-alta').textContent    = fmtL(m.alta);
+  document.getElementById('cnt-pct-alta').textContent      = fmtPct(m.alta, totalMonto);
+  document.getElementById('cnt-monto-media').textContent   = fmtL(m.media);
+  document.getElementById('cnt-pct-media').textContent     = fmtPct(m.media, totalMonto);
+  document.getElementById('cnt-monto-baja').textContent    = fmtL(m.baja);
+  document.getElementById('cnt-pct-baja').textContent      = fmtPct(m.baja, totalMonto);
 
   // ── Filter for table display ──
   const filtered = activeFilter === 'all'

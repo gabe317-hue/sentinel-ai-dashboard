@@ -608,9 +608,169 @@ body::after {
   .main { margin-left: 0; padding: 20px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ─── LOGIN SCREEN ─── */
+.login-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-screen.hidden { display: none; }
+.login-screen::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,200,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,255,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+.login-box {
+  width: 380px;
+  background: rgba(15,31,61,0.97);
+  border: 1px solid rgba(0,200,255,0.18);
+  border-radius: 16px;
+  padding: 40px 36px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 80px rgba(0,200,255,0.06);
+  position: relative; z-index: 1;
+}
+.login-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px; font-weight: 800;
+  color: var(--text); letter-spacing: -0.5px;
+  text-align: center; margin-bottom: 4px;
+}
+.login-logo span { color: var(--electric); }
+.login-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--text-dim); text-align: center;
+  text-transform: uppercase; margin-bottom: 32px;
+}
+.login-field { margin-bottom: 18px; }
+.login-field label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--text-dim); letter-spacing: 0.5px;
+  margin-bottom: 7px; text-transform: uppercase;
+}
+.login-field input {
+  width: 100%; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(0,200,255,0.15);
+  border-radius: 8px; color: var(--text);
+  padding: 12px 14px; font-family: 'Inter', sans-serif;
+  font-size: 14px; outline: none;
+  transition: border-color 0.2s;
+}
+.login-field input:focus { border-color: rgba(0,200,255,0.45); }
+.login-error {
+  font-size: 12px; color: var(--red);
+  margin-bottom: 12px; min-height: 18px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.login-btn {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, rgba(0,200,255,0.22), rgba(0,200,255,0.12));
+  border: 1px solid var(--electric); color: var(--electric);
+  border-radius: 9px; font-family: 'Inter', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.3px;
+}
+.login-btn:hover { background: rgba(0,200,255,0.3); box-shadow: 0 0 24px rgba(0,200,255,0.18); }
+.login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.login-footer {
+  text-align: center; margin-top: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-dim);
+  letter-spacing: 1px; opacity: 0.6;
+}
+.login-badge {
+  display: inline-block; margin: 0 auto 20px; display: flex;
+  align-items: center; justify-content: center; gap: 8px;
+}
+.login-shield { font-size: 32px; text-align: center; margin-bottom: 12px; }
+
+/* ─── LOGOUT NAV ITEM ─── */
+.nav-item.nav-logout {
+  color: rgba(255,61,87,0.6);
+  margin-top: 4px;
+}
+.nav-item.nav-logout:hover { color: var(--red); background: var(--red-dim); }
+
+/* ─── AUDIT LOG PANEL ─── */
+.audit-entry {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px;
+  margin-bottom: 8px; display: flex;
+  align-items: flex-start; gap: 14px;
+}
+.audit-entry:hover { background: var(--glass-hover); }
+.audit-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  margin-top: 5px; flex-shrink: 0;
+}
+.audit-dot.created  { background: var(--green); }
+.audit-dot.sent     { background: var(--electric); }
+.audit-dot.deleted  { background: var(--red); }
+.audit-dot.updated  { background: var(--amber); }
+.audit-body { flex: 1; min-width: 0; }
+.audit-action {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  margin-bottom: 3px;
+}
+.audit-detail {
+  font-size: 11px; color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+}
+.audit-meta {
+  font-size: 10px; color: var(--text-dim);
+  text-align: right; flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.6;
+}
+.audit-empty {
+  color: var(--text-dim); font-size: 13px;
+  padding: 20px 0; text-align: center;
+}
+.audit-filter-bar {
+  display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.audit-filter-btn {
+  padding: 5px 14px; border-radius: 6px;
+  border: 1px solid var(--border); background: none;
+  color: var(--text-dim); font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.5px; cursor: pointer;
+  transition: all 0.2s;
+}
+.audit-filter-btn.active, .audit-filter-btn:hover {
+  background: var(--electric-dim); color: var(--electric);
+  border-color: rgba(0,200,255,0.3);
+}
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════ LOGIN SCREEN ═══════════════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-shield">🛡️</div>
+    <div class="login-logo">SENTINEL<span>-AI</span></div>
+    <div class="login-sub">Sistema Anticorrupción · PGR Honduras</div>
+    <div class="login-field">
+      <label>Correo Electrónico</label>
+      <input type="email" id="loginEmail" placeholder="usuario@pgr.gob.hn"
+        onkeydown="if(event.key==='Enter') document.getElementById('loginPassword').focus()">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Ingresar al Sistema</button>
+    <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
+  </div>
+</div>
 
 <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
 <nav class="sidebar">
@@ -662,19 +822,30 @@ body::after {
     </div>
 
     <div class="nav-section">
+      <div class="nav-section-label">Sistema</div>
+      <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
+        <span class="nav-icon">📋</span> Auditoría
+        <span class="nav-chip">LOG</span>
+      </button>
+    </div>
+
+    <div class="nav-section">
       <div class="nav-section-label">Navegación</div>
       <a class="nav-item" href="index.html">
         <span class="nav-icon">🏠</span> Inicio
       </a>
+      <button class="nav-item nav-logout" onclick="doLogout()">
+        <span class="nav-icon">🚪</span> Cerrar Sesión
+      </button>
     </div>
   </div>
 
   <div class="nav-footer">
     <div class="user-card">
-      <div class="user-avatar">DA</div>
+      <div class="user-avatar" id="userAvatar">—</div>
       <div class="user-info">
-        <div class="user-name">D. Aspra</div>
-        <div class="user-role">Procurador General — PGR</div>
+        <div class="user-name" id="userDisplayName">—</div>
+        <div class="user-role" id="userRole">PGR — Honduras</div>
       </div>
     </div>
   </div>
@@ -884,6 +1055,29 @@ body::after {
     <div class="fuente-chart-card">
       <div class="fuente-recent-title">Alertas Recientes</div>
       <div class="fuente-recent-list" id="ep-recent"></div>
+    </div>
+  </div>
+
+  <!-- ══ AUDIT LOG PANEL ══ -->
+  <div class="fuente-panel" id="auditPanel">
+    <button class="fuente-back" onclick="hideAuditPanel()">← Dashboard</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>📋</span>
+        <span>Registro de Auditoría</span>
+      </div>
+    </div>
+
+    <div class="audit-filter-bar">
+      <button class="audit-filter-btn active" data-af="all"     onclick="setAuditFilter('all',this)">TODAS</button>
+      <button class="audit-filter-btn"        data-af="created" onclick="setAuditFilter('created',this)">CREADAS</button>
+      <button class="audit-filter-btn"        data-af="sent"    onclick="setAuditFilter('sent',this)">ENVIADAS</button>
+      <button class="audit-filter-btn"        data-af="deleted" onclick="setAuditFilter('deleted',this)">ELIMINADAS</button>
+    </div>
+
+    <div id="auditLogList">
+      <div class="audit-empty">Cargando registro...</div>
     </div>
   </div>
 
@@ -1314,6 +1508,10 @@ async function saveAlert() {
 
     if (error) throw error;
 
+    // Log creation to audit table
+    await logAudit(alertId, 'CREATED', null, selectedSev,
+      `Entidad: ${entity_name} · Fuente: ${alert_type}`);
+
     closeModal();
     showToast(`✅ Alerta ${alertId} registrada`);
     await loadAlerts(); // Reload from Supabase — confirms real persistence
@@ -1391,6 +1589,16 @@ async function confirmSend() {
 
     if (error) throw error;
 
+    // Log send action to audit table
+    const sentAlert = allAlerts.find(x => x.id === sendTargetId);
+    await logAudit(
+      sentAlert ? sentAlert.alert_id : String(sendTargetId),
+      'SENT',
+      'Pendiente',
+      statusStr,
+      `Destinos: ${selected.join(', ')}`
+    );
+
     closeSendModal();
     showToast(`📤 Alerta enviada a: ${selected.join(', ')}`);
     await loadAlerts();
@@ -1414,6 +1622,8 @@ document.getElementById('sendModalOverlay').addEventListener('click', e => {
 async function deleteAlert(id) {
   if (!confirm('¿Confirmas que deseas borrar esta alerta? Esta acción no se puede deshacer.')) return;
 
+  const delAlert = allAlerts.find(x => x.id === id);
+
   try {
     const { error } = await db
       .from('alerts')
@@ -1421,6 +1631,16 @@ async function deleteAlert(id) {
       .eq('id', id);
 
     if (error) throw error;
+
+    // Log deletion to audit table
+    await logAudit(
+      delAlert ? delAlert.alert_id : String(id),
+      'DELETED',
+      delAlert ? delAlert.severity : null,
+      null,
+      delAlert ? `Entidad: ${delAlert.entity_name}` : null
+    );
+
     showToast('🗑️ Alerta eliminada');
     await loadAlerts();
 
@@ -1694,11 +1914,229 @@ function hideEntityPanel() {
 function hideFuentePanel() {
   document.getElementById('fuentePanel').classList.remove('open');
   document.getElementById('entityPanel').classList.remove('open');
+  document.getElementById('auditPanel').classList.remove('open');
+  document.getElementById('nav-audit').classList.remove('active');
   document.querySelector('.stats-grid').style.display     = '';
   document.querySelector('.controls-bar').style.display   = '';
   document.querySelector('.table-container').style.display = '';
   // Remove fuente active state, restore dashboard active
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+}
+
+// ════════════════════════════════════════════════════════════
+// AUTH — Login / Logout / Session
+// Uses sessionStorage to persist across page reloads.
+// Keeps persistSession:false on the db client (DataCloneError fix).
+// ════════════════════════════════════════════════════════════
+let currentUser = null;  // { email, name, initials }
+
+function setCurrentUser(email) {
+  // Derive display name from email prefix (e.g. gprieto@pgr → G. Prieto)
+  const prefix = email.split('@')[0];                        // "gprieto"
+  const parts  = prefix.replace(/[^a-zA-Z]/g, ' ').trim().split(' ');
+  const name   = parts.length > 1
+    ? parts[0][0].toUpperCase() + '. ' +
+      parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase()
+    : prefix.charAt(0).toUpperCase() + prefix.slice(1).toLowerCase();
+  const initials = parts.map(p => p[0] || '').join('').toUpperCase().slice(0, 2);
+
+  currentUser = { email, name, initials };
+
+  // Update sidebar user card
+  document.getElementById('userAvatar').textContent      = initials;
+  document.getElementById('userDisplayName').textContent = name;
+  document.getElementById('userRole').textContent        = email;
+
+  // Persist for page reload
+  try { sessionStorage.setItem('sentinel_user', JSON.stringify(currentUser)); } catch(e){}
+}
+
+async function doLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl    = document.getElementById('loginError');
+  const btn      = document.getElementById('loginBtn');
+
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = '⚠ Ingresa correo y contraseña'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    setCurrentUser(email);
+    document.getElementById('loginScreen').classList.add('hidden');
+    await loadAlerts();
+    startRealtime();
+
+  } catch (err) {
+    errEl.textContent = '❌ ' + (err.message === 'Invalid login credentials'
+      ? 'Correo o contraseña incorrectos'
+      : err.message);
+    btn.disabled = false;
+    btn.textContent = 'Ingresar al Sistema';
+  }
+}
+
+async function doLogout() {
+  if (!confirm('¿Deseas cerrar tu sesión en Sentinel-AI?')) return;
+  try { await db.auth.signOut(); } catch(e) {}
+  try { sessionStorage.removeItem('sentinel_user'); } catch(e) {}
+  currentUser = null;
+  // Show login screen, hide dashboard content
+  document.getElementById('loginScreen').classList.remove('hidden');
+  // Reset sidebar state
+  document.getElementById('userAvatar').textContent      = '—';
+  document.getElementById('userDisplayName').textContent = '—';
+  document.getElementById('userRole').textContent        = 'PGR — Honduras';
+  // Clear alert data
+  allAlerts = [];
+}
+
+function checkStoredSession() {
+  try {
+    const stored = sessionStorage.getItem('sentinel_user');
+    if (stored) {
+      const u = JSON.parse(stored);
+      if (u && u.email) {
+        currentUser = u;
+        document.getElementById('userAvatar').textContent      = u.initials || '—';
+        document.getElementById('userDisplayName').textContent = u.name    || u.email;
+        document.getElementById('userRole').textContent        = u.email;
+        document.getElementById('loginScreen').classList.add('hidden');
+        return true;  // session restored
+      }
+    }
+  } catch(e) {}
+  return false;  // no session — show login
+}
+
+// ════════════════════════════════════════════════════════════
+// AUDIT LOG — Insert entries + load + render
+// Table: alert_audit_log (alert_id, action, old_value,
+//        new_value, user_email, user_name, notes, created_at)
+// ════════════════════════════════════════════════════════════
+async function logAudit(alertId, action, oldVal, newVal, notes) {
+  if (!db) return;
+  try {
+    await db.from('alert_audit_log').insert([{
+      alert_id:   alertId,
+      action:     action,
+      old_value:  oldVal  || null,
+      new_value:  newVal  || null,
+      user_email: currentUser ? currentUser.email   : 'sistema',
+      user_name:  currentUser ? currentUser.name    : 'Sistema',
+      notes:      notes   || null,
+    }]);
+  } catch(e) {
+    console.warn('logAudit: could not insert — table may not exist yet:', e.message);
+  }
+}
+
+let allAuditLogs   = [];
+let auditFilter    = 'all';
+
+async function loadAuditLog() {
+  try {
+    const { data, error } = await db
+      .from('alert_audit_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (error) throw error;
+    allAuditLogs = data || [];
+  } catch(e) {
+    allAuditLogs = [];
+    console.warn('loadAuditLog failed:', e.message);
+  }
+  renderAuditLog();
+}
+
+function setAuditFilter(f, btn) {
+  auditFilter = f;
+  document.querySelectorAll('.audit-filter-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.af === f)
+  );
+  renderAuditLog();
+}
+
+function renderAuditLog() {
+  const filtered = auditFilter === 'all'
+    ? allAuditLogs
+    : allAuditLogs.filter(e => (e.action||'').toLowerCase().includes(auditFilter));
+
+  const container = document.getElementById('auditLogList');
+  if (!container) return;
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="audit-empty">No hay entradas de auditoría registradas.</div>';
+    return;
+  }
+
+  const fmtDt = iso => {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    const pad = n => String(n).padStart(2,'0');
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}<br>${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const actionLabel = a => {
+    const act = (a.action || '').toUpperCase();
+    if (act === 'CREATED') return { label: 'Alerta Creada',   cls: 'created' };
+    if (act === 'SENT')    return { label: 'Alerta Enviada',  cls: 'sent'    };
+    if (act === 'DELETED') return { label: 'Alerta Eliminada', cls: 'deleted' };
+    return                        { label: a.action,           cls: 'updated' };
+  };
+
+  container.innerHTML = filtered.map(e => {
+    const { label, cls } = actionLabel(e);
+    const detail = [
+      e.alert_id  ? `ID: ${e.alert_id}` : '',
+      e.old_value ? `Antes: ${e.old_value}` : '',
+      e.new_value ? `Después: ${e.new_value}` : '',
+      e.notes     ? e.notes : '',
+    ].filter(Boolean).join(' · ');
+    return `
+    <div class="audit-entry">
+      <div class="audit-dot ${cls}"></div>
+      <div class="audit-body">
+        <div class="audit-action">${label}</div>
+        ${detail ? `<div class="audit-detail">${detail}</div>` : ''}
+      </div>
+      <div class="audit-meta">
+        ${e.user_name || e.user_email || 'Sistema'}<br>
+        ${fmtDt(e.created_at)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showAuditPanel() {
+  // Hide other panels and main view
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('entityPanel').classList.remove('open');
+  document.querySelector('.stats-grid').style.display     = 'none';
+  document.querySelector('.controls-bar').style.display   = 'none';
+  document.querySelector('.table-container').style.display = 'none';
+
+  // Update nav active state
+  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-audit').classList.add('active');
+
+  // Load and show
+  document.getElementById('auditPanel').classList.add('open');
+  loadAuditLog();
+}
+
+function hideAuditPanel() {
+  document.getElementById('auditPanel').classList.remove('open');
+  document.getElementById('nav-audit').classList.remove('active');
+  document.querySelector('.stats-grid').style.display     = '';
+  document.querySelector('.controls-bar').style.display   = '';
+  document.querySelector('.table-container').style.display = '';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1717,8 +2155,12 @@ tickClock();
 setInterval(tickClock, 1000);
 
 async function init() {
-  await loadAlerts();
-  startRealtime();
+  const hasSession = checkStoredSession();
+  if (hasSession) {
+    await loadAlerts();
+    startRealtime();
+  }
+  // If no session, login screen is already visible (not hidden)
 }
 
 init();

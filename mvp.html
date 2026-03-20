@@ -178,7 +178,7 @@ body::after {
 .fuente-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
 .fuente-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
 .fuente-title span { color: var(--electric); }
-.fuente-stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 28px; }
+.fuente-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
 .fuente-stat {
   background: var(--navy-light); border: 1px solid var(--border);
   border-radius: 10px; padding: 14px 16px; text-align: center;
@@ -289,6 +289,11 @@ body::after {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px; text-transform: uppercase;
   letter-spacing: 1.5px; color: var(--text-dim);
+}
+.stat-monto {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--electric);
+  margin-top: 6px; opacity: 0.75; letter-spacing: 0.3px;
 }
 
 /* Controls bar */
@@ -542,7 +547,7 @@ body::after {
   <div class="nav">
     <div class="nav-section">
       <div class="nav-section-label">Monitor</div>
-      <a class="nav-item active" href="#">
+      <a class="nav-item active" href="#" onclick="hideFuentePanel(); return false;">
         <span class="nav-icon">📊</span> Dashboard MVP
       </a>
       <a class="nav-item" href="demo.html">
@@ -608,6 +613,7 @@ body::after {
     <div class="stat-card s-total">
       <div class="stat-value" id="cnt-total">—</div>
       <div class="stat-label">Total Alertas</div>
+      <div class="stat-monto" id="cnt-monto-total">L —</div>
     </div>
     <div class="stat-card s-critica">
       <div class="stat-value" id="cnt-critica">—</div>
@@ -696,6 +702,10 @@ body::after {
         <div class="fuente-stat-val b" id="fp-baja">0</div>
         <div class="fuente-stat-lbl">Bajas</div>
       </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="fp-monto-total" style="font-size:16px;color:var(--electric);">L —</div>
+        <div class="fuente-stat-lbl">Monto Total</div>
+      </div>
     </div>
 
     <!-- Charts row -->
@@ -739,7 +749,7 @@ body::after {
       <select class="form-select" id="f-source">
         <option value="HonduCompras">HonduCompras</option>
         <option value="TSC">TSC</option>
-        <option value="La Prensa">La Prensa</option>
+        <option value="Fuentes Editoriales">Fuentes Editoriales</option>
         <option value="Reportero Ciudadano">Reportero Ciudadano</option>
         <option value="IAIP">IAIP</option>
         <option value="DGATSC">DGATSC</option>
@@ -956,11 +966,16 @@ function render() {
     const k = normSev(a.severity);
     if (k in c) c[k]++;
   });
-  document.getElementById('cnt-total').textContent   = allAlerts.length;
-  document.getElementById('cnt-critica').textContent = c.critica;
-  document.getElementById('cnt-alta').textContent    = c.alta;
-  document.getElementById('cnt-media').textContent   = c.media;
-  document.getElementById('cnt-baja').textContent    = c.baja;
+  const totalMonto = allAlerts.reduce((sum, a) => sum + Number(a.amount || 0), 0);
+  document.getElementById('cnt-total').textContent      = allAlerts.length;
+  document.getElementById('cnt-critica').textContent    = c.critica;
+  document.getElementById('cnt-alta').textContent       = c.alta;
+  document.getElementById('cnt-media').textContent      = c.media;
+  document.getElementById('cnt-baja').textContent       = c.baja;
+  document.getElementById('cnt-monto-total').textContent =
+    totalMonto > 0
+      ? 'L ' + totalMonto.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+      : 'L —';
 
   // ── Filter for table display ──
   const filtered = activeFilter === 'all'
@@ -1274,7 +1289,7 @@ function showFuentePanel(fuente) {
   if (navEl) navEl.classList.add('active');
 
   // News Sources groups press/media outlets (Reportero Ciudadano is a separate denuncia channel)
-  const NEWS_SOURCES = ['La Prensa', 'El Heraldo', 'Proceso Digital', 'Criterio'];
+  const NEWS_SOURCES = ['La Prensa', 'El Heraldo', 'Proceso Digital', 'Criterio', 'Fuentes Editoriales'];
   const data = fuente === 'News Sources'
     ? allAlerts.filter(a => NEWS_SOURCES.includes(a.data_source || ''))
     : allAlerts.filter(a => (a.data_source || '') === fuente);
@@ -1295,12 +1310,19 @@ function showFuentePanel(fuente) {
     : fuente === 'Reportero Ciudadano' ? '📡 Canal de Integridad Ciudadana'
     : fuente;
   const panelLabel = fuente === 'Reportero Ciudadano' ? 'Denuncias' : 'Alertas';
-  document.getElementById('fp-title').innerHTML   = `<span>${displayName}</span> — Resumen`;
-  document.getElementById('fp-total').textContent   = data.length;
-  document.getElementById('fp-critica').textContent = counts.critica;
-  document.getElementById('fp-alta').textContent    = counts.alta;
-  document.getElementById('fp-media').textContent   = counts.media;
-  document.getElementById('fp-baja').textContent    = counts.baja;
+  const fpMonto = Object.values(montos).reduce((s, v) => s + v, 0);
+  const fmtShort = n => {
+    if (n >= 1e6) return 'L ' + (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return 'L ' + (n / 1e3).toFixed(0) + 'K';
+    return n > 0 ? 'L ' + n.toFixed(0) : 'L —';
+  };
+  document.getElementById('fp-title').innerHTML       = `<span>${displayName}</span> — Resumen`;
+  document.getElementById('fp-total').textContent     = data.length;
+  document.getElementById('fp-critica').textContent   = counts.critica;
+  document.getElementById('fp-alta').textContent      = counts.alta;
+  document.getElementById('fp-media').textContent     = counts.media;
+  document.getElementById('fp-baja').textContent      = counts.baja;
+  document.getElementById('fp-monto-total').textContent = fmtShort(fpMonto);
 
   // Recent alerts list (last 5)
   const recent = [...data].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0,5);

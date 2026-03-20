@@ -1,0 +1,13 @@
+{
+  "name": "sentinel-ai-pipeline",
+  "version": "1.0.0",
+  "description": "Sentinel-AI Honduras — automated fraud detection pipeline for HonduCompras contracts",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "node-fetch": "^2.7.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

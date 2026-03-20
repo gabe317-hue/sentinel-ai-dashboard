@@ -1,8 +1,8 @@
 {
-  "rewrites": [
+  "crons": [
     {
-      "source": "/",
-      "destination": "/sentinel_ai_dashboard_FINAL.html"
+      "path": "/api/run-pipeline",
+      "schedule": "0 2 * * *"
     }
   ]
 }

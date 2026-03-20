@@ -207,19 +207,34 @@ body::after {
 .fri-sev { font-size: 11px; font-weight: 600; }
 
 .nav-footer {
-  padding: 16px 12px;
+  padding: 14px 12px;
   border-top: 1px solid var(--border);
+  margin-top: auto;
 }
-.btn-new-alert {
-  width: 100%;
-  background: linear-gradient(135deg, rgba(0,200,255,0.2), rgba(0,200,255,0.1));
-  border: 1px solid var(--electric); color: var(--electric);
-  padding: 10px 16px; border-radius: 8px; cursor: pointer;
+.user-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 10px; border-radius: 8px;
+  background: var(--glass); border: 1px solid var(--border);
+  transition: background 0.2s;
+}
+.user-card:hover { background: var(--glass-hover); }
+.user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, #0ea5e9, #00c8ff);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+  color: var(--navy); flex-shrink: 0;
+}
+.user-info { overflow: hidden; }
+.user-name {
   font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: all 0.2s;
+  color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.btn-new-alert:hover { background: rgba(0,200,255,0.25); box-shadow: 0 0 20px rgba(0,200,255,0.15); }
+.user-role {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--text-dim); letter-spacing: 0.3px; margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 
 /* ─── MAIN CONTENT ─── */
 .main {
@@ -240,7 +255,11 @@ body::after {
 .error-banner.visible { display: flex; }
 
 /* Page header */
-.page-header { margin-bottom: 32px; }
+.page-header {
+  margin-bottom: 32px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+}
+.page-header-left { flex: 1; }
 .page-title {
   font-family: 'Syne', sans-serif;
   font-size: 28px; font-weight: 700;
@@ -253,6 +272,29 @@ body::after {
   letter-spacing: 1.5px; text-transform: uppercase;
   margin-top: 6px;
 }
+.header-actions {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; padding-top: 4px;
+}
+.header-clock {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 500; color: var(--text-dim);
+  background: var(--glass); border: 1px solid var(--border);
+  padding: 7px 12px; border-radius: 8px;
+  white-space: nowrap;
+}
+.header-clock .clock-icon { font-size: 12px; opacity: 0.7; }
+.header-clock .clock-tz { font-size: 10px; color: var(--electric); opacity: 0.8; margin-left: 2px; }
+.btn-new-alert-header {
+  background: linear-gradient(135deg, rgba(0,200,255,0.25), rgba(0,200,255,0.12));
+  border: 1px solid var(--electric); color: var(--electric);
+  padding: 8px 16px; border-radius: 8px; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+  transition: all 0.2s; white-space: nowrap;
+}
+.btn-new-alert-header:hover { background: rgba(0,200,255,0.3); box-shadow: 0 0 18px rgba(0,200,255,0.2); }
 
 /* Stats grid */
 .stats-grid {
@@ -589,7 +631,13 @@ body::after {
   </div>
 
   <div class="nav-footer">
-    <button class="btn-new-alert" onclick="openModal()">➕ Nueva Alerta</button>
+    <div class="user-card">
+      <div class="user-avatar">DA</div>
+      <div class="user-info">
+        <div class="user-name">D. Aspra</div>
+        <div class="user-role">Procurador General — PGR</div>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -604,8 +652,18 @@ body::after {
 
   <!-- Page header -->
   <div class="page-header">
-    <div class="page-title">Alertas de <span>Corrupción</span></div>
-    <div class="page-subtitle">Honduras — Monitoreo en Tiempo Real · Version 2.0</div>
+    <div class="page-header-left">
+      <div class="page-title">Alertas de <span>Corrupción</span></div>
+      <div class="page-subtitle">Honduras — Monitoreo en Tiempo Real · Version 2.0</div>
+    </div>
+    <div class="header-actions">
+      <div class="header-clock">
+        <span class="clock-icon">⏱</span>
+        <span id="liveClock">--:--:--</span>
+        <span class="clock-tz">TGU</span>
+      </div>
+      <button class="btn-new-alert-header" onclick="openModal()">➕ Nueva Alerta</button>
+    </div>
   </div>
 
   <!-- Stat cards — updated by render() using normSev() fix -->
@@ -1430,6 +1488,18 @@ function hideFuentePanel() {
 // ════════════════════════════════════════════════════════════
 // INIT — Load data, start realtime
 // ════════════════════════════════════════════════════════════
+// ── Live clock (Honduras / Tegucigalpa — UTC-6, no DST) ──
+function tickClock() {
+  const now = new Date().toLocaleTimeString('es-HN', {
+    timeZone: 'America/Tegucigalpa',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  });
+  const el = document.getElementById('liveClock');
+  if (el) el.textContent = now;
+}
+tickClock();
+setInterval(tickClock, 1000);
+
 async function init() {
   await loadAlerts();
   startRealtime();

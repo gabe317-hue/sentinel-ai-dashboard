@@ -498,11 +498,24 @@ body::after {
   margin-bottom: 24px;
 }
 .form-row { margin-bottom: 16px; }
+.form-row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
 .form-label {
   display: block; font-family: 'JetBrains Mono', monospace;
   font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
   color: var(--text-dim); margin-bottom: 6px;
 }
+/* Monto stacked cell in table */
+.monto-stack { display: flex; flex-direction: column; gap: 2px; }
+.monto-contrato { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); white-space: nowrap; }
+.monto-pagado   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.diferencia-badge {
+  display: inline-block; margin-top: 2px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  padding: 1px 6px; border-radius: 4px; font-weight: 600;
+}
+.dif-over  { background: rgba(255,61,87,0.15);  color: var(--red); }
+.dif-under { background: rgba(0,230,118,0.12);  color: var(--green); }
+.dif-exact { background: rgba(0,200,255,0.1);   color: var(--electric); }
 .form-input, .form-select, .form-textarea {
   width: 100%; background: rgba(0,200,255,0.04);
   border: 1px solid var(--border); color: var(--text);
@@ -723,9 +736,9 @@ body::after {
             <th>Entidad</th>
             <th>Severidad</th>
             <th>Fuente</th>
-            <th>Monto</th>
+            <th>F. Contrato</th>
+            <th>Montos (L)</th>
             <th>Estado</th>
-            <th>Fecha</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -823,8 +836,19 @@ body::after {
     </div>
 
     <div class="form-row">
-      <label class="form-label">Monto (opcional)</label>
-      <input class="form-input" id="f-amount" type="number" min="0" step="0.01" placeholder="0.00">
+      <label class="form-label">Fecha Contrato</label>
+      <input class="form-input" id="f-fecha-contrato" type="date">
+    </div>
+
+    <div class="form-row-2col">
+      <div>
+        <label class="form-label">Monto Contrato (L)</label>
+        <input class="form-input" id="f-monto-contrato" type="number" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div>
+        <label class="form-label">Monto Pagado (L)</label>
+        <input class="form-input" id="f-monto-pagado" type="number" min="0" step="0.01" placeholder="0.00">
+      </div>
     </div>
 
     <div class="form-row">
@@ -1031,7 +1055,7 @@ function render() {
   const m = { critica: 0, alta: 0, media: 0, baja: 0 };
   allAlerts.forEach(a => {
     const k = normSev(a.severity);
-    if (k in c) { c[k]++; m[k] += Number(a.amount || 0); }
+    if (k in c) { c[k]++; m[k] += Number(a.monto_contrato || 0); }
   });
   const totalMonto = Object.values(m).reduce((s, v) => s + v, 0);
   const fmtL = n => n > 0
@@ -1088,9 +1112,26 @@ function render() {
       <td><span class="cell-entity">${a.entity_name || '—'}</span></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
       <td><span class="cell-source">${a.data_source || '—'}</span></td>
-      <td><span class="cell-amount">${a.amount != null ? 'L ' + Number(a.amount).toLocaleString('es-HN', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—'}</span></td>
+      <td><span class="cell-date">${a.fecha_contrato || '—'}</span></td>
+      <td>${(function(){
+        const mc = a.monto_contrato != null ? Number(a.monto_contrato) : null;
+        const mp = a.monto_pagado   != null ? Number(a.monto_pagado)   : null;
+        const fmtL = n => 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
+        if (mc == null && mp == null) return '<span style="color:var(--text-dim)">—</span>';
+        let html = '<div class="monto-stack">';
+        if (mc != null) html += `<span class="monto-contrato">${fmtL(mc)}</span>`;
+        if (mp != null) html += `<span class="monto-pagado">Pag: ${fmtL(mp)}</span>`;
+        if (mc != null && mp != null) {
+          const dif = mp - mc;
+          const pct = ((dif / mc) * 100).toFixed(1);
+          const cls = dif > 0 ? 'dif-over' : dif < 0 ? 'dif-under' : 'dif-exact';
+          const sign = dif > 0 ? '+' : '';
+          html += `<span class="diferencia-badge ${cls}">${sign}${pct}%</span>`;
+        }
+        html += '</div>';
+        return html;
+      })()}</td>
       <td><span class="status-badge ${stc}">${a.status || 'Pendiente'}</span></td>
-      <td><span class="cell-date">${fmtDate(a.created_at)}</span></td>
       <td>
         <div class="action-group">
           <button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta">📤 Enviar</button>
@@ -1120,7 +1161,9 @@ function openModal() {
   document.getElementById('f-desc').value = '';
   document.getElementById('f-entity').value = '';
   document.getElementById('f-source').selectedIndex = 0;
-  document.getElementById('f-amount').value = '';
+  document.getElementById('f-monto-contrato').value = '';
+  document.getElementById('f-monto-pagado').value = '';
+  document.getElementById('f-fecha-contrato').value = '';
   document.querySelectorAll('.sev-select-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('btnSave').disabled = false;
   document.getElementById('btnSave').textContent = 'Registrar Alerta';
@@ -1153,9 +1196,13 @@ document.getElementById('modalOverlay').addEventListener('click', e => {
 async function saveAlert() {
   const description = document.getElementById('f-desc').value.trim();
   const entity_name = document.getElementById('f-entity').value.trim();
-  const alert_type  = document.getElementById('f-source').value;
-  const amountRaw   = document.getElementById('f-amount').value;
-  const amount      = amountRaw !== '' ? parseFloat(amountRaw) : null;
+  const alert_type      = document.getElementById('f-source').value;
+  const mcRaw           = document.getElementById('f-monto-contrato').value;
+  const mpRaw           = document.getElementById('f-monto-pagado').value;
+  const fcRaw           = document.getElementById('f-fecha-contrato').value;
+  const monto_contrato  = mcRaw !== '' ? parseFloat(mcRaw) : null;
+  const monto_pagado    = mpRaw !== '' ? parseFloat(mpRaw) : null;
+  const fecha_contrato  = fcRaw !== '' ? fcRaw : null;
 
   if (!description || !entity_name || !selectedSev) {
     showToast('⚠️ Completa todos los campos obligatorios (*)', 'warn');
@@ -1175,10 +1222,12 @@ async function saveAlert() {
       description: description,
       entity_name: entity_name,
       severity:    selectedSev,  // Stored as 'Crítica' / 'Alta' / 'Media' / 'Baja'
-      data_source: alert_type,
-      amount:      amount,
-      risk_score:  null,
-      status:      'Pendiente'
+      data_source:     alert_type,
+      monto_contrato:  monto_contrato,
+      monto_pagado:    monto_pagado,
+      fecha_contrato:  fecha_contrato,
+      risk_score:      null,
+      status:          'Pendiente'
       // created_at: handled by Supabase DEFAULT CURRENT_TIMESTAMP
     }]);
 
@@ -1213,8 +1262,8 @@ function openSendModal(id) {
   document.getElementById('sm-source').textContent  = a.data_source || '—';
   document.getElementById('sm-date').textContent    = fmtDate(a.created_at);
   document.getElementById('sm-sev').textContent     = a.severity || '—';
-  document.getElementById('sm-amount').textContent  = a.amount != null
-    ? 'L ' + Number(a.amount).toLocaleString('es-HN', {minimumFractionDigits:2, maximumFractionDigits:2})
+  document.getElementById('sm-amount').textContent  = a.monto_contrato != null
+    ? 'L ' + Number(a.monto_contrato).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0})
     : '—';
 
   // Reset checkboxes, notes, button
@@ -1376,10 +1425,10 @@ function showFuentePanel(fuente) {
   const montos  = { critica: 0, alta: 0, media: 0, baja: 0 };
   data.forEach(a => {
     const s = normSev(a.severity);
-    if (s.includes('critica'))     { counts.critica++; montos.critica += Number(a.amount||0); }
-    else if (s.includes('alta'))   { counts.alta++;    montos.alta    += Number(a.amount||0); }
-    else if (s.includes('media'))  { counts.media++;   montos.media   += Number(a.amount||0); }
-    else if (s.includes('baja'))   { counts.baja++;    montos.baja    += Number(a.amount||0); }
+    if (s.includes('critica'))     { counts.critica++; montos.critica += Number(a.monto_contrato||0); }
+    else if (s.includes('alta'))   { counts.alta++;    montos.alta    += Number(a.monto_contrato||0); }
+    else if (s.includes('media'))  { counts.media++;   montos.media   += Number(a.monto_contrato||0); }
+    else if (s.includes('baja'))   { counts.baja++;    montos.baja    += Number(a.monto_contrato||0); }
   });
 
   // Populate stat cards

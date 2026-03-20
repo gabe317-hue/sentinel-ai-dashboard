@@ -383,6 +383,32 @@ body::after {
 .cell-id { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--electric); }
 .cell-desc { max-width: 260px; color: var(--text); line-height: 1.4; }
 .cell-entity { color: var(--text); font-weight: 500; }
+.cell-entity-link {
+  background: none; border: none; cursor: pointer; padding: 0;
+  color: var(--text); font-weight: 500; font-family: inherit; font-size: inherit;
+  text-align: left; border-bottom: 1px dashed rgba(0,200,255,0.35);
+  transition: color 0.15s, border-color 0.15s;
+}
+.cell-entity-link:hover { color: var(--electric); border-color: var(--electric); }
+/* Entity panel financial stats */
+.ep-fin-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;
+}
+.ep-fin-card {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+}
+.ep-fin-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600;
+  color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ep-fin-lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+}
+.ep-fin-val.over  { color: var(--red); }
+.ep-fin-val.under { color: var(--green); }
+.ep-fin-val.exact { color: var(--electric); }
 .cell-source {
   font-family: 'JetBrains Mono', monospace; font-size: 11px;
   color: var(--text-dim); background: var(--glass);
@@ -602,7 +628,7 @@ body::after {
   <div class="nav">
     <div class="nav-section">
       <div class="nav-section-label">Monitor</div>
-      <a class="nav-item active" href="#" onclick="hideFuentePanel(); return false;">
+      <a class="nav-item active" href="#" onclick="hideFuentePanel(); hideEntityPanel(); return false;">
         <span class="nav-icon">📊</span> Dashboard MVP
       </a>
       <a class="nav-item" href="demo.html">
@@ -803,6 +829,61 @@ body::after {
     <div class="fuente-chart-card">
       <div class="fuente-recent-title">Alertas Recientes</div>
       <div class="fuente-recent-list" id="fp-recent"></div>
+    </div>
+  </div>
+
+  <!-- ══ ENTITY PANEL ══ -->
+  <div class="fuente-panel" id="entityPanel">
+    <button class="fuente-back" onclick="hideEntityPanel()">← Todas las Alertas</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" id="ep-title">Entidad</div>
+    </div>
+
+    <!-- Count stats row -->
+    <div class="fuente-stats-row" style="margin-bottom:16px;">
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="ep-total">0</div>
+        <div class="fuente-stat-lbl">Total Alertas</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val c" id="ep-critica">0</div>
+        <div class="fuente-stat-lbl">Críticas</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val a" id="ep-alta">0</div>
+        <div class="fuente-stat-lbl">Altas</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val m" id="ep-media">0</div>
+        <div class="fuente-stat-lbl">Medias</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val b" id="ep-baja">0</div>
+        <div class="fuente-stat-lbl">Bajas</div>
+      </div>
+    </div>
+
+    <!-- Financial summary row -->
+    <div class="ep-fin-row">
+      <div class="ep-fin-card">
+        <div class="ep-fin-val" id="ep-monto-contrato">L —</div>
+        <div class="ep-fin-lbl">Monto Contrato</div>
+      </div>
+      <div class="ep-fin-card">
+        <div class="ep-fin-val" id="ep-monto-pagado">L —</div>
+        <div class="ep-fin-lbl">Monto Pagado</div>
+      </div>
+      <div class="ep-fin-card">
+        <div class="ep-fin-val" id="ep-diferencia">—</div>
+        <div class="ep-fin-lbl" id="ep-diferencia-lbl">Diferencia</div>
+      </div>
+    </div>
+
+    <!-- Recent alerts -->
+    <div class="fuente-chart-card">
+      <div class="fuente-recent-title">Alertas Recientes</div>
+      <div class="fuente-recent-list" id="ep-recent"></div>
     </div>
   </div>
 
@@ -1109,7 +1190,7 @@ function render() {
     return `<tr>
       <td><span class="cell-id">${a.alert_id || ('#' + a.id)}</span></td>
       <td><span class="cell-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${desc}</span></td>
-      <td><span class="cell-entity">${a.entity_name || '—'}</span></td>
+      <td><button class="cell-entity-link" onclick="showEntityPanel('${(a.entity_name||'').replace(/'/g,"\\'")}')">${a.entity_name || '—'}</button></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
       <td><span class="cell-source">${a.data_source || '—'}</span></td>
       <td><span class="cell-date">${a.fecha_contrato || '—'}</span></td>
@@ -1525,10 +1606,96 @@ function showFuentePanel(fuente) {
   document.querySelector('.table-container').style.display = 'none';
 }
 
+// ════════════════════════════════════════════════════════════
+// ENTITY PANEL — click entity name in table to open
+// ════════════════════════════════════════════════════════════
+function showEntityPanel(entityName) {
+  // Close fuente panel if open
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+
+  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+
+  // Severity counts
+  const counts = { critica: 0, alta: 0, media: 0, baja: 0 };
+  data.forEach(a => {
+    const s = normSev(a.severity);
+    if (s.includes('critica'))    counts.critica++;
+    else if (s.includes('alta'))  counts.alta++;
+    else if (s.includes('media')) counts.media++;
+    else if (s.includes('baja'))  counts.baja++;
+  });
+
+  // Financial totals
+  const mc = data.reduce((s, a) => s + Number(a.monto_contrato || 0), 0);
+  const mp = data.reduce((s, a) => s + Number(a.monto_pagado   || 0), 0);
+  const hasPagado = data.some(a => a.monto_pagado != null);
+  const fmtL = n => n > 0
+    ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    : 'L —';
+
+  document.getElementById('ep-title').innerHTML     = `<span>${entityName}</span> — Resumen`;
+  document.getElementById('ep-total').textContent   = data.length;
+  document.getElementById('ep-critica').textContent = counts.critica;
+  document.getElementById('ep-alta').textContent    = counts.alta;
+  document.getElementById('ep-media').textContent   = counts.media;
+  document.getElementById('ep-baja').textContent    = counts.baja;
+  document.getElementById('ep-monto-contrato').textContent = fmtL(mc);
+  document.getElementById('ep-monto-pagado').textContent   = hasPagado ? fmtL(mp) : 'Sin datos';
+
+  // Diferencia
+  const difEl  = document.getElementById('ep-diferencia');
+  const lblEl  = document.getElementById('ep-diferencia-lbl');
+  if (mc > 0 && hasPagado) {
+    const dif = mp - mc;
+    const pct = ((dif / mc) * 100).toFixed(1);
+    const sign = dif >= 0 ? '+' : '';
+    difEl.textContent = sign + fmtL(Math.abs(dif)).replace('L ', 'L ') + ` (${sign}${pct}%)`;
+    difEl.className   = 'ep-fin-val ' + (dif > 0 ? 'over' : dif < 0 ? 'under' : 'exact');
+    lblEl.textContent = dif > 0 ? 'Sobrecosto' : dif < 0 ? 'Ahorro' : 'Sin diferencia';
+  } else {
+    difEl.textContent = '—';
+    difEl.className   = 'ep-fin-val';
+    lblEl.textContent = 'Diferencia';
+  }
+
+  // Recent alerts (last 5)
+  const recent = [...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+  const sevColor = s => {
+    const n = normSev(s);
+    if (n.includes('critica')) return '#ff3d57';
+    if (n.includes('alta'))    return 'var(--amber)';
+    if (n.includes('media'))   return 'var(--electric)';
+    return '#4caf50';
+  };
+  document.getElementById('ep-recent').innerHTML = recent.length
+    ? recent.map(a => `
+        <div class="fuente-recent-item">
+          <span class="fri-id">${a.alert_id || '#' + a.id}</span>
+          <span class="fri-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${a.description||'—'}</span>
+          <span class="fri-sev" style="color:${sevColor(a.severity)}">${a.severity||'—'}</span>
+        </div>`).join('')
+    : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin alertas para esta entidad.</div>`;
+
+  // Show panel, hide main view
+  document.getElementById('entityPanel').classList.add('open');
+  document.querySelector('.stats-grid').style.display     = 'none';
+  document.querySelector('.controls-bar').style.display   = 'none';
+  document.querySelector('.table-container').style.display = 'none';
+}
+
+function hideEntityPanel() {
+  document.getElementById('entityPanel').classList.remove('open');
+  document.querySelector('.stats-grid').style.display     = '';
+  document.querySelector('.controls-bar').style.display   = '';
+  document.querySelector('.table-container').style.display = '';
+}
+
 function hideFuentePanel() {
   document.getElementById('fuentePanel').classList.remove('open');
-  document.querySelector('.stats-grid').style.display    = '';
-  document.querySelector('.controls-bar').style.display  = '';
+  document.getElementById('entityPanel').classList.remove('open');
+  document.querySelector('.stats-grid').style.display     = '';
+  document.querySelector('.controls-bar').style.display   = '';
   document.querySelector('.table-container').style.display = '';
   // Remove fuente active state, restore dashboard active
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));

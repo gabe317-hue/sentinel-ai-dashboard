@@ -111,19 +111,24 @@ async function fetchAllContracts(fechaInicio, fechaFin) {
   const totalPages = firstPage.pages || 1;
   console.log(`[Pipeline] Total pages: ${totalPages}, total records: ${firstPage.releases}`);
 
-  // Step 2: fetch the last PAGES_TO_FETCH pages (most recent contracts)
-  const PAGES_TO_FETCH = 10;
+  // Step 2: fetch the last PAGES_TO_FETCH pages IN PARALLEL (most recent contracts)
+  const PAGES_TO_FETCH = 5;
   const startPage = Math.max(1, totalPages - PAGES_TO_FETCH + 1);
-  console.log(`[Pipeline] Fetching pages ${startPage} to ${totalPages} (most recent)`);
+  console.log(`[Pipeline] Fetching pages ${startPage}-${totalPages} in parallel (most recent)`);
 
   const pagesToFetch = [];
   for (let p = startPage; p <= totalPages; p++) pagesToFetch.push(p);
 
-  for (const pagina of pagesToFetch) {
-    const data = pagina === 1 ? firstPage : await fetchReleasesPage(pagina);
+  // Fetch all pages simultaneously — takes ~19s instead of 5x19s
+  const pageResults = await Promise.all(
+    pagesToFetch.map(p => p === 1 ? Promise.resolve(firstPage) : fetchReleasesPage(p))
+  );
+
+  for (let i = 0; i < pageResults.length; i++) {
+    const data = pageResults[i];
+    const pagina = pagesToFetch[i];
     if (!data) continue;
 
-    // Releases are inside releasePackage.releases
     const releases = data.releasePackage?.releases || [];
     if (releases.length === 0) continue;
 
@@ -134,8 +139,6 @@ async function fetchAllContracts(fechaInicio, fechaFin) {
       const releaseDate = new Date(rawDateStr);
       if (!isNaN(releaseDate) && releaseDate >= startDate && releaseDate <= endDate) {
         allContracts.push(release);
-      } else if (!isNaN(releaseDate)) {
-        console.log(`[Pipeline] Skipped (out of range): ${rawDateStr}`);
       }
     }
   }

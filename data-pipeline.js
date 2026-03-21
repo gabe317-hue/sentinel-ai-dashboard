@@ -101,6 +101,7 @@ async function fetchAllContracts(fechaInicio, fechaFin) {
   const allContracts = [];
   const startDate = new Date(fechaInicio);
   const endDate   = new Date(fechaFin);
+  endDate.setHours(23, 59, 59, 999); // include all of the end date, not just midnight
   let pagina = 1;
   let hasMore = true;
   let oldestDateSeen = null;
@@ -114,7 +115,7 @@ async function fetchAllContracts(fechaInicio, fechaFin) {
     if (releases.length === 0) { hasMore = false; break; }
 
     for (const release of releases) {
-      const releaseDate = new Date(release.date || release.publishedDate || '');
+      const releaseDate = new Date(release.publishedDate || release.date || '');
       if (!isNaN(releaseDate)) {
         if (!oldestDateSeen || releaseDate < oldestDateSeen) oldestDateSeen = releaseDate;
         // Only include releases within our date range
@@ -207,7 +208,7 @@ function normalizeContract(raw) {
     proveedor_nombre:   supplier.name || 'Proveedor Desconocido',
     entidad:            buyer.name || raw.publisher?.name || 'Entidad Desconocida',
     tipo_contratacion:  tipoContratacion,
-    fecha_publicacion:  raw.date || tender.tenderPeriod?.startDate || null,
+    fecha_publicacion:  raw.publishedDate || raw.date || tender.tenderPeriod?.startDate || null,
     fecha_adjudicacion: award.date || tender.tenderPeriod?.endDate || null,
     descripcion:        tender.title || tender.description || '',
     departamento:       tender.deliveryLocation?.description || '',

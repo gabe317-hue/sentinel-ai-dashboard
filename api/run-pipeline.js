@@ -1,4 +1,4 @@
-const { runPipeline } = require('../data-pipeline');
+const { runPipeline } = require('../lib/data-pipeline');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') {

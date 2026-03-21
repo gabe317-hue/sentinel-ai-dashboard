@@ -101,60 +101,42 @@ async function fetchAllContracts(fechaInicio, fechaFin) {
   const allContracts = [];
   const startDate = new Date(fechaInicio);
   const endDate   = new Date(fechaFin);
-  endDate.setHours(23, 59, 59, 999); // include all of the end date, not just midnight
-  let pagina = 1;
-  let hasMore = true;
-  let oldestDateSeen = null;
+  endDate.setHours(23, 59, 59, 999);
 
-  while (hasMore) {
-    const data = await fetchReleasesPage(pagina);
-    if (!data) break;
+  // Step 1: fetch page 1 to discover total pages
+  const firstPage = await fetchReleasesPage(1);
+  if (!firstPage) return allContracts;
 
-    // Debug: log structure on page 1
-    if (pagina === 1) {
-      console.log('[Pipeline] API top-level keys:', Object.keys(data));
-      console.log('[Pipeline] releases:', Array.isArray(data.releases) ? `array(${data.releases.length})` : typeof data.releases, JSON.stringify(data.releases)?.slice(0, 100));
-      console.log('[Pipeline] releasePackage:', typeof data.releasePackage, JSON.stringify(data.releasePackage)?.slice(0, 200));
-    }
+  // data.releases = total record count (number), data.pages = total pages
+  const totalPages = firstPage.pages || 1;
+  console.log(`[Pipeline] Total pages: ${totalPages}, total records: ${firstPage.releases}`);
 
-    // Try all possible locations for the releases array
-    const rawReleases = (Array.isArray(data.releases) && data.releases.length > 0 ? data.releases : null)
-      || data.releasePackage?.releases
-      || data.results
-      || data.data
-      || (Array.isArray(data) ? data : []);
-    const releases = Array.isArray(rawReleases) ? rawReleases : [];
-    if (pagina === 1) console.log(`[Pipeline] Final releases count: ${releases.length}`);
-    if (releases.length === 0) { hasMore = false; break; }
+  // Step 2: fetch the last PAGES_TO_FETCH pages (most recent contracts)
+  const PAGES_TO_FETCH = 10;
+  const startPage = Math.max(1, totalPages - PAGES_TO_FETCH + 1);
+  console.log(`[Pipeline] Fetching pages ${startPage} to ${totalPages} (most recent)`);
 
-    console.log(`[Pipeline] Page ${pagina}: ${releases.length} releases. startDate=${startDate.toISOString()} endDate=${endDate.toISOString()}`);
+  const pagesToFetch = [];
+  for (let p = startPage; p <= totalPages; p++) pagesToFetch.push(p);
+
+  for (const pagina of pagesToFetch) {
+    const data = pagina === 1 ? firstPage : await fetchReleasesPage(pagina);
+    if (!data) continue;
+
+    // Releases are inside releasePackage.releases
+    const releases = data.releasePackage?.releases || [];
+    if (releases.length === 0) continue;
+
+    console.log(`[Pipeline] Page ${pagina}/${totalPages}: ${releases.length} releases`);
 
     for (const release of releases) {
       const rawDateStr = release.publishedDate || release.date || '';
       const releaseDate = new Date(rawDateStr);
-      if (!isNaN(releaseDate)) {
-        if (!oldestDateSeen || releaseDate < oldestDateSeen) oldestDateSeen = releaseDate;
-        if (releaseDate >= startDate && releaseDate <= endDate) {
-          allContracts.push(release);
-        } else if (pagina === 1 && allContracts.length === 0) {
-          // Log why first item is being excluded
-          console.log(`[Pipeline] First item excluded — date: ${rawDateStr} parsed: ${releaseDate.toISOString()}`);
-        }
-      } else {
-        if (pagina === 1) console.log(`[Pipeline] Unparseable date: "${rawDateStr}"`);
+      if (!isNaN(releaseDate) && releaseDate >= startDate && releaseDate <= endDate) {
+        allContracts.push(release);
+      } else if (!isNaN(releaseDate)) {
+        console.log(`[Pipeline] Skipped (out of range): ${rawDateStr}`);
       }
-    }
-
-    // Stop paginating if: no next page, hit page limit, or oldest date is before our range
-    const hasNextPage = !!data.next;
-    const hitPageLimit = pagina >= 20;
-    const pastDateRange = oldestDateSeen && oldestDateSeen < startDate;
-
-    if (!hasNextPage || hitPageLimit || pastDateRange) {
-      if (hitPageLimit) console.warn('[Pipeline] Hit page limit (20). Stopping pagination.');
-      hasMore = false;
-    } else {
-      pagina++;
     }
   }
 

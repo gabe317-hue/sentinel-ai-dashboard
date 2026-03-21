@@ -110,25 +110,22 @@ async function fetchAllContracts(fechaInicio, fechaFin) {
     const data = await fetchReleasesPage(pagina);
     if (!data) break;
 
-    // Debug: log top-level keys and first item structure on page 1
+    // Debug: log structure on page 1
     if (pagina === 1) {
       console.log('[Pipeline] API top-level keys:', Object.keys(data));
-      const firstItem = Array.isArray(data.releases) ? data.releases[0] : (data.releases ? Object.values(data.releases)[0] : null);
-      if (firstItem) {
-        console.log('[Pipeline] First item keys:', Object.keys(firstItem));
-        console.log('[Pipeline] First item date fields:', JSON.stringify({
-          date: firstItem.date,
-          publishedDate: firstItem.publishedDate,
-          ocid: firstItem.ocid,
-        }));
-      }
+      console.log('[Pipeline] releases:', Array.isArray(data.releases) ? `array(${data.releases.length})` : typeof data.releases, JSON.stringify(data.releases)?.slice(0, 100));
+      console.log('[Pipeline] releasePackage:', typeof data.releasePackage, JSON.stringify(data.releasePackage)?.slice(0, 200));
     }
 
-    // OCDS response: { releases, pages, page, next, previous, releasePackage }
-    const rawReleases = data.releases || data.results || data.data || data;
-    const releases = Array.isArray(rawReleases) ? rawReleases : Object.values(rawReleases).filter(v => v && typeof v === 'object');
+    // Try all possible locations for the releases array
+    const rawReleases = (Array.isArray(data.releases) && data.releases.length > 0 ? data.releases : null)
+      || data.releasePackage?.releases
+      || data.results
+      || data.data
+      || (Array.isArray(data) ? data : []);
+    const releases = Array.isArray(rawReleases) ? rawReleases : [];
+    if (pagina === 1) console.log(`[Pipeline] Final releases count: ${releases.length}`);
     if (releases.length === 0) { hasMore = false; break; }
-    console.log(`[Pipeline] releases type: ${Array.isArray(data.releases) ? 'array' : typeof data.releases}, count: ${releases.length}`);
 
     console.log(`[Pipeline] Page ${pagina}: ${releases.length} releases. startDate=${startDate.toISOString()} endDate=${endDate.toISOString()}`);
 

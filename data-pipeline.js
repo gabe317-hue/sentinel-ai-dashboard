@@ -110,18 +110,39 @@ async function fetchAllContracts(fechaInicio, fechaFin) {
     const data = await fetchReleasesPage(pagina);
     if (!data) break;
 
+    // Debug: log top-level keys and first item structure on page 1
+    if (pagina === 1) {
+      console.log('[Pipeline] API top-level keys:', Object.keys(data));
+      const firstItem = (data.results || data.data || data)[0];
+      if (firstItem) {
+        console.log('[Pipeline] First item keys:', Object.keys(firstItem));
+        console.log('[Pipeline] First item date fields:', JSON.stringify({
+          date: firstItem.date,
+          publishedDate: firstItem.publishedDate,
+          ocid: firstItem.ocid,
+        }));
+      }
+    }
+
     // OCDS response: { count, next, previous, results: [...] }
-    const releases = data.results || data.data || [];
+    const releases = data.results || data.data || (Array.isArray(data) ? data : []);
     if (releases.length === 0) { hasMore = false; break; }
 
+    console.log(`[Pipeline] Page ${pagina}: ${releases.length} releases. startDate=${startDate.toISOString()} endDate=${endDate.toISOString()}`);
+
     for (const release of releases) {
-      const releaseDate = new Date(release.publishedDate || release.date || '');
+      const rawDateStr = release.publishedDate || release.date || '';
+      const releaseDate = new Date(rawDateStr);
       if (!isNaN(releaseDate)) {
         if (!oldestDateSeen || releaseDate < oldestDateSeen) oldestDateSeen = releaseDate;
-        // Only include releases within our date range
         if (releaseDate >= startDate && releaseDate <= endDate) {
           allContracts.push(release);
+        } else if (pagina === 1 && allContracts.length === 0) {
+          // Log why first item is being excluded
+          console.log(`[Pipeline] First item excluded — date: ${rawDateStr} parsed: ${releaseDate.toISOString()}`);
         }
+      } else {
+        if (pagina === 1) console.log(`[Pipeline] Unparseable date: "${rawDateStr}"`);
       }
     }
 

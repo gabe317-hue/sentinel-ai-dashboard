@@ -36,8 +36,3 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ success: false, error: err.message });
   }
 };
-```
-
-5. Commit — espera el deploy y prueba:
-```
-https://sentinel-ai-dashboard-beta.vercel.app/api/seed-demo-data

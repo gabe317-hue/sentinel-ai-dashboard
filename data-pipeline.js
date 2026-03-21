@@ -26,7 +26,7 @@ const fetch = require('node-fetch');
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const EDCA_BASE_URL = 'https://guancasco.sefin.gob.hn/EDCA_WEBAPI/datosabiertos/api/v1';
+const EDCA_BASE_URL = 'https://contratacionesabiertas.gob.hn/api/v1';
 
 // Fraud detection thresholds (Honduran Lempiras)
 const THRESHOLD_FRACCIONADO_MIN = 900000;   // L. 900,000 — lower bound near bidding limit
@@ -64,8 +64,9 @@ function hoursBetween(dateA, dateB) {
 }
 
 // ── EDCA-SEFIN API fetch ──────────────────────────────────────
-async function fetchContractsPage(fechaInicio, fechaFin, pagina = 1) {
-  const url = `${EDCA_BASE_URL}/contratos?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&pagina=${pagina}&registrosPorPagina=${PAGE_SIZE}`;
+async function fetchReleasesPage(pagina = 1) {
+  // Uses the official Portal de Contrataciones Abiertas de Honduras API (OCDS format)
+  const url = `${EDCA_BASE_URL}/release/?publisher=sefin&page=${pagina}`;
   console.log(`[Pipeline] Fetching page ${pagina}: ${url}`);
 
   const controller = new AbortController();
@@ -98,34 +99,45 @@ async function fetchContractsPage(fechaInicio, fechaFin, pagina = 1) {
 
 async function fetchAllContracts(fechaInicio, fechaFin) {
   const allContracts = [];
+  const startDate = new Date(fechaInicio);
+  const endDate   = new Date(fechaFin);
   let pagina = 1;
   let hasMore = true;
+  let oldestDateSeen = null;
 
   while (hasMore) {
-    const data = await fetchContractsPage(fechaInicio, fechaFin, pagina);
-
+    const data = await fetchReleasesPage(pagina);
     if (!data) break;
 
-    // Handle different API response shapes
-    const records = data.data || data.contratos || data.records || data || [];
-    const contractList = Array.isArray(records) ? records : [];
+    // OCDS response: { count, next, previous, results: [...] }
+    const releases = data.results || data.data || [];
+    if (releases.length === 0) { hasMore = false; break; }
 
-    if (contractList.length === 0) {
+    for (const release of releases) {
+      const releaseDate = new Date(release.date || release.publishedDate || '');
+      if (!isNaN(releaseDate)) {
+        if (!oldestDateSeen || releaseDate < oldestDateSeen) oldestDateSeen = releaseDate;
+        // Only include releases within our date range
+        if (releaseDate >= startDate && releaseDate <= endDate) {
+          allContracts.push(release);
+        }
+      }
+    }
+
+    // Stop paginating if: no next page, hit page limit, or oldest date is before our range
+    const hasNextPage = !!data.next;
+    const hitPageLimit = pagina >= 20;
+    const pastDateRange = oldestDateSeen && oldestDateSeen < startDate;
+
+    if (!hasNextPage || hitPageLimit || pastDateRange) {
+      if (hitPageLimit) console.warn('[Pipeline] Hit page limit (20). Stopping pagination.');
       hasMore = false;
     } else {
-      allContracts.push(...contractList);
-      hasMore = contractList.length === PAGE_SIZE;
       pagina++;
-
-      // Safety: max 20 pages per run (2,000 contracts)
-      if (pagina > 20) {
-        console.warn('[Pipeline] Hit page limit (20). Stopping pagination.');
-        hasMore = false;
-      }
     }
   }
 
-  console.log(`[Pipeline] Total contracts fetched: ${allContracts.length}`);
+  console.log(`[Pipeline] Contracts in date range: ${allContracts.length}`);
   return allContracts;
 }
 
@@ -167,20 +179,38 @@ async function getVendorContractCounts(supabase, vendorIds) {
 
 // ── Fraud pattern analysis ────────────────────────────────────
 function normalizeContract(raw) {
-  // Map EDCA-SEFIN API fields to our internal format
-  // The API may use different field names — we handle the common ones
+  // Parse OCDS (Open Contracting Data Standard) release format
+  // Docs: https://contratacionesabiertas.gob.hn/manual_api/
+
+  // Awards contain the actual contract value and supplier
+  const award   = (raw.awards   && raw.awards[0])   || {};
+  const tender  = raw.tender    || {};
+  const buyer   = raw.buyer     || {};
+  const supplier = (award.suppliers && award.suppliers[0]) || {};
+
+  // Extract amount — prefer award value, fall back to tender value
+  const monto = parseFloat(
+    award.value?.amount ||
+    tender.value?.amount ||
+    0
+  );
+
+  // Procurement method (direct, open, etc.)
+  const tipoContratacion = tender.procurementMethod ||
+    tender.procurementMethodDetails || '';
+
   return {
-    id:              raw.id || raw.numero_contrato || raw.numeroContrato || raw.contract_id || null,
-    numero:          raw.numero_contrato || raw.numeroContrato || raw.numero || String(raw.id || ''),
-    monto:           parseFloat(raw.monto || raw.valor || raw.montoContrato || raw.importe || 0),
-    proveedor_id:    raw.proveedor_id || raw.proveedorId || raw.rtn_proveedor || raw.rtn || null,
-    proveedor_nombre: raw.proveedor || raw.nombreProveedor || raw.proveedor_nombre || 'Proveedor Desconocido',
-    entidad:         raw.entidad || raw.institucion || raw.nombre_institucion || 'Entidad Desconocida',
-    tipo_contratacion: raw.tipo_contratacion || raw.tipoContratacion || raw.modalidad || '',
-    fecha_publicacion: raw.fecha_publicacion || raw.fechaPublicacion || raw.fecha_inicio || null,
-    fecha_adjudicacion: raw.fecha_adjudicacion || raw.fechaAdjudicacion || raw.fecha_firma || null,
-    descripcion:     raw.objeto || raw.descripcion || raw.descripcion_contrato || '',
-    departamento:    raw.departamento || raw.municipio || '',
+    id:                 raw.ocid || raw.id || null,
+    numero:             raw.ocid || String(raw.id || ''),
+    monto,
+    proveedor_id:       supplier.id || supplier.identifier?.id || null,
+    proveedor_nombre:   supplier.name || 'Proveedor Desconocido',
+    entidad:            buyer.name || raw.publisher?.name || 'Entidad Desconocida',
+    tipo_contratacion:  tipoContratacion,
+    fecha_publicacion:  raw.date || tender.tenderPeriod?.startDate || null,
+    fecha_adjudicacion: award.date || tender.tenderPeriod?.endDate || null,
+    descripcion:        tender.title || tender.description || '',
+    departamento:       tender.deliveryLocation?.description || '',
   };
 }
 

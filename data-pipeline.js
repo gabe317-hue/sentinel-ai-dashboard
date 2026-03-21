@@ -113,7 +113,7 @@ async function fetchAllContracts(fechaInicio, fechaFin) {
     // Debug: log top-level keys and first item structure on page 1
     if (pagina === 1) {
       console.log('[Pipeline] API top-level keys:', Object.keys(data));
-      const firstItem = (data.releases || data.results || data.data || data)[0];
+      const firstItem = Array.isArray(data.releases) ? data.releases[0] : (data.releases ? Object.values(data.releases)[0] : null);
       if (firstItem) {
         console.log('[Pipeline] First item keys:', Object.keys(firstItem));
         console.log('[Pipeline] First item date fields:', JSON.stringify({
@@ -125,8 +125,10 @@ async function fetchAllContracts(fechaInicio, fechaFin) {
     }
 
     // OCDS response: { releases, pages, page, next, previous, releasePackage }
-    const releases = data.releases || data.results || data.data || (Array.isArray(data) ? data : []);
+    const rawReleases = data.releases || data.results || data.data || data;
+    const releases = Array.isArray(rawReleases) ? rawReleases : Object.values(rawReleases).filter(v => v && typeof v === 'object');
     if (releases.length === 0) { hasMore = false; break; }
+    console.log(`[Pipeline] releases type: ${Array.isArray(data.releases) ? 'array' : typeof data.releases}, count: ${releases.length}`);
 
     console.log(`[Pipeline] Page ${pagina}: ${releases.length} releases. startDate=${startDate.toISOString()} endDate=${endDate.toISOString()}`);
 

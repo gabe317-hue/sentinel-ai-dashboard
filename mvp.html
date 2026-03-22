@@ -1389,7 +1389,7 @@ function render() {
       return m ? m[1].trim() : null;
     };
     const proveedorDisplay = parseDesc('Proveedor') || a.proveedor_nombre || a.entity_name || '—';
-    const entidadDisplay   = parseDesc('Entidad compradora') || '—';
+    const entidadDisplay   = parseDesc('Entidad compradora') || a.entity_name || '—';
 
     return `<tr>
       <td><span class="cell-id">${a.alert_id || ('#' + a.id)}</span></td>

@@ -930,7 +930,7 @@ body::after {
           <tr>
             <th>ID Alerta</th>
             <th>Descripción</th>
-            <th>Entidad</th>
+            <th>Proveedor</th>
             <th>Severidad</th>
             <th>Fuente</th>
             <th>F. Contrato</th>
@@ -1387,7 +1387,7 @@ function render() {
       <td><button class="cell-entity-link" onclick="showEntityPanel('${(a.entity_name||'').replace(/'/g,"\\'")}')">${a.entity_name || '—'}</button></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
       <td><span class="cell-source">${a.data_source || '—'}</span></td>
-      <td><span class="cell-date">${a.fecha_contrato || '—'}</span></td>
+      <td><span class="cell-date">${fmtDate(a.fecha_contrato)}</span></td>
       <td>${(function(){
         const mc = a.monto_contrato != null ? Number(a.monto_contrato) : null;
         const mp = a.monto_pagado   != null ? Number(a.monto_pagado)   : null;

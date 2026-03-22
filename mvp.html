@@ -931,6 +931,7 @@ body::after {
             <th>ID Alerta</th>
             <th>Descripción</th>
             <th>Proveedor</th>
+            <th>Entidad</th>
             <th>Severidad</th>
             <th>Fuente</th>
             <th>F. Contrato</th>
@@ -941,7 +942,7 @@ body::after {
         </thead>
         <tbody id="alertTbody">
           <tr class="state-row">
-            <td colspan="9"><span class="spinner"></span>Cargando alertas desde Supabase...</td>
+            <td colspan="10"><span class="spinner"></span>Cargando alertas desde Supabase...</td>
           </tr>
         </tbody>
       </table>
@@ -1365,7 +1366,7 @@ function render() {
   const tbody = document.getElementById('alertTbody');
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr class="state-row"><td colspan="9">
+    tbody.innerHTML = `<tr class="state-row"><td colspan="10">
       ${allAlerts.length === 0
         ? 'No hay alertas. Usa el botón ➕ Nueva Alerta para crear la primera.'
         : 'No hay alertas con este filtro de severidad.'}
@@ -1381,10 +1382,20 @@ function render() {
       ? a.description.substring(0, 65) + '…'
       : (a.description || '—');
 
+    // Parse named fields from the structured description text
+    // Format: "Proveedor: X\nEntidad compradora: Y\n..."
+    const parseDesc = (key) => {
+      const m = (a.description || '').match(new RegExp(key + ':\\s*([^\\n]+)'));
+      return m ? m[1].trim() : null;
+    };
+    const proveedorDisplay = parseDesc('Proveedor') || a.proveedor_nombre || a.entity_name || '—';
+    const entidadDisplay   = parseDesc('Entidad compradora') || '—';
+
     return `<tr>
       <td><span class="cell-id">${a.alert_id || ('#' + a.id)}</span></td>
       <td><span class="cell-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${desc}</span></td>
-      <td><button class="cell-entity-link" onclick="showEntityPanel('${(a.entity_name||'').replace(/'/g,"\\'")}')">${a.entity_name || '—'}</button></td>
+      <td><button class="cell-entity-link" onclick="showEntityPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button></td>
+      <td><span class="cell-entity">${entidadDisplay}</span></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
       <td><span class="cell-source">${a.data_source || '—'}</span></td>
       <td><span class="cell-date">${fmtDate(a.fecha_contrato)}</span></td>

@@ -886,27 +886,31 @@ body::after {
       <div class="stat-label">Total Alertas</div>
       <div class="stat-monto" id="cnt-monto-total">L —</div>
     </div>
-    <div class="stat-card s-critica">
+    <div class="stat-card s-critica" title="Puntaje ≥ 9 — Múltiples patrones + monto alto. Referir a PGR.">
       <div class="stat-value" id="cnt-critica">—</div>
       <div class="stat-label">Críticas</div>
+      <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Referir a PGR</div>
       <div class="stat-monto" id="cnt-monto-critica">L —</div>
       <div class="stat-monto" id="cnt-pct-critica" style="opacity:0.55;">— %</div>
     </div>
-    <div class="stat-card s-alta">
+    <div class="stat-card s-alta" title="Puntaje 6–8 — Patrones combinados o monto significativo. Escalada legal.">
       <div class="stat-value" id="cnt-alta">—</div>
       <div class="stat-label">Altas</div>
+      <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Escalada legal</div>
       <div class="stat-monto" id="cnt-monto-alta">L —</div>
       <div class="stat-monto" id="cnt-pct-alta" style="opacity:0.55;">— %</div>
     </div>
-    <div class="stat-card s-media">
+    <div class="stat-card s-media" title="Puntaje 3–5 — Un patrón moderado. Seguimiento institucional.">
       <div class="stat-value" id="cnt-media">—</div>
       <div class="stat-label">Medias</div>
+      <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Monitorear</div>
       <div class="stat-monto" id="cnt-monto-media">L —</div>
       <div class="stat-monto" id="cnt-pct-media" style="opacity:0.55;">— %</div>
     </div>
-    <div class="stat-card s-baja">
+    <div class="stat-card s-baja" title="Puntaje 0–2 — Señal débil o monto bajo. Línea base del sistema.">
       <div class="stat-value" id="cnt-baja">—</div>
       <div class="stat-label">Bajas</div>
+      <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Referencia</div>
       <div class="stat-monto" id="cnt-monto-baja">L —</div>
       <div class="stat-monto" id="cnt-pct-baja" style="opacity:0.55;">— %</div>
     </div>
@@ -930,6 +934,15 @@ body::after {
     <button class="filter-btn"        data-p="ADJUDICACION_DIRECTA"   onclick="setPatternFilter('ADJUDICACION_DIRECTA')">DIRECTA</button>
     <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')">SIN HISTORIAL</button>
     <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
+  </div>
+
+  <!-- Risk scoring legend -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 4px;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text-dim);">
+    <span style="letter-spacing:.06em;opacity:0.6;margin-right:4px;">PUNTAJE DE RIESGO:</span>
+    <span style="color:var(--red);">● Crítica</span><span style="opacity:0.6;margin:0 4px;">≥9 pts · multi-patrón + monto alto · referir a PGR</span>
+    <span style="color:var(--orange);">● Alta</span><span style="opacity:0.6;margin:0 4px;">6–8 pts · escalada legal</span>
+    <span style="color:var(--amber);">● Media</span><span style="opacity:0.6;margin:0 4px;">3–5 pts · monitorear</span>
+    <span style="color:var(--green);">● Baja</span><span style="opacity:0.6;margin:0 4px;">0–2 pts · referencia</span>
   </div>
 
   <!-- Alerts table -->

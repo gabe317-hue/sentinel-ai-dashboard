@@ -788,7 +788,7 @@ body::after {
   <div class="nav">
     <div class="nav-section">
       <div class="nav-section-label">Monitor</div>
-      <a class="nav-item active" href="#" onclick="hideFuentePanel(); hideEntityPanel(); return false;">
+      <a class="nav-item active" href="#" onclick="hideFuentePanel(); hideEntityPanel(); hideAnalyticsPanel(); hideAuditPanel(); return false;">
         <span class="nav-icon">📊</span> Dashboard MVP
       </a>
       <a class="nav-item" href="demo.html">
@@ -823,6 +823,9 @@ body::after {
 
     <div class="nav-section">
       <div class="nav-section-label">Sistema</div>
+      <button class="nav-item" id="nav-analytics" onclick="showAnalyticsPanel()">
+        <span class="nav-icon">📈</span> Análisis
+      </button>
       <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
         <span class="nav-icon">📋</span> Auditoría
         <span class="nav-chip">LOG</span>
@@ -1090,6 +1093,74 @@ body::after {
 
     <div id="auditLogList">
       <div class="audit-empty">Cargando registro...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ ANALYTICS PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="analyticsPanel">
+    <button class="fuente-back" onclick="hideAnalyticsPanel()">← Dashboard</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>📈</span>
+        <span>Análisis de Alertas — 2025</span>
+      </div>
+    </div>
+
+    <!-- Headline numbers -->
+    <div id="analyticsHeadline" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;"></div>
+
+    <!-- Pattern breakdown table -->
+    <div style="margin-bottom:28px;">
+      <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">EXPOSICIÓN POR PATRÓN DE FRAUDE</div>
+      <div style="overflow-x:auto;">
+        <table class="alert-table" id="analyticsPatternTable">
+          <thead>
+            <tr>
+              <th>Patrón</th>
+              <th style="text-align:right;">Alertas</th>
+              <th style="text-align:right;">% del Total</th>
+              <th style="text-align:right;">Monto Expuesto (L.)</th>
+              <th style="text-align:right;">Monto Expuesto (USD)</th>
+            </tr>
+          </thead>
+          <tbody id="analyticsPatternBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top entities -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;">
+      <div>
+        <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">TOP ENTIDADES (por monto)</div>
+        <table class="alert-table" id="analyticsEntityTable">
+          <thead><tr><th>Entidad</th><th style="text-align:right;">Alertas</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
+          <tbody id="analyticsEntityBody"></tbody>
+        </table>
+      </div>
+      <div>
+        <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">TOP PROVEEDORES (por monto)</div>
+        <table class="alert-table" id="analyticsVendorTable">
+          <thead><tr><th>Proveedor</th><th style="text-align:right;">Alertas</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
+          <tbody id="analyticsVendorBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- High priority: multi-pattern alerts -->
+    <div>
+      <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">ALERTAS MULTI-PATRÓN (MAYOR RIESGO)</div>
+      <table class="alert-table" id="analyticsMultiTable">
+        <thead>
+          <tr>
+            <th>Proveedor</th>
+            <th>Entidad</th>
+            <th>Patrones</th>
+            <th style="text-align:right;">Monto (L.)</th>
+          </tr>
+        </thead>
+        <tbody id="analyticsMultiBody"></tbody>
+      </table>
     </div>
   </div>
 
@@ -2221,6 +2292,151 @@ function renderAuditLog() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// ANALYTICS PANEL
+// ════════════════════════════════════════════════════════════
+const USD_RATE = 24.5; // HNL per USD (approx 2025)
+
+const PATTERN_LABELS = {
+  FRACCIONAMIENTO_MICRO:   'Fraccionamiento de Contratos',
+  COMPRA_EMERGENCIA:       'Compra de Emergencia',
+  ADJUDICACION_DIRECTA:    'Adjudicación Directa',
+  PROVEEDOR_SIN_HISTORIAL: 'Proveedor Sin Historial',
+  MONTO_FRACCIONADO:       'Monto Fraccionado',
+};
+
+function fmtLarge(n) {
+  if (!n) return 'L. —';
+  if (n >= 1e9) return 'L. ' + (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return 'L. ' + (n / 1e6).toFixed(1) + 'M';
+  return 'L. ' + Math.round(n).toLocaleString('es-HN');
+}
+function fmtUSD(n) {
+  if (!n) return '—';
+  const u = n / USD_RATE;
+  if (u >= 1e6) return '$' + (u / 1e6).toFixed(1) + 'M';
+  return '$' + Math.round(u).toLocaleString('en-US');
+}
+
+function renderAnalytics() {
+  const alerts = allAlerts;
+  const totalAlerts = alerts.length;
+  const totalMonto  = alerts.reduce((s, a) => s + Number(a.monto_contrato || 0), 0);
+
+  // ── Headline cards ──
+  document.getElementById('analyticsHeadline').innerHTML = [
+    { label: 'Contratos Analizados', value: '147,122', sub: 'Año 2025 · SEFIN OCDS' },
+    { label: 'Total Alertas',        value: totalAlerts.toLocaleString(), sub: (totalAlerts/147122*100).toFixed(1) + '% de contratos flaggeados' },
+    { label: 'Exposición Total',     value: fmtLarge(totalMonto), sub: fmtUSD(totalMonto) + ' USD estimado' },
+  ].map(c => `
+    <div style="background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:20px;">
+      <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:8px;">${c.label}</div>
+      <div style="font-size:24px;font-weight:700;color:var(--electric);font-family:'Syne',sans-serif;">${c.value}</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">${c.sub}</div>
+    </div>`).join('');
+
+  // ── Pattern breakdown ──
+  const patternMap = new Map();
+  for (const a of alerts) {
+    for (const p of (a.patterns || '').split(',').filter(Boolean)) {
+      if (!patternMap.has(p)) patternMap.set(p, { count: 0, monto: 0 });
+      const e = patternMap.get(p);
+      e.count++;
+      e.monto += Number(a.monto_contrato || 0);
+    }
+  }
+  const patternRows = [...patternMap.entries()]
+    .sort((a, b) => b[1].monto - a[1].monto);
+
+  document.getElementById('analyticsPatternBody').innerHTML = patternRows.map(([p, d]) => `
+    <tr>
+      <td>${PATTERN_LABELS[p] || p}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${(d.count/totalAlerts*100).toFixed(1)}%</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${fmtUSD(d.monto)}</td>
+    </tr>`).join('');
+
+  // ── Top entities ──
+  const entityMap = new Map();
+  for (const a of alerts) {
+    const k = a.entity_name || 'Desconocida';
+    if (!entityMap.has(k)) entityMap.set(k, { count: 0, monto: 0 });
+    const e = entityMap.get(k);
+    e.count++;
+    e.monto += Number(a.monto_contrato || 0);
+  }
+  const topEntities = [...entityMap.entries()]
+    .sort((a, b) => b[1].monto - a[1].monto).slice(0, 10);
+
+  document.getElementById('analyticsEntityBody').innerHTML = topEntities.map(([name, d]) => `
+    <tr>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">${name}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
+    </tr>`).join('');
+
+  // ── Top vendors ──
+  const vendorMap = new Map();
+  for (const a of alerts) {
+    const k = a.proveedor_nombre || 'Desconocido';
+    if (k === 'Proveedor Desconocido') continue;
+    if (!vendorMap.has(k)) vendorMap.set(k, { count: 0, monto: 0 });
+    const e = vendorMap.get(k);
+    e.count++;
+    e.monto += Number(a.monto_contrato || 0);
+  }
+  const topVendors = [...vendorMap.entries()]
+    .sort((a, b) => b[1].monto - a[1].monto).slice(0, 10);
+
+  document.getElementById('analyticsVendorBody').innerHTML = topVendors.map(([name, d]) => `
+    <tr>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">${name}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
+    </tr>`).join('');
+
+  // ── Multi-pattern high risk ──
+  const multiAlerts = alerts
+    .filter(a => (a.pattern_count || 0) >= 2 && a.monto_contrato)
+    .sort((a, b) => Number(b.monto_contrato) - Number(a.monto_contrato))
+    .slice(0, 15);
+
+  document.getElementById('analyticsMultiBody').innerHTML = multiAlerts.map(a => {
+    const patternList = (a.patterns || '').split(',')
+      .map(p => PATTERN_LABELS[p] || p).join(' + ');
+    return `<tr>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.proveedor_nombre}">${a.proveedor_nombre || '—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.entity_name}">${a.entity_name || '—'}</td>
+      <td style="font-size:11px;color:var(--electric);">${patternList}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(Number(a.monto_contrato))}</td>
+    </tr>`;
+  }).join('');
+}
+
+function showAnalyticsPanel() {
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('entityPanel').classList.remove('open');
+  document.getElementById('auditPanel').classList.remove('open');
+  document.querySelector('.stats-grid').style.display      = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+  document.querySelector('.table-container').style.display = 'none';
+
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-analytics').classList.add('active');
+
+  renderAnalytics();
+  document.getElementById('analyticsPanel').classList.add('open');
+}
+
+function hideAnalyticsPanel() {
+  document.getElementById('analyticsPanel').classList.remove('open');
+  document.getElementById('nav-analytics').classList.remove('active');
+  document.querySelector('.stats-grid').style.display      = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.querySelector('.table-container').style.display = '';
 }
 
 function showAuditPanel() {

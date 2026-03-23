@@ -1394,7 +1394,7 @@ function render() {
     return `<tr>
       <td><span class="cell-id">${a.alert_id || ('#' + a.id)}</span></td>
       <td><span class="cell-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${desc}</span></td>
-      <td><button class="cell-entity-link" onclick="showEntityPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button></td>
+      <td><button class="cell-entity-link" onclick="showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button></td>
       <td><span class="cell-entity">${entidadDisplay}</span></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
       <td><span class="cell-source">${a.data_source || '—'}</span></td>
@@ -1913,6 +1913,79 @@ function showEntityPanel(entityName) {
   document.querySelector('.stats-grid').style.display     = 'none';
   document.querySelector('.controls-bar').style.display   = 'none';
   document.querySelector('.table-container').style.display = 'none';
+}
+
+// ── VENDOR PANEL — shows all alerts for a specific proveedor ─────────────────
+function showVendorPanel(vendorName) {
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+
+  // Filter by proveedor_nombre (or fallback to entity_name for legacy alerts)
+  const data = allAlerts.filter(a => {
+    const p = a.proveedor_nombre || parseDesc_for('Proveedor', a.description) || a.entity_name || '';
+    return p === vendorName;
+  });
+
+  const counts = { critica: 0, alta: 0, media: 0, baja: 0 };
+  data.forEach(a => {
+    const s = normSev(a.severity);
+    if (s.includes('critica'))    counts.critica++;
+    else if (s.includes('alta'))  counts.alta++;
+    else if (s.includes('media')) counts.media++;
+    else if (s.includes('baja'))  counts.baja++;
+  });
+
+  const mc = data.reduce((s, a) => s + Number(a.monto_contrato || 0), 0);
+  const fmtL = n => n > 0
+    ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    : 'L —';
+
+  // Get unique entities this vendor contracted with
+  const entities = [...new Set(data.map(a => a.entity_name).filter(Boolean))];
+  const patterns = [...new Set(data.flatMap(a => (a.patterns || '').split(',').filter(Boolean)))];
+
+  document.getElementById('ep-title').innerHTML = `🏢 <span>${vendorName}</span> — Proveedor`;
+  document.getElementById('ep-total').textContent   = data.length;
+  document.getElementById('ep-critica').textContent = counts.critica;
+  document.getElementById('ep-alta').textContent    = counts.alta;
+  document.getElementById('ep-media').textContent   = counts.media;
+  document.getElementById('ep-baja').textContent    = counts.baja;
+  document.getElementById('ep-monto-contrato').textContent = fmtL(mc);
+  document.getElementById('ep-monto-pagado').textContent   = 'Sin datos';
+  const difEl = document.getElementById('ep-diferencia');
+  const lblEl = document.getElementById('ep-diferencia-lbl');
+  difEl.textContent = entities.length > 0 ? entities.slice(0,3).join(', ') + (entities.length > 3 ? ` +${entities.length-3} más` : '') : '—';
+  difEl.className   = 'ep-fin-val';
+  lblEl.textContent = 'Entidades contratantes';
+
+  const sevColor = s => {
+    const n = normSev(s);
+    if (n.includes('critica')) return '#ff3d57';
+    if (n.includes('alta'))    return 'var(--amber)';
+    if (n.includes('media'))   return 'var(--electric)';
+    return '#4caf50';
+  };
+  const recent = [...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+  document.getElementById('ep-recent').innerHTML = recent.length
+    ? recent.map(a => `
+        <div class="fuente-recent-item">
+          <span class="fri-id">${a.alert_id || '#' + a.id}</span>
+          <span class="fri-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${a.description||'—'}</span>
+          <span class="fri-sev" style="color:${sevColor(a.severity)}">${a.severity||'—'}</span>
+        </div>`).join('')
+    : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin alertas para este proveedor.</div>`;
+
+  document.getElementById('entityPanel').classList.add('open');
+  document.querySelector('.stats-grid').style.display      = 'none';
+  document.querySelector('.controls-bar').style.display    = 'none';
+  document.querySelector('.table-container').style.display = 'none';
+}
+
+// Helper used by showVendorPanel to parse legacy description field
+function parseDesc_for(key, desc) {
+  if (!desc) return '';
+  const m = desc.match(new RegExp(key + ':\\s*([^\\n]+)'));
+  return m ? m[1].trim() : '';
 }
 
 function hideEntityPanel() {

@@ -1,0 +1,2528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel-AI MVP — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy:       #0a1628;
+  --navy-mid:   #0f1f3d;
+  --navy-light: #162447;
+  --electric:   #00c8ff;
+  --electric-dim: rgba(0,200,255,0.15);
+  --green:      #00e676;
+  --green-dim:  rgba(0,230,118,0.12);
+  --amber:      #ffab00;
+  --amber-dim:  rgba(255,171,0,0.12);
+  --red:        #ff3d57;
+  --red-dim:    rgba(255,61,87,0.12);
+  --orange:     #ff6b35;
+  --orange-dim: rgba(255,107,53,0.12);
+  --purple:     #a855f7;
+  --text:       #e8edf5;
+  --text-dim:   #7a8ba8;
+  --border:     rgba(0,200,255,0.12);
+  --glass:      rgba(255,255,255,0.03);
+  --glass-hover:rgba(255,255,255,0.06);
+  --sidebar-w:  240px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--navy);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Background grid — matches demo.html */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none; z-index: 0;
+}
+
+/* Radial glow — matches demo.html */
+body::after {
+  content: '';
+  position: fixed; top: -40%; right: -20%;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(0,200,255,0.06) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: rgba(10,22,40,0.95);
+  border-right: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  z-index: 100;
+  display: flex; flex-direction: column;
+}
+
+.logo-area {
+  padding: 28px 24px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-text {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 20px;
+  letter-spacing: -0.5px; color: var(--text);
+}
+.logo-text span { color: var(--electric); }
+
+.logo-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-dim);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-top: 4px;
+}
+.logo-ip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-dim);
+  margin-top: 10px; line-height: 1.4; opacity: 0.7;
+}
+.logo-version {
+  display: inline-block; margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--electric); background: var(--electric-dim);
+  border: 1px solid rgba(0,200,255,0.2);
+  padding: 2px 7px; border-radius: 4px; letter-spacing: 1px;
+}
+
+.sys-status {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 12px; padding: 6px 10px;
+  background: var(--green-dim);
+  border: 1px solid rgba(0,230,118,0.2);
+  border-radius: 6px; width: fit-content;
+  transition: all 0.3s;
+}
+.sys-status.connecting { background: var(--amber-dim); border-color: rgba(255,171,0,0.2); }
+.sys-status.error      { background: var(--red-dim);   border-color: rgba(255,61,87,0.2); }
+
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  animation: pulse-green 2s infinite;
+}
+.sys-status.connecting .status-dot { background: var(--amber); animation: pulse-amber 1s infinite; }
+.sys-status.error      .status-dot { background: var(--red); animation: none; }
+
+@keyframes pulse-green {
+  0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(0,230,118,0.4); }
+  50%      { opacity:.8; box-shadow: 0 0 0 4px rgba(0,230,118,0); }
+}
+@keyframes pulse-amber {
+  0%,100% { opacity:1; } 50% { opacity:.3; }
+}
+
+.status-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 1px;
+  color: var(--green);
+}
+.sys-status.connecting .status-label { color: var(--amber); }
+.sys-status.error      .status-label { color: var(--red); }
+
+/* Nav */
+.nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+.nav-section { margin-bottom: 24px; }
+.nav-section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text-dim);
+  padding: 0 12px; margin-bottom: 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px;
+  cursor: pointer; font-size: 13px; color: var(--text-dim);
+  transition: all 0.2s; text-decoration: none;
+  border: none; background: none; width: 100%;
+  text-align: left; font-family: 'Inter', sans-serif;
+}
+.nav-item:hover  { background: var(--glass-hover); color: var(--text); }
+.nav-item.active { background: var(--electric-dim); color: var(--electric); border: 1px solid rgba(0,200,255,0.15); }
+.nav-item .nav-icon { font-size: 14px; width: 18px; text-align: center; }
+.nav-item .nav-chip {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--amber); letter-spacing: 0.5px;
+}
+
+/* ─── FUENTE PANEL ─── */
+.fuente-panel { display: none; }
+.fuente-panel.open { display: block; }
+.fuente-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-dim); background: none; border: none;
+  cursor: pointer; margin-bottom: 20px; padding: 0;
+  transition: color 0.15s;
+}
+.fuente-back:hover { color: var(--electric); }
+.fuente-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.fuente-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
+.fuente-title span { color: var(--electric); }
+.fuente-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+.fuente-stat {
+  background: var(--navy-light); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; text-align: center;
+}
+.fuente-stat-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
+.fuente-stat-val.c { color: #ff3d57; }
+.fuente-stat-val.a { color: var(--amber); }
+.fuente-stat-val.m { color: var(--electric); }
+.fuente-stat-val.b { color: #4caf50; }
+.fuente-stat-lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; }
+.fuente-charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+.fuente-chart-card {
+  background: var(--navy-light); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+}
+.fuente-chart-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+.fuente-recent-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.fuente-recent-list { display: flex; flex-direction: column; gap: 8px; }
+.fuente-recent-item {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px;
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+}
+.fri-id { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--electric); }
+.fri-desc { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fri-sev { font-size: 11px; font-weight: 600; }
+
+.nav-footer {
+  padding: 14px 12px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+.user-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 10px; border-radius: 8px;
+  background: var(--glass); border: 1px solid var(--border);
+  transition: background 0.2s;
+}
+.user-card:hover { background: var(--glass-hover); }
+.user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, #0ea5e9, #00c8ff);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+  color: var(--navy); flex-shrink: 0;
+}
+.user-info { overflow: hidden; }
+.user-name {
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.user-role {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--text-dim); letter-spacing: 0.3px; margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ─── MAIN CONTENT ─── */
+.main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh; padding: 32px 40px;
+  position: relative; z-index: 1;
+}
+
+/* Error banner */
+.error-banner {
+  display: none;
+  background: var(--red-dim); border: 1px solid rgba(255,61,87,0.3);
+  color: var(--red); padding: 12px 20px; border-radius: 8px;
+  margin-bottom: 24px; font-size: 13px;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
+  align-items: center; gap: 10px;
+}
+.error-banner.visible { display: flex; }
+
+/* Page header */
+.page-header {
+  margin-bottom: 32px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+}
+.page-header-left { flex: 1; }
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.5px; color: var(--text);
+}
+.page-title span { color: var(--electric); }
+.page-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-top: 6px;
+}
+.header-actions {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; padding-top: 4px;
+}
+.header-clock {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 500; color: var(--text-dim);
+  background: var(--glass); border: 1px solid var(--border);
+  padding: 7px 12px; border-radius: 8px;
+  white-space: nowrap;
+}
+.header-clock .clock-icon { font-size: 12px; opacity: 0.7; }
+.header-clock .clock-tz { font-size: 10px; color: var(--electric); opacity: 0.8; margin-left: 2px; }
+.btn-new-alert-header {
+  background: linear-gradient(135deg, rgba(0,200,255,0.25), rgba(0,200,255,0.12));
+  border: 1px solid var(--electric); color: var(--electric);
+  padding: 8px 16px; border-radius: 8px; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+  transition: all 0.2s; white-space: nowrap;
+}
+.btn-new-alert-header:hover { background: rgba(0,200,255,0.3); box-shadow: 0 0 18px rgba(0,200,255,0.2); }
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px; margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+  position: relative; overflow: hidden; transition: all 0.2s;
+}
+.stat-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+}
+.stat-card.s-total::before  { background: var(--electric); }
+.stat-card.s-critica::before{ background: var(--red); }
+.stat-card.s-alta::before   { background: var(--orange); }
+.stat-card.s-media::before  { background: var(--amber); }
+.stat-card.s-baja::before   { background: var(--green); }
+
+.stat-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px; font-weight: 800; line-height: 1; margin-bottom: 8px;
+}
+.stat-card.s-total  .stat-value { color: var(--electric); }
+.stat-card.s-critica .stat-value{ color: var(--red); }
+.stat-card.s-alta   .stat-value { color: var(--orange); }
+.stat-card.s-media  .stat-value { color: var(--amber); }
+.stat-card.s-baja   .stat-value { color: var(--green); }
+
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-dim);
+}
+.stat-monto {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--electric);
+  margin-top: 6px; opacity: 0.75; letter-spacing: 0.3px;
+}
+
+/* Controls bar */
+.controls-bar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px; flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--glass);
+  color: var(--text-dim); font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+}
+.filter-btn:hover { border-color: var(--electric); color: var(--text); }
+.filter-btn.active { background: var(--electric-dim); border-color: var(--electric); color: var(--electric); }
+
+/* Table */
+.table-container {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+}
+.table-header-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.table-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; }
+.table-count { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
+
+.alert-table { width: 100%; border-collapse: collapse; }
+.alert-table th {
+  padding: 12px 16px; text-align: left;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--text-dim); background: rgba(0,200,255,0.04);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.alert-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0,200,255,0.05);
+  font-size: 13px; vertical-align: middle;
+}
+.alert-table tr:last-child td { border-bottom: none; }
+.alert-table tr:hover td { background: var(--glass-hover); }
+
+.cell-id { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--electric); }
+.cell-desc { max-width: 260px; color: var(--text); line-height: 1.4; }
+.cell-entity { color: var(--text); font-weight: 500; }
+.cell-entity-link {
+  background: none; border: none; cursor: pointer; padding: 0;
+  color: var(--text); font-weight: 500; font-family: inherit; font-size: inherit;
+  text-align: left; border-bottom: 1px dashed rgba(0,200,255,0.35);
+  transition: color 0.15s, border-color 0.15s;
+}
+.cell-entity-link:hover { color: var(--electric); border-color: var(--electric); }
+/* Entity panel financial stats */
+.ep-fin-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;
+}
+.ep-fin-card {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+}
+.ep-fin-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600;
+  color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ep-fin-lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+}
+.ep-fin-val.over  { color: var(--red); }
+.ep-fin-val.under { color: var(--green); }
+.ep-fin-val.exact { color: var(--electric); }
+.cell-source {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-dim); background: var(--glass);
+  padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.cell-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.cell-amount { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); white-space: nowrap; text-align: right; }
+
+/* Severity badges — normSev() maps 'Crítica' → 'critica' for CSS class */
+.sev-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  font-weight: 600; letter-spacing: 0.5px; white-space: nowrap;
+}
+.sev-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.sev-badge.critica { color: var(--red);    background: var(--red-dim);    border: 1px solid rgba(255,61,87,0.25); }
+.sev-badge.alta    { color: var(--orange); background: var(--orange-dim); border: 1px solid rgba(255,107,53,0.25); }
+.sev-badge.media   { color: var(--amber);  background: var(--amber-dim);  border: 1px solid rgba(255,171,0,0.25); }
+.sev-badge.baja    { color: var(--green);  background: var(--green-dim);  border: 1px solid rgba(0,230,118,0.25); }
+
+/* Status badges */
+.status-badge {
+  display: inline-block; padding: 3px 8px; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; white-space: nowrap;
+}
+.status-badge.pendiente { color: var(--amber); background: var(--amber-dim); }
+.status-badge.enviado   { color: var(--green); background: var(--green-dim); }
+
+/* Action buttons */
+.action-group { display: flex; gap: 6px; }
+.btn-action {
+  padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer;
+  font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-pgr { background: var(--electric-dim); color: var(--electric); border: 1px solid rgba(0,200,255,0.2); }
+.btn-pgr:hover { background: rgba(0,200,255,0.25); }
+.btn-del { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,61,87,0.2); }
+.btn-del:hover { background: rgba(255,61,87,0.2); }
+
+/* Loading / empty state */
+.state-row td { text-align: center; padding: 60px 20px; color: var(--text-dim); font-size: 14px; }
+.spinner {
+  display: inline-block; width: 18px; height: 18px;
+  border: 2px solid rgba(0,200,255,0.2); border-top-color: var(--electric);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  margin-right: 10px; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── SEND MODAL ─── */
+.send-modal-box {
+  background: var(--navy-light); border: 1px solid var(--border);
+  border-radius: 16px; padding: 32px; width: 100%; max-width: 560px;
+  position: relative; max-height: 90vh; overflow-y: auto;
+}
+.send-modal-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--electric), var(--cyan)); border-radius: 16px 16px 0 0;
+}
+.alert-summary {
+  background: rgba(0,200,255,0.04); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; margin-bottom: 20px;
+}
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.summary-item { display: flex; flex-direction: column; gap: 2px; }
+.summary-item.full { grid-column: 1 / -1; }
+.summary-key {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;
+}
+.summary-val { font-size: 13px; color: var(--text); font-weight: 500; word-break: break-word; }
+.dest-section-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 10px; display: block;
+}
+.destinations-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+.dest-option {
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+  background: rgba(0,200,255,0.04); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; transition: all 0.15s;
+}
+.dest-option:hover { border-color: rgba(0,200,255,0.3); background: rgba(0,200,255,0.08); }
+.dest-option input[type=checkbox] { accent-color: var(--electric); width: 15px; height: 15px; cursor: pointer; }
+.dest-option.checked { border-color: rgba(0,200,255,0.4); background: rgba(0,200,255,0.1); }
+.dest-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); }
+.dest-full { font-size: 10px; color: var(--text-dim); line-height: 1.2; }
+.send-note-area { resize: vertical; min-height: 60px; }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+  z-index: 200; justify-content: center; align-items: center;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  background: var(--navy-light); border: 1px solid var(--border);
+  border-radius: 16px; padding: 32px; width: 90%; max-width: 520px;
+  position: relative;
+}
+.modal-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--electric), transparent);
+  border-radius: 16px 16px 0 0;
+}
+.modal-title {
+  font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700;
+  margin-bottom: 24px;
+}
+.form-row { margin-bottom: 16px; }
+.form-row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.form-label {
+  display: block; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 6px;
+}
+/* Monto stacked cell in table */
+.monto-stack { display: flex; flex-direction: column; gap: 2px; }
+.monto-contrato { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); white-space: nowrap; }
+.monto-pagado   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.diferencia-badge {
+  display: inline-block; margin-top: 2px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  padding: 1px 6px; border-radius: 4px; font-weight: 600;
+}
+.dif-over  { background: rgba(255,61,87,0.15);  color: var(--red); }
+.dif-under { background: rgba(0,230,118,0.12);  color: var(--green); }
+.dif-exact { background: rgba(0,200,255,0.1);   color: var(--electric); }
+.form-input, .form-select, .form-textarea {
+  width: 100%; background: rgba(0,200,255,0.04);
+  border: 1px solid var(--border); color: var(--text);
+  padding: 10px 14px; border-radius: 8px;
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  transition: border-color 0.2s; outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: rgba(0,200,255,0.4);
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-select option { background: var(--navy-light); }
+
+/* Severity selector in modal */
+.sev-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 4px; }
+.sev-select-btn {
+  padding: 10px 8px; border-radius: 8px; border: 2px solid transparent;
+  cursor: pointer; font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+  transition: all 0.2s; opacity: 0.4;
+}
+.sev-select-btn.baja   { background: var(--green-dim);  color: var(--green);  border-color: rgba(0,230,118,0.3); }
+.sev-select-btn.media  { background: var(--amber-dim);  color: var(--amber);  border-color: rgba(255,171,0,0.3); }
+.sev-select-btn.alta   { background: var(--orange-dim); color: var(--orange); border-color: rgba(255,107,53,0.3); }
+.sev-select-btn.critica{ background: var(--red-dim);    color: var(--red);    border-color: rgba(255,61,87,0.3); }
+.sev-select-btn.selected { opacity: 1; }
+.sev-select-btn.selected.baja   { border-color: var(--green);  box-shadow: 0 0 12px rgba(0,230,118,0.2); }
+.sev-select-btn.selected.media  { border-color: var(--amber);  box-shadow: 0 0 12px rgba(255,171,0,0.2); }
+.sev-select-btn.selected.alta   { border-color: var(--orange); box-shadow: 0 0 12px rgba(255,107,53,0.2); }
+.sev-select-btn.selected.critica{ border-color: var(--red);    box-shadow: 0 0 12px rgba(255,61,87,0.2); }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+.btn-save {
+  flex: 1; background: linear-gradient(135deg, rgba(0,200,255,0.2), rgba(0,200,255,0.1));
+  border: 1px solid var(--electric); color: var(--electric);
+  padding: 12px; border-radius: 8px; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-save:hover   { background: rgba(0,200,255,0.25); box-shadow: 0 0 20px rgba(0,200,255,0.15); }
+.btn-save:disabled{ opacity: 0.5; cursor: not-allowed; }
+.btn-cancel {
+  background: rgba(255,61,87,0.1); border: 1px solid rgba(255,61,87,0.3);
+  color: var(--red); padding: 12px 20px; border-radius: 8px;
+  cursor: pointer; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-cancel:hover { background: rgba(255,61,87,0.2); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 32px; right: 32px;
+  background: var(--navy-light); border: 1px solid rgba(0,230,118,0.3);
+  color: var(--green); padding: 14px 20px; border-radius: 10px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  z-index: 300; transform: translateY(20px); opacity: 0;
+  transition: all 0.3s; pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .main { margin-left: 0; padding: 20px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ─── LOGIN SCREEN ─── */
+.login-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-screen.hidden { display: none; }
+.login-screen::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,200,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,255,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+.login-box {
+  width: 380px;
+  background: rgba(15,31,61,0.97);
+  border: 1px solid rgba(0,200,255,0.18);
+  border-radius: 16px;
+  padding: 40px 36px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 80px rgba(0,200,255,0.06);
+  position: relative; z-index: 1;
+}
+.login-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px; font-weight: 800;
+  color: var(--text); letter-spacing: -0.5px;
+  text-align: center; margin-bottom: 4px;
+}
+.login-logo span { color: var(--electric); }
+.login-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--text-dim); text-align: center;
+  text-transform: uppercase; margin-bottom: 32px;
+}
+.login-field { margin-bottom: 18px; }
+.login-field label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--text-dim); letter-spacing: 0.5px;
+  margin-bottom: 7px; text-transform: uppercase;
+}
+.login-field input {
+  width: 100%; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(0,200,255,0.15);
+  border-radius: 8px; color: var(--text);
+  padding: 12px 14px; font-family: 'Inter', sans-serif;
+  font-size: 14px; outline: none;
+  transition: border-color 0.2s;
+}
+.login-field input:focus { border-color: rgba(0,200,255,0.45); }
+.login-error {
+  font-size: 12px; color: var(--red);
+  margin-bottom: 12px; min-height: 18px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.login-btn {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, rgba(0,200,255,0.22), rgba(0,200,255,0.12));
+  border: 1px solid var(--electric); color: var(--electric);
+  border-radius: 9px; font-family: 'Inter', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.3px;
+}
+.login-btn:hover { background: rgba(0,200,255,0.3); box-shadow: 0 0 24px rgba(0,200,255,0.18); }
+.login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.login-footer {
+  text-align: center; margin-top: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-dim);
+  letter-spacing: 1px; opacity: 0.6;
+}
+.login-badge {
+  display: inline-block; margin: 0 auto 20px; display: flex;
+  align-items: center; justify-content: center; gap: 8px;
+}
+.login-shield { font-size: 32px; text-align: center; margin-bottom: 12px; }
+
+/* ─── LOGOUT NAV ITEM ─── */
+.nav-item.nav-logout {
+  color: rgba(255,61,87,0.6);
+  margin-top: 4px;
+}
+.nav-item.nav-logout:hover { color: var(--red); background: var(--red-dim); }
+
+/* ─── AUDIT LOG PANEL ─── */
+.audit-entry {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px;
+  margin-bottom: 8px; display: flex;
+  align-items: flex-start; gap: 14px;
+}
+.audit-entry:hover { background: var(--glass-hover); }
+.audit-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  margin-top: 5px; flex-shrink: 0;
+}
+.audit-dot.created  { background: var(--green); }
+.audit-dot.sent     { background: var(--electric); }
+.audit-dot.deleted  { background: var(--red); }
+.audit-dot.updated  { background: var(--amber); }
+.audit-body { flex: 1; min-width: 0; }
+.audit-action {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  margin-bottom: 3px;
+}
+.audit-detail {
+  font-size: 11px; color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+}
+.audit-meta {
+  font-size: 10px; color: var(--text-dim);
+  text-align: right; flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.6;
+}
+.audit-empty {
+  color: var(--text-dim); font-size: 13px;
+  padding: 20px 0; text-align: center;
+}
+.audit-filter-bar {
+  display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.audit-filter-btn {
+  padding: 5px 14px; border-radius: 6px;
+  border: 1px solid var(--border); background: none;
+  color: var(--text-dim); font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.5px; cursor: pointer;
+  transition: all 0.2s;
+}
+.audit-filter-btn.active, .audit-filter-btn:hover {
+  background: var(--electric-dim); color: var(--electric);
+  border-color: rgba(0,200,255,0.3);
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOGIN SCREEN ═══════════════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-shield">🛡️</div>
+    <div class="login-logo">SENTINEL<span>-AI</span></div>
+    <div class="login-sub">Sistema Anticorrupción · PGR Honduras</div>
+    <div class="login-field">
+      <label>Correo Electrónico</label>
+      <input type="email" id="loginEmail" placeholder="usuario@pgr.gob.hn"
+        onkeydown="if(event.key==='Enter') document.getElementById('loginPassword').focus()">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Ingresar al Sistema</button>
+    <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<nav class="sidebar">
+  <div class="logo-area">
+    <div class="logo-text">SENTINEL<span>-AI</span></div>
+    <div class="logo-sub">Sistema Anticorrupción</div>
+    <div class="sys-status connecting" id="sysStatus">
+      <div class="status-dot"></div>
+      <span class="status-label" id="statusLabel">CONECTANDO...</span>
+    </div>
+    <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
+    <div class="logo-version">v2.0</div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-section">
+      <div class="nav-section-label">Monitor</div>
+      <a class="nav-item active" href="#" onclick="hideFuentePanel(); hideEntityPanel(); hideAnalyticsPanel(); hideAuditPanel(); return false;">
+        <span class="nav-icon">📊</span> Dashboard MVP
+      </a>
+      <a class="nav-item" href="demo.html">
+        <span class="nav-icon">🔍</span> Demo Dashboard
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Fuentes de Datos</div>
+      <button class="nav-item" id="fnav-HonduCompras" onclick="showFuentePanel('HonduCompras')">
+        <span class="nav-icon">📋</span> HonduCompras
+      </button>
+      <button class="nav-item" id="fnav-TSC" onclick="showFuentePanel('TSC')">
+        <span class="nav-icon">🏛️</span> TSC
+      </button>
+      <button class="nav-item" id="fnav-News Sources" onclick="showFuentePanel('News Sources')">
+        <span class="nav-icon">📰</span> News Sources
+      </button>
+      <button class="nav-item" id="fnav-Reportero Ciudadano" onclick="showFuentePanel('Reportero Ciudadano')">
+        <span class="nav-icon">📡</span> Denuncias Ciudadanas
+      </button>
+      <button class="nav-item" id="fnav-IAIP" onclick="showFuentePanel('IAIP')">
+        <span class="nav-icon">🔍</span> IAIP
+      </button>
+      <button class="nav-item" id="fnav-DGATSC" onclick="showFuentePanel('DGATSC')">
+        <span class="nav-icon">📄</span> DGATSC
+      </button>
+      <button class="nav-item" id="fnav-Noticias" onclick="showFuentePanel('Noticias')">
+        <span class="nav-icon">🗞️</span> Noticias
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Sistema</div>
+      <button class="nav-item" id="nav-analytics" onclick="showAnalyticsPanel()">
+        <span class="nav-icon">📈</span> Análisis
+      </button>
+      <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
+        <span class="nav-icon">📋</span> Auditoría
+        <span class="nav-chip">LOG</span>
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Navegación</div>
+      <a class="nav-item" href="index.html">
+        <span class="nav-icon">🏠</span> Inicio
+      </a>
+      <button class="nav-item nav-logout" onclick="doLogout()">
+        <span class="nav-icon">🚪</span> Cerrar Sesión
+      </button>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <div class="user-card">
+      <div class="user-avatar" id="userAvatar">—</div>
+      <div class="user-info">
+        <div class="user-name" id="userDisplayName">—</div>
+        <div class="user-role" id="userRole">PGR — Honduras</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<main class="main">
+
+  <!-- Error banner — shown only on Supabase failure, never silent -->
+  <div class="error-banner" id="errorBanner">
+    <span>⚠️</span>
+    <span id="errorMsg">Error de conexión con Supabase</span>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">Alertas de <span>Corrupción</span></div>
+      <div class="page-subtitle">Honduras — Monitoreo en Tiempo Real · Version 2.0</div>
+    </div>
+    <div class="header-actions">
+      <div class="header-clock">
+        <span class="clock-icon">⏱</span>
+        <span id="liveClock">--:--:--</span>
+        <span class="clock-tz">TGU</span>
+      </div>
+      <button class="btn-new-alert-header" onclick="openModal()">➕ Nueva Alerta</button>
+    </div>
+  </div>
+
+  <!-- Stat cards — updated by render() using normSev() fix -->
+  <div class="stats-grid">
+    <div class="stat-card s-total">
+      <div class="stat-value" id="cnt-total">—</div>
+      <div class="stat-label">Total Alertas</div>
+      <div class="stat-monto" id="cnt-monto-total">L —</div>
+    </div>
+    <div class="stat-card s-critica" title="Puntaje ≥ 9 — Múltiples patrones + monto alto. Referir a PGR.">
+      <div class="stat-value" id="cnt-critica">—</div>
+      <div class="stat-label">Críticas</div>
+      <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Referir a PGR</div>
+      <div class="stat-monto" id="cnt-monto-critica">L —</div>
+      <div class="stat-monto" id="cnt-pct-critica" style="opacity:0.55;">— %</div>
+    </div>
+    <div class="stat-card s-alta" title="Puntaje 6–8 — Patrones combinados o monto significativo. Escalada legal.">
+      <div class="stat-value" id="cnt-alta">—</div>
+      <div class="stat-label">Altas</div>
+      <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Escalada legal</div>
+      <div class="stat-monto" id="cnt-monto-alta">L —</div>
+      <div class="stat-monto" id="cnt-pct-alta" style="opacity:0.55;">— %</div>
+    </div>
+    <div class="stat-card s-media" title="Puntaje 3–5 — Un patrón moderado. Seguimiento institucional.">
+      <div class="stat-value" id="cnt-media">—</div>
+      <div class="stat-label">Medias</div>
+      <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Monitorear</div>
+      <div class="stat-monto" id="cnt-monto-media">L —</div>
+      <div class="stat-monto" id="cnt-pct-media" style="opacity:0.55;">— %</div>
+    </div>
+    <div class="stat-card s-baja" title="Puntaje 0–2 — Señal débil o monto bajo. Línea base del sistema.">
+      <div class="stat-value" id="cnt-baja">—</div>
+      <div class="stat-label">Bajas</div>
+      <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Referencia</div>
+      <div class="stat-monto" id="cnt-monto-baja">L —</div>
+      <div class="stat-monto" id="cnt-pct-baja" style="opacity:0.55;">— %</div>
+    </div>
+  </div>
+
+  <!-- Severity filter bar -->
+  <div class="controls-bar">
+    <button class="filter-btn active" data-f="all"     onclick="setFilter('all')">TODAS</button>
+    <button class="filter-btn"        data-f="critica" onclick="setFilter('critica')">CRÍTICAS</button>
+    <button class="filter-btn"        data-f="alta"    onclick="setFilter('alta')">ALTAS</button>
+    <button class="filter-btn"        data-f="media"   onclick="setFilter('media')">MEDIAS</button>
+    <button class="filter-btn"        data-f="baja"    onclick="setFilter('baja')">BAJAS</button>
+  </div>
+
+  <!-- Pattern filter bar -->
+  <div class="controls-bar" style="margin-top:6px; gap:6px;">
+    <span style="color:var(--muted);font-size:11px;letter-spacing:.06em;align-self:center;margin-right:4px;">PATRÓN:</span>
+    <button class="filter-btn active" data-p="all"                    onclick="setPatternFilter('all')">TODOS</button>
+    <button class="filter-btn"        data-p="FRACCIONAMIENTO_MICRO"  onclick="setPatternFilter('FRACCIONAMIENTO_MICRO')">FRACCIONAMIENTO</button>
+    <button class="filter-btn"        data-p="COMPRA_EMERGENCIA"      onclick="setPatternFilter('COMPRA_EMERGENCIA')">EMERGENCIA</button>
+    <button class="filter-btn"        data-p="ADJUDICACION_DIRECTA"   onclick="setPatternFilter('ADJUDICACION_DIRECTA')">DIRECTA</button>
+    <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')">SIN HISTORIAL</button>
+    <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
+  </div>
+
+  <!-- Risk scoring legend -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 4px;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text-dim);">
+    <span style="letter-spacing:.06em;opacity:0.6;margin-right:4px;">PUNTAJE DE RIESGO:</span>
+    <span style="color:var(--red);">● Crítica</span><span style="opacity:0.6;margin:0 4px;">≥9 pts · multi-patrón + monto alto · referir a PGR</span>
+    <span style="color:var(--orange);">● Alta</span><span style="opacity:0.6;margin:0 4px;">6–8 pts · escalada legal</span>
+    <span style="color:var(--amber);">● Media</span><span style="opacity:0.6;margin:0 4px;">3–5 pts · monitorear</span>
+    <span style="color:var(--green);">● Baja</span><span style="opacity:0.6;margin:0 4px;">0–2 pts · referencia</span>
+  </div>
+
+  <!-- Alerts table -->
+  <div class="table-container">
+    <div class="table-header-row">
+      <span class="table-title">Registro de Alertas</span>
+      <span class="table-count" id="tableCount">Cargando...</span>
+    </div>
+    <div style="overflow-x: auto;">
+      <table class="alert-table">
+        <thead>
+          <tr>
+            <th>ID Alerta</th>
+            <th>Descripción</th>
+            <th>Proveedor</th>
+            <th>Entidad</th>
+            <th>Severidad</th>
+            <th>Fuente</th>
+            <th>F. Contrato</th>
+            <th>Montos (L)</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="alertTbody">
+          <tr class="state-row">
+            <td colspan="10"><span class="spinner"></span>Cargando alertas desde Supabase...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ FUENTE DETAIL PANEL ═══ -->
+  <div class="fuente-panel" id="fuentePanel">
+    <button class="fuente-back" onclick="hideFuentePanel()">← Todas las Alertas</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" id="fp-title">Fuente</div>
+    </div>
+
+    <!-- Summary stat cards -->
+    <div class="fuente-stats-row">
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="fp-total">0</div>
+        <div class="fuente-stat-lbl">Total</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val c" id="fp-critica">0</div>
+        <div class="fuente-stat-lbl">Críticas</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val a" id="fp-alta">0</div>
+        <div class="fuente-stat-lbl">Altas</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val m" id="fp-media">0</div>
+        <div class="fuente-stat-lbl">Medias</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val b" id="fp-baja">0</div>
+        <div class="fuente-stat-lbl">Bajas</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="fp-monto-total" style="font-size:16px;color:var(--electric);">L —</div>
+        <div class="fuente-stat-lbl">Monto Total</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="fuente-charts-row">
+      <div class="fuente-chart-card">
+        <div class="fuente-chart-title">Alertas por Severidad</div>
+        <canvas id="chartSeveridad" height="180"></canvas>
+      </div>
+      <div class="fuente-chart-card">
+        <div class="fuente-chart-title">Monto Total por Severidad (L)</div>
+        <canvas id="chartMonto" height="180"></canvas>
+      </div>
+    </div>
+
+    <!-- Recent alerts -->
+    <div class="fuente-chart-card">
+      <div class="fuente-recent-title">Alertas Recientes</div>
+      <div class="fuente-recent-list" id="fp-recent"></div>
+    </div>
+  </div>
+
+  <!-- ══ ENTITY PANEL ══ -->
+  <div class="fuente-panel" id="entityPanel">
+    <button class="fuente-back" onclick="hideEntityPanel()">← Todas las Alertas</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" id="ep-title">Entidad</div>
+    </div>
+
+    <!-- Count stats row -->
+    <div class="fuente-stats-row" style="margin-bottom:16px;">
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="ep-total">0</div>
+        <div class="fuente-stat-lbl">Total Alertas</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val c" id="ep-critica">0</div>
+        <div class="fuente-stat-lbl">Críticas</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val a" id="ep-alta">0</div>
+        <div class="fuente-stat-lbl">Altas</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val m" id="ep-media">0</div>
+        <div class="fuente-stat-lbl">Medias</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val b" id="ep-baja">0</div>
+        <div class="fuente-stat-lbl">Bajas</div>
+      </div>
+    </div>
+
+    <!-- Financial summary row -->
+    <div class="ep-fin-row">
+      <div class="ep-fin-card">
+        <div class="ep-fin-val" id="ep-monto-contrato">L —</div>
+        <div class="ep-fin-lbl">Monto Contrato</div>
+      </div>
+      <div class="ep-fin-card">
+        <div class="ep-fin-val" id="ep-monto-pagado">L —</div>
+        <div class="ep-fin-lbl">Monto Pagado</div>
+      </div>
+      <div class="ep-fin-card">
+        <div class="ep-fin-val" id="ep-diferencia">—</div>
+        <div class="ep-fin-lbl" id="ep-diferencia-lbl">Diferencia</div>
+      </div>
+    </div>
+
+    <!-- Recent alerts -->
+    <div class="fuente-chart-card">
+      <div class="fuente-recent-title">Alertas Recientes</div>
+      <div class="fuente-recent-list" id="ep-recent"></div>
+    </div>
+  </div>
+
+  <!-- ══ AUDIT LOG PANEL ══ -->
+  <div class="fuente-panel" id="auditPanel">
+    <button class="fuente-back" onclick="hideAuditPanel()">← Dashboard</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>📋</span>
+        <span>Registro de Auditoría</span>
+      </div>
+    </div>
+
+    <div class="audit-filter-bar">
+      <button class="audit-filter-btn active" data-af="all"     onclick="setAuditFilter('all',this)">TODAS</button>
+      <button class="audit-filter-btn"        data-af="created" onclick="setAuditFilter('created',this)">CREADAS</button>
+      <button class="audit-filter-btn"        data-af="sent"    onclick="setAuditFilter('sent',this)">ENVIADAS</button>
+      <button class="audit-filter-btn"        data-af="deleted" onclick="setAuditFilter('deleted',this)">ELIMINADAS</button>
+    </div>
+
+    <div id="auditLogList">
+      <div class="audit-empty">Cargando registro...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ ANALYTICS PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="analyticsPanel">
+    <button class="fuente-back" onclick="hideAnalyticsPanel()">← Dashboard</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>📈</span>
+        <span>Análisis de Alertas — 2025</span>
+      </div>
+    </div>
+
+    <!-- Headline numbers -->
+    <div id="analyticsHeadline" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;"></div>
+
+    <!-- Pattern breakdown table -->
+    <div style="margin-bottom:28px;">
+      <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">EXPOSICIÓN POR PATRÓN DE FRAUDE</div>
+      <div style="overflow-x:auto;">
+        <table class="alert-table" id="analyticsPatternTable">
+          <thead>
+            <tr>
+              <th>Patrón</th>
+              <th style="text-align:right;">Alertas</th>
+              <th style="text-align:right;">% del Total</th>
+              <th style="text-align:right;">Monto Expuesto (L.)</th>
+              <th style="text-align:right;">Monto Expuesto (USD)</th>
+            </tr>
+          </thead>
+          <tbody id="analyticsPatternBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top entities -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;">
+      <div>
+        <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">TOP ENTIDADES (por monto)</div>
+        <table class="alert-table" id="analyticsEntityTable">
+          <thead><tr><th>Entidad</th><th style="text-align:right;">Alertas</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
+          <tbody id="analyticsEntityBody"></tbody>
+        </table>
+      </div>
+      <div>
+        <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">TOP PROVEEDORES (por monto)</div>
+        <table class="alert-table" id="analyticsVendorTable">
+          <thead><tr><th>Proveedor</th><th style="text-align:right;">Alertas</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
+          <tbody id="analyticsVendorBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- High priority: multi-pattern alerts -->
+    <div>
+      <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">ALERTAS MULTI-PATRÓN (MAYOR RIESGO)</div>
+      <table class="alert-table" id="analyticsMultiTable">
+        <thead>
+          <tr>
+            <th>Proveedor</th>
+            <th>Entidad</th>
+            <th>Patrones</th>
+            <th style="text-align:right;">Monto (L.)</th>
+          </tr>
+        </thead>
+        <tbody id="analyticsMultiBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════════════════ MODAL ═══════════════════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-title">➕ Nueva Alerta</div>
+
+    <div class="form-row">
+      <label class="form-label">Descripción *</label>
+      <textarea class="form-textarea" id="f-desc" placeholder="Describe el patrón sospechoso detectado..."></textarea>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Entidad *</label>
+      <input class="form-input" id="f-entity" type="text" placeholder="Empresa, contratista o funcionario">
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Fuente</label>
+      <select class="form-select" id="f-source">
+        <option value="HonduCompras">HonduCompras</option>
+        <option value="TSC">TSC</option>
+        <option value="Fuentes Editoriales">Fuentes Editoriales</option>
+        <option value="Reportero Ciudadano">Reportero Ciudadano</option>
+        <option value="IAIP">IAIP</option>
+        <option value="DGATSC">DGATSC</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Fecha Contrato</label>
+      <input class="form-input" id="f-fecha-contrato" type="date">
+    </div>
+
+    <div class="form-row-2col">
+      <div>
+        <label class="form-label">Monto Contrato (L)</label>
+        <input class="form-input" id="f-monto-contrato" type="number" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div>
+        <label class="form-label">Monto Pagado (L)</label>
+        <input class="form-input" id="f-monto-pagado" type="number" min="0" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Severidad *</label>
+      <div class="sev-grid">
+        <button type="button" class="sev-select-btn baja"    onclick="selectSev('Baja')">BAJA</button>
+        <button type="button" class="sev-select-btn media"   onclick="selectSev('Media')">MEDIA</button>
+        <button type="button" class="sev-select-btn alta"    onclick="selectSev('Alta')">ALTA</button>
+        <button type="button" class="sev-select-btn critica" onclick="selectSev('Crítica')">CRÍTICA</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-save" id="btnSave" onclick="saveAlert()">Registrar Alerta</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SEND MODAL ═══════════════════ -->
+<div class="modal-overlay" id="sendModalOverlay">
+  <div class="send-modal-box">
+    <div class="modal-title">📤 Enviar Alerta</div>
+
+    <!-- Alert summary card -->
+    <div class="alert-summary">
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="summary-key">ID Alerta</span>
+          <span class="summary-val" id="sm-id">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-key">Severidad</span>
+          <span class="summary-val" id="sm-sev">—</span>
+        </div>
+        <div class="summary-item full">
+          <span class="summary-key">Entidad</span>
+          <span class="summary-val" id="sm-entity">—</span>
+        </div>
+        <div class="summary-item full">
+          <span class="summary-key">Descripción</span>
+          <span class="summary-val" id="sm-desc">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-key">Fuente</span>
+          <span class="summary-val" id="sm-source">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-key">Monto</span>
+          <span class="summary-val" id="sm-amount">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-key">Fecha</span>
+          <span class="summary-val" id="sm-date">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Destination selection -->
+    <span class="dest-section-label">Seleccionar destinos *</span>
+    <div class="destinations-grid">
+      <label class="dest-option" id="dest-pgr">
+        <input type="checkbox" value="PGR" onchange="toggleDest(this)">
+        <div><div class="dest-name">PGR</div><div class="dest-full">Procuraduría General</div></div>
+      </label>
+      <label class="dest-option" id="dest-mp">
+        <input type="checkbox" value="MP" onchange="toggleDest(this)">
+        <div><div class="dest-name">MP</div><div class="dest-full">Ministerio Público</div></div>
+      </label>
+      <label class="dest-option" id="dest-tsc">
+        <input type="checkbox" value="TSC" onchange="toggleDest(this)">
+        <div><div class="dest-name">TSC</div><div class="dest-full">Tribunal Superior de Cuentas</div></div>
+      </label>
+      <label class="dest-option" id="dest-atic">
+        <input type="checkbox" value="ATIC" onchange="toggleDest(this)">
+        <div><div class="dest-name">ATIC</div><div class="dest-full">Agencia de Inv. Criminal</div></div>
+      </label>
+      <label class="dest-option" id="dest-iaip">
+        <input type="checkbox" value="IAIP" onchange="toggleDest(this)">
+        <div><div class="dest-name">IAIP</div><div class="dest-full">Acceso a la Información</div></div>
+      </label>
+      <label class="dest-option" id="dest-cna">
+        <input type="checkbox" value="CNA" onchange="toggleDest(this)">
+        <div><div class="dest-name">CNA</div><div class="dest-full">Consejo Anticorrupción</div></div>
+      </label>
+    </div>
+
+    <!-- Optional notes -->
+    <div class="form-row">
+      <label class="form-label">Notas adicionales (opcional)</label>
+      <textarea class="form-textarea send-note-area" id="sm-notes" placeholder="Contexto adicional para los destinatarios..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-save" id="btnSend" onclick="confirmSend()">Confirmar Envío</button>
+      <button class="btn-cancel" onclick="closeSendModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
+<script>
+// ════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ════════════════════════════════════════════════════════════
+const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmZwZWlnd3RodG9rcXNhcnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzM5MjksImV4cCI6MjA4OTAwOTkyOX0.L0PseYDJV41A1OWzlO0zrth_EJzJCcp5qz8bA8dFl9k';
+
+// ════════════════════════════════════════════════════════════
+// SUPABASE CLIENT INIT
+// ════════════════════════════════════════════════════════════
+let db;
+try {
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession:    false,  // Disable localStorage postMessage (fixes DataCloneError)
+      autoRefreshToken:  false,
+      detectSessionInUrl: false
+    }
+  });
+  console.log('✅ Supabase client initialized successfully');
+} catch (e) {
+  console.error('❌ Supabase init failed:', e.message);
+  showError('No se pudo inicializar Supabase: ' + e.message);
+}
+
+// ════════════════════════════════════════════════════════════
+// APP STATE
+// ════════════════════════════════════════════════════════════
+let allAlerts      = [];    // Full dataset from Supabase
+let activeFilter   = 'all'; // Active severity filter
+let activePattern  = 'all'; // Active pattern filter
+let selectedSev    = null;  // Severity selected in modal form
+
+// ════════════════════════════════════════════════════════════
+// normSev() — CRITICAL FIX FOR STAT CARD BUG
+//
+// Problem: 'Crítica'.toLowerCase() === 'crítica' (accented í)
+//          'crítica'.includes('critica') === FALSE  ← bug!
+//          CSS class .critica won't match className 'crítica' ← bug!
+//
+// Solution: strip accents before any comparison or CSS class lookup.
+// Never call this on values being stored to the DB — only for display logic.
+// ════════════════════════════════════════════════════════════
+function normSev(s) {
+  return (s || '').toLowerCase()
+    .replace(/í/g, 'i').replace(/é/g, 'e')
+    .replace(/á/g, 'a').replace(/ó/g, 'o')
+    .replace(/ú/g, 'u').replace(/ñ/g, 'n');
+}
+
+// ════════════════════════════════════════════════════════════
+// DATE FORMAT — DD/MM/YYYY HH:MM in local time
+// ════════════════════════════════════════════════════════════
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// ════════════════════════════════════════════════════════════
+// LOAD ALERTS
+// Fetches all rows from Supabase `alerts` table, newest first.
+// NEVER falls back to localStorage on failure — shows error instead.
+// Required console output for Week 3 Step 5 verification.
+// ════════════════════════════════════════════════════════════
+async function loadAlerts() {
+  // Supabase returns max 1,000 rows per request.
+  // With 18,571+ alerts we must paginate until we get them all.
+  try {
+    const PAGE_SIZE = 1000;
+    let page = 0;
+    let all  = [];
+    let done = false;
+
+    while (!done) {
+      const from = page * PAGE_SIZE;
+      const to   = from + PAGE_SIZE - 1;
+      const { data, error } = await db
+        .from('alerts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      const batch = data || [];
+      all = all.concat(batch);
+      console.log(`Alerts loaded: page ${page + 1}, ${batch.length} rows (total so far: ${all.length})`);
+
+      // If we got fewer rows than PAGE_SIZE, we've reached the last page
+      if (batch.length < PAGE_SIZE) done = true;
+      else page++;
+    }
+
+    allAlerts = all;
+    console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
+    setStatus('connected');
+    hideError();
+    render();
+
+  } catch (err) {
+    console.error('❌ loadAlerts failed:', err.message);
+    showError('Error al cargar alertas: ' + err.message);
+    setStatus('error');
+    allAlerts = [];
+    render();
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDER
+// Updates stat cards (using normSev fix) and table rows.
+// Called after every data change (load, insert, update, delete).
+// ════════════════════════════════════════════════════════════
+function render() {
+  // ── Stat cards ──
+  // normSev() converts 'Crítica' → 'critica', 'Alta' → 'alta', etc.
+  // Without this, 'crítica'.includes('critica') = false → count stays 0
+  const c = { critica: 0, alta: 0, media: 0, baja: 0 };
+  const m = { critica: 0, alta: 0, media: 0, baja: 0 };
+  allAlerts.forEach(a => {
+    const k = normSev(a.severity);
+    if (k in c) { c[k]++; m[k] += Number(a.monto_contrato || 0); }
+  });
+  const totalMonto = Object.values(m).reduce((s, v) => s + v, 0);
+  const fmtL = n => n > 0
+    ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    : 'L —';
+  const fmtPct = (n, total) => total > 0 ? (n / total * 100).toFixed(1) + '% del total' : '— %';
+
+  document.getElementById('cnt-total').textContent         = allAlerts.length;
+  document.getElementById('cnt-critica').textContent       = c.critica;
+  document.getElementById('cnt-alta').textContent          = c.alta;
+  document.getElementById('cnt-media').textContent         = c.media;
+  document.getElementById('cnt-baja').textContent          = c.baja;
+  document.getElementById('cnt-monto-total').textContent   = fmtL(totalMonto);
+  document.getElementById('cnt-monto-critica').textContent = fmtL(m.critica);
+  document.getElementById('cnt-pct-critica').textContent   = fmtPct(m.critica, totalMonto);
+  document.getElementById('cnt-monto-alta').textContent    = fmtL(m.alta);
+  document.getElementById('cnt-pct-alta').textContent      = fmtPct(m.alta, totalMonto);
+  document.getElementById('cnt-monto-media').textContent   = fmtL(m.media);
+  document.getElementById('cnt-pct-media').textContent     = fmtPct(m.media, totalMonto);
+  document.getElementById('cnt-monto-baja').textContent    = fmtL(m.baja);
+  document.getElementById('cnt-pct-baja').textContent      = fmtPct(m.baja, totalMonto);
+
+  // ── Filter for table display ──
+  let filtered = activeFilter === 'all'
+    ? allAlerts
+    : allAlerts.filter(a => normSev(a.severity) === activeFilter);
+  if (activePattern !== 'all') {
+    filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
+  }
+
+  document.getElementById('tableCount').textContent =
+    `${filtered.length} de ${allAlerts.length} alertas`;
+
+  // ── Render rows ──
+  const tbody = document.getElementById('alertTbody');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr class="state-row"><td colspan="10">
+      ${allAlerts.length === 0
+        ? 'No hay alertas. Usa el botón ➕ Nueva Alerta para crear la primera.'
+        : 'No hay alertas con este filtro.'}
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(a => {
+    // normSev used for CSS class only — stored value 'Crítica' displayed as-is
+    const sc  = normSev(a.severity);
+    const stc = (a.status || '').toLowerCase().includes('pgr') ? 'enviado' : 'pendiente';
+    const desc = (a.description || '').length > 65
+      ? a.description.substring(0, 65) + '…'
+      : (a.description || '—');
+
+    // Parse named fields from the structured description text
+    // Format: "Proveedor: X\nEntidad compradora: Y\n..."
+    const parseDesc = (key) => {
+      const m = (a.description || '').match(new RegExp(key + ':\\s*([^\\n]+)'));
+      return m ? m[1].trim() : null;
+    };
+    const proveedorDisplay = parseDesc('Proveedor') || a.proveedor_nombre || a.entity_name || '—';
+    const entidadDisplay   = parseDesc('Entidad compradora') || a.entity_name || '—';
+
+    return `<tr>
+      <td><span class="cell-id">${a.alert_id || ('#' + a.id)}</span></td>
+      <td><span class="cell-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${desc}</span></td>
+      <td><button class="cell-entity-link" onclick="showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button></td>
+      <td><span class="cell-entity">${entidadDisplay}</span></td>
+      <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
+      <td><span class="cell-source">${a.data_source || '—'}</span></td>
+      <td><span class="cell-date">${fmtDate(a.fecha_contrato)}</span></td>
+      <td>${(function(){
+        const mc = a.monto_contrato != null ? Number(a.monto_contrato) : null;
+        const mp = a.monto_pagado   != null ? Number(a.monto_pagado)   : null;
+        const fmtL = n => 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
+        if (mc == null && mp == null) return '<span style="color:var(--text-dim)">—</span>';
+        let html = '<div class="monto-stack">';
+        if (mc != null) html += `<span class="monto-contrato">${fmtL(mc)}</span>`;
+        if (mp != null) html += `<span class="monto-pagado">Pag: ${fmtL(mp)}</span>`;
+        if (mc != null && mp != null) {
+          const dif = mp - mc;
+          const pct = ((dif / mc) * 100).toFixed(1);
+          const cls = dif > 0 ? 'dif-over' : dif < 0 ? 'dif-under' : 'dif-exact';
+          const sign = dif > 0 ? '+' : '';
+          html += `<span class="diferencia-badge ${cls}">${sign}${pct}%</span>`;
+        }
+        html += '</div>';
+        return html;
+      })()}</td>
+      <td><span class="status-badge ${stc}">${a.status || 'Pendiente'}</span></td>
+      <td>
+        <div class="action-group">
+          <button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta">📤 Enviar</button>
+          <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Borrar">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// FILTER
+// ════════════════════════════════════════════════════════════
+function setFilter(f) {
+  activeFilter = f;
+  // Only toggle severity buttons (those with data-f attribute)
+  document.querySelectorAll('.filter-btn[data-f]').forEach(b =>
+    b.classList.toggle('active', b.dataset.f === f)
+  );
+  render();
+}
+
+function setPatternFilter(p) {
+  activePattern = p;
+  // Only toggle pattern buttons (those with data-p attribute)
+  document.querySelectorAll('.filter-btn[data-p]').forEach(b =>
+    b.classList.toggle('active', b.dataset.p === p)
+  );
+  render();
+}
+
+// ════════════════════════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════════════════════════
+function openModal() {
+  selectedSev = null;
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-entity').value = '';
+  document.getElementById('f-source').selectedIndex = 0;
+  document.getElementById('f-monto-contrato').value = '';
+  document.getElementById('f-monto-pagado').value = '';
+  document.getElementById('f-fecha-contrato').value = '';
+  document.querySelectorAll('.sev-select-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('btnSave').disabled = false;
+  document.getElementById('btnSave').textContent = 'Registrar Alerta';
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('f-desc').focus();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function selectSev(val) {
+  selectedSev = val; // Store as-is: 'Crítica', 'Alta', 'Media', 'Baja'
+  document.querySelectorAll('.sev-select-btn').forEach(b =>
+    b.classList.toggle('selected', normSev(b.textContent) === normSev(val))
+  );
+}
+
+// Close modal on backdrop click
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// ════════════════════════════════════════════════════════════
+// SAVE ALERT
+// Inserts a new row into Supabase `alerts`.
+// After insert: reloads full list from Supabase to confirm persistence.
+// Severity stored exactly as displayed: 'Crítica', 'Alta', 'Media', 'Baja'
+// ════════════════════════════════════════════════════════════
+async function saveAlert() {
+  const description = document.getElementById('f-desc').value.trim();
+  const entity_name = document.getElementById('f-entity').value.trim();
+  const alert_type      = document.getElementById('f-source').value;
+  const mcRaw           = document.getElementById('f-monto-contrato').value;
+  const mpRaw           = document.getElementById('f-monto-pagado').value;
+  const fcRaw           = document.getElementById('f-fecha-contrato').value;
+  const monto_contrato  = mcRaw !== '' ? parseFloat(mcRaw) : null;
+  const monto_pagado    = mpRaw !== '' ? parseFloat(mpRaw) : null;
+  const fecha_contrato  = fcRaw !== '' ? fcRaw : null;
+
+  if (!description || !entity_name || !selectedSev) {
+    showToast('⚠️ Completa todos los campos obligatorios (*)', 'warn');
+    return;
+  }
+
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    // Generate human-readable alert_id — A-2026-XXXX
+    const alertId = `A-2026-${String(allAlerts.length + 1).padStart(4, '0')}`;
+
+    const { error } = await db.from('alerts').insert([{
+      alert_id:    alertId,
+      description: description,
+      entity_name: entity_name,
+      severity:    selectedSev,  // Stored as 'Crítica' / 'Alta' / 'Media' / 'Baja'
+      data_source:     alert_type,
+      monto_contrato:  monto_contrato,
+      monto_pagado:    monto_pagado,
+      fecha_contrato:  fecha_contrato,
+      risk_score:      null,
+      status:          'Pendiente'
+      // created_at: handled by Supabase DEFAULT CURRENT_TIMESTAMP
+    }]);
+
+    if (error) throw error;
+
+    // Log creation to audit table
+    await logAudit(alertId, 'CREATED', null, selectedSev,
+      `Entidad: ${entity_name} · Fuente: ${alert_type}`);
+
+    closeModal();
+    showToast(`✅ Alerta ${alertId} registrada`);
+    await loadAlerts(); // Reload from Supabase — confirms real persistence
+
+  } catch (err) {
+    console.error('❌ saveAlert failed:', err.message);
+    showToast('❌ Error al guardar: ' + err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Registrar Alerta';
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// SEND MODAL — Open, populate, confirm, close
+// ════════════════════════════════════════════════════════════
+let sendTargetId = null;
+
+function openSendModal(id) {
+  const a = allAlerts.find(x => x.id === id);
+  if (!a) return;
+  sendTargetId = id;
+
+  // Populate summary
+  document.getElementById('sm-id').textContent     = a.alert_id || ('#' + a.id);
+  document.getElementById('sm-entity').textContent  = a.entity_name || '—';
+  document.getElementById('sm-desc').textContent    = a.description || '—';
+  document.getElementById('sm-source').textContent  = a.data_source || '—';
+  document.getElementById('sm-date').textContent    = fmtDate(a.created_at);
+  document.getElementById('sm-sev').textContent     = a.severity || '—';
+  document.getElementById('sm-amount').textContent  = a.monto_contrato != null
+    ? 'L ' + Number(a.monto_contrato).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0})
+    : '—';
+
+  // Reset checkboxes, notes, button
+  document.querySelectorAll('.dest-option input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.dest-option').classList.remove('checked');
+  });
+  document.getElementById('sm-notes').value = '';
+  document.getElementById('btnSend').disabled = false;
+  document.getElementById('btnSend').textContent = 'Confirmar Envío';
+
+  document.getElementById('sendModalOverlay').classList.add('open');
+}
+
+function closeSendModal() {
+  document.getElementById('sendModalOverlay').classList.remove('open');
+  sendTargetId = null;
+}
+
+function toggleDest(cb) {
+  cb.closest('.dest-option').classList.toggle('checked', cb.checked);
+}
+
+async function confirmSend() {
+  const selected = [...document.querySelectorAll('.dest-option input[type=checkbox]:checked')]
+    .map(cb => cb.value);
+
+  if (selected.length === 0) {
+    showToast('⚠️ Selecciona al menos un destino', 'warn');
+    return;
+  }
+
+  const btn = document.getElementById('btnSend');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  const statusStr = 'Enviado: ' + selected.join(', ');
+
+  try {
+    const { error } = await db
+      .from('alerts')
+      .update({ status: statusStr })
+      .eq('id', sendTargetId);
+
+    if (error) throw error;
+
+    // Log send action to audit table
+    const sentAlert = allAlerts.find(x => x.id === sendTargetId);
+    await logAudit(
+      sentAlert ? sentAlert.alert_id : String(sendTargetId),
+      'SENT',
+      'Pendiente',
+      statusStr,
+      `Destinos: ${selected.join(', ')}`
+    );
+
+    closeSendModal();
+    showToast(`📤 Alerta enviada a: ${selected.join(', ')}`);
+    await loadAlerts();
+
+  } catch (err) {
+    console.error('❌ confirmSend failed:', err.message);
+    showToast('❌ Error: ' + err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Confirmar Envío';
+  }
+}
+
+// Close send modal on backdrop click
+document.getElementById('sendModalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeSendModal();
+});
+
+// ════════════════════════════════════════════════════════════
+// DELETE ALERT — Removes row from Supabase
+// ════════════════════════════════════════════════════════════
+async function deleteAlert(id) {
+  if (!confirm('¿Confirmas que deseas borrar esta alerta? Esta acción no se puede deshacer.')) return;
+
+  const delAlert = allAlerts.find(x => x.id === id);
+
+  try {
+    const { error } = await db
+      .from('alerts')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    // Log deletion to audit table
+    await logAudit(
+      delAlert ? delAlert.alert_id : String(id),
+      'DELETED',
+      delAlert ? delAlert.severity : null,
+      null,
+      delAlert ? `Entidad: ${delAlert.entity_name}` : null
+    );
+
+    showToast('🗑️ Alerta eliminada');
+    await loadAlerts();
+
+  } catch (err) {
+    console.error('❌ deleteAlert failed:', err.message);
+    showToast('❌ Error al borrar: ' + err.message, 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// REALTIME SUBSCRIPTION
+// Listens for INSERT events on alerts table.
+// New alerts from any client appear instantly without refresh.
+// ════════════════════════════════════════════════════════════
+function startRealtime() {
+  db.channel('sentinel-alerts')
+    .on('postgres_changes', {
+      event:  'INSERT',
+      schema: 'public',
+      table:  'alerts'
+    }, payload => {
+      console.log('🔴 Realtime INSERT received:', payload.new.alert_id);
+      // Prepend to local state and re-render instantly
+      allAlerts.unshift(payload.new);
+      render();
+      showToast('🔴 Nueva alerta recibida en tiempo real');
+    })
+    .subscribe(status => {
+      console.log('Realtime channel status:', status);
+    });
+}
+
+// ════════════════════════════════════════════════════════════
+// UI HELPERS
+// ════════════════════════════════════════════════════════════
+function setStatus(state) {
+  const el = document.getElementById('sysStatus');
+  const lb = document.getElementById('statusLabel');
+  el.className = 'sys-status ' + (state === 'connected' ? '' : state);
+  lb.textContent = state === 'connected' ? 'CONECTADO' : state === 'error' ? 'ERROR BD' : 'CONECTANDO...';
+}
+
+function showError(msg) {
+  document.getElementById('errorBanner').classList.add('visible');
+  document.getElementById('errorMsg').textContent = msg;
+}
+
+function hideError() {
+  document.getElementById('errorBanner').classList.remove('visible');
+}
+
+let toastTimer;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = type === 'error' ? 'rgba(255,61,87,0.3)' : type === 'warn' ? 'rgba(255,171,0,0.3)' : 'rgba(0,230,118,0.3)';
+  t.style.color       = type === 'error' ? 'var(--red)'          : type === 'warn' ? 'var(--amber)'         : 'var(--green)';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ════════════════════════════════════════════════════════════
+// FUENTE PANEL — Show per-source summary + charts
+// ════════════════════════════════════════════════════════════
+let fuenteChartSev = null;
+let fuenteChartMonto = null;
+
+function showFuentePanel(fuente) {
+  // Update sidebar active state
+  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById('fnav-' + fuente);
+  if (navEl) navEl.classList.add('active');
+
+  // News Sources groups press/media outlets (Reportero Ciudadano is a separate denuncia channel)
+  const NEWS_SOURCES = ['La Prensa', 'El Heraldo', 'Proceso Digital', 'Criterio', 'Fuentes Editoriales'];
+  const data = fuente === 'News Sources'
+    ? allAlerts.filter(a => NEWS_SOURCES.includes(a.data_source || ''))
+    : allAlerts.filter(a => (a.data_source || '') === fuente);
+
+  // Counts by severity
+  const counts = { critica: 0, alta: 0, media: 0, baja: 0 };
+  const montos  = { critica: 0, alta: 0, media: 0, baja: 0 };
+  data.forEach(a => {
+    const s = normSev(a.severity);
+    if (s.includes('critica'))     { counts.critica++; montos.critica += Number(a.monto_contrato||0); }
+    else if (s.includes('alta'))   { counts.alta++;    montos.alta    += Number(a.monto_contrato||0); }
+    else if (s.includes('media'))  { counts.media++;   montos.media   += Number(a.monto_contrato||0); }
+    else if (s.includes('baja'))   { counts.baja++;    montos.baja    += Number(a.monto_contrato||0); }
+  });
+
+  // Populate stat cards
+  const displayName = fuente === 'News Sources' ? 'News Sources'
+    : fuente === 'Reportero Ciudadano' ? '📡 Canal de Integridad Ciudadana'
+    : fuente;
+  const panelLabel = fuente === 'Reportero Ciudadano' ? 'Denuncias' : 'Alertas';
+  const fpMonto = Object.values(montos).reduce((s, v) => s + v, 0);
+  const fmtShort = n => {
+    if (n >= 1e6) return 'L ' + (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return 'L ' + (n / 1e3).toFixed(0) + 'K';
+    return n > 0 ? 'L ' + n.toFixed(0) : 'L —';
+  };
+  document.getElementById('fp-title').innerHTML       = `<span>${displayName}</span> — Resumen`;
+  document.getElementById('fp-total').textContent     = data.length;
+  document.getElementById('fp-critica').textContent   = counts.critica;
+  document.getElementById('fp-alta').textContent      = counts.alta;
+  document.getElementById('fp-media').textContent     = counts.media;
+  document.getElementById('fp-baja').textContent      = counts.baja;
+  document.getElementById('fp-monto-total').textContent = fmtShort(fpMonto);
+
+  // Recent alerts list (last 5)
+  const recent = [...data].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0,5);
+  const sevColor = s => {
+    const n = normSev(s);
+    if (n.includes('critica')) return '#ff3d57';
+    if (n.includes('alta'))    return 'var(--amber)';
+    if (n.includes('media'))   return 'var(--electric)';
+    return '#4caf50';
+  };
+  document.getElementById('fp-recent').innerHTML = recent.length
+    ? recent.map(a => `
+        <div class="fuente-recent-item">
+          <span class="fri-id">${a.alert_id || '#'+a.id}</span>
+          <span class="fri-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${a.description||'—'}</span>
+          <span class="fri-sev" style="color:${sevColor(a.severity)}">${a.severity||'—'}</span>
+        </div>`).join('')
+    : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin ${panelLabel.toLowerCase()} registradas para esta fuente.</div>`;
+
+  // Draw charts — destroy previous instances first
+  if (fuenteChartSev)   { fuenteChartSev.destroy();   fuenteChartSev   = null; }
+  if (fuenteChartMonto) { fuenteChartMonto.destroy();  fuenteChartMonto = null; }
+
+  const labels  = ['Crítica', 'Alta', 'Media', 'Baja'];
+  const colors  = ['#ff3d57', '#f59e0b', '#00c8ff', '#4caf50'];
+  const bgAlpha = colors.map(c => c + '33');
+
+  fuenteChartSev = new Chart(document.getElementById('chartSeveridad').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: panelLabel,
+        data: [counts.critica, counts.alta, counts.media, counts.baja],
+        backgroundColor: bgAlpha,
+        borderColor: colors,
+        borderWidth: 2, borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8899aa' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#8899aa', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+      }
+    }
+  });
+
+  fuenteChartMonto = new Chart(document.getElementById('chartMonto').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Monto (L)',
+        data: [montos.critica, montos.alta, montos.media, montos.baja],
+        backgroundColor: bgAlpha,
+        borderColor: colors,
+        borderWidth: 2, borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8899aa' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#8899aa', callback: v => 'L ' + v.toLocaleString('es-HN') }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Show panel, hide main table view
+  document.getElementById('fuentePanel').classList.add('open');
+  document.querySelector('.stats-grid').style.display    = 'none';
+  document.querySelector('.controls-bar').style.display  = 'none';
+  document.querySelector('.table-container').style.display = 'none';
+}
+
+// ════════════════════════════════════════════════════════════
+// ENTITY PANEL — click entity name in table to open
+// ════════════════════════════════════════════════════════════
+function showEntityPanel(entityName) {
+  // Close fuente panel if open
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+
+  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+
+  // Severity counts
+  const counts = { critica: 0, alta: 0, media: 0, baja: 0 };
+  data.forEach(a => {
+    const s = normSev(a.severity);
+    if (s.includes('critica'))    counts.critica++;
+    else if (s.includes('alta'))  counts.alta++;
+    else if (s.includes('media')) counts.media++;
+    else if (s.includes('baja'))  counts.baja++;
+  });
+
+  // Financial totals
+  const mc = data.reduce((s, a) => s + Number(a.monto_contrato || 0), 0);
+  const mp = data.reduce((s, a) => s + Number(a.monto_pagado   || 0), 0);
+  const hasPagado = data.some(a => a.monto_pagado != null);
+  const fmtL = n => n > 0
+    ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    : 'L —';
+
+  document.getElementById('ep-title').innerHTML     = `<span>${entityName}</span> — Resumen`;
+  document.getElementById('ep-total').textContent   = data.length;
+  document.getElementById('ep-critica').textContent = counts.critica;
+  document.getElementById('ep-alta').textContent    = counts.alta;
+  document.getElementById('ep-media').textContent   = counts.media;
+  document.getElementById('ep-baja').textContent    = counts.baja;
+  document.getElementById('ep-monto-contrato').textContent = fmtL(mc);
+  document.getElementById('ep-monto-pagado').textContent   = hasPagado ? fmtL(mp) : 'Sin datos';
+
+  // Diferencia
+  const difEl  = document.getElementById('ep-diferencia');
+  const lblEl  = document.getElementById('ep-diferencia-lbl');
+  if (mc > 0 && hasPagado) {
+    const dif = mp - mc;
+    const pct = ((dif / mc) * 100).toFixed(1);
+    const sign = dif >= 0 ? '+' : '';
+    difEl.textContent = sign + fmtL(Math.abs(dif)).replace('L ', 'L ') + ` (${sign}${pct}%)`;
+    difEl.className   = 'ep-fin-val ' + (dif > 0 ? 'over' : dif < 0 ? 'under' : 'exact');
+    lblEl.textContent = dif > 0 ? 'Sobrecosto' : dif < 0 ? 'Ahorro' : 'Sin diferencia';
+  } else {
+    difEl.textContent = '—';
+    difEl.className   = 'ep-fin-val';
+    lblEl.textContent = 'Diferencia';
+  }
+
+  // Recent alerts (last 5)
+  const recent = [...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+  const sevColor = s => {
+    const n = normSev(s);
+    if (n.includes('critica')) return '#ff3d57';
+    if (n.includes('alta'))    return 'var(--amber)';
+    if (n.includes('media'))   return 'var(--electric)';
+    return '#4caf50';
+  };
+  document.getElementById('ep-recent').innerHTML = recent.length
+    ? recent.map(a => `
+        <div class="fuente-recent-item">
+          <span class="fri-id">${a.alert_id || '#' + a.id}</span>
+          <span class="fri-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${a.description||'—'}</span>
+          <span class="fri-sev" style="color:${sevColor(a.severity)}">${a.severity||'—'}</span>
+        </div>`).join('')
+    : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin alertas para esta entidad.</div>`;
+
+  // Show panel, hide main view
+  document.getElementById('entityPanel').classList.add('open');
+  document.querySelector('.stats-grid').style.display     = 'none';
+  document.querySelector('.controls-bar').style.display   = 'none';
+  document.querySelector('.table-container').style.display = 'none';
+}
+
+// ── VENDOR PANEL — shows all alerts for a specific proveedor ─────────────────
+function showVendorPanel(vendorName) {
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+
+  // Filter by proveedor_nombre (or fallback to entity_name for legacy alerts)
+  const data = allAlerts.filter(a => {
+    const p = a.proveedor_nombre || parseDesc_for('Proveedor', a.description) || a.entity_name || '';
+    return p === vendorName;
+  });
+
+  const counts = { critica: 0, alta: 0, media: 0, baja: 0 };
+  data.forEach(a => {
+    const s = normSev(a.severity);
+    if (s.includes('critica'))    counts.critica++;
+    else if (s.includes('alta'))  counts.alta++;
+    else if (s.includes('media')) counts.media++;
+    else if (s.includes('baja'))  counts.baja++;
+  });
+
+  const mc = data.reduce((s, a) => s + Number(a.monto_contrato || 0), 0);
+  const fmtL = n => n > 0
+    ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    : 'L —';
+
+  // Get unique entities this vendor contracted with
+  const entities = [...new Set(data.map(a => a.entity_name).filter(Boolean))];
+  const patterns = [...new Set(data.flatMap(a => (a.patterns || '').split(',').filter(Boolean)))];
+
+  document.getElementById('ep-title').innerHTML = `🏢 <span>${vendorName}</span> — Proveedor`;
+  document.getElementById('ep-total').textContent   = data.length;
+  document.getElementById('ep-critica').textContent = counts.critica;
+  document.getElementById('ep-alta').textContent    = counts.alta;
+  document.getElementById('ep-media').textContent   = counts.media;
+  document.getElementById('ep-baja').textContent    = counts.baja;
+  document.getElementById('ep-monto-contrato').textContent = fmtL(mc);
+  document.getElementById('ep-monto-pagado').textContent   = 'Sin datos';
+  const difEl = document.getElementById('ep-diferencia');
+  const lblEl = document.getElementById('ep-diferencia-lbl');
+  difEl.textContent = entities.length > 0 ? entities.slice(0,3).join(', ') + (entities.length > 3 ? ` +${entities.length-3} más` : '') : '—';
+  difEl.className   = 'ep-fin-val';
+  lblEl.textContent = 'Entidades contratantes';
+
+  const sevColor = s => {
+    const n = normSev(s);
+    if (n.includes('critica')) return '#ff3d57';
+    if (n.includes('alta'))    return 'var(--amber)';
+    if (n.includes('media'))   return 'var(--electric)';
+    return '#4caf50';
+  };
+  const recent = [...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+  document.getElementById('ep-recent').innerHTML = recent.length
+    ? recent.map(a => `
+        <div class="fuente-recent-item">
+          <span class="fri-id">${a.alert_id || '#' + a.id}</span>
+          <span class="fri-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${a.description||'—'}</span>
+          <span class="fri-sev" style="color:${sevColor(a.severity)}">${a.severity||'—'}</span>
+        </div>`).join('')
+    : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin alertas para este proveedor.</div>`;
+
+  document.getElementById('entityPanel').classList.add('open');
+  document.querySelector('.stats-grid').style.display      = 'none';
+  document.querySelector('.controls-bar').style.display    = 'none';
+  document.querySelector('.table-container').style.display = 'none';
+}
+
+// Helper used by showVendorPanel to parse legacy description field
+function parseDesc_for(key, desc) {
+  if (!desc) return '';
+  const m = desc.match(new RegExp(key + ':\\s*([^\\n]+)'));
+  return m ? m[1].trim() : '';
+}
+
+function hideEntityPanel() {
+  document.getElementById('entityPanel').classList.remove('open');
+  document.querySelector('.stats-grid').style.display     = '';
+  document.querySelector('.controls-bar').style.display   = '';
+  document.querySelector('.table-container').style.display = '';
+}
+
+function hideFuentePanel() {
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('entityPanel').classList.remove('open');
+  document.getElementById('auditPanel').classList.remove('open');
+  document.getElementById('nav-audit').classList.remove('active');
+  document.querySelector('.stats-grid').style.display     = '';
+  document.querySelector('.controls-bar').style.display   = '';
+  document.querySelector('.table-container').style.display = '';
+  // Remove fuente active state, restore dashboard active
+  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+}
+
+// ════════════════════════════════════════════════════════════
+// AUTH — Login / Logout / Session
+// Uses sessionStorage to persist across page reloads.
+// Keeps persistSession:false on the db client (DataCloneError fix).
+// ════════════════════════════════════════════════════════════
+let currentUser = null;  // { email, name, initials }
+
+function setCurrentUser(email) {
+  // Derive display name from email prefix (e.g. gprieto@pgr → G. Prieto)
+  const prefix = email.split('@')[0];                        // "gprieto"
+  const parts  = prefix.replace(/[^a-zA-Z]/g, ' ').trim().split(' ');
+  const name   = parts.length > 1
+    ? parts[0][0].toUpperCase() + '. ' +
+      parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase()
+    : prefix.charAt(0).toUpperCase() + prefix.slice(1).toLowerCase();
+  const initials = parts.map(p => p[0] || '').join('').toUpperCase().slice(0, 2);
+
+  currentUser = { email, name, initials };
+
+  // Update sidebar user card
+  document.getElementById('userAvatar').textContent      = initials;
+  document.getElementById('userDisplayName').textContent = name;
+  document.getElementById('userRole').textContent        = email;
+
+  // Persist for page reload
+  try { sessionStorage.setItem('sentinel_user', JSON.stringify(currentUser)); } catch(e){}
+}
+
+async function doLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl    = document.getElementById('loginError');
+  const btn      = document.getElementById('loginBtn');
+
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = '⚠ Ingresa correo y contraseña'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    setCurrentUser(email);
+    document.getElementById('loginScreen').classList.add('hidden');
+    await loadAlerts();
+    startRealtime();
+
+  } catch (err) {
+    errEl.textContent = '❌ ' + (err.message === 'Invalid login credentials'
+      ? 'Correo o contraseña incorrectos'
+      : err.message);
+    btn.disabled = false;
+    btn.textContent = 'Ingresar al Sistema';
+  }
+}
+
+async function doLogout() {
+  if (!confirm('¿Deseas cerrar tu sesión en Sentinel-AI?')) return;
+  try { await db.auth.signOut(); } catch(e) {}
+  try { sessionStorage.removeItem('sentinel_user'); } catch(e) {}
+  currentUser = null;
+  // Show login screen, hide dashboard content
+  document.getElementById('loginScreen').classList.remove('hidden');
+  // Reset sidebar state
+  document.getElementById('userAvatar').textContent      = '—';
+  document.getElementById('userDisplayName').textContent = '—';
+  document.getElementById('userRole').textContent        = 'PGR — Honduras';
+  // Clear alert data
+  allAlerts = [];
+}
+
+function checkStoredSession() {
+  try {
+    const stored = sessionStorage.getItem('sentinel_user');
+    if (stored) {
+      const u = JSON.parse(stored);
+      if (u && u.email) {
+        currentUser = u;
+        document.getElementById('userAvatar').textContent      = u.initials || '—';
+        document.getElementById('userDisplayName').textContent = u.name    || u.email;
+        document.getElementById('userRole').textContent        = u.email;
+        document.getElementById('loginScreen').classList.add('hidden');
+        return true;  // session restored
+      }
+    }
+  } catch(e) {}
+  return false;  // no session — show login
+}
+
+// ════════════════════════════════════════════════════════════
+// AUDIT LOG — Insert entries + load + render
+// Table: alert_audit_log (alert_id, action, old_value,
+//        new_value, user_email, user_name, notes, created_at)
+// ════════════════════════════════════════════════════════════
+async function logAudit(alertId, action, oldVal, newVal, notes) {
+  if (!db) return;
+  try {
+    await db.from('alert_audit_log').insert([{
+      alert_id:   alertId,
+      action:     action,
+      old_value:  oldVal  || null,
+      new_value:  newVal  || null,
+      user_email: currentUser ? currentUser.email   : 'sistema',
+      user_name:  currentUser ? currentUser.name    : 'Sistema',
+      notes:      notes   || null,
+    }]);
+  } catch(e) {
+    console.warn('logAudit: could not insert — table may not exist yet:', e.message);
+  }
+}
+
+let allAuditLogs   = [];
+let auditFilter    = 'all';
+
+async function loadAuditLog() {
+  try {
+    const { data, error } = await db
+      .from('alert_audit_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (error) throw error;
+    allAuditLogs = data || [];
+  } catch(e) {
+    allAuditLogs = [];
+    console.warn('loadAuditLog failed:', e.message);
+  }
+  renderAuditLog();
+}
+
+function setAuditFilter(f, btn) {
+  auditFilter = f;
+  document.querySelectorAll('.audit-filter-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.af === f)
+  );
+  renderAuditLog();
+}
+
+function renderAuditLog() {
+  const filtered = auditFilter === 'all'
+    ? allAuditLogs
+    : allAuditLogs.filter(e => (e.action||'').toLowerCase().includes(auditFilter));
+
+  const container = document.getElementById('auditLogList');
+  if (!container) return;
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="audit-empty">No hay entradas de auditoría registradas.</div>';
+    return;
+  }
+
+  const fmtDt = iso => {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    const pad = n => String(n).padStart(2,'0');
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}<br>${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const actionLabel = a => {
+    const act = (a.action || '').toUpperCase();
+    if (act === 'CREATED') return { label: 'Alerta Creada',   cls: 'created' };
+    if (act === 'SENT')    return { label: 'Alerta Enviada',  cls: 'sent'    };
+    if (act === 'DELETED') return { label: 'Alerta Eliminada', cls: 'deleted' };
+    return                        { label: a.action,           cls: 'updated' };
+  };
+
+  container.innerHTML = filtered.map(e => {
+    const { label, cls } = actionLabel(e);
+    const detail = [
+      e.alert_id  ? `ID: ${e.alert_id}` : '',
+      e.old_value ? `Antes: ${e.old_value}` : '',
+      e.new_value ? `Después: ${e.new_value}` : '',
+      e.notes     ? e.notes : '',
+    ].filter(Boolean).join(' · ');
+    return `
+    <div class="audit-entry">
+      <div class="audit-dot ${cls}"></div>
+      <div class="audit-body">
+        <div class="audit-action">${label}</div>
+        ${detail ? `<div class="audit-detail">${detail}</div>` : ''}
+      </div>
+      <div class="audit-meta">
+        ${e.user_name || e.user_email || 'Sistema'}<br>
+        ${fmtDt(e.created_at)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// ANALYTICS PANEL
+// ════════════════════════════════════════════════════════════
+const USD_RATE = 24.5; // HNL per USD (approx 2025)
+
+const PATTERN_LABELS = {
+  FRACCIONAMIENTO_MICRO:   'Fraccionamiento de Contratos',
+  COMPRA_EMERGENCIA:       'Compra de Emergencia',
+  ADJUDICACION_DIRECTA:    'Adjudicación Directa',
+  PROVEEDOR_SIN_HISTORIAL: 'Proveedor Sin Historial',
+  MONTO_FRACCIONADO:       'Monto Fraccionado',
+};
+
+function fmtLarge(n) {
+  if (!n) return 'L. —';
+  if (n >= 1e9) return 'L. ' + (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return 'L. ' + (n / 1e6).toFixed(1) + 'M';
+  return 'L. ' + Math.round(n).toLocaleString('es-HN');
+}
+function fmtUSD(n) {
+  if (!n) return '—';
+  const u = n / USD_RATE;
+  if (u >= 1e6) return '$' + (u / 1e6).toFixed(1) + 'M';
+  return '$' + Math.round(u).toLocaleString('en-US');
+}
+
+function renderAnalytics() {
+  const alerts = allAlerts;
+  const totalAlerts = alerts.length;
+  const totalMonto  = alerts.reduce((s, a) => s + Number(a.monto_contrato || 0), 0);
+
+  // ── Headline cards ──
+  document.getElementById('analyticsHeadline').innerHTML = [
+    { label: 'Contratos Analizados', value: '147,122', sub: 'Año 2025 · SEFIN OCDS' },
+    { label: 'Total Alertas',        value: totalAlerts.toLocaleString(), sub: (totalAlerts/147122*100).toFixed(1) + '% de contratos flaggeados' },
+    { label: 'Exposición Total',     value: fmtLarge(totalMonto), sub: fmtUSD(totalMonto) + ' USD estimado' },
+  ].map(c => `
+    <div style="background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:20px;">
+      <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:8px;">${c.label}</div>
+      <div style="font-size:24px;font-weight:700;color:var(--electric);font-family:'Syne',sans-serif;">${c.value}</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">${c.sub}</div>
+    </div>`).join('');
+
+  // ── Pattern breakdown ──
+  const patternMap = new Map();
+  for (const a of alerts) {
+    for (const p of (a.patterns || '').split(',').filter(Boolean)) {
+      if (!patternMap.has(p)) patternMap.set(p, { count: 0, monto: 0 });
+      const e = patternMap.get(p);
+      e.count++;
+      e.monto += Number(a.monto_contrato || 0);
+    }
+  }
+  const patternRows = [...patternMap.entries()]
+    .sort((a, b) => b[1].monto - a[1].monto);
+
+  document.getElementById('analyticsPatternBody').innerHTML = patternRows.map(([p, d]) => `
+    <tr>
+      <td>${PATTERN_LABELS[p] || p}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${(d.count/totalAlerts*100).toFixed(1)}%</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${fmtUSD(d.monto)}</td>
+    </tr>`).join('');
+
+  // ── Top entities ──
+  const entityMap = new Map();
+  for (const a of alerts) {
+    const k = a.entity_name || 'Desconocida';
+    if (!entityMap.has(k)) entityMap.set(k, { count: 0, monto: 0 });
+    const e = entityMap.get(k);
+    e.count++;
+    e.monto += Number(a.monto_contrato || 0);
+  }
+  const topEntities = [...entityMap.entries()]
+    .sort((a, b) => b[1].monto - a[1].monto).slice(0, 10);
+
+  document.getElementById('analyticsEntityBody').innerHTML = topEntities.map(([name, d]) => `
+    <tr>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">${name}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
+    </tr>`).join('');
+
+  // ── Top vendors ──
+  const vendorMap = new Map();
+  for (const a of alerts) {
+    const k = a.proveedor_nombre || 'Desconocido';
+    if (k === 'Proveedor Desconocido') continue;
+    if (!vendorMap.has(k)) vendorMap.set(k, { count: 0, monto: 0 });
+    const e = vendorMap.get(k);
+    e.count++;
+    e.monto += Number(a.monto_contrato || 0);
+  }
+  const topVendors = [...vendorMap.entries()]
+    .sort((a, b) => b[1].monto - a[1].monto).slice(0, 10);
+
+  document.getElementById('analyticsVendorBody').innerHTML = topVendors.map(([name, d]) => `
+    <tr>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">${name}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
+    </tr>`).join('');
+
+  // ── Multi-pattern high risk ──
+  const multiAlerts = alerts
+    .filter(a => (a.pattern_count || 0) >= 2 && a.monto_contrato)
+    .sort((a, b) => Number(b.monto_contrato) - Number(a.monto_contrato))
+    .slice(0, 15);
+
+  document.getElementById('analyticsMultiBody').innerHTML = multiAlerts.map(a => {
+    const patternList = (a.patterns || '').split(',')
+      .map(p => PATTERN_LABELS[p] || p).join(' + ');
+    return `<tr>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.proveedor_nombre}">${a.proveedor_nombre || '—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.entity_name}">${a.entity_name || '—'}</td>
+      <td style="font-size:11px;color:var(--electric);">${patternList}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(Number(a.monto_contrato))}</td>
+    </tr>`;
+  }).join('');
+}
+
+function showAnalyticsPanel() {
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('entityPanel').classList.remove('open');
+  document.getElementById('auditPanel').classList.remove('open');
+  document.querySelector('.stats-grid').style.display      = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+  document.querySelector('.table-container').style.display = 'none';
+
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-analytics').classList.add('active');
+
+  renderAnalytics();
+  document.getElementById('analyticsPanel').classList.add('open');
+}
+
+function hideAnalyticsPanel() {
+  document.getElementById('analyticsPanel').classList.remove('open');
+  document.getElementById('nav-analytics').classList.remove('active');
+  document.querySelector('.stats-grid').style.display      = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.querySelector('.table-container').style.display = '';
+}
+
+function showAuditPanel() {
+  // Hide other panels and main view
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('entityPanel').classList.remove('open');
+  document.querySelector('.stats-grid').style.display     = 'none';
+  document.querySelector('.controls-bar').style.display   = 'none';
+  document.querySelector('.table-container').style.display = 'none';
+
+  // Update nav active state
+  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-audit').classList.add('active');
+
+  // Load and show
+  document.getElementById('auditPanel').classList.add('open');
+  loadAuditLog();
+}
+
+function hideAuditPanel() {
+  document.getElementById('auditPanel').classList.remove('open');
+  document.getElementById('nav-audit').classList.remove('active');
+  document.querySelector('.stats-grid').style.display     = '';
+  document.querySelector('.controls-bar').style.display   = '';
+  document.querySelector('.table-container').style.display = '';
+}
+
+// ════════════════════════════════════════════════════════════
+// INIT — Load data, start realtime
+// ════════════════════════════════════════════════════════════
+// ── Live clock (Honduras / Tegucigalpa — UTC-6, no DST) ──
+function tickClock() {
+  const now = new Date().toLocaleTimeString('es-HN', {
+    timeZone: 'America/Tegucigalpa',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  });
+  const el = document.getElementById('liveClock');
+  if (el) el.textContent = now;
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+async function init() {
+  const hasSession = checkStoredSession();
+  if (hasSession) {
+    await loadAlerts();
+    startRealtime();
+  }
+  // If no session, login screen is already visible (not hidden)
+}
+
+init();
+</script>
+
+</body>
+</html>

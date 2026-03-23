@@ -909,13 +909,24 @@ body::after {
     </div>
   </div>
 
-  <!-- Filter bar -->
+  <!-- Severity filter bar -->
   <div class="controls-bar">
     <button class="filter-btn active" data-f="all"     onclick="setFilter('all')">TODAS</button>
     <button class="filter-btn"        data-f="critica" onclick="setFilter('critica')">CRÍTICAS</button>
     <button class="filter-btn"        data-f="alta"    onclick="setFilter('alta')">ALTAS</button>
     <button class="filter-btn"        data-f="media"   onclick="setFilter('media')">MEDIAS</button>
     <button class="filter-btn"        data-f="baja"    onclick="setFilter('baja')">BAJAS</button>
+  </div>
+
+  <!-- Pattern filter bar -->
+  <div class="controls-bar" style="margin-top:6px; gap:6px;">
+    <span style="color:var(--muted);font-size:11px;letter-spacing:.06em;align-self:center;margin-right:4px;">PATRÓN:</span>
+    <button class="filter-btn active" data-p="all"                    onclick="setPatternFilter('all')">TODOS</button>
+    <button class="filter-btn"        data-p="FRACCIONAMIENTO_MICRO"  onclick="setPatternFilter('FRACCIONAMIENTO_MICRO')">FRACCIONAMIENTO</button>
+    <button class="filter-btn"        data-p="COMPRA_EMERGENCIA"      onclick="setPatternFilter('COMPRA_EMERGENCIA')">EMERGENCIA</button>
+    <button class="filter-btn"        data-p="ADJUDICACION_DIRECTA"   onclick="setPatternFilter('ADJUDICACION_DIRECTA')">DIRECTA</button>
+    <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')">SIN HISTORIAL</button>
+    <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
   </div>
 
   <!-- Alerts table -->
@@ -1257,9 +1268,10 @@ try {
 // ════════════════════════════════════════════════════════════
 // APP STATE
 // ════════════════════════════════════════════════════════════
-let allAlerts    = [];    // Full dataset from Supabase
-let activeFilter = 'all'; // Active severity filter
-let selectedSev  = null;  // Severity selected in modal form
+let allAlerts      = [];    // Full dataset from Supabase
+let activeFilter   = 'all'; // Active severity filter
+let activePattern  = 'all'; // Active pattern filter
+let selectedSev    = null;  // Severity selected in modal form
 
 // ════════════════════════════════════════════════════════════
 // normSev() — CRITICAL FIX FOR STAT CARD BUG
@@ -1355,9 +1367,12 @@ function render() {
   document.getElementById('cnt-pct-baja').textContent      = fmtPct(m.baja, totalMonto);
 
   // ── Filter for table display ──
-  const filtered = activeFilter === 'all'
+  let filtered = activeFilter === 'all'
     ? allAlerts
     : allAlerts.filter(a => normSev(a.severity) === activeFilter);
+  if (activePattern !== 'all') {
+    filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
+  }
 
   document.getElementById('tableCount').textContent =
     `${filtered.length} de ${allAlerts.length} alertas`;
@@ -1369,7 +1384,7 @@ function render() {
     tbody.innerHTML = `<tr class="state-row"><td colspan="10">
       ${allAlerts.length === 0
         ? 'No hay alertas. Usa el botón ➕ Nueva Alerta para crear la primera.'
-        : 'No hay alertas con este filtro de severidad.'}
+        : 'No hay alertas con este filtro.'}
     </td></tr>`;
     return;
   }
@@ -1433,8 +1448,18 @@ function render() {
 // ════════════════════════════════════════════════════════════
 function setFilter(f) {
   activeFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b =>
+  // Only toggle severity buttons (those with data-f attribute)
+  document.querySelectorAll('.filter-btn[data-f]').forEach(b =>
     b.classList.toggle('active', b.dataset.f === f)
+  );
+  render();
+}
+
+function setPatternFilter(p) {
+  activePattern = p;
+  // Only toggle pattern buttons (those with data-p attribute)
+  document.querySelectorAll('.filter-btn[data-p]').forEach(b =>
+    b.classList.toggle('active', b.dataset.p === p)
   );
   render();
 }

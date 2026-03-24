@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
 <style>
 :root {
   --navy:       #0a1628;
@@ -1730,9 +1730,9 @@ async function generateReport() {
       filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
     }
 
-    const now       = new Date();
-    const fechaStr  = now.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
-    const horaStr   = now.toLocaleTimeString('es-HN', { hour:'2-digit', minute:'2-digit' });
+    const now      = new Date();
+    const fechaStr = now.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+    const horaStr  = now.toLocaleTimeString('es-HN', { hour:'2-digit', minute:'2-digit' });
     const filterLabel = (() => {
       const sev = activeFilter === 'all' ? 'Todas las severidades' : activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
       const pat = activePattern === 'all' ? 'Todos los patrones' : (PATTERN_LABELS[activePattern] || activePattern);
@@ -1740,160 +1740,110 @@ async function generateReport() {
     })();
 
     // ── 2. Count by severity ──
-    const counts = { Crítica:0, Alta:0, Media:0, Baja:0 };
+    const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
     let totalMonto = 0;
     for (const a of filtered) {
       const s = a.severity || 'Baja';
-      if (counts[s] !== undefined) counts[s]++;
-      else counts['Baja']++;
+      if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
       totalMonto += parseFloat(a.monto_contrato || 0);
     }
-    const fmtL = v => 'L. ' + (v || 0).toLocaleString('es-HN', { minimumFractionDigits:0, maximumFractionDigits:0 });
+    const fmtL = v => 'L. ' + (v||0).toLocaleString('es-HN', { minimumFractionDigits:0, maximumFractionDigits:0 });
+    const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-    // ── 3. Build DOCX ──
-    const {
-      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-      AlignmentType, HeadingLevel, BorderStyle, WidthType, ShadingType,
-      VerticalAlign, Header, PageNumber,
-    } = window.docx;
+    // ── 3. Severity color helper ──
+    const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910', 'Baja':'#1E8449' };
 
-    const C = {
-      navy: '0A1628', blue: '1A3A6B', accent: '0D6EFD',
-      red: 'C0392B', orange: 'D68910', green: '1E8449',
-      white: 'FFFFFF', light: 'EAF1FB', muted: '7F8C8D', border: 'D0D7E2',
-    };
+    // ── 4. Build alerts rows HTML (cap at 5000 rows to keep file size sane) ──
+    const CAP = 5000;
+    const rows = filtered.slice(0, CAP).map((a, i) => {
+      const sev   = a.severity || 'Baja';
+      const col   = sevColor[sev] || '#555';
+      const pats  = (a.patterns || '').split(',').filter(Boolean)
+                      .map(p => PATTERN_LABELS[p] || p).join(' + ');
+      const fecha = a.fecha_contrato ? new Date(a.fecha_contrato).toLocaleDateString('es-HN') : '—';
+      const bg    = i % 2 === 0 ? '#ffffff' : '#f4f8ff';
+      return `<tr style="background:${bg}">
+        <td style="text-align:center">${i+1}</td>
+        <td>${esc(a.proveedor_nombre)}</td>
+        <td>${esc(a.entity_name)}</td>
+        <td style="color:${col};font-weight:bold;text-align:center">${esc(sev)}</td>
+        <td style="text-align:right">${esc(fmtL(a.monto_contrato))}</td>
+        <td style="font-size:9pt">${esc(pats)}</td>
+        <td style="text-align:center">${esc(fecha)}</td>
+      </tr>`;
+    }).join('');
 
-    const b1 = { style: BorderStyle.SINGLE, size: 1, color: C.border };
-    const borders = { top:b1, bottom:b1, left:b1, right:b1 };
-    const nob  = { style: BorderStyle.NONE, size: 0, color: C.white };
-    const noBorders = { top:nob, bottom:nob, left:nob, right:nob };
+    const capNote = filtered.length > CAP
+      ? `<p style="color:#C0392B;font-style:italic">Nota: reporte limitado a los primeros ${CAP.toLocaleString()} registros de ${filtered.length.toLocaleString()} totales.</p>`
+      : '';
 
-    function mkCell(text, { bold=false, color='222222', bg=C.white, width=2000, align=AlignmentType.LEFT, sz=17 }={}) {
-      return new TableCell({
-        borders, width: { size:width, type:WidthType.DXA },
-        shading: { fill:bg, type:ShadingType.CLEAR },
-        margins: { top:70, bottom:70, left:110, right:110 },
-        verticalAlign: VerticalAlign.CENTER,
-        children: [new Paragraph({
-          alignment: align,
-          children: [new TextRun({ text: String(text ?? ''), bold, color, size:sz, font:'Arial' })],
-        })],
-      });
-    }
-    function hCell(text, width=2000) {
-      return mkCell(text, { bold:true, color:C.white, bg:C.blue, width, sz:17 });
-    }
-    function sp(n=1) {
-      return Array.from({length:n}, () => new Paragraph({ children:[new TextRun({text:''})] }));
-    }
+    // ── 5. Assemble full HTML document ──
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Arial, sans-serif; font-size: 10pt; color: #222; margin: 2cm; }
+  h1   { color: #0A1628; font-size: 20pt; margin-bottom: 2px; }
+  h2   { color: #1A3A6B; font-size: 13pt; font-weight: normal; margin-top: 0; }
+  .meta { color: #7F8C8D; font-size: 9pt; margin-bottom: 18px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+  th    { background: #1A3A6B; color: #fff; padding: 5px 7px; font-size: 9pt; text-align: left; }
+  td    { padding: 4px 7px; border: 1px solid #D0D7E2; font-size: 9pt; vertical-align: top; }
+  .sum-table td { font-weight: bold; font-size: 11pt; border: none; padding: 6px 12px; }
+  .sum-table th { font-size: 9pt; padding: 5px 12px; }
+  .footer { color: #aaa; font-size: 8pt; margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 8px; }
+</style>
+</head>
+<body>
+  <h1>SENTINEL-AI HONDURAS</h1>
+  <h2>Informe de Alertas de Fraude en Contratación Pública</h2>
+  <p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Filtro: ${esc(filterLabel)}</p>
 
-    // Severity color map
-    const sevColor = { 'Crítica': C.red, 'Alta': 'C05000', 'Media': C.orange, 'Baja': C.green };
+  <table class="sum-table" style="width:auto;margin-bottom:20px">
+    <tr>
+      <th>Total Alertas</th>
+      <th>Monto Expuesto</th>
+      <th style="color:#C0392B">Críticas</th>
+      <th style="color:#C05000">Altas</th>
+      <th style="color:#D68910">Medias</th>
+      <th style="color:#1E8449">Bajas</th>
+    </tr>
+    <tr>
+      <td>${filtered.length.toLocaleString('es-HN')}</td>
+      <td>${esc(fmtL(totalMonto))}</td>
+      <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
+      <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
+      <td style="color:#D68910;text-align:center">${counts['Media']}</td>
+      <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+    </tr>
+  </table>
 
-    // ── Cover / header paragraphs ──
-    const coverParagraphs = [
-      new Paragraph({
-        children: [new TextRun({ text: 'SENTINEL-AI HONDURAS', bold:true, size:44, color:C.navy, font:'Syne, Arial' })],
-        alignment: AlignmentType.CENTER,
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: 'Informe de Alertas de Fraude en Contratación Pública', size:26, color:C.blue, font:'Arial' })],
-        alignment: AlignmentType.CENTER,
-      }),
-      ...sp(1),
-      new Paragraph({
-        children: [new TextRun({ text: `Generado: ${fechaStr} a las ${horaStr}  |  Filtro: ${filterLabel}`, size:18, color:C.muted, font:'Arial' })],
-        alignment: AlignmentType.CENTER,
-      }),
-      ...sp(1),
-    ];
+  ${capNote}
 
-    // ── Summary stats table ──
-    const statRows = [
-      new TableRow({ children: [
-        hCell('Total Alertas', 2400), hCell('Monto Expuesto', 2800),
-        hCell('Críticas', 1600), hCell('Altas', 1600), hCell('Medias', 1600), hCell('Bajas', 1600),
-      ]}),
-      new TableRow({ children: [
-        mkCell(filtered.length.toLocaleString('es-HN'), { bold:true, sz:20, width:2400 }),
-        mkCell(fmtL(totalMonto), { bold:true, sz:20, width:2800 }),
-        mkCell(counts['Crítica'], { bold:true, color:C.red,    width:1600, align:AlignmentType.CENTER }),
-        mkCell(counts['Alta'],    { bold:true, color:'C05000', width:1600, align:AlignmentType.CENTER }),
-        mkCell(counts['Media'],   { bold:true, color:C.orange, width:1600, align:AlignmentType.CENTER }),
-        mkCell(counts['Baja'],    { bold:true, color:C.green,  width:1600, align:AlignmentType.CENTER }),
-      ]}),
-    ];
-    const summaryTable = new Table({ rows: statRows, width: { size:100, type:WidthType.PERCENTAGE } });
+  <table>
+    <thead>
+      <tr>
+        <th style="width:30px">#</th>
+        <th style="width:18%">Proveedor</th>
+        <th style="width:18%">Entidad</th>
+        <th style="width:60px">Severidad</th>
+        <th style="width:90px">Monto</th>
+        <th>Patrones</th>
+        <th style="width:65px">Fecha</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
 
-    // ── Alerts table ──
-    const COL_WIDTHS = [500, 2800, 2800, 1300, 2000, 2400, 1400];
-    const alertHeader = new TableRow({ tableHeader:true, children: [
-      hCell('#',         COL_WIDTHS[0]),
-      hCell('Proveedor', COL_WIDTHS[1]),
-      hCell('Entidad',   COL_WIDTHS[2]),
-      hCell('Severidad', COL_WIDTHS[3]),
-      hCell('Monto',     COL_WIDTHS[4]),
-      hCell('Patrones',  COL_WIDTHS[5]),
-      hCell('Fecha',     COL_WIDTHS[6]),
-    ]});
+  <p class="footer">Documento generado automáticamente por Sentinel-AI &middot; The Prieto Group LLC &middot; ${fechaStr}</p>
+</body>
+</html>`;
 
-    const SEV_ES = { critica:'Crítica', alta:'Alta', media:'Media', baja:'Baja' };
-    const alertRows = filtered.map((a, i) => {
-      const sev     = a.severity || 'Baja';
-      const sevCol  = sevColor[sev] || C.muted;
-      const rowBg   = i % 2 === 1 ? 'F4F8FF' : C.white;
-      const pats    = (a.patterns || '').split(',').filter(Boolean)
-                        .map(p => PATTERN_LABELS[p] || p).join(' + ');
-      const fecha   = a.fecha_contrato
-                        ? new Date(a.fecha_contrato).toLocaleDateString('es-HN')
-                        : '—';
-      return new TableRow({ children: [
-        mkCell(i+1,                   { width:COL_WIDTHS[0], bg:rowBg, align:AlignmentType.CENTER }),
-        mkCell(a.proveedor_nombre||'—',{ width:COL_WIDTHS[1], bg:rowBg }),
-        mkCell(a.entity_name||'—',     { width:COL_WIDTHS[2], bg:rowBg }),
-        mkCell(sev,                    { width:COL_WIDTHS[3], bg:rowBg, bold:true, color:sevCol, align:AlignmentType.CENTER }),
-        mkCell(fmtL(a.monto_contrato), { width:COL_WIDTHS[4], bg:rowBg, align:AlignmentType.RIGHT }),
-        mkCell(pats,                   { width:COL_WIDTHS[5], bg:rowBg, sz:15 }),
-        mkCell(fecha,                  { width:COL_WIDTHS[6], bg:rowBg, align:AlignmentType.CENTER }),
-      ]});
-    });
-
-    const alertsTable = new Table({
-      rows: [alertHeader, ...alertRows],
-      width: { size:100, type:WidthType.PERCENTAGE },
-    });
-
-    // ── Footer note ──
-    const footerNote = [
-      ...sp(1),
-      new Paragraph({
-        children: [new TextRun({ text: `Documento generado automáticamente por Sentinel-AI · The Prieto Group LLC · ${fechaStr}`, size:16, color:C.muted, font:'Arial' })],
-        alignment: AlignmentType.CENTER,
-      }),
-    ];
-
-    // ── Assemble document ──
-    const doc = new Document({
-      sections: [{
-        properties: { page: { margin: { top:900, bottom:900, left:900, right:900 } } },
-        children: [
-          ...coverParagraphs,
-          summaryTable,
-          ...sp(2),
-          new Paragraph({
-            children: [new TextRun({ text: `Detalle de Alertas (${filtered.length.toLocaleString('es-HN')} registros)`, bold:true, size:22, color:C.navy, font:'Arial' })],
-          }),
-          ...sp(1),
-          alertsTable,
-          ...footerNote,
-        ],
-      }],
-    });
-
-    // ── 4. Download ──
-    const blob = await Packer.toBlob(doc);
-    const url  = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    // ── 6. Convert to DOCX blob and download ──
+    const blob    = htmlDocx.asBlob(html, { orientation: 'landscape', margins: { top: 720, bottom: 720, left: 720, right: 720 } });
+    const url     = URL.createObjectURL(blob);
+    const link    = document.createElement('a');
     const dateTag = now.toISOString().slice(0,10);
     link.href     = url;
     link.download = `Sentinel-AI_Reporte_${dateTag}.docx`;

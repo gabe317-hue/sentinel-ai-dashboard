@@ -352,6 +352,25 @@ body::after {
 .filter-btn:hover { border-color: var(--electric); color: var(--text); }
 .filter-btn.active { background: var(--electric-dim); border-color: var(--electric); color: var(--electric); }
 
+/* Pagination */
+.pagination-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; border-top: 1px solid var(--border);
+  background: var(--glass-2);
+}
+.pagination-info {
+  font-size: 12px; color: var(--muted); letter-spacing: .04em;
+}
+.pagination-controls { display: flex; align-items: center; gap: 8px; }
+.btn-page {
+  background: var(--glass); border: 1px solid var(--border);
+  color: var(--text); padding: 5px 14px; border-radius: 6px;
+  font-size: 12px; cursor: pointer; transition: border-color .15s;
+}
+.btn-page:hover:not(:disabled) { border-color: var(--electric); color: var(--electric); }
+.btn-page:disabled { opacity: .35; cursor: not-allowed; }
+.pagination-page { font-size: 12px; color: var(--text-dim); min-width: 80px; text-align: center; }
+
 /* Table */
 .table-container {
   background: var(--glass); border: 1px solid var(--border);
@@ -949,6 +968,15 @@ body::after {
         </tbody>
       </table>
     </div>
+    <!-- Pagination bar -->
+    <div class="pagination-bar" id="paginationBar" style="display:none;">
+      <span class="pagination-info" id="paginationInfo"></span>
+      <div class="pagination-controls">
+        <button class="btn-page" id="btnPrevPage" onclick="setPage(currentPage - 1)">← Anterior</button>
+        <span class="pagination-page" id="paginationPage"></span>
+        <button class="btn-page" id="btnNextPage" onclick="setPage(currentPage + 1)">Siguiente →</button>
+      </div>
+    </div>
   </div>
 
   <!-- ═══ FUENTE DETAIL PANEL ═══ -->
@@ -1420,6 +1448,8 @@ let allAlerts      = [];    // Full dataset from Supabase
 let activeFilter   = 'all'; // Active severity filter
 let activePattern  = 'all'; // Active pattern filter
 let selectedSev    = null;  // Severity selected in modal form
+let currentPage    = 0;     // Current pagination page (0-indexed)
+const ALERTS_PER_PAGE = 50; // Rows per page
 
 // ════════════════════════════════════════════════════════════
 // normSev() — CRITICAL FIX FOR STAT CARD BUG
@@ -1545,10 +1575,33 @@ function render() {
   document.getElementById('tableCount').textContent =
     `${filtered.length} de ${allAlerts.length} alertas`;
 
+  // ── Pagination ──
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ALERTS_PER_PAGE));
+  if (currentPage >= totalPages) currentPage = totalPages - 1;
+  const pageStart  = currentPage * ALERTS_PER_PAGE;
+  const pageEnd    = Math.min(pageStart + ALERTS_PER_PAGE, filtered.length);
+  const paged      = filtered.slice(pageStart, pageEnd);
+
+  const paginationBar  = document.getElementById('paginationBar');
+  const paginationInfo = document.getElementById('paginationInfo');
+  const paginationPage = document.getElementById('paginationPage');
+  const btnPrev        = document.getElementById('btnPrevPage');
+  const btnNext        = document.getElementById('btnNextPage');
+
+  if (filtered.length > ALERTS_PER_PAGE) {
+    paginationBar.style.display = '';
+    paginationInfo.textContent  = `Mostrando ${pageStart + 1}–${pageEnd} de ${filtered.length} alertas`;
+    paginationPage.textContent  = `Página ${currentPage + 1} de ${totalPages}`;
+    btnPrev.disabled = currentPage === 0;
+    btnNext.disabled = currentPage >= totalPages - 1;
+  } else {
+    paginationBar.style.display = 'none';
+  }
+
   // ── Render rows ──
   const tbody = document.getElementById('alertTbody');
 
-  if (filtered.length === 0) {
+  if (paged.length === 0) {
     tbody.innerHTML = `<tr class="state-row"><td colspan="10">
       ${allAlerts.length === 0
         ? 'No hay alertas. Usa el botón ➕ Nueva Alerta para crear la primera.'
@@ -1557,7 +1610,7 @@ function render() {
     return;
   }
 
-  tbody.innerHTML = filtered.map(a => {
+  tbody.innerHTML = paged.map(a => {
     // normSev used for CSS class only — stored value 'Crítica' displayed as-is
     const sc  = normSev(a.severity);
     const stc = (a.status || '').toLowerCase().includes('pgr') ? 'enviado' : 'pendiente';
@@ -1616,7 +1669,7 @@ function render() {
 // ════════════════════════════════════════════════════════════
 function setFilter(f) {
   activeFilter = f;
-  // Only toggle severity buttons (those with data-f attribute)
+  currentPage = 0; // reset to first page on filter change
   document.querySelectorAll('.filter-btn[data-f]').forEach(b =>
     b.classList.toggle('active', b.dataset.f === f)
   );
@@ -1625,11 +1678,18 @@ function setFilter(f) {
 
 function setPatternFilter(p) {
   activePattern = p;
-  // Only toggle pattern buttons (those with data-p attribute)
+  currentPage = 0; // reset to first page on filter change
   document.querySelectorAll('.filter-btn[data-p]').forEach(b =>
     b.classList.toggle('active', b.dataset.p === p)
   );
   render();
+}
+
+function setPage(n) {
+  currentPage = n;
+  render();
+  // Scroll table into view smoothly
+  document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ════════════════════════════════════════════════════════════

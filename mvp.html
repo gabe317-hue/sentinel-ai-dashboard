@@ -1088,7 +1088,7 @@ body::after {
                cursor:pointer;transition:all .2s;"
         onmouseover="this.style.background='rgba(255,61,87,0.2)'"
         onmouseout="this.style.background='var(--red-dim)'">
-        🧹 Entradas de alertas eliminadas
+        🧹 Limpiar historial de alertas eliminadas
       </button>
       <button onclick="limpiarAuditEnviadas()"
         style="padding:5px 14px;border-radius:6px;border:1px solid rgba(0,200,255,0.2);background:var(--electric-dim);
@@ -1824,6 +1824,7 @@ async function deleteAlert(id) {
   const delAlert = allAlerts.find(x => x.id === id);
 
   try {
+    // 1. Delete the alert from the alerts table
     const { error } = await db
       .from('alerts')
       .delete()
@@ -1831,14 +1832,13 @@ async function deleteAlert(id) {
 
     if (error) throw error;
 
-    // Log deletion to audit table
-    await logAudit(
-      delAlert ? delAlert.alert_id : String(id),
-      'DELETED',
-      delAlert ? delAlert.severity : null,
-      null,
-      delAlert ? `Entidad: ${delAlert.entity_name}` : null
-    );
+    // 2. Auto-clean ALL audit log entries for this alert_id
+    //    (no point keeping orphaned log entries for a deleted alert)
+    if (delAlert && delAlert.alert_id) {
+      try {
+        await db.from('alert_audit_log').delete().eq('alert_id', delAlert.alert_id);
+      } catch(e) { /* non-critical — ignore if audit table is unavailable */ }
+    }
 
     showToast('🗑️ Alerta eliminada');
     await loadAlerts();
@@ -2745,34 +2745,39 @@ function hideAuditPanel() {
 // Removes CREATED / SENT entries for those alert_ids — audit stays clean.
 async function limpiarAuditEliminadas() {
   if (!confirm(
-    '¿Limpiar el registro de auditoría?\n\n' +
-    'Se eliminarán las entradas de CREACIÓN y ENVÍO para alertas que ya fueron borradas.\n' +
-    'Los registros "Alerta Eliminada" se conservarán.'
+    '¿Limpiar el historial de alertas eliminadas?\n\n' +
+    'Se borrarán todas las entradas del log cuya alerta ya no existe en el sistema.'
   )) return;
 
   try {
-    // 1. Find all alert_ids that have a DELETED entry
-    const { data: deletedEntries, error: e1 } = await db
-      .from('alert_audit_log').select('alert_id').eq('action', 'DELETED');
+    // 1. Get all alert_ids that still exist in the alerts table
+    const { data: activeAlerts, error: e1 } = await db
+      .from('alerts').select('alert_id');
     if (e1) throw e1;
+    const activeIds = new Set((activeAlerts || []).map(a => a.alert_id).filter(Boolean));
 
-    const deletedIds = [...new Set((deletedEntries || []).map(e => e.alert_id).filter(Boolean))];
-    if (deletedIds.length === 0) {
-      showToast('✅ No hay alertas eliminadas en el registro', 'warn'); return;
+    // 2. Get all audit log entries
+    const { data: allEntries, error: e2 } = await db
+      .from('alert_audit_log').select('id, alert_id');
+    if (e2) throw e2;
+
+    // 3. Find orphaned entries (alert no longer exists)
+    const orphanIds = (allEntries || [])
+      .filter(e => e.alert_id && !activeIds.has(e.alert_id))
+      .map(e => e.id);
+
+    if (orphanIds.length === 0) {
+      showToast('✅ El registro ya está limpio — no hay entradas huérfanas', 'warn');
+      return;
     }
 
-    // 2. For each deleted alert_id, remove non-DELETED entries
-    let cleaned = 0;
-    for (const alertId of deletedIds) {
-      const { error: e2 } = await db
-        .from('alert_audit_log')
-        .delete()
-        .eq('alert_id', alertId)
-        .neq('action', 'DELETED');
-      if (!e2) cleaned++;
+    // 4. Delete in batches of 100 (Supabase .in() limit)
+    for (let i = 0; i < orphanIds.length; i += 100) {
+      const batch = orphanIds.slice(i, i + 100);
+      await db.from('alert_audit_log').delete().in('id', batch);
     }
 
-    showToast(`🧹 Registro limpiado — ${deletedIds.length} alertas eliminadas procesadas`);
+    showToast(`🧹 ${orphanIds.length} entradas eliminadas del registro`);
     await loadAuditLog();
   } catch(e) {
     showToast('❌ Error: ' + e.message, 'error');

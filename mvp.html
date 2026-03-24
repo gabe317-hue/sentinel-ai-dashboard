@@ -1154,22 +1154,27 @@ body::after {
         </div>
       </div>
 
+      <!-- Note: these are INDEPENDENT rankings — not paired by row -->
+      <div style="font-size:11px;color:var(--text-dim);opacity:0.65;margin-bottom:16px;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;">
+        ⓘ Las siguientes tablas son rankings independientes — no están relacionadas entre sí por fila.
+      </div>
+
       <!-- Top entities -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;">
-        <div>
-          <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">TOP ENTIDADES (por monto)</div>
-          <table class="alert-table" id="analyticsEntityTable">
-            <thead><tr><th>Entidad</th><th style="text-align:right;">Alertas</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
-            <tbody id="analyticsEntityBody"></tbody>
-          </table>
-        </div>
-        <div>
-          <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">TOP PROVEEDORES (por monto)</div>
-          <table class="alert-table" id="analyticsVendorTable">
-            <thead><tr><th>Proveedor</th><th style="text-align:right;">Alertas</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
-            <tbody id="analyticsVendorBody"></tbody>
-          </table>
-        </div>
+      <div style="margin-bottom:24px;">
+        <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">TOP ENTIDADES COMPRADORAS (por monto total de contratos alertados)</div>
+        <table class="alert-table" id="analyticsEntityTable">
+          <thead><tr><th>Entidad</th><th style="text-align:right;">Alertas</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
+          <tbody id="analyticsEntityBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Top vendors -->
+      <div style="margin-bottom:28px;">
+        <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">TOP PROVEEDORES (por monto total de contratos alertados)</div>
+        <table class="alert-table" id="analyticsVendorTable">
+          <thead><tr><th>Proveedor</th><th style="text-align:right;">Alertas</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
+          <tbody id="analyticsVendorBody"></tbody>
+        </table>
       </div>
 
       <!-- High priority: multi-pattern alerts -->
@@ -2761,13 +2766,16 @@ async function limpiarAuditEliminadas() {
       .from('alert_audit_log').select('id, alert_id');
     if (e2) throw e2;
 
-    // 3. Find orphaned entries (alert no longer exists)
+    // 3. Find entries to clean:
+    //    (a) alert_id is null     → no reference, always orphaned
+    //    (b) action = 'DELETED'   → legacy entries, new deleteAlert() no longer logs these
+    //    (c) alert_id not in active alerts table
     const orphanIds = (allEntries || [])
-      .filter(e => e.alert_id && !activeIds.has(e.alert_id))
+      .filter(e => !e.alert_id || e.action === 'DELETED' || !activeIds.has(e.alert_id))
       .map(e => e.id);
 
     if (orphanIds.length === 0) {
-      showToast('✅ El registro ya está limpio — no hay entradas huérfanas', 'warn');
+      showToast('✅ El registro ya está limpio', 'warn');
       return;
     }
 

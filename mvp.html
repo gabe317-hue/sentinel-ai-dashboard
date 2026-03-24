@@ -2034,6 +2034,9 @@ function showFuentePanel(fuente) {
 // ENTITY PANEL — click entity name in table to open
 // ════════════════════════════════════════════════════════════
 function showEntityPanel(entityName) {
+  // Reset back button text (may have been changed by fromAnalytics path)
+  const backBtn = document.querySelector('#entityPanel .fuente-back');
+  if (backBtn) backBtn.textContent = '← Todas las Alertas';
   // Close fuente panel if open
   document.getElementById('fuentePanel').classList.remove('open');
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
@@ -2110,6 +2113,9 @@ function showEntityPanel(entityName) {
 
 // ── VENDOR PANEL — shows all alerts for a specific proveedor ─────────────────
 function showVendorPanel(vendorName) {
+  // Reset back button text (may have been changed by fromAnalytics path)
+  const backBtn = document.querySelector('#entityPanel .fuente-back');
+  if (backBtn) backBtn.textContent = '← Todas las Alertas';
   document.getElementById('fuentePanel').classList.remove('open');
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
 
@@ -2181,11 +2187,36 @@ function parseDesc_for(key, desc) {
   return m ? m[1].trim() : '';
 }
 
+// Tracks where the entity/vendor panel was opened from
+// so the back button returns to the right place
+let entityPanelSource = 'dashboard'; // 'dashboard' | 'analytics'
+
 function hideEntityPanel() {
   document.getElementById('entityPanel').classList.remove('open');
-  document.querySelector('.stats-grid').style.display     = '';
-  document.querySelector('.controls-bar').style.display   = '';
-  document.querySelector('.table-container').style.display = '';
+  if (entityPanelSource === 'analytics') {
+    entityPanelSource = 'dashboard';
+    showAnalyticsPanel();
+  } else {
+    document.querySelector('.stats-grid').style.display     = '';
+    document.querySelector('.controls-bar').style.display   = '';
+    document.querySelector('.table-container').style.display = '';
+  }
+}
+
+// Open entity panel from analytics — back button returns to analytics
+function showEntityPanelFromAnalytics(entityName) {
+  entityPanelSource = 'analytics';
+  hideAnalyticsPanel();
+  showEntityPanel(entityName);
+  document.querySelector('#entityPanel .fuente-back').textContent = '← Volver al Análisis';
+}
+
+// Open vendor panel from analytics — back button returns to analytics
+function showVendorPanelFromAnalytics(vendorName) {
+  entityPanelSource = 'analytics';
+  hideAnalyticsPanel();
+  showVendorPanel(vendorName);
+  document.querySelector('#entityPanel .fuente-back').textContent = '← Volver al Análisis';
 }
 
 function hideFuentePanel() {
@@ -2473,7 +2504,9 @@ function renderAnalytics() {
 
   document.getElementById('analyticsEntityBody').innerHTML = topEntities.map(([name, d]) => `
     <tr>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">${name}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">
+        <button class="cell-entity-link" onclick="showEntityPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${name}</button>
+      </td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
     </tr>`).join('');
@@ -2493,7 +2526,9 @@ function renderAnalytics() {
 
   document.getElementById('analyticsVendorBody').innerHTML = topVendors.map(([name, d]) => `
     <tr>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">${name}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">
+        <button class="cell-entity-link" onclick="showVendorPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${name}</button>
+      </td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
     </tr>`).join('');

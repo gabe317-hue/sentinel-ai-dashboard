@@ -1724,7 +1724,7 @@ async function generateReport() {
   try {
     // ── 1. Collect currently-filtered alerts (all pages) ──
     let filtered = activeFilter === 'all'
-      ? allAlerts
+      ? [...allAlerts]
       : allAlerts.filter(a => normSev(a.severity) === activeFilter);
     if (activePattern !== 'all') {
       filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
@@ -1739,7 +1739,7 @@ async function generateReport() {
       return `${sev} · ${pat}`;
     })();
 
-    // ── 2. Count by severity ──
+    // ── 2. Counts + totals ──
     const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
     let totalMonto = 0;
     for (const a of filtered) {
@@ -1748,111 +1748,201 @@ async function generateReport() {
       totalMonto += parseFloat(a.monto_contrato || 0);
     }
     const fmtL = v => 'L. ' + (v||0).toLocaleString('es-HN', { minimumFractionDigits:0, maximumFractionDigits:0 });
-    const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const esc  = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const dateTag = now.toISOString().slice(0,10);
 
-    // ── 3. Severity color helper ──
-    const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910', 'Baja':'#1E8449' };
+    // ── 3. Entity summary (rolled up, sorted by monto desc) ──
+    const entityMap = {};
+    for (const a of filtered) {
+      const ent = a.entity_name || 'Sin Entidad';
+      if (!entityMap[ent]) entityMap[ent] = { count:0, monto:0, critica:0, alta:0, media:0, baja:0 };
+      entityMap[ent].count++;
+      entityMap[ent].monto += parseFloat(a.monto_contrato || 0);
+      const sl = (a.severity || 'Baja').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      if (entityMap[ent][sl] !== undefined) entityMap[ent][sl]++;
+    }
+    const entityList = Object.entries(entityMap).sort((a,b) => b[1].monto - a[1].monto);
+    const entityRowsHtml = entityList.map(([ent, d], i) => `
+      <tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
+        <td>${esc(ent)}</td>
+        <td style="text-align:center;font-weight:bold">${d.count}</td>
+        <td style="text-align:right">${esc(fmtL(d.monto))}</td>
+        <td style="text-align:center;color:#C0392B;font-weight:bold">${d.critica||''}</td>
+        <td style="text-align:center;color:#C05000;font-weight:bold">${d.alta||''}</td>
+        <td style="text-align:center;color:#D68910">${d.media||''}</td>
+        <td style="text-align:center;color:#1E8449">${d.baja||''}</td>
+      </tr>`).join('');
 
-    // ── 4. Build alerts rows HTML (cap at 5000 rows to keep file size sane) ──
+    // ── 4. Alert detail rows (capped at 5000) ──
     const CAP = 5000;
-    const rows = filtered.slice(0, CAP).map((a, i) => {
+    const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910', 'Baja':'#1E8449' };
+    const alertRowsHtml = filtered.slice(0, CAP).map((a, i) => {
       const sev   = a.severity || 'Baja';
-      const col   = sevColor[sev] || '#555';
-      const pats  = (a.patterns || '').split(',').filter(Boolean)
-                      .map(p => PATTERN_LABELS[p] || p).join(' + ');
+      const pats  = (a.patterns||'').split(',').filter(Boolean).map(p => PATTERN_LABELS[p]||p).join(' + ');
       const fecha = a.fecha_contrato ? new Date(a.fecha_contrato).toLocaleDateString('es-HN') : '—';
-      const bg    = i % 2 === 0 ? '#ffffff' : '#f4f8ff';
-      return `<tr style="background:${bg}">
+      return `<tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
         <td style="text-align:center">${i+1}</td>
         <td>${esc(a.proveedor_nombre)}</td>
         <td>${esc(a.entity_name)}</td>
-        <td style="color:${col};font-weight:bold;text-align:center">${esc(sev)}</td>
+        <td style="color:${sevColor[sev]||'#555'};font-weight:bold;text-align:center">${esc(sev)}</td>
         <td style="text-align:right">${esc(fmtL(a.monto_contrato))}</td>
-        <td style="font-size:9pt">${esc(pats)}</td>
-        <td style="text-align:center">${esc(fecha)}</td>
+        <td>${esc(pats)}</td>
+        <td style="text-align:center;white-space:nowrap">${esc(fecha)}</td>
       </tr>`;
     }).join('');
 
     const capNote = filtered.length > CAP
-      ? `<p style="color:#C0392B;font-style:italic">Nota: reporte limitado a los primeros ${CAP.toLocaleString()} registros de ${filtered.length.toLocaleString()} totales.</p>`
+      ? `<p style="color:#C0392B;font-size:8pt;font-style:italic">&#9888; Reporte limitado a los primeros ${CAP.toLocaleString()} de ${filtered.length.toLocaleString()} registros.</p>`
       : '';
 
-    // ── 5. Assemble full HTML document ──
+    // ── 5. Assemble HTML (Word-compatible namespace + mso footer) ──
     const html = `<!DOCTYPE html>
-<html lang="es">
+<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
 <head>
 <meta charset="UTF-8">
 <style>
-  body { font-family: Arial, sans-serif; font-size: 10pt; color: #222; margin: 2cm; }
-  h1   { color: #0A1628; font-size: 20pt; margin-bottom: 2px; }
-  h2   { color: #1A3A6B; font-size: 13pt; font-weight: normal; margin-top: 0; }
-  .meta { color: #7F8C8D; font-size: 9pt; margin-bottom: 18px; }
-  table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-  th    { background: #1A3A6B; color: #fff; padding: 5px 7px; font-size: 9pt; text-align: left; }
-  td    { padding: 4px 7px; border: 1px solid #D0D7E2; font-size: 9pt; vertical-align: top; }
-  .sum-table td { font-weight: bold; font-size: 11pt; border: none; padding: 6px 12px; }
-  .sum-table th { font-size: 9pt; padding: 5px 12px; }
-  .footer { color: #aaa; font-size: 8pt; margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 8px; }
+  @page {
+    size: A4 landscape;
+    margin: 1.4cm 1cm 1.8cm 1cm;
+    mso-footer: f1;
+    mso-footer-margin: .7cm;
+  }
+  body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #222; }
+  h1   { color: #0A1628; font-size: 17pt; margin-bottom: 2px; margin-top: 0; }
+  h2   { color: #1A3A6B; font-size: 11pt; font-weight: normal; margin-top: 0; margin-bottom: 10px; }
+  .meta { color: #7F8C8D; font-size: 8pt; margin-bottom: 14px; }
+  .sec  { color: #0A1628; font-size: 10pt; font-weight: bold; margin: 14px 0 5px 0;
+          border-bottom: 1.5pt solid #1A3A6B; padding-bottom: 3px; }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; margin-top: 4px; }
+  th    { background: #1A3A6B; color: #fff; padding: 4px 5px; font-size: 8pt; text-align: left; word-wrap: break-word; }
+  td    { padding: 3px 5px; border: 1px solid #D0D7E2; font-size: 8pt; vertical-align: top; word-wrap: break-word; }
+  .stbl    { width: auto; }
+  .stbl th { font-size: 7.5pt; padding: 4px 10px; }
+  .stbl td { font-size: 10.5pt; font-weight: bold; padding: 4px 10px; border: 1px solid #D0D7E2; }
+  #f1  { mso-element: footer; }
 </style>
 </head>
 <body>
-  <h1>SENTINEL-AI HONDURAS</h1>
-  <h2>Informe de Alertas de Fraude en Contratación Pública</h2>
-  <p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Filtro: ${esc(filterLabel)}</p>
 
-  <table class="sum-table" style="width:auto;margin-bottom:20px">
+<!-- Running footer (Word mso-element) -->
+<div id="f1">
+  <table style="width:100%;border:none">
     <tr>
-      <th>Total Alertas</th>
-      <th>Monto Expuesto</th>
-      <th style="color:#C0392B">Críticas</th>
-      <th style="color:#C05000">Altas</th>
-      <th style="color:#D68910">Medias</th>
-      <th style="color:#1E8449">Bajas</th>
-    </tr>
-    <tr>
-      <td>${filtered.length.toLocaleString('es-HN')}</td>
-      <td>${esc(fmtL(totalMonto))}</td>
-      <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
-      <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
-      <td style="color:#D68910;text-align:center">${counts['Media']}</td>
-      <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+      <td style="border:none;font-size:7pt;color:#888;text-align:left;padding:2px 0">
+        Reporte Confidencial &mdash; The Prieto Group &copy; 2026
+      </td>
+      <td style="border:none;font-size:7pt;color:#888;text-align:right;padding:2px 0">
+        P&aacute;gina
+        <span style="mso-field-code:'PAGE \\* MERGEFORMAT'"><![if !mso]>1<![endif]></span>
+        de
+        <span style="mso-field-code:'NUMPAGES \\* MERGEFORMAT'"><![if !mso]>1<![endif]></span>
+      </td>
     </tr>
   </table>
+</div>
 
-  ${capNote}
+<!-- Page 1: Cover + global summary + entity summary -->
+<h1>SENTINEL-AI HONDURAS</h1>
+<h2>Informe de Alertas de Fraude en Contrataci&oacute;n P&uacute;blica</h2>
+<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Filtro: ${esc(filterLabel)}</p>
 
-  <table>
-    <thead>
-      <tr>
-        <th style="width:30px">#</th>
-        <th style="width:18%">Proveedor</th>
-        <th style="width:18%">Entidad</th>
-        <th style="width:60px">Severidad</th>
-        <th style="width:90px">Monto</th>
-        <th>Patrones</th>
-        <th style="width:65px">Fecha</th>
-      </tr>
-    </thead>
-    <tbody>${rows}</tbody>
-  </table>
+<table class="stbl" style="width:auto;margin-bottom:14px">
+  <tr>
+    <th>Total Alertas</th><th>Monto Expuesto</th>
+    <th>Cr&iacute;ticas</th><th>Altas</th><th>Medias</th><th>Bajas</th>
+  </tr>
+  <tr>
+    <td>${filtered.length.toLocaleString('es-HN')}</td>
+    <td>${esc(fmtL(totalMonto))}</td>
+    <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
+    <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
+    <td style="color:#D68910;text-align:center">${counts['Media']}</td>
+    <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+  </tr>
+</table>
 
-  <p class="footer">Documento generado automáticamente por Sentinel-AI &middot; The Prieto Group LLC &middot; ${fechaStr}</p>
+<p class="sec">Resumen por Entidad Gubernamental</p>
+<table>
+  <colgroup>
+    <col style="width:34%"><col style="width:8%"><col style="width:16%">
+    <col style="width:10%"><col style="width:10%"><col style="width:11%"><col style="width:11%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th>Entidad</th>
+      <th style="text-align:center">Alertas</th>
+      <th style="text-align:right">Monto Expuesto</th>
+      <th style="text-align:center">Cr&iacute;ticas</th>
+      <th style="text-align:center">Altas</th>
+      <th style="text-align:center">Medias</th>
+      <th style="text-align:center">Bajas</th>
+    </tr>
+  </thead>
+  <tbody>${entityRowsHtml}</tbody>
+</table>
+
+<!-- Page break before detail table -->
+<br style="page-break-before:always;mso-break-type:page-break">
+
+<!-- Page 2+: Alert detail -->
+<p class="sec">Detalle de Alertas &mdash; ${filtered.length.toLocaleString('es-HN')} registros</p>
+${capNote}
+<table>
+  <colgroup>
+    <col style="width:4%"><col style="width:19%"><col style="width:17%">
+    <col style="width:8%"><col style="width:11%"><col style="width:33%"><col style="width:8%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th style="text-align:center">#</th>
+      <th>Proveedor</th>
+      <th>Entidad</th>
+      <th style="text-align:center">Severidad</th>
+      <th style="text-align:right">Monto</th>
+      <th>Patrones</th>
+      <th style="text-align:center">Fecha</th>
+    </tr>
+  </thead>
+  <tbody>${alertRowsHtml}</tbody>
+</table>
+
 </body>
 </html>`;
 
-    // ── 6. Convert to DOCX blob and download ──
-    const blob    = htmlDocx.asBlob(html, { orientation: 'landscape', margins: { top: 720, bottom: 720, left: 720, right: 720 } });
-    const url     = URL.createObjectURL(blob);
-    const link    = document.createElement('a');
-    const dateTag = now.toISOString().slice(0,10);
-    link.href     = url;
-    link.download = `Sentinel-AI_Reporte_${dateTag}.docx`;
-    link.click();
-    URL.revokeObjectURL(url);
+    // ── 6. Convert + save ──
+    const blob  = htmlDocx.asBlob(html, {
+      orientation: 'landscape',
+      margins: { top: 800, bottom: 1030, left: 576, right: 576 },
+    });
+    const fname = `Sentinel-AI_Reporte_${dateTag}.docx`;
+
+    if (window.showSaveFilePicker) {
+      // Chrome/Edge: native Save As dialog with folder picker
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fname,
+        types: [{
+          description: 'Word Document (.docx)',
+          accept: { 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] },
+        }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+    } else {
+      // Fallback: browser default Downloads folder
+      const url  = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = fname; link.click();
+      URL.revokeObjectURL(url);
+    }
 
   } catch(err) {
-    console.error('generateReport error:', err);
-    alert('Error generando el reporte: ' + err.message);
+    if (err.name !== 'AbortError') {   // user cancelled save dialog — not an error
+      console.error('generateReport error:', err);
+      alert('Error generando el reporte: ' + err.message);
+    }
   } finally {
     btn.disabled = false;
     btn.textContent = '📄 Generar Reporte';

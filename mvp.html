@@ -1806,10 +1806,11 @@ async function generateReport() {
   @page {
     size: A4 landscape;
     margin: 1.4cm 1cm 1.8cm 1cm;
+    mso-page-orientation: landscape;
     mso-footer: f1;
     mso-footer-margin: .7cm;
   }
-  body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #222; }
+  body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #222; mso-page-orientation: landscape; }
   h1   { color: #0A1628; font-size: 17pt; margin-bottom: 2px; margin-top: 0; }
   h2   { color: #1A3A6B; font-size: 11pt; font-weight: normal; margin-top: 0; margin-bottom: 10px; }
   .meta { color: #7F8C8D; font-size: 8pt; margin-bottom: 14px; }

@@ -1739,7 +1739,7 @@ async function generateReport() {
       return `${sev} · ${pat}`;
     })();
 
-    // ── 2. Counts + totals ──
+    // ── 2. Counts + totals (ALL filtered alerts, including Baja — for summary row) ──
     const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
     let totalMonto = 0;
     for (const a of filtered) {
@@ -1747,18 +1747,22 @@ async function generateReport() {
       if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
       totalMonto += parseFloat(a.monto_contrato || 0);
     }
-    const fmtL = v => 'L. ' + (v||0).toLocaleString('es-HN', { minimumFractionDigits:0, maximumFractionDigits:0 });
-    const esc  = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const fmtL  = v => 'L. ' + (v||0).toLocaleString('es-HN', { minimumFractionDigits:0, maximumFractionDigits:0 });
+    const esc   = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const pct   = (n, total) => total > 0 ? (n/total*100).toFixed(1)+'%' : '0%';
     const dateTag = now.toISOString().slice(0,10);
 
-    // ── 3. Entity summary (rolled up, sorted by monto desc) ──
+    // ── 3. Reportable alerts = Crítica + Alta + Media only (Baja excluded from detail) ──
+    const reportable = filtered.filter(a => ['Crítica','Alta','Media'].includes(a.severity));
+
+    // ── 4. Entity summary (rolled up from reportable, sorted by monto desc) ──
     const entityMap = {};
-    for (const a of filtered) {
+    for (const a of reportable) {
       const ent = a.entity_name || 'Sin Entidad';
-      if (!entityMap[ent]) entityMap[ent] = { count:0, monto:0, critica:0, alta:0, media:0, baja:0 };
+      if (!entityMap[ent]) entityMap[ent] = { count:0, monto:0, critica:0, alta:0, media:0 };
       entityMap[ent].count++;
       entityMap[ent].monto += parseFloat(a.monto_contrato || 0);
-      const sl = (a.severity || 'Baja').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      const sl = (a.severity || 'Media').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
       if (entityMap[ent][sl] !== undefined) entityMap[ent][sl]++;
     }
     const entityList = Object.entries(entityMap).sort((a,b) => b[1].monto - a[1].monto);
@@ -1770,14 +1774,13 @@ async function generateReport() {
         <td style="text-align:center;color:#C0392B;font-weight:bold">${d.critica||''}</td>
         <td style="text-align:center;color:#C05000;font-weight:bold">${d.alta||''}</td>
         <td style="text-align:center;color:#D68910">${d.media||''}</td>
-        <td style="text-align:center;color:#1E8449">${d.baja||''}</td>
       </tr>`).join('');
 
-    // ── 4. Alert detail rows (capped at 5000) ──
+    // ── 5. Alert detail rows — Crítica/Alta/Media only, capped at 5000 ──
     const CAP = 5000;
-    const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910', 'Baja':'#1E8449' };
-    const alertRowsHtml = filtered.slice(0, CAP).map((a, i) => {
-      const sev   = a.severity || 'Baja';
+    const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910' };
+    const alertRowsHtml = reportable.slice(0, CAP).map((a, i) => {
+      const sev   = a.severity || 'Media';
       const pats  = (a.patterns||'').split(',').filter(Boolean).map(p => PATTERN_LABELS[p]||p).join(' + ');
       const fecha = a.fecha_contrato ? new Date(a.fecha_contrato).toLocaleDateString('es-HN') : '—';
       return `<tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
@@ -1791,8 +1794,8 @@ async function generateReport() {
       </tr>`;
     }).join('');
 
-    const capNote = filtered.length > CAP
-      ? `<p style="color:#C0392B;font-size:8pt;font-style:italic">&#9888; Reporte limitado a los primeros ${CAP.toLocaleString()} de ${filtered.length.toLocaleString()} registros.</p>`
+    const capNote = reportable.length > CAP
+      ? `<p style="color:#C0392B;font-size:8pt;font-style:italic">&#9888; Reporte limitado a los primeros ${CAP.toLocaleString()} de ${reportable.length.toLocaleString()} registros.</p>`
       : '';
 
     // ── 5. Assemble HTML (Word-compatible namespace + mso footer) ──
@@ -1852,23 +1855,30 @@ async function generateReport() {
 <table class="stbl" style="width:auto;margin-bottom:14px">
   <tr>
     <th>Total Alertas</th><th>Monto Expuesto</th>
-    <th>Cr&iacute;ticas</th><th>Altas</th><th>Medias</th><th>Bajas</th>
+    <th>Cr&iacute;ticas</th><th>% Total</th>
+    <th>Altas</th><th>% Total</th>
+    <th>Medias</th><th>% Total</th>
+    <th>Bajas</th><th>% Total</th>
   </tr>
   <tr>
     <td>${filtered.length.toLocaleString('es-HN')}</td>
     <td>${esc(fmtL(totalMonto))}</td>
     <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
+    <td style="color:#C0392B;text-align:center;font-size:8pt">${pct(counts['Crítica'],filtered.length)}</td>
     <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
+    <td style="color:#C05000;text-align:center;font-size:8pt">${pct(counts['Alta'],filtered.length)}</td>
     <td style="color:#D68910;text-align:center">${counts['Media']}</td>
+    <td style="color:#D68910;text-align:center;font-size:8pt">${pct(counts['Media'],filtered.length)}</td>
     <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+    <td style="color:#1E8449;text-align:center;font-size:8pt">${pct(counts['Baja'],filtered.length)}</td>
   </tr>
 </table>
 
-<p class="sec">Resumen por Entidad Gubernamental</p>
+<p class="sec">Resumen por Entidad Gubernamental <span style="font-weight:normal;font-size:8pt;color:#7F8C8D">(alertas Cr&iacute;ticas, Altas y Medias)</span></p>
 <table>
   <colgroup>
-    <col style="width:34%"><col style="width:8%"><col style="width:16%">
-    <col style="width:10%"><col style="width:10%"><col style="width:11%"><col style="width:11%">
+    <col style="width:38%"><col style="width:9%"><col style="width:18%">
+    <col style="width:11%"><col style="width:11%"><col style="width:13%">
   </colgroup>
   <thead>
     <tr>
@@ -1878,7 +1888,6 @@ async function generateReport() {
       <th style="text-align:center">Cr&iacute;ticas</th>
       <th style="text-align:center">Altas</th>
       <th style="text-align:center">Medias</th>
-      <th style="text-align:center">Bajas</th>
     </tr>
   </thead>
   <tbody>${entityRowsHtml}</tbody>
@@ -1888,7 +1897,7 @@ async function generateReport() {
 <br style="page-break-before:always;mso-break-type:page-break">
 
 <!-- Page 2+: Alert detail -->
-<p class="sec">Detalle de Alertas &mdash; ${filtered.length.toLocaleString('es-HN')} registros</p>
+<p class="sec">Detalle de Alertas (Cr&iacute;ticas, Altas y Medias) &mdash; ${reportable.length.toLocaleString('es-HN')} registros</p>
 ${capNote}
 <table>
   <colgroup>

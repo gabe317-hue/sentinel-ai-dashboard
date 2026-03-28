@@ -1408,6 +1408,53 @@ body::after {
 
   </div><!-- end analyticsPanel -->
 
+
+  <!-- ══ ALERT DETAIL PANEL ══ -->
+  <div id="alertDetailPanel">
+    <button class="adp-back" onclick="closeAlertDetail()">← Todas las Alertas</button>
+    <div class="adp-title" id="adp-title">Detalle de Alerta</div>
+    <div class="adp-meta" id="adp-meta"></div>
+
+    <div class="adp-grid">
+      <div class="adp-card">
+        <div class="adp-card-title">Información del Contrato</div>
+        <div class="adp-field"><span class="adp-field-label">ID / OCID</span><span class="adp-field-value electric" id="adp-contract-id">—</span></div>
+        <div class="adp-field"><span class="adp-field-label">Entidad Compradora</span><span class="adp-field-value" id="adp-entidad">—</span></div>
+        <div class="adp-field"><span class="adp-field-label">Proveedor</span><span class="adp-field-value" id="adp-proveedor">—</span></div>
+        <div class="adp-field"><span class="adp-field-label">Tipo de Contratación</span><span class="adp-field-value" id="adp-tipo">—</span></div>
+        <div class="adp-field"><span class="adp-field-label">Fecha Contrato</span><span class="adp-field-value" id="adp-fecha">—</span></div>
+        <div class="adp-field"><span class="adp-field-label">Fecha Adjudicación</span><span class="adp-field-value" id="adp-fecha-adj">—</span></div>
+      </div>
+      <div class="adp-card">
+        <div class="adp-card-title">Análisis Financiero</div>
+        <div class="adp-field"><span class="adp-field-label">Monto Adjudicado</span><span class="adp-field-value electric" id="adp-monto">—</span></div>
+        <div class="adp-field"><span class="adp-field-label">Presupuesto Original</span><span class="adp-field-value" id="adp-budget">Sin datos</span></div>
+        <div id="adp-sobrecosto-bar-section" style="display:none;">
+          <div class="sobrecosto-bar-wrap">
+            <div class="sobrecosto-bar-labels"><span>Presupuesto</span><span>Monto Adjudicado</span></div>
+            <div class="sobrecosto-bar-track">
+              <div class="sobrecosto-bar-budget" id="adp-bar-budget"></div>
+              <div class="sobrecosto-bar-monto" id="adp-bar-monto"></div>
+            </div>
+            <div class="sobrecosto-pct-label" id="adp-bar-pct"></div>
+          </div>
+        </div>
+        <div class="adp-field" style="margin-top:14px;"><span class="adp-field-label">Severidad</span><span class="adp-field-value" id="adp-severity">—</span></div>
+        <div class="adp-field"><span class="adp-field-label">Patrones Detectados</span><div class="adp-pattern-list" id="adp-patterns"></div></div>
+      </div>
+    </div>
+
+    <div class="adp-grid">
+      <div class="adp-card">
+        <div class="adp-card-title">Historial del Proveedor <span id="adp-vendor-count" style="color:var(--electric)"></span></div>
+        <div class="adp-history-list" id="adp-vendor-history"><div style="color:var(--text-dim);font-size:13px;padding:4px">Sin otros contratos registrados.</div></div>
+      </div>
+      <div class="adp-card">
+        <div class="adp-card-title">Historial de la Entidad <span id="adp-entity-count" style="color:var(--electric)"></span></div>
+        <div class="adp-history-list" id="adp-entity-history"><div style="color:var(--text-dim);font-size:13px;padding:4px">Sin otros contratos registrados.</div></div>
+      </div>
+    </div>
+  </div>
 </main>
 
 <!-- ═══════════════════ MODAL ═══════════════════ -->
@@ -1547,97 +1594,6 @@ body::after {
     <div class="modal-actions">
       <button class="btn-save" id="btnSend" onclick="confirmSend()">Confirmar Envío</button>
       <button class="btn-cancel" onclick="closeSendModal()">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Toast notification -->
-<div class="toast" id="toast"></div>
-
-<div id="alertDetailPanel">
-  <button class="adp-back" onclick="closeAlertDetail()">← Todas las Alertas</button>
-  <div class="adp-title" id="adp-title">Detalle de Alerta</div>
-  <div class="adp-meta" id="adp-meta"></div>
-
-  <div class="adp-grid">
-    <!-- Left: Contract info -->
-    <div class="adp-card">
-      <div class="adp-card-title">Información del Contrato</div>
-      <div class="adp-field">
-        <span class="adp-field-label">ID / OCID</span>
-        <span class="adp-field-value electric" id="adp-contract-id">—</span>
-      </div>
-      <div class="adp-field">
-        <span class="adp-field-label">Entidad Compradora</span>
-        <span class="adp-field-value" id="adp-entidad">—</span>
-      </div>
-      <div class="adp-field">
-        <span class="adp-field-label">Proveedor</span>
-        <span class="adp-field-value" id="adp-proveedor">—</span>
-      </div>
-      <div class="adp-field">
-        <span class="adp-field-label">Tipo de Contratación</span>
-        <span class="adp-field-value" id="adp-tipo">—</span>
-      </div>
-      <div class="adp-field">
-        <span class="adp-field-label">Fecha Contrato</span>
-        <span class="adp-field-value" id="adp-fecha">—</span>
-      </div>
-      <div class="adp-field">
-        <span class="adp-field-label">Fecha Adjudicación</span>
-        <span class="adp-field-value" id="adp-fecha-adj">—</span>
-      </div>
-    </div>
-
-    <!-- Right: Amounts + patterns -->
-    <div class="adp-card">
-      <div class="adp-card-title">Análisis Financiero</div>
-      <div class="adp-field">
-        <span class="adp-field-label">Monto Adjudicado</span>
-        <span class="adp-field-value electric" id="adp-monto">—</span>
-      </div>
-      <div class="adp-field">
-        <span class="adp-field-label">Presupuesto Original</span>
-        <span class="adp-field-value" id="adp-budget">Sin datos</span>
-      </div>
-      <!-- SOBRECOSTO visual bar — shown only when budget_amount present -->
-      <div id="adp-sobrecosto-bar-section" style="display:none;">
-        <div class="sobrecosto-bar-wrap">
-          <div class="sobrecosto-bar-labels">
-            <span>Presupuesto</span><span>Monto Adjudicado</span>
-          </div>
-          <div class="sobrecosto-bar-track">
-            <div class="sobrecosto-bar-budget" id="adp-bar-budget"></div>
-            <div class="sobrecosto-bar-monto"  id="adp-bar-monto"></div>
-          </div>
-          <div class="sobrecosto-pct-label" id="adp-bar-pct"></div>
-        </div>
-      </div>
-
-      <div class="adp-field" style="margin-top:14px;">
-        <span class="adp-field-label">Severidad</span>
-        <span class="adp-field-value" id="adp-severity">—</span>
-      </div>
-      <div class="adp-field">
-        <span class="adp-field-label">Patrones Detectados</span>
-        <div class="adp-pattern-list" id="adp-patterns"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Vendor history & entity history row -->
-  <div class="adp-grid">
-    <div class="adp-card">
-      <div class="adp-card-title">Historial del Proveedor <span id="adp-vendor-count" style="color:var(--electric)"></span></div>
-      <div class="adp-history-list" id="adp-vendor-history">
-        <div style="color:var(--text-dim);font-size:13px;padding:4px">Sin otros contratos registrados.</div>
-      </div>
-    </div>
-    <div class="adp-card">
-      <div class="adp-card-title">Historial de la Entidad <span id="adp-entity-count" style="color:var(--electric)"></span></div>
-      <div class="adp-history-list" id="adp-entity-history">
-        <div style="color:var(--text-dim);font-size:13px;padding:4px">Sin otros contratos registrados.</div>
-      </div>
     </div>
   </div>
 </div>
@@ -3533,6 +3489,7 @@ function closeAlertDetail() {
   document.querySelector('.stats-grid').style.display      = '';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.querySelector('.table-container').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function _sevColor(s) {

@@ -468,7 +468,6 @@ body::after {
   border-color: var(--red) !important;
   color: var(--red) !important;
 }
-
 .filter-btn-sobrecosto {
   border-color: rgba(255,171,0,0.5) !important;
   color: var(--amber) !important;
@@ -687,8 +686,10 @@ body::after {
 }
 /* Monto stacked cell in table */
 .monto-stack { display: flex; flex-direction: column; gap: 2px; }
+.monto-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-right: 2px; }
 .monto-contrato { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); white-space: nowrap; }
-.monto-pagado   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.monto-pagado   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green); white-space: nowrap; }
+.monto-sin-dato { font-size: 10px; color: var(--text-dim); font-style: italic; opacity: 0.7; }
 .diferencia-badge {
   display: inline-block; margin-top: 2px;
   font-family: 'JetBrains Mono', monospace; font-size: 10px;
@@ -1005,7 +1006,7 @@ body::after {
         <span id="liveClock">--:--:--</span>
         <span class="clock-tz">TGU</span>
       </div>
-      <button class="btn-report-header" id="btnReport" onclick="generateReport()">📄 Generar Reporte</button>
+      <button class="btn-report-header" id="btnReport" onclick="generateReport()">📄 Generar Reporte PDF</button>
       <button class="btn-new-alert-header" onclick="openModal()">➕ Nueva Alerta</button>
     </div>
   </div>
@@ -1063,10 +1064,10 @@ body::after {
     <button class="filter-btn"        data-p="FRACCIONAMIENTO_MICRO"  onclick="setPatternFilter('FRACCIONAMIENTO_MICRO')">FRACCIONAMIENTO</button>
     <button class="filter-btn"        data-p="COMPRA_EMERGENCIA"      onclick="setPatternFilter('COMPRA_EMERGENCIA')">EMERGENCIA</button>
     <button class="filter-btn"        data-p="ADJUDICACION_DIRECTA"   onclick="setPatternFilter('ADJUDICACION_DIRECTA')">DIRECTA</button>
-    <button class="filter-btn filter-btn-sobrecosto" data-p="SOBRECOSTO"           onclick="setPatternFilter('SOBRECOSTO')">📈 SOBRECOSTO</button>
     <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')">SIN HISTORIAL</button>
     <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
     <button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" onclick="setPatternFilter('PROVEEDOR_SANCIONADO')">🚨 SANCIONADO OFAC</button>
+    <button class="filter-btn filter-btn-sobrecosto" data-p="SOBRECOSTO"           onclick="setPatternFilter('SOBRECOSTO')">📈 SOBRECOSTO</button>
   </div>
 
   <!-- Risk scoring legend -->
@@ -1408,7 +1409,6 @@ body::after {
 
   </div><!-- end analyticsPanel -->
 
-
   <!-- ══ ALERT DETAIL PANEL ══ -->
   <div id="alertDetailPanel">
     <button class="adp-back" onclick="closeAlertDetail()">← Todas las Alertas</button>
@@ -1416,45 +1416,98 @@ body::after {
     <div class="adp-meta" id="adp-meta"></div>
 
     <div class="adp-grid">
+      <!-- Left: Contract info -->
       <div class="adp-card">
         <div class="adp-card-title">Información del Contrato</div>
-        <div class="adp-field"><span class="adp-field-label">ID / OCID</span><span class="adp-field-value electric" id="adp-contract-id">—</span></div>
-        <div class="adp-field"><span class="adp-field-label">Entidad Compradora</span><span class="adp-field-value" id="adp-entidad">—</span></div>
-        <div class="adp-field"><span class="adp-field-label">Proveedor</span><span class="adp-field-value" id="adp-proveedor">—</span></div>
-        <div class="adp-field"><span class="adp-field-label">Tipo de Contratación</span><span class="adp-field-value" id="adp-tipo">—</span></div>
-        <div class="adp-field"><span class="adp-field-label">Fecha Contrato</span><span class="adp-field-value" id="adp-fecha">—</span></div>
-        <div class="adp-field"><span class="adp-field-label">Fecha Adjudicación</span><span class="adp-field-value" id="adp-fecha-adj">—</span></div>
+        <div class="adp-field">
+          <span class="adp-field-label">ID / OCID</span>
+          <span class="adp-field-value electric" id="adp-contract-id">—</span>
+        </div>
+        <div class="adp-field">
+          <span class="adp-field-label">Entidad Compradora</span>
+          <span class="adp-field-value" id="adp-entidad">—</span>
+        </div>
+        <div class="adp-field">
+          <span class="adp-field-label">Proveedor</span>
+          <span class="adp-field-value" id="adp-proveedor">—</span>
+        </div>
+        <div class="adp-field">
+          <span class="adp-field-label">Tipo de Contratación</span>
+          <span class="adp-field-value" id="adp-tipo">—</span>
+        </div>
+        <div class="adp-field">
+          <span class="adp-field-label">Fecha Contrato</span>
+          <span class="adp-field-value" id="adp-fecha">—</span>
+        </div>
+        <div class="adp-field">
+          <span class="adp-field-label">Fecha Adjudicación</span>
+          <span class="adp-field-value" id="adp-fecha-adj">—</span>
+        </div>
       </div>
+
+      <!-- Right: Amounts + patterns -->
       <div class="adp-card">
         <div class="adp-card-title">Análisis Financiero</div>
-        <div class="adp-field"><span class="adp-field-label">Monto Adjudicado</span><span class="adp-field-value electric" id="adp-monto">—</span></div>
-        <div class="adp-field"><span class="adp-field-label">Presupuesto Original</span><span class="adp-field-value" id="adp-budget">Sin datos</span></div>
+        <div class="adp-field">
+          <span class="adp-field-label">Monto Adjudicado</span>
+          <span class="adp-field-value electric" id="adp-monto">—</span>
+        </div>
+        <div class="adp-field">
+          <span class="adp-field-label">Presupuesto Original</span>
+          <span class="adp-field-value" id="adp-budget">Sin datos</span>
+        </div>
+        <div class="adp-field">
+          <span class="adp-field-label">Monto Pagado (Ejecución)</span>
+          <span class="adp-field-value" id="adp-monto-pagado" style="color:var(--green)">Sin datos</span>
+        </div>
+        <!-- Derived SOBRECOSTO alert — shown when monto_pagado > monto_contrato * 1.15 -->
+        <div id="adp-sobrecosto-pagado-section" style="display:none;margin:8px 0;padding:8px 12px;background:rgba(255,61,87,0.1);border:1px solid var(--red);border-radius:6px;">
+          <span style="color:var(--red);font-weight:700;font-size:12px;">⚠ SOBRECOSTO DETECTADO</span>
+          <span id="adp-sobrecosto-pagado-pct" style="color:var(--red);font-size:11px;margin-left:8px;"></span>
+          <div style="color:var(--text-dim);font-size:10px;margin-top:2px;">Monto pagado supera el monto contratado en más del 15%</div>
+        </div>
+        <!-- SOBRECOSTO visual bar — shown only when budget_amount present -->
         <div id="adp-sobrecosto-bar-section" style="display:none;">
           <div class="sobrecosto-bar-wrap">
-            <div class="sobrecosto-bar-labels"><span>Presupuesto</span><span>Monto Adjudicado</span></div>
+            <div class="sobrecosto-bar-labels">
+              <span>Presupuesto</span><span>Monto Adjudicado</span>
+            </div>
             <div class="sobrecosto-bar-track">
               <div class="sobrecosto-bar-budget" id="adp-bar-budget"></div>
-              <div class="sobrecosto-bar-monto" id="adp-bar-monto"></div>
+              <div class="sobrecosto-bar-monto"  id="adp-bar-monto"></div>
             </div>
             <div class="sobrecosto-pct-label" id="adp-bar-pct"></div>
           </div>
         </div>
-        <div class="adp-field" style="margin-top:14px;"><span class="adp-field-label">Severidad</span><span class="adp-field-value" id="adp-severity">—</span></div>
-        <div class="adp-field"><span class="adp-field-label">Patrones Detectados</span><div class="adp-pattern-list" id="adp-patterns"></div></div>
+
+        <div class="adp-field" style="margin-top:14px;">
+          <span class="adp-field-label">Severidad</span>
+          <span class="adp-field-value" id="adp-severity">—</span>
+        </div>
+        <div class="adp-field">
+          <span class="adp-field-label">Patrones Detectados</span>
+          <div class="adp-pattern-list" id="adp-patterns"></div>
+        </div>
       </div>
     </div>
 
+    <!-- Vendor history & entity history row -->
     <div class="adp-grid">
       <div class="adp-card">
         <div class="adp-card-title">Historial del Proveedor <span id="adp-vendor-count" style="color:var(--electric)"></span></div>
-        <div class="adp-history-list" id="adp-vendor-history"><div style="color:var(--text-dim);font-size:13px;padding:4px">Sin otros contratos registrados.</div></div>
+        <div class="adp-history-list" id="adp-vendor-history">
+          <div style="color:var(--text-dim);font-size:13px;padding:4px">Sin otros contratos registrados.</div>
+        </div>
       </div>
       <div class="adp-card">
         <div class="adp-card-title">Historial de la Entidad <span id="adp-entity-count" style="color:var(--electric)"></span></div>
-        <div class="adp-history-list" id="adp-entity-history"><div style="color:var(--text-dim);font-size:13px;padding:4px">Sin otros contratos registrados.</div></div>
+        <div class="adp-history-list" id="adp-entity-history">
+          <div style="color:var(--text-dim);font-size:13px;padding:4px">Sin otros contratos registrados.</div>
+        </div>
       </div>
     </div>
   </div>
+
 </main>
 
 <!-- ═══════════════════ MODAL ═══════════════════ -->
@@ -1816,8 +1869,8 @@ function render() {
     return `<tr onclick="openAlertDetail(${a.id}, event)">
       <td><span class="cell-id">${a.alert_id || ('#' + a.id)}</span></td>
       <td><span class="cell-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${desc}</span></td>
-      <td><button class="cell-entity-link" onclick="showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button></td>
-      <td><span class="cell-entity">${entidadDisplay}</span></td>
+      <td><button class="cell-entity-link" onclick="event.stopPropagation();showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button></td>
+      <td><button class="cell-entity-link" onclick="event.stopPropagation();showEntityPanel('${entidadDisplay.replace(/'/g,"\\'")}')">${entidadDisplay}</button></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
       <td><span class="cell-source">${a.data_source || '—'}</span></td>
       <td><span class="cell-date">${fmtDate(a.fecha_contrato)}</span></td>
@@ -1827,21 +1880,25 @@ function render() {
         const fmtL = n => 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
         if (mc == null && mp == null) return '<span style="color:var(--text-dim)">—</span>';
         let html = '<div class="monto-stack">';
-        if (mc != null) html += `<span class="monto-contrato">${fmtL(mc)}</span>`;
-        if (mp != null) html += `<span class="monto-pagado">Pag: ${fmtL(mp)}</span>`;
-        if (mc != null && mp != null) {
-          const dif = mp - mc;
-          const pct = ((dif / mc) * 100).toFixed(1);
-          const cls = dif > 0 ? 'dif-over' : dif < 0 ? 'dif-under' : 'dif-exact';
-          const sign = dif > 0 ? '+' : '';
-          html += `<span class="diferencia-badge ${cls}">${sign}${pct}%</span>`;
+        if (mc != null) html += `<span class="monto-contrato"><span class="monto-label">Cont:</span> ${fmtL(mc)}</span>`;
+        if (mp != null) {
+          html += `<span class="monto-pagado"><span class="monto-label">Pag:</span> ${fmtL(mp)}</span>`;
+          if (mc != null) {
+            const dif = mp - mc;
+            const pct = ((dif / mc) * 100).toFixed(1);
+            const cls = dif > 0 ? 'dif-over' : dif < 0 ? 'dif-under' : 'dif-exact';
+            const sign = dif > 0 ? '+' : '';
+            html += `<span class="diferencia-badge ${cls}" title="Diferencia pago vs contrato">${sign}${pct}%</span>`;
+          }
+        } else if (mc != null) {
+          html += `<span class="monto-sin-dato" title="Datos de ejecución no disponibles aún">Sin ejecución</span>`;
         }
         html += '</div>';
         return html;
       })()}</td>
       <td><span class="status-badge ${stc}">${a.status || 'Pendiente'}</span></td>
       <td>
-        <div class="action-group">
+        <div class="action-group" onclick="event.stopPropagation()">
           <button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta">📤 Enviar</button>
           <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Borrar">🗑️</button>
         </div>
@@ -1879,7 +1936,7 @@ function setPage(n) {
 }
 
 // ════════════════════════════════════════════════════════════
-// GENERAR REPORTE — DOCX export of current filtered alerts
+// GENERAR REPORTE — PDF print window of current filtered alerts
 // ════════════════════════════════════════════════════════════
 async function generateReport() {
   const btn = document.getElementById('btnReport');
@@ -1963,22 +2020,20 @@ async function generateReport() {
       ? `<p style="color:#C0392B;font-size:8pt;font-style:italic">&#9888; Reporte limitado a los primeros ${CAP.toLocaleString()} de ${reportable.length.toLocaleString()} registros.</p>`
       : '';
 
-    // ── 5. Assemble HTML (Word-compatible namespace + mso footer) ──
+    // ── 5. Assemble HTML for PDF print window ──
     const html = `<!DOCTYPE html>
-<html xmlns:o='urn:schemas-microsoft-com:office:office'
-      xmlns:w='urn:schemas-microsoft-com:office:word'
-      xmlns='http://www.w3.org/TR/REC-html40'>
+<html>
 <head>
 <meta charset="UTF-8">
+<title>Sentinel-AI Reporte ${dateTag}</title>
 <style>
-  @page {
-    size: A4 landscape;
-    margin: 1.4cm 1cm 1.8cm 1cm;
-    mso-page-orientation: landscape;
-    mso-footer: f1;
-    mso-footer-margin: .7cm;
+  @page { size: A4 landscape; margin: 1.4cm 1cm 1.8cm 1cm; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-break { page-break-before: always; }
+    .no-print { display: none !important; }
   }
-  body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #222; mso-page-orientation: landscape; }
+  body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #222; margin: 0; padding: 16px; }
   h1   { color: #0A1628; font-size: 17pt; margin-bottom: 2px; margin-top: 0; }
   h2   { color: #1A3A6B; font-size: 11pt; font-weight: normal; margin-top: 0; margin-bottom: 10px; }
   .meta { color: #7F8C8D; font-size: 8pt; margin-bottom: 14px; }
@@ -1990,27 +2045,17 @@ async function generateReport() {
   .stbl    { width: auto; }
   .stbl th { font-size: 7.5pt; padding: 4px 10px; }
   .stbl td { font-size: 10.5pt; font-weight: bold; padding: 4px 10px; border: 1px solid #D0D7E2; }
-  #f1  { mso-element: footer; }
+  .footer-bar { font-size: 7pt; color: #888; margin-top: 18px; border-top: 1px solid #D0D7E2;
+                padding-top: 4px; display: flex; justify-content: space-between; }
+  .print-btn { display: inline-block; margin: 0 0 16px 0; padding: 8px 18px;
+               background: #1A3A6B; color: #fff; border: none; border-radius: 6px;
+               font-size: 10pt; cursor: pointer; }
+  .print-btn:hover { background: #122c55; }
 </style>
 </head>
 <body>
 
-<!-- Running footer (Word mso-element) -->
-<div id="f1">
-  <table style="width:100%;border:none">
-    <tr>
-      <td style="border:none;font-size:7pt;color:#888;text-align:left;padding:2px 0">
-        Reporte Confidencial &mdash; The Prieto Group &copy; 2026
-      </td>
-      <td style="border:none;font-size:7pt;color:#888;text-align:right;padding:2px 0">
-        P&aacute;gina
-        <span style="mso-field-code:'PAGE \\* MERGEFORMAT'"><![if !mso]>1<![endif]></span>
-        de
-        <span style="mso-field-code:'NUMPAGES \\* MERGEFORMAT'"><![if !mso]>1<![endif]></span>
-      </td>
-    </tr>
-  </table>
-</div>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <!-- Page 1: Cover + global summary + entity summary -->
 <h1>SENTINEL-AI HONDURAS</h1>
@@ -2059,7 +2104,7 @@ async function generateReport() {
 </table>
 
 <!-- Page break before detail table -->
-<br style="page-break-before:always;mso-break-type:page-break">
+<div class="page-break"></div>
 
 <!-- Page 2+: Alert detail -->
 <p class="sec">Detalle de Alertas (Cr&iacute;ticas, Altas y Medias) &mdash; ${reportable.length.toLocaleString('es-HN')} registros</p>
@@ -2083,44 +2128,31 @@ ${capNote}
   <tbody>${alertRowsHtml}</tbody>
 </table>
 
+<div class="footer-bar">
+  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
+</div>
+
 </body>
 </html>`;
 
-    // ── 6. Convert + save ──
-    const blob  = htmlDocx.asBlob(html, {
-      orientation: 'landscape',
-      margins: { top: 800, bottom: 1030, left: 576, right: 576 },
-    });
-    const fname = `Sentinel-AI_Reporte_${dateTag}.docx`;
-
-    if (window.showSaveFilePicker) {
-      // Chrome/Edge: native Save As dialog with folder picker
-      const handle = await window.showSaveFilePicker({
-        suggestedName: fname,
-        types: [{
-          description: 'Word Document (.docx)',
-          accept: { 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] },
-        }],
-      });
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-    } else {
-      // Fallback: browser default Downloads folder
-      const url  = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url; link.download = fname; link.click();
-      URL.revokeObjectURL(url);
+    // ── 6. Open print window ──
+    const pw = window.open('', '_blank', 'width=1100,height=800');
+    if (!pw) {
+      alert('Por favor permita ventanas emergentes para generar el reporte PDF.');
+      return;
     }
+    pw.document.write(html);
+    pw.document.close();
+    // Small delay to let styles load before print dialog
+    pw.addEventListener('load', () => pw.focus());
 
   } catch(err) {
-    if (err.name !== 'AbortError') {   // user cancelled save dialog — not an error
-      console.error('generateReport error:', err);
-      alert('Error generando el reporte: ' + err.message);
-    }
+    console.error('generateReport error:', err);
+    alert('Error generando el reporte: ' + err.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = '📄 Generar Reporte';
+    btn.textContent = '📄 Generar Reporte PDF';
   }
 }
 
@@ -2518,7 +2550,7 @@ function showFuentePanel(fuente) {
   // Show panel, hide main table view
   document.getElementById('fuentePanel').classList.add('open');
   document.querySelector('.stats-grid').style.display    = 'none';
-  document.querySelector('.controls-bar').style.display  = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.querySelector('.table-container').style.display = 'none';
 }
 
@@ -2599,7 +2631,7 @@ function showEntityPanel(entityName) {
   // Show panel, hide main view
   document.getElementById('entityPanel').classList.add('open');
   document.querySelector('.stats-grid').style.display     = 'none';
-  document.querySelector('.controls-bar').style.display   = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.querySelector('.table-container').style.display = 'none';
 }
 
@@ -2668,8 +2700,165 @@ function showVendorPanel(vendorName) {
 
   document.getElementById('entityPanel').classList.add('open');
   document.querySelector('.stats-grid').style.display      = 'none';
-  document.querySelector('.controls-bar').style.display    = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.querySelector('.table-container').style.display = 'none';
+}
+
+// ════════════════════════════════════════════════════════════
+// ALERT DETAIL PANEL — drill-down for a single alert row
+// ════════════════════════════════════════════════════════════
+function openAlertDetail(alertId, event) {
+  // Ignore right-clicks / modifier-clicks
+  if (event && (event.ctrlKey || event.metaKey || event.shiftKey)) return;
+
+  const a = allAlerts.find(x => x.id === alertId);
+  if (!a) return;
+
+  const fmtL = n => n != null && n > 0
+    ? 'L ' + Number(n).toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    : '—';
+
+  // -- Header --
+  const patList = (a.patterns || '').split(',').map(p => p.trim()).filter(Boolean);
+  const mainPat = patList[0] ? (PATTERN_LABELS[patList[0]] || patList[0]) : 'Anomalía';
+  document.getElementById('adp-title').textContent = mainPat + ' — ' + (a.proveedor_nombre || a.entity_name || '—');
+  document.getElementById('adp-meta').textContent  =
+    `Alerta ${a.alert_id || '#' + a.id}  ·  ${fmtDate(a.created_at)}  ·  ${a.data_source || '—'}`;
+
+  // -- Contract fields --
+  document.getElementById('adp-contract-id').textContent = a.contract_id || '—';
+
+  // Parse structured description for display values
+  const pdFor = (key) => parseDesc_for(key, a.description);
+  const proveedorDisplay = a.proveedor_nombre || pdFor('Proveedor') || a.entity_name || '—';
+  const entidadDisplay   = pdFor('Entidad compradora') || a.entity_name || '—';
+
+  document.getElementById('adp-entidad').textContent   = entidadDisplay;
+  document.getElementById('adp-proveedor').textContent = proveedorDisplay;
+  document.getElementById('adp-tipo').textContent      = a.tipo_contratacion || '—';
+  document.getElementById('adp-fecha').textContent     = fmtDate(a.fecha_contrato);
+  document.getElementById('adp-fecha-adj').textContent = a.fecha_adjudicacion ? fmtDate(a.fecha_adjudicacion) : '—';
+
+  // -- Financial --
+  const monto  = a.monto_contrato  != null ? Number(a.monto_contrato)  : null;
+  const budget = a.budget_amount   != null ? Number(a.budget_amount)   : null;
+  const mpago  = a.monto_pagado    != null ? Number(a.monto_pagado)    : null;
+  document.getElementById('adp-monto').textContent  = monto  != null ? fmtL(monto)  : '—';
+  document.getElementById('adp-budget').textContent = budget != null ? fmtL(budget) : 'Sin datos';
+  document.getElementById('adp-monto-pagado').textContent = mpago != null ? fmtL(mpago) : 'Sin datos';
+
+  // -- Derived SOBRECOSTO from monto_pagado vs monto_contrato --
+  const sobrecostoSection = document.getElementById('adp-sobrecosto-pagado-section');
+  const THRESHOLD = 0.15;
+  if (mpago != null && monto != null && monto > 0 && mpago > monto * (1 + THRESHOLD)) {
+    sobrecostoSection.style.display = 'block';
+    const pctOver = ((mpago / monto - 1) * 100).toFixed(1);
+    document.getElementById('adp-sobrecosto-pagado-pct').textContent =
+      `(+${pctOver}% sobre monto contratado)`;
+  } else {
+    sobrecostoSection.style.display = 'none';
+  }
+
+  // -- SOBRECOSTO bar (vs budget) --
+  const barSection = document.getElementById('adp-sobrecosto-bar-section');
+  if (budget != null && budget > 0 && monto != null && monto > 0) {
+    barSection.style.display = 'block';
+    const max   = Math.max(monto, budget);
+    const bPct  = Math.min(100, (budget / max) * 100).toFixed(1);
+    const mPct  = Math.min(100, (monto  / max) * 100).toFixed(1);
+    document.getElementById('adp-bar-budget').style.width = bPct + '%';
+    document.getElementById('adp-bar-monto').style.width  = mPct + '%';
+    if (monto > budget) {
+      const pctOver = ((monto / budget - 1) * 100).toFixed(1);
+      document.getElementById('adp-bar-pct').textContent = `+${pctOver}% sobre presupuesto`;
+    } else {
+      const pctUnder = ((1 - monto / budget) * 100).toFixed(1);
+      document.getElementById('adp-bar-pct').style.color = 'var(--green)';
+      document.getElementById('adp-bar-pct').textContent = `-${pctUnder}% bajo presupuesto`;
+    }
+  } else {
+    barSection.style.display = 'none';
+  }
+
+  // -- Severity --
+  const sevEl = document.getElementById('adp-severity');
+  const sc    = normSev(a.severity);
+  sevEl.textContent = a.severity || '—';
+  sevEl.className   = 'adp-field-value ' +
+    (sc.includes('critica') ? 'red' : sc.includes('alta') ? 'amber' : 'electric');
+
+  // -- Pattern tags (include derived SOBRECOSTO if detected from monto_pagado) --
+  const derivedPatterns = [...patList];
+  if (mpago != null && monto != null && monto > 0 && mpago > monto * (1 + THRESHOLD)
+      && !derivedPatterns.includes('SOBRECOSTO')) {
+    derivedPatterns.push('SOBRECOSTO');
+  }
+  document.getElementById('adp-patterns').innerHTML = derivedPatterns.length
+    ? derivedPatterns.map(p =>
+        `<span class="adp-pattern-tag ${p}">${PATTERN_LABELS[p] || p}</span>`
+      ).join('')
+    : '<span style="color:var(--text-dim);font-size:12px">Sin patrones</span>';
+
+  // -- Vendor history (same proveedor_nombre, exclude current alert, newest 5) --
+  const vendorAlerts = allAlerts
+    .filter(x => x.id !== alertId && x.proveedor_nombre && x.proveedor_nombre === a.proveedor_nombre)
+    .sort((x, y) => new Date(y.created_at) - new Date(x.created_at))
+    .slice(0, 5);
+  document.getElementById('adp-vendor-count').textContent =
+    vendorAlerts.length ? `(${vendorAlerts.length} más)` : '';
+  document.getElementById('adp-vendor-history').innerHTML = vendorAlerts.length
+    ? vendorAlerts.map(x => `
+        <div class="adp-history-item">
+          <span class="adp-hi-id">${x.alert_id || '#' + x.id}</span>
+          <span class="adp-hi-sev" style="color:${_sevColor(x.severity)}">${x.severity || '—'}</span>
+          <span class="adp-hi-desc" title="${(x.description||'').replace(/"/g,'&quot;')}">${(x.description||'—').substring(0,80)}</span>
+        </div>`)
+      .join('')
+    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin otros contratos de este proveedor.</div>';
+
+  // -- Entity history (same entity_name, exclude current alert, newest 5) --
+  const entityKey    = pdFor('Entidad compradora') || a.entity_name;
+  const entityAlerts = allAlerts
+    .filter(x => {
+      if (x.id === alertId) return false;
+      const eKey = parseDesc_for('Entidad compradora', x.description) || x.entity_name;
+      return eKey && eKey === entityKey;
+    })
+    .sort((x, y) => new Date(y.created_at) - new Date(x.created_at))
+    .slice(0, 5);
+  document.getElementById('adp-entity-count').textContent =
+    entityAlerts.length ? `(${entityAlerts.length} más)` : '';
+  document.getElementById('adp-entity-history').innerHTML = entityAlerts.length
+    ? entityAlerts.map(x => `
+        <div class="adp-history-item">
+          <span class="adp-hi-id">${x.alert_id || '#' + x.id}</span>
+          <span class="adp-hi-sev" style="color:${_sevColor(x.severity)}">${x.severity || '—'}</span>
+          <span class="adp-hi-desc" title="${(x.description||'').replace(/"/g,'&quot;')}">${(x.description||'—').substring(0,80)}</span>
+        </div>`)
+      .join('')
+    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin otros contratos de esta entidad.</div>';
+
+  // -- Show panel, hide main view --
+  document.getElementById('alertDetailPanel').classList.add('open');
+  document.querySelector('.stats-grid').style.display      = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+  document.querySelector('.table-container').style.display = 'none';
+}
+
+function closeAlertDetail() {
+  document.getElementById('alertDetailPanel').classList.remove('open');
+  document.querySelector('.stats-grid').style.display      = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.querySelector('.table-container').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function _sevColor(s) {
+  const n = normSev(s);
+  if (n.includes('critica')) return 'var(--red)';
+  if (n.includes('alta'))    return 'var(--amber)';
+  if (n.includes('media'))   return 'var(--electric)';
+  return 'var(--green)';
 }
 
 // Helper used by showVendorPanel to parse legacy description field
@@ -2690,7 +2879,7 @@ function hideEntityPanel() {
     showAnalyticsPanel();
   } else {
     document.querySelector('.stats-grid').style.display     = '';
-    document.querySelector('.controls-bar').style.display   = '';
+    document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
     document.querySelector('.table-container').style.display = '';
   }
 }
@@ -2723,6 +2912,7 @@ function hideFuentePanel() {
   // Remove fuente active state, restore dashboard active
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
 }
+
 // ════════════════════════════════════════════════════════════
 // AUTH — Login / Logout / Session
 // Uses sessionStorage to persist across page reloads.
@@ -3251,7 +3441,7 @@ function showAuditPanel() {
   document.getElementById('fuentePanel').classList.remove('open');
   document.getElementById('entityPanel').classList.remove('open');
   document.querySelector('.stats-grid').style.display     = 'none';
-  document.querySelector('.controls-bar').style.display   = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.querySelector('.table-container').style.display = 'none';
 
   // Update nav active state
@@ -3267,7 +3457,7 @@ function hideAuditPanel() {
   document.getElementById('auditPanel').classList.remove('open');
   document.getElementById('nav-audit').classList.remove('active');
   document.querySelector('.stats-grid').style.display     = '';
-  document.querySelector('.controls-bar').style.display   = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.querySelector('.table-container').style.display = '';
 }
 
@@ -3365,142 +3555,7 @@ async function init() {
   }
   // If no session, login screen is already visible (not hidden)
 }
-function openAlertDetail(alertId, event) {
-  // Ignore right-clicks / modifier-clicks
-  if (event && (event.ctrlKey || event.metaKey || event.shiftKey)) return;
 
-  const a = allAlerts.find(x => x.id === alertId);
-  if (!a) return;
-
-  const fmtL = n => n != null && n > 0
-    ? 'L ' + Number(n).toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-    : '—';
-
-  // -- Header --
-  const patList = (a.patterns || '').split(',').map(p => p.trim()).filter(Boolean);
-  const mainPat = patList[0] ? (PATTERN_LABELS[patList[0]] || patList[0]) : 'Anomalía';
-  document.getElementById('adp-title').textContent = mainPat + ' — ' + (a.proveedor_nombre || a.entity_name || '—');
-  document.getElementById('adp-meta').textContent  =
-    `Alerta ${a.alert_id || '#' + a.id}  ·  ${fmtDate(a.created_at)}  ·  ${a.data_source || '—'}`;
-
-  // -- Contract fields --
-  document.getElementById('adp-contract-id').textContent = a.contract_id || '—';
-
-  // Parse structured description for display values
-  const pdFor = (key) => parseDesc_for(key, a.description);
-  const proveedorDisplay = a.proveedor_nombre || pdFor('Proveedor') || a.entity_name || '—';
-  const entidadDisplay   = pdFor('Entidad compradora') || a.entity_name || '—';
-
-  document.getElementById('adp-entidad').textContent   = entidadDisplay;
-  document.getElementById('adp-proveedor').textContent = proveedorDisplay;
-  document.getElementById('adp-tipo').textContent      = a.tipo_contratacion || '—';
-  document.getElementById('adp-fecha').textContent     = fmtDate(a.fecha_contrato);
-  document.getElementById('adp-fecha-adj').textContent = a.fecha_adjudicacion ? fmtDate(a.fecha_adjudicacion) : '—';
-
-  // -- Financial --
-  const monto  = a.monto_contrato  != null ? Number(a.monto_contrato)  : null;
-  const budget = a.budget_amount   != null ? Number(a.budget_amount)   : null;
-  document.getElementById('adp-monto').textContent  = monto  != null ? fmtL(monto)  : '—';
-  document.getElementById('adp-budget').textContent = budget != null ? fmtL(budget) : 'Sin datos';
-
-  // -- SOBRECOSTO bar --
-  const barSection = document.getElementById('adp-sobrecosto-bar-section');
-  if (budget != null && budget > 0 && monto != null && monto > 0) {
-    barSection.style.display = 'block';
-    const max   = Math.max(monto, budget);
-    const bPct  = Math.min(100, (budget / max) * 100).toFixed(1);
-    const mPct  = Math.min(100, (monto  / max) * 100).toFixed(1);
-    document.getElementById('adp-bar-budget').style.width = bPct + '%';
-    document.getElementById('adp-bar-monto').style.width  = mPct + '%';
-    if (monto > budget) {
-      const pctOver = ((monto / budget - 1) * 100).toFixed(1);
-      document.getElementById('adp-bar-pct').textContent = `+${pctOver}% sobre presupuesto`;
-    } else {
-      const pctUnder = ((1 - monto / budget) * 100).toFixed(1);
-      document.getElementById('adp-bar-pct').style.color = 'var(--green)';
-      document.getElementById('adp-bar-pct').textContent = `-${pctUnder}% bajo presupuesto`;
-    }
-  } else {
-    barSection.style.display = 'none';
-  }
-
-  // -- Severity --
-  const sevEl = document.getElementById('adp-severity');
-  const sc    = normSev(a.severity);
-  sevEl.textContent = a.severity || '—';
-  sevEl.className   = 'adp-field-value ' +
-    (sc.includes('critica') ? 'red' : sc.includes('alta') ? 'amber' : 'electric');
-
-  // -- Pattern tags --
-  document.getElementById('adp-patterns').innerHTML = patList.length
-    ? patList.map(p =>
-        `<span class="adp-pattern-tag ${p}">${PATTERN_LABELS[p] || p}</span>`
-      ).join('')
-    : '<span style="color:var(--text-dim);font-size:12px">Sin patrones</span>';
-
-  // -- Vendor history (same proveedor_nombre, exclude current alert, newest 5) --
-  const vendorAlerts = allAlerts
-    .filter(x => x.id !== alertId && x.proveedor_nombre && x.proveedor_nombre === a.proveedor_nombre)
-    .sort((x, y) => new Date(y.created_at) - new Date(x.created_at))
-    .slice(0, 5);
-  document.getElementById('adp-vendor-count').textContent =
-    vendorAlerts.length ? `(${vendorAlerts.length} más)` : '';
-  document.getElementById('adp-vendor-history').innerHTML = vendorAlerts.length
-    ? vendorAlerts.map(x => `
-        <div class="adp-history-item">
-          <span class="adp-hi-id">${x.alert_id || '#' + x.id}</span>
-          <span class="adp-hi-sev" style="color:${_sevColor(x.severity)}">${x.severity || '—'}</span>
-          <span class="adp-hi-desc" title="${(x.description||'').replace(/"/g,'&quot;')}">${(x.description||'—').substring(0,80)}</span>
-        </div>`)
-      .join('')
-    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin otros contratos de este proveedor.</div>';
-
-  // -- Entity history (same entity_name, exclude current alert, newest 5) --
-  const entityKey    = pdFor('Entidad compradora') || a.entity_name;
-  const entityAlerts = allAlerts
-    .filter(x => {
-      if (x.id === alertId) return false;
-      const eKey = parseDesc_for('Entidad compradora', x.description) || x.entity_name;
-      return eKey && eKey === entityKey;
-    })
-    .sort((x, y) => new Date(y.created_at) - new Date(x.created_at))
-    .slice(0, 5);
-  document.getElementById('adp-entity-count').textContent =
-    entityAlerts.length ? `(${entityAlerts.length} más)` : '';
-  document.getElementById('adp-entity-history').innerHTML = entityAlerts.length
-    ? entityAlerts.map(x => `
-        <div class="adp-history-item">
-          <span class="adp-hi-id">${x.alert_id || '#' + x.id}</span>
-          <span class="adp-hi-sev" style="color:${_sevColor(x.severity)}">${x.severity || '—'}</span>
-          <span class="adp-hi-desc" title="${(x.description||'').replace(/"/g,'&quot;')}">${(x.description||'—').substring(0,80)}</span>
-        </div>`)
-      .join('')
-    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin otros contratos de esta entidad.</div>';
-
-  // -- Show panel, hide main view --
-  document.getElementById('alertDetailPanel').classList.add('open');
-  document.querySelector('.stats-grid').style.display      = 'none';
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.querySelector('.table-container').style.display = 'none';
-}
-
-function closeAlertDetail() {
-  document.getElementById('alertDetailPanel').classList.remove('open');
-  document.querySelector('.stats-grid').style.display      = '';
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.querySelector('.table-container').style.display = '';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function _sevColor(s) {
-  const n = normSev(s);
-  if (n.includes('critica')) return 'var(--red)';
-  if (n.includes('alta'))    return 'var(--amber)';
-  if (n.includes('media'))   return 'var(--electric)';
-  return 'var(--green)';
-}
-
-// Helper used by showVendorPanel to parse legacy description field
 init();
 </script>
 

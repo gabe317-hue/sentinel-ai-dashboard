@@ -1528,6 +1528,30 @@ body::after {
 
     </div><!-- end #analyticsMainContent -->
 
+    <!-- ═══ VENDOR CONCENTRATION DETAIL PANEL ═══ -->
+    <div id="vendorConcentrationDetailPanel" style="display:none;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+        <button onclick="closeVendorConcentrationDetail()"
+          style="background:none;border:1px solid var(--border);color:var(--text-dim);
+                 padding:7px 14px;border-radius:6px;cursor:pointer;
+                 font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;
+                 transition:all .2s;"
+          onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'"
+          onmouseout="this.style.borderColor='';this.style.color=''">← Volver a Concentración</button>
+        <div id="vcDetailTitle" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);"></div>
+      </div>
+
+      <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">ENTIDADES DONDE OPERA ESTE PROVEEDOR</div>
+        <div id="vcDetailEntityList" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="exportVendorConcentrationDetail('csv')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a CSV">📥 CSV</button>
+        <button onclick="exportVendorConcentrationDetail('pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a PDF">📥 PDF</button>
+      </div>
+    </div>
+
     <!-- ═══ PATTERN DETAIL PANEL ═══ -->
     <div id="patternDetailPanel" style="display:none;">
 
@@ -3972,6 +3996,10 @@ function renderAnalytics() {
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(Number(a.monto_contrato))}</td>
     </tr>`;
   }).join('');
+
+  // Calculate and display vendor concentration analysis
+  window.globalAlerts = alerts; // Store for vendor detail functions
+  calculateAndDisplayVendorConcentration(alerts);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -4310,6 +4338,324 @@ async function init() {
     startRealtime();
   }
   // If no session, login screen is already visible (not hidden)
+}
+
+// ════════════════════════════════════════════════════════════════
+// VENDOR CONCENTRATION ANALYSIS FUNCTIONS
+// ════════════════════════════════════════════════════════════════
+
+window.vendorConcentrationData = null;
+
+function calculateAndDisplayVendorConcentration(alerts) {
+  if (!alerts || alerts.length === 0) {
+    document.getElementById('vc-vendor-list').innerHTML = '<div style="color:var(--text-dim);font-size:12px;">Sin datos disponibles</div>';
+    return;
+  }
+
+  // Aggregate by vendor
+  const vendors = {};
+  let totalMonto = 0;
+
+  alerts.forEach(alert => {
+    const vendor = alert.proveedor || 'Desconocido';
+    if (!vendors[vendor]) {
+      vendors[vendor] = { name: vendor, alerts: 0, monto: 0, entities: new Set() };
+    }
+    vendors[vendor].alerts += 1;
+    vendors[vendor].monto += (alert.monto_contratado || 0);
+    vendors[vendor].entities.add(alert.entidad || 'Desconocida');
+    totalMonto += (alert.monto_contratado || 0);
+  });
+
+  const vendorArray = Object.values(vendors).sort((a, b) => b.monto - a.monto);
+
+  // Calculate HHI
+  const hhi = calculateHHI(vendorArray, totalMonto);
+
+  // Get top 3 market share
+  const top3Share = vendorArray.slice(0, 3).reduce((sum, v) => sum + (v.monto / totalMonto * 100), 0);
+
+  // Get risk level
+  const riskLevel = getRiskLevel(hhi, vendorArray, totalMonto);
+
+  // Update metric cards
+  document.getElementById('vc-total-vendors').textContent = vendorArray.length;
+  document.getElementById('vc-hhi-index').textContent = hhi.toFixed(0);
+  document.getElementById('vc-hhi-label').textContent = getHHILabel(hhi);
+  document.getElementById('vc-top3-share').textContent = top3Share.toFixed(1) + '%';
+  document.getElementById('vc-risk-level').textContent = riskLevel;
+
+  // Render vendor list
+  const vendorListHTML = vendorArray.map((v, idx) => {
+    const share = (v.monto / totalMonto * 100);
+    const riskEmoji = share > 50 ? '🔴' : share > 30 ? '🟡' : '🟢';
+    const barWidth = Math.min(share * 2, 100); // Scale bar width
+
+    return `
+      <div style="background:rgba(0,200,255,0.05);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .2s;"
+           onmouseover="this.style.background='rgba(0,200,255,0.1)';this.style.borderColor='var(--electric)'"
+           onmouseout="this.style.background='rgba(0,200,255,0.05)';this.style.borderColor=''"
+           onclick="showVendorConcentrationDetail('${v.name}')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:18px;">${riskEmoji}</span>
+          <span style="font-weight:600;color:var(--text);">${v.name}</span>
+          <span style="color:var(--text-dim);font-size:11px;margin-left:auto;">${v.alerts} alertas • L. ${(v.monto/1000).toFixed(0)}K</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="background:rgba(0,200,255,0.1);border-radius:4px;height:20px;flex:1;position:relative;border:1px solid var(--border);">
+            <div style="background:var(--electric);height:100%;width:${barWidth}%;border-radius:4px;"></div>
+          </div>
+          <span style="color:var(--amber);font-weight:600;font-size:12px;min-width:50px;text-align:right;">${share.toFixed(1)}%</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('vc-vendor-list').innerHTML = vendorListHTML;
+
+  // Store data for export
+  window.vendorConcentrationData = {
+    vendors: vendorArray,
+    totalMonto: totalMonto,
+    hhi: hhi,
+    hhhiLabel: getHHILabel(hhi),
+    riskLevel: riskLevel,
+    top3Share: top3Share,
+    timestamp: new Date().toISOString()
+  };
+}
+
+function calculateHHI(vendors, totalMonto) {
+  if (totalMonto === 0) return 0;
+
+  let hhi = 0;
+  vendors.forEach(v => {
+    const share = (v.monto / totalMonto) * 100; // As percentage
+    hhi += (share * share);
+  });
+
+  return hhi;
+}
+
+function getHHILabel(hhi) {
+  if (hhi >= 2500) return 'ALTAMENTE CONCENTRADO';
+  if (hhi >= 1500) return 'MODERADAMENTE CONCENTRADO';
+  if (hhi >= 1000) return 'MODERADO';
+  return 'COMPETITIVO';
+}
+
+function getRiskLevel(hhi, vendors, totalMonto) {
+  const top3Share = vendors.slice(0, 3).reduce((sum, v) => sum + (v.monto / totalMonto * 100), 0);
+
+  if (hhi > 2500 || top3Share > 80) return '🔴 ALTO';
+  if (hhi > 1500 || top3Share > 60) return '🟡 MEDIO';
+  return '🟢 BAJO';
+}
+
+function showVendorConcentrationDetail(vendorName) {
+  const vendorData = window.vendorConcentrationData?.vendors.find(v => v.name === vendorName);
+  if (!vendorData) return;
+
+  // Hide main content, show detail
+  document.getElementById('vendor-concentration-container').style.display = 'none';
+  document.getElementById('vendorConcentrationDetailPanel').style.display = 'block';
+
+  // Set title
+  document.getElementById('vcDetailTitle').textContent = vendorName;
+
+  // Build entity list
+  const totalMonto = window.vendorConcentrationData.totalMonto;
+  const entityList = Array.from(vendorData.entities).sort();
+
+  const entityHTML = entityList.map(entity => {
+    // Find all alerts for this vendor-entity combination
+    const entityAlerts = window.globalAlerts.filter(a => a.proveedor === vendorName && a.entidad === entity);
+    const alertCount = entityAlerts.length;
+    const montoSum = entityAlerts.reduce((sum, a) => sum + (a.monto_contratado || 0), 0);
+    const share = (montoSum / totalMonto * 100);
+
+    return `
+      <div style="background:rgba(0,200,255,0.03);border:1px solid var(--border);border-radius:6px;padding:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="color:var(--text);font-weight:600;font-size:12px;">${entity}</div>
+            <div style="color:var(--text-dim);font-size:10px;margin-top:4px;">${alertCount} alertas • L. ${(montoSum/1000).toFixed(0)}K</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="color:var(--electric);font-weight:600;font-size:12px;">${share.toFixed(1)}%</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('vcDetailEntityList').innerHTML = entityHTML;
+
+  // Store current detail data for export
+  window.currentVendorDetail = {
+    vendorName: vendorName,
+    entities: entityList,
+    totalMonto: totalMonto
+  };
+}
+
+function closeVendorConcentrationDetail() {
+  document.getElementById('vendor-concentration-container').style.display = 'block';
+  document.getElementById('vendorConcentrationDetailPanel').style.display = 'none';
+  window.currentVendorDetail = null;
+}
+
+function exportVendorConcentration(format) {
+  if (!window.vendorConcentrationData) return;
+
+  const data = window.vendorConcentrationData;
+  const timestamp = new Date().toISOString().split('T')[0];
+
+  if (format === 'csv') {
+    let csv = 'ANÁLISIS DE CONCENTRACIÓN DE PROVEEDORES\n\n';
+    csv += `Índice HHI,${data.hhi.toFixed(0)},${data.hhhiLabel}\n`;
+    csv += `Top 3 Market Share,${data.top3Share.toFixed(1)}%\n`;
+    csv += `Nivel de Riesgo,${data.riskLevel}\n\n`;
+    csv += 'Proveedor,Alertas,Monto (L.),Market Share %\n';
+
+    data.vendors.forEach(v => {
+      const share = (v.monto / data.totalMonto * 100);
+      csv += `"${v.name}",${v.alerts},${v.monto},${share.toFixed(2)}\n`;
+    });
+
+    downloadFile(csv, `vendor-concentration-${timestamp}.csv`, 'text/csv');
+  } else if (format === 'pdf') {
+    generateVendorConcentrationPDF(data, timestamp);
+  }
+}
+
+function exportVendorConcentrationDetail(format) {
+  if (!window.currentVendorDetail) return;
+
+  const detail = window.currentVendorDetail;
+  const timestamp = new Date().toISOString().split('T')[0];
+
+  if (format === 'csv') {
+    let csv = `PROVEEDOR: ${detail.vendorName}\n\n`;
+    csv += 'Entidad,Alertas,Monto (L.),Market Share %\n';
+
+    detail.entities.forEach(entity => {
+      const entityAlerts = window.globalAlerts.filter(a => a.proveedor === detail.vendorName && a.entidad === entity);
+      const alertCount = entityAlerts.length;
+      const montoSum = entityAlerts.reduce((sum, a) => sum + (a.monto_contratado || 0), 0);
+      const share = (montoSum / detail.totalMonto * 100);
+      csv += `"${entity}",${alertCount},${montoSum},${share.toFixed(2)}\n`;
+    });
+
+    downloadFile(csv, `vendor-detail-${detail.vendorName}-${timestamp}.csv`, 'text/csv');
+  } else if (format === 'pdf') {
+    generateVendorDetailPDF(detail, timestamp);
+  }
+}
+
+function generateVendorConcentrationPDF(data, timestamp) {
+  const doc = new jsPDF('p', 'mm', 'letter');
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let yPos = 20;
+
+  // Header
+  doc.setFontSize(16);
+  doc.setFont(undefined, 'bold');
+  doc.text('Análisis de Concentración de Proveedores', pageWidth / 2, yPos, { align: 'center' });
+
+  yPos += 12;
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Reporte: ${timestamp}`, pageWidth / 2, yPos, { align: 'center' });
+
+  // Metrics
+  yPos += 15;
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'bold');
+  doc.text('Métricas Principales', 20, yPos);
+
+  yPos += 8;
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Índice HHI: ${data.hhi.toFixed(0)} (${data.hhhiLabel})`, 25, yPos);
+  yPos += 6;
+  doc.text(`Top 3 Market Share: ${data.top3Share.toFixed(1)}%`, 25, yPos);
+  yPos += 6;
+  doc.text(`Nivel de Riesgo: ${data.riskLevel}`, 25, yPos);
+  yPos += 6;
+  doc.text(`Total Proveedores: ${data.vendors.length}`, 25, yPos);
+
+  // Vendor table
+  yPos += 12;
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'bold');
+  doc.text('Distribución de Proveedores', 20, yPos);
+
+  yPos += 8;
+  doc.setFontSize(9);
+  const tableData = [['Proveedor', 'Alertas', 'Monto (L.)', 'Market Share %']];
+  data.vendors.forEach(v => {
+    const share = (v.monto / data.totalMonto * 100);
+    tableData.push([v.name, v.alerts.toString(), v.monto.toLocaleString(), share.toFixed(1)]);
+  });
+
+  doc.autoTable({
+    head: [tableData[0]],
+    body: tableData.slice(1),
+    startY: yPos,
+    theme: 'grid',
+    styles: { fontSize: 8, textColor: [30, 30, 30] },
+    headStyles: { fillColor: [0, 128, 200], textColor: [255, 255, 255] },
+    alternateRowStyles: { fillColor: [240, 240, 240] }
+  });
+
+  doc.save(`vendor-concentration-${timestamp}.pdf`);
+}
+
+function generateVendorDetailPDF(detail, timestamp) {
+  const doc = new jsPDF('p', 'mm', 'letter');
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let yPos = 20;
+
+  // Header
+  doc.setFontSize(16);
+  doc.setFont(undefined, 'bold');
+  doc.text(`Proveedor: ${detail.vendorName}`, pageWidth / 2, yPos, { align: 'center' });
+
+  yPos += 12;
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text(`Reporte: ${timestamp}`, pageWidth / 2, yPos, { align: 'center' });
+
+  // Entity table
+  yPos += 15;
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'bold');
+  doc.text('Entidades', 20, yPos);
+
+  yPos += 8;
+  const tableData = [['Entidad', 'Alertas', 'Monto (L.)', 'Market Share %']];
+
+  detail.entities.forEach(entity => {
+    const entityAlerts = window.globalAlerts.filter(a => a.proveedor === detail.vendorName && a.entidad === entity);
+    const alertCount = entityAlerts.length;
+    const montoSum = entityAlerts.reduce((sum, a) => sum + (a.monto_contratado || 0), 0);
+    const share = (montoSum / detail.totalMonto * 100);
+    tableData.push([entity, alertCount.toString(), montoSum.toLocaleString(), share.toFixed(1)]);
+  });
+
+  doc.autoTable({
+    head: [tableData[0]],
+    body: tableData.slice(1),
+    startY: yPos,
+    theme: 'grid',
+    styles: { fontSize: 8, textColor: [30, 30, 30] },
+    headStyles: { fillColor: [0, 128, 200], textColor: [255, 255, 255] },
+    alternateRowStyles: { fillColor: [240, 240, 240] }
+  });
+
+  doc.save(`vendor-detail-${detail.vendorName}-${timestamp}.pdf`);
 }
 
 init();

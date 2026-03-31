@@ -902,6 +902,50 @@ body::after {
   background: var(--electric-dim); color: var(--electric);
   border-color: rgba(0,200,255,0.3);
 }
+
+/* ─── DRILL-DOWN TABS ─── */
+.ep-drill-tab {
+  padding: 6px 12px; border: 1px solid var(--border);
+  background: none; color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 0.5px; border-radius: 6px; cursor: pointer;
+  transition: all 0.2s;
+}
+.ep-drill-tab:hover {
+  background: var(--glass-hover); color: var(--text);
+}
+.ep-drill-tab.active {
+  background: var(--electric-dim); color: var(--electric);
+  border-color: rgba(0,200,255,0.3);
+}
+
+.ep-drill-content {
+  display: none;
+}
+.ep-drill-content.active {
+  display: block;
+}
+
+/* Sobrecosto/Vendor/Pattern list items */
+.ep-drill-item {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; display: flex;
+  flex-direction: column; gap: 6px; transition: all 0.2s;
+}
+.ep-drill-item:hover {
+  background: var(--glass-hover); border-color: rgba(0,200,255,0.2);
+}
+.ep-drill-item-title {
+  font-family: 'Syne', sans-serif; font-weight: 600; color: var(--text);
+  font-size: 13px;
+}
+.ep-drill-item-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-dim); display: flex; gap: 12px; flex-wrap: wrap;
+}
+.ep-drill-item-highlight {
+  color: var(--amber); font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -1222,10 +1266,44 @@ body::after {
       </div>
     </div>
 
-    <!-- Recent alerts -->
-    <div class="fuente-chart-card">
-      <div class="fuente-recent-title">Alertas Recientes</div>
-      <div class="fuente-recent-list" id="ep-recent"></div>
+    <!-- Drill-down tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;padding:12px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;">
+      <button class="ep-drill-tab active" data-tab="recent" onclick="switchEntityDrillTab('recent',this)">📋 Recientes</button>
+      <button class="ep-drill-tab" data-tab="sobrecosto" onclick="switchEntityDrillTab('sobrecosto',this)">💰 Sobrecosto</button>
+      <button class="ep-drill-tab" data-tab="vendors" onclick="switchEntityDrillTab('vendors',this)">🏢 Proveedores</button>
+      <button class="ep-drill-tab" data-tab="patterns" onclick="switchEntityDrillTab('patterns',this)">🎯 Patrones</button>
+    </div>
+
+    <!-- Recent alerts (default view) -->
+    <div class="ep-drill-content active" id="ep-drill-recent">
+      <div class="fuente-chart-card">
+        <div class="fuente-recent-title">Alertas Recientes (últimas 5)</div>
+        <div class="fuente-recent-list" id="ep-recent"></div>
+      </div>
+    </div>
+
+    <!-- Sobrecosto drill-down -->
+    <div class="ep-drill-content" id="ep-drill-sobrecosto">
+      <div class="fuente-chart-card">
+        <div class="fuente-recent-title">💰 Contratos con SOBRECOSTO (Pagado > Contratado)</div>
+        <div id="ep-sobrecosto-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Vendor concentration drill-down -->
+    <div class="ep-drill-content" id="ep-drill-vendors">
+      <div class="fuente-chart-card">
+        <div class="fuente-recent-title">🏢 Top Proveedores (por monto y cantidad)</div>
+        <div id="ep-vendor-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Pattern distribution drill-down -->
+    <div class="ep-drill-content" id="ep-drill-patterns">
+      <div class="fuente-chart-card">
+        <div class="fuente-recent-title">🎯 Distribución de Patrones Detectados</div>
+        <div id="ep-pattern-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
     </div>
   </div>
 
@@ -2628,6 +2706,17 @@ function showEntityPanel(entityName) {
         </div>`).join('')
     : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin alertas para esta entidad.</div>`;
 
+  // Populate drill-down sections
+  populateEntitySobrecosto(entityName);
+  populateEntityVendors(entityName);
+  populateEntityPatterns(entityName);
+
+  // Reset tabs to "recent"
+  document.querySelectorAll('.ep-drill-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('.ep-drill-tab[data-tab="recent"]').classList.add('active');
+  document.querySelectorAll('.ep-drill-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('ep-drill-recent').classList.add('active');
+
   // Show panel, hide main view
   document.getElementById('entityPanel').classList.add('open');
   document.querySelector('.stats-grid').style.display     = 'none';
@@ -2702,6 +2791,152 @@ function showVendorPanel(vendorName) {
   document.querySelector('.stats-grid').style.display      = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.querySelector('.table-container').style.display = 'none';
+}
+
+// ════════════════════════════════════════════════════════════
+// DRILL-DOWN TAB SWITCHER
+// ════════════════════════════════════════════════════════════
+function switchEntityDrillTab(tabName, btn) {
+  // Update button states
+  document.querySelectorAll('.ep-drill-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Hide all content
+  document.querySelectorAll('.ep-drill-content').forEach(c => c.classList.remove('active'));
+
+  // Show selected content
+  document.getElementById('ep-drill-' + tabName).classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════════
+// POPULATE DRILL-DOWN: SOBRECOSTO DETAILS
+// ════════════════════════════════════════════════════════════
+function populateEntitySobrecosto(entityName) {
+  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+
+  // Filter to contracts with sobrecosto (monto_pagado > monto_contrato by > 15%)
+  const sobrecostos = data
+    .filter(a => {
+      const mc = Number(a.monto_contrato || 0);
+      const mp = Number(a.monto_pagado || 0);
+      return mc > 0 && mp > mc * 1.15; // 15% threshold
+    })
+    .map(a => {
+      const mc = Number(a.monto_contrato);
+      const mp = Number(a.monto_pagado);
+      const diff = mp - mc;
+      const pct = ((diff / mc) * 100).toFixed(1);
+      return { alert: a, diff, pct };
+    })
+    .sort((a, b) => b.diff - a.diff);
+
+  const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
+
+  document.getElementById('ep-sobrecosto-list').innerHTML = sobrecostos.length
+    ? sobrecostos.map(s => `
+        <div class="ep-drill-item">
+          <div class="ep-drill-item-title">
+            ${s.alert.proveedor_nombre || s.alert.entity_name || '—'}
+          </div>
+          <div class="ep-drill-item-meta">
+            <span>ID: ${s.alert.alert_id || '#' + s.alert.id}</span>
+            <span>Contrato: ${fmtL(s.alert.monto_contrato)}</span>
+            <span>Pagado: ${fmtL(s.alert.monto_pagado)}</span>
+            <span class="ep-drill-item-highlight">+${s.pct}% (${fmtL(s.diff)})</span>
+          </div>
+        </div>`).join('')
+    : '<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos con sobrecosto detectado.</div>';
+}
+
+// ════════════════════════════════════════════════════════════
+// POPULATE DRILL-DOWN: VENDOR CONCENTRATION
+// ════════════════════════════════════════════════════════════
+function populateEntityVendors(entityName) {
+  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+
+  // Group by vendor
+  const vendorMap = {};
+  data.forEach(a => {
+    const vendor = a.proveedor_nombre || '—';
+    if (!vendorMap[vendor]) {
+      vendorMap[vendor] = { count: 0, monto: 0, alerts: [] };
+    }
+    vendorMap[vendor].count++;
+    vendorMap[vendor].monto += Number(a.monto_contrato || 0);
+    vendorMap[vendor].alerts.push(a);
+  });
+
+  // Sort by monto descending
+  const vendors = Object.entries(vendorMap)
+    .map(([name, d]) => ({ name, ...d }))
+    .sort((a, b) => b.monto - a.monto);
+
+  const totalMonto = vendors.reduce((s, v) => s + v.monto, 0);
+  const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
+
+  document.getElementById('ep-vendor-list').innerHTML = vendors.length
+    ? vendors.slice(0, 10).map(v => {
+        const pct = totalMonto > 0 ? ((v.monto / totalMonto) * 100).toFixed(1) : 0;
+        const pctBar = Math.min(100, pct);
+        return `
+        <div class="ep-drill-item">
+          <div class="ep-drill-item-title">${v.name}</div>
+          <div style="display:flex;align-items:center;gap:8px;width:100%;">
+            <div style="flex:1;height:4px;background:var(--glass);border-radius:2px;overflow:hidden;">
+              <div style="height:100%;width:${pctBar}%;background:var(--electric);"></div>
+            </div>
+            <span class="ep-drill-item-highlight" style="min-width:40px;">${pct}%</span>
+          </div>
+          <div class="ep-drill-item-meta">
+            <span>${v.count} alertas</span>
+            <span>Monto: ${fmtL(v.monto)}</span>
+          </div>
+        </div>`
+      }).join('')
+    : '<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin datos de proveedores.</div>';
+}
+
+// ════════════════════════════════════════════════════════════
+// POPULATE DRILL-DOWN: PATTERN DISTRIBUTION
+// ════════════════════════════════════════════════════════════
+function populateEntityPatterns(entityName) {
+  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+
+  // Count patterns
+  const patternMap = {};
+  data.forEach(a => {
+    const pats = (a.patterns || '').split(',').map(p => p.trim()).filter(Boolean);
+    pats.forEach(p => {
+      if (!patternMap[p]) patternMap[p] = 0;
+      patternMap[p]++;
+    });
+  });
+
+  const patterns = Object.entries(patternMap)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const totalCount = patterns.reduce((s, p) => s + p.count, 0);
+
+  document.getElementById('ep-pattern-list').innerHTML = patterns.length
+    ? patterns.map(p => {
+        const pct = totalCount > 0 ? ((p.count / totalCount) * 100).toFixed(1) : 0;
+        const label = PATTERN_LABELS[p.name] || p.name;
+        return `
+        <div class="ep-drill-item">
+          <div class="ep-drill-item-title">${label}</div>
+          <div style="display:flex;align-items:center;gap:8px;width:100%;">
+            <div style="flex:1;height:4px;background:var(--glass);border-radius:2px;overflow:hidden;">
+              <div style="height:100%;width:${Math.min(100, pct)}%;background:var(--amber);"></div>
+            </div>
+            <span class="ep-drill-item-highlight">${p.count}</span>
+          </div>
+          <div class="ep-drill-item-meta">
+            <span>${pct}% de alertas</span>
+          </div>
+        </div>`
+      }).join('')
+    : '<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin patrones detectados.</div>';
 }
 
 // ════════════════════════════════════════════════════════════

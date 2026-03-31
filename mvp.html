@@ -1011,6 +1011,9 @@ body::after {
       <button class="nav-item" id="nav-analytics" onclick="showAnalyticsPanel()">
         <span class="nav-icon">📈</span> Análisis
       </button>
+      <button class="nav-item" id="nav-vendor-concentration" onclick="showVendorConcentrationPanel()">
+        <span class="nav-icon">🔴</span> Concentración Proveedores
+      </button>
       <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
         <span class="nav-icon">📋</span> Auditoría
         <span class="nav-chip">LOG</span>
@@ -1460,46 +1463,8 @@ body::after {
         </table>
       </div>
 
-      <!-- ═══ VENDOR CONCENTRATION ANALYSIS ═══ -->
-      <div style="margin-bottom:28px;padding:18px;background:var(--navy-light);border:1px solid var(--border);border-radius:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
-          <div>
-            <div class="fuente-title" style="font-size:13px;margin-bottom:4px;color:var(--text-dim);letter-spacing:.08em;">🏢 ANÁLISIS DE CONCENTRACIÓN DE PROVEEDORES</div>
-            <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">Distribución de poder de mercado — identifica monopolios y redes de corrupción</div>
-          </div>
-          <div style="display:flex;gap:6px;">
-            <button onclick="exportVendorConcentration('csv')" style="padding:6px 12px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a CSV">📥 CSV</button>
-            <button onclick="exportVendorConcentration('pdf')" style="padding:6px 12px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a PDF">📥 PDF</button>
-          </div>
-        </div>
-
-        <!-- Concentration metrics summary -->
-        <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:12px;margin-bottom:16px;">
-          <div style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);margin-bottom:4px;">TOTAL PROVEEDORES</div>
-            <div id="vc-total-vendors" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);">0</div>
-          </div>
-          <div style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);margin-bottom:4px;">HHI INDEX</div>
-            <div id="vc-hhi-score" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--electric);">0</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text-dim);margin-top:2px;" id="vc-hhi-label">Moderado</div>
-          </div>
-          <div style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);margin-bottom:4px;">TOP 3 SHARE</div>
-            <div id="vc-top3-share" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--amber);">0%</div>
-          </div>
-          <div style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);margin-bottom:4px;">RIESGO</div>
-            <div id="vc-risk-level" style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--green);">🟢 BAJO</div>
-          </div>
-        </div>
-
-        <!-- Vendor concentration list (clickable) -->
-        <div id="vendorConcentrationList" style="display:flex;flex-direction:column;gap:8px;"></div>
-      </div>
-
       <!-- High priority: multi-pattern alerts -->
-      <div>
+      <div style="margin-bottom:28px;">
         <div class="fuente-title" style="font-size:13px;margin-bottom:12px;color:var(--text-dim);letter-spacing:.08em;">ALERTAS MULTI-PATRÓN (MAYOR RIESGO)</div>
         <table class="alert-table" id="analyticsMultiTable">
           <thead>
@@ -1512,6 +1477,53 @@ body::after {
           </thead>
           <tbody id="analyticsMultiBody"></tbody>
         </table>
+      </div>
+
+      <!-- ═══ VENDOR CONCENTRATION ANALYSIS ═══ -->
+      <div id="vendor-concentration-container" style="margin-top:40px;padding-top:28px;border-top:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <div class="fuente-title" style="font-size:14px;color:var(--text);letter-spacing:.08em;">📊 ANÁLISIS DE CONCENTRACIÓN DE PROVEEDORES</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="exportVendorConcentration('csv')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a CSV">📥 CSV</button>
+            <button onclick="exportVendorConcentration('pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a PDF">📥 PDF</button>
+          </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
+          <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Total Proveedores</div>
+            <div id="vc-total-vendors" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--electric);">—</div>
+          </div>
+          <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Índice HHI</div>
+            <div id="vc-hhi-index" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--amber);">—</div>
+            <div id="vc-hhi-label" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:4px;">—</div>
+          </div>
+          <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Top 3 Market Share</div>
+            <div id="vc-top3-share" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--orange);">—</div>
+          </div>
+          <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Nivel de Riesgo</div>
+            <div id="vc-risk-level" style="font-family:'Syne',sans-serif;font-size:24px;font-weight:700;margin-top:4px;">—</div>
+          </div>
+        </div>
+
+        <!-- Vendor Concentration List -->
+        <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:12px;padding:20px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">DISTRIBUCIÓN DE PROVEEDORES</div>
+          <div id="vc-vendor-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+
+        <!-- HHI Interpretation -->
+        <div style="margin-top:20px;padding:14px;background:rgba(0,200,255,0.06);border:1px solid rgba(0,200,255,0.12);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.6;">
+          <span style="color:var(--text);">ℹ️ HHI (Herfindahl-Hirschman Index):</span> Mide concentración de mercado. <br/>
+          • <strong>&gt;2500:</strong> Altamente concentrado (riesgo crítico) <br/>
+          • <strong>&gt;1500:</strong> Moderadamente concentrado (riesgo medio) <br/>
+          • <strong>&gt;1000:</strong> Moderado (monitor) <br/>
+          • <strong>≤1000:</strong> Competitivo (bajo riesgo)
+        </div>
       </div>
 
     </div><!-- end #analyticsMainContent -->
@@ -3113,258 +3125,6 @@ function closeVendorDetail() {
 }
 
 // ════════════════════════════════════════════════════════════
-// VENDOR CONCENTRATION ANALYSIS
-// ════════════════════════════════════════════════════════════
-function calculateAndDisplayVendorConcentration(alerts) {
-  // Aggregate vendors
-  const vendorMap = new Map();
-  let totalMonto = 0;
-
-  for (const a of alerts) {
-    const vendor = a.proveedor_nombre || 'Desconocido';
-    if (!vendorMap.has(vendor)) {
-      vendorMap.set(vendor, { count: 0, monto: 0, entities: new Set() });
-    }
-    const v = vendorMap.get(vendor);
-    v.count++;
-    v.monto += Number(a.monto_contrato || 0);
-    if (a.entity_name) v.entities.add(a.entity_name);
-    totalMonto += Number(a.monto_contrato || 0);
-  }
-
-  // Convert to array, sort by monto descending
-  const vendors = [...vendorMap.entries()].map(([name, d]) => ({
-    name,
-    count: d.count,
-    monto: d.monto,
-    entities: Array.from(d.entities),
-    share: totalMonto > 0 ? ((d.monto / totalMonto) * 100).toFixed(2) : 0
-  })).sort((a, b) => b.monto - a.monto);
-
-  // Calculate HHI (Herfindahl-Hirschman Index)
-  const hhi = calculateHHI(vendors, totalMonto);
-  const riskLevel = getRiskLevel(hhi, vendors);
-
-  // Top 3 share
-  const top3Share = vendors.slice(0, 3).reduce((s, v) => s + parseFloat(v.share), 0);
-
-  // Update summary metrics
-  document.getElementById('vc-total-vendors').textContent = vendors.length;
-  document.getElementById('vc-hhi-score').textContent = hhi.toLocaleString();
-  document.getElementById('vc-hhi-label').textContent = getHHILabel(hhi);
-  document.getElementById('vc-top3-share').textContent = top3Share.toFixed(1) + '%';
-
-  const riskColor = riskLevel === '🔴 ALTO' ? '#ff3d57' : riskLevel === '🟡 MEDIO' ? 'var(--amber)' : '#4caf50';
-  document.getElementById('vc-risk-level').textContent = riskLevel;
-  document.getElementById('vc-risk-level').style.color = riskColor;
-
-  // Display vendors (clickable)
-  document.getElementById('vendorConcentrationList').innerHTML = vendors.map(v => {
-    const riskBadge = parseFloat(v.share) > 50 ? '🔴' : parseFloat(v.share) > 30 ? '🟡' : '🟢';
-    const pctBar = Math.min(100, parseFloat(v.share));
-    return `
-    <div class="ep-drill-item" style="cursor:pointer;" onclick="showVendorConcentrationDetail('${v.name.replace(/'/g, "\\'")}', ${JSON.stringify(v.entities).replace(/'/g, "\\'")})">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div style="flex:1;">
-          <div class="ep-drill-item-title" style="color:var(--electric);">${riskBadge} ${v.name}</div>
-          <div class="ep-drill-item-meta">
-            <span>${v.count} alertas</span>
-            <span>Monto: L ${v.monto.toLocaleString('es-HN')}</span>
-            <span style="color:var(--text-dim);font-style:italic;">Haz clic para ver entidades →</span>
-          </div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--electric);">${v.share}%</div>
-          <div style="font-size:10px;color:var(--text-dim);">del total</div>
-        </div>
-      </div>
-      <div style="width:100%;height:4px;background:var(--glass);border-radius:2px;margin-top:8px;overflow:hidden;">
-        <div style="height:100%;width:${pctBar}%;background:var(--electric);"></div>
-      </div>
-    </div>`
-  }).join('');
-
-  // Store for export
-  window.vendorConcentrationData = {
-    vendors,
-    totalMonto,
-    hhi,
-    riskLevel,
-    top3Share
-  };
-}
-
-// Calculate HHI (Herfindahl-Hirschman Index) - measure of market concentration
-function calculateHHI(vendors, totalMonto) {
-  let hhi = 0;
-  for (const v of vendors) {
-    const share = totalMonto > 0 ? (v.monto / totalMonto) * 100 : 0;
-    hhi += share * share;
-  }
-  return Math.round(hhi);
-}
-
-// Get HHI risk assessment label
-function getHHILabel(hhi) {
-  if (hhi >= 2500) return 'ALTAMENTE CONCENTRADO';
-  if (hhi >= 1500) return 'MODERADAMENTE CONCENTRADO';
-  if (hhi >= 1000) return 'MODERADO';
-  return 'COMPETITIVO';
-}
-
-// Get overall risk level
-function getRiskLevel(hhi, vendors) {
-  // Alto riesgo: HHI > 2500 or top 3 > 80%
-  const top3Share = vendors.slice(0, 3).reduce((s, v) => s + parseFloat(v.share || 0), 0);
-  if (hhi > 2500 || top3Share > 80) return '🔴 ALTO';
-  if (hhi > 1500 || top3Share > 60) return '🟡 MEDIO';
-  return '🟢 BAJO';
-}
-
-// Show vendors details by clicking on a vendor (which entities they dominate)
-function showVendorConcentrationDetail(vendorName, entities) {
-  const data = allAlerts.filter(a => (a.proveedor_nombre || '') === vendorName);
-
-  // Group by entity
-  const entityMap = new Map();
-  data.forEach(a => {
-    const ent = a.entity_name || 'Sin Entidad';
-    if (!entityMap.has(ent)) {
-      entityMap.set(ent, { count: 0, monto: 0, sobrecosto: 0 });
-    }
-    const e = entityMap.get(ent);
-    e.count++;
-    e.monto += Number(a.monto_contrato || 0);
-    if (Number(a.monto_pagado || 0) > Number(a.monto_contrato || 0) * 1.15) {
-      e.sobrecosto += (Number(a.monto_pagado) - Number(a.monto_contrato));
-    }
-  });
-
-  const entList = [...entityMap.entries()].map(([name, d]) => ({
-    name,
-    count: d.count,
-    monto: d.monto,
-    sobrecosto: d.sobrecosto
-  })).sort((a, b) => b.monto - a.monto);
-
-  const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : '—';
-
-  // Show in modal or panel - for now update analytics detail
-  alert(`\n🏢 PROVEEDOR: ${vendorName}\n\nENTIDADES QUE CONTRATAN CON ESTE PROVEEDOR:\n\n${entList.map(e =>
-    `${e.name}\n  • ${e.count} alertas\n  • Monto: ${fmtL(e.monto)}\n  • Sobrecosto: ${fmtL(e.sobrecosto)}`
-  ).join('\n\n')}`);
-}
-
-// Export vendor concentration
-function exportVendorConcentration(format) {
-  const data = window.vendorConcentrationData;
-  if (!data) return;
-
-  const timestamp = new Date().toISOString().slice(0, 10);
-
-  if (format === 'csv') {
-    let csv = 'Proveedor,Cantidad Alertas,Monto Total (L),Porcentaje Mercado (%),Riesgo\n';
-    data.vendors.forEach(v => {
-      const risk = parseFloat(v.share) > 50 ? 'ALTO' : parseFloat(v.share) > 30 ? 'MEDIO' : 'BAJO';
-      csv += `"${v.name.replace(/"/g, '""')}",${v.count},${v.monto.toFixed(2)},${v.share},${risk}\n`;
-    });
-    csv += `\nRESUMEN GENERAL\nTotal Proveedores,${data.vendors.length}\nHHI Index,${data.hhi}\nRiesgo Nivel,${data.riskLevel}\nTop 3 Market Share,${data.top3Share.toFixed(1)}%\n`;
-    downloadFile(csv, `VendorConcentration_${timestamp}.csv`, 'text/csv');
-  } else if (format === 'pdf') {
-    generateVendorConcentrationPDF(data, timestamp);
-  }
-}
-
-// Generate vendor concentration PDF
-function generateVendorConcentrationPDF(data, timestamp) {
-  const html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Análisis de Concentración de Proveedores</title>
-<style>
-  body { font-family: Arial, sans-serif; font-size: 10pt; color: #333; }
-  h1 { color: #0A1628; margin-bottom: 2px; }
-  h2 { color: #1A3A6B; font-size: 11pt; margin: 14px 0 8px 0; }
-  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-  th { background: #1A3A6B; color: #fff; padding: 6px 8px; text-align: left; font-size: 9pt; }
-  td { padding: 5px 8px; border-bottom: 1px solid #ddd; }
-  .meta { color: #888; font-size: 8pt; margin-bottom: 12px; }
-  .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
-  .summary-box { background: #f5f5f5; padding: 10px; border-radius: 4px; }
-  .summary-label { font-size: 9pt; color: #666; }
-  .summary-value { font-size: 16pt; font-weight: bold; color: #1A3A6B; margin-top: 4px; }
-  .risk-high { color: #C0392B; font-weight: bold; }
-  .risk-med { color: #C05000; font-weight: bold; }
-  .risk-low { color: #27AE60; font-weight: bold; }
-</style>
-</head>
-<body>
-<h1>Análisis de Concentración de Proveedores</h1>
-<p class="meta">Generado: ${timestamp}</p>
-
-<div class="summary">
-  <div class="summary-box">
-    <div class="summary-label">Total Proveedores</div>
-    <div class="summary-value">${data.vendors.length}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">HHI Index</div>
-    <div class="summary-value">${data.hhi}</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">Top 3 Market Share</div>
-    <div class="summary-value">${data.top3Share.toFixed(1)}%</div>
-  </div>
-  <div class="summary-box">
-    <div class="summary-label">Nivel de Riesgo</div>
-    <div class="summary-value">${data.riskLevel}</div>
-  </div>
-</div>
-
-<h2>Distribución de Proveedores</h2>
-<table>
-  <thead>
-    <tr>
-      <th>Proveedor</th>
-      <th style="text-align:right;">Alertas</th>
-      <th style="text-align:right;">Monto (L)</th>
-      <th style="text-align:right;">Share (%)</th>
-      <th>Riesgo</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${data.vendors.map(v => {
-      const risk = parseFloat(v.share) > 50 ? '🔴 ALTO' : parseFloat(v.share) > 30 ? '🟡 MEDIO' : '🟢 BAJO';
-      const riskClass = parseFloat(v.share) > 50 ? 'risk-high' : parseFloat(v.share) > 30 ? 'risk-med' : 'risk-low';
-      return `
-    <tr>
-      <td>${v.name}</td>
-      <td style="text-align:right;">${v.count}</td>
-      <td style="text-align:right;">L ${v.monto.toLocaleString('es-HN')}</td>
-      <td style="text-align:right;font-weight:bold;">${v.share}%</td>
-      <td class="${riskClass}">${risk}</td>
-    </tr>`;
-    }).join('')}
-  </tbody>
-</table>
-
-<h2>Interpretación HHI</h2>
-<ul>
-  <li><strong>0-1000:</strong> Mercado competitivo (bajo riesgo)</li>
-  <li><strong>1000-1500:</strong> Concentración moderada</li>
-  <li><strong>1500-2500:</strong> Concentración moderada a alta</li>
-  <li><strong>>2500:</strong> Mercado altamente concentrado (ALTO RIESGO)</li>
-</ul>
-</body>
-</html>`;
-
-  const pw = window.open('', '_blank', 'width=1000,height=800');
-  pw.document.write(html);
-  pw.document.close();
-}
-
-// ════════════════════════════════════════════════════════════
 // EXPORT DRILL-DOWN DATA
 // ════════════════════════════════════════════════════════════
 function exportDrilldownData(type, format) {
@@ -4196,9 +3956,6 @@ function renderAnalytics() {
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
     </tr>`).join('');
 
-  // ── VENDOR CONCENTRATION ANALYSIS ──
-  calculateAndDisplayVendorConcentration(alerts);
-
   // ── Multi-pattern high risk ──
   const multiAlerts = alerts
     .filter(a => (a.pattern_count || 0) >= 2 && a.monto_contrato)
@@ -4415,6 +4172,24 @@ function hideAnalyticsPanel() {
   document.querySelector('.stats-grid').style.display      = '';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.querySelector('.table-container').style.display = '';
+}
+
+function showVendorConcentrationPanel() {
+  // First, show the analytics panel
+  showAnalyticsPanel();
+
+  // Then scroll to the vendor concentration section after a brief delay
+  // to allow the panel to render
+  setTimeout(() => {
+    const container = document.getElementById('vendor-concentration-container');
+    if (container) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 100);
+
+  // Mark this button as active
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-vendor-concentration').classList.add('active');
 }
 
 function showAuditPanel() {

@@ -1295,7 +1295,13 @@ body::after {
     <!-- Sobrecosto drill-down -->
     <div class="ep-drill-content" id="ep-drill-sobrecosto">
       <div class="fuente-chart-card">
-        <div class="fuente-recent-title">💰 Contratos con SOBRECOSTO (Pagado > Contratado)</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="fuente-recent-title">💰 Contratos con SOBRECOSTO (Pagado > Contratado)</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="exportDrilldownData('sobrecosto', 'csv')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a CSV">📥 CSV</button>
+            <button onclick="exportDrilldownData('sobrecosto', 'pdf')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a PDF">📥 PDF</button>
+          </div>
+        </div>
         <div id="ep-sobrecosto-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
@@ -1303,7 +1309,13 @@ body::after {
     <!-- Vendor concentration drill-down -->
     <div class="ep-drill-content" id="ep-drill-vendors">
       <div class="fuente-chart-card">
-        <div class="fuente-recent-title">🏢 Top Proveedores (por monto y cantidad)</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="fuente-recent-title">🏢 Top Proveedores (por monto y cantidad)</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="exportDrilldownData('vendors', 'csv')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a CSV">📥 CSV</button>
+            <button onclick="exportDrilldownData('vendors', 'pdf')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a PDF">📥 PDF</button>
+          </div>
+        </div>
         <div id="ep-vendor-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
@@ -1312,7 +1324,13 @@ body::after {
     <div class="ep-drill-content" id="ep-drill-vendor-detail">
       <button class="fuente-back" onclick="closeVendorDetail()" style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);background:none;border:none;cursor:pointer;margin-bottom:16px;padding:0;transition:color .15s;">← Volver a Proveedores</button>
       <div class="fuente-chart-card">
-        <div class="fuente-recent-title" id="ep-vendor-detail-title">Contratos — Proveedor</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="fuente-recent-title" id="ep-vendor-detail-title">Contratos — Proveedor</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="exportDrilldownData('vendor-detail', 'csv')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a CSV">📥 CSV</button>
+            <button onclick="exportDrilldownData('vendor-detail', 'pdf')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a PDF">📥 PDF</button>
+          </div>
+        </div>
         <div id="ep-vendor-contract-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
@@ -3032,6 +3050,324 @@ function closeVendorDetail() {
   document.getElementById('ep-drill-vendors').classList.add('active');
   document.querySelectorAll('.ep-drill-tab').forEach(b => b.classList.remove('active'));
   document.querySelector('.ep-drill-tab[data-tab="vendors"]').classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════════
+// EXPORT DRILL-DOWN DATA
+// ════════════════════════════════════════════════════════════
+function exportDrilldownData(type, format) {
+  const timestamp = new Date().toISOString().slice(0, 10);
+  const entityName = document.getElementById('ep-title').textContent.split(' — ')[0] || 'entidad';
+
+  if (type === 'sobrecosto') {
+    exportSobrecostoData(format, entityName, timestamp);
+  } else if (type === 'vendors') {
+    exportVendorsData(format, entityName, timestamp);
+  } else if (type === 'vendor-detail') {
+    exportVendorDetailData(format, entityName, timestamp);
+  }
+}
+
+// Export Sobrecosto data
+function exportSobrecostoData(format, entityName, timestamp) {
+  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+  const sobrecostos = data
+    .filter(a => {
+      const mc = Number(a.monto_contrato || 0);
+      const mp = Number(a.monto_pagado || 0);
+      return mc > 0 && mp > mc * 1.15;
+    })
+    .map(a => {
+      const mc = Number(a.monto_contrato);
+      const mp = Number(a.monto_pagado);
+      const diff = mp - mc;
+      const pct = ((diff / mc) * 100).toFixed(1);
+      return { alert: a, diff, pct };
+    })
+    .sort((a, b) => b.diff - a.diff);
+
+  if (format === 'csv') {
+    let csv = 'Entidad,Alert ID,Proveedor,Monto Contrato,Monto Pagado,Sobrecosto (L),Sobrecosto (%),Severity,Fecha Contrato,Tipo Contratación\n';
+    sobrecostos.forEach(s => {
+      const row = [
+        entityName,
+        s.alert.alert_id || '#' + s.alert.id,
+        (s.alert.proveedor_nombre || s.alert.entity_name || '—').replace(/,/g, ';'),
+        s.alert.monto_contrato || '—',
+        s.alert.monto_pagado || '—',
+        s.diff.toFixed(2),
+        s.pct,
+        s.alert.severity || '—',
+        s.alert.fecha_contrato || '—',
+        (s.alert.tipo_contratacion || '—').replace(/,/g, ';')
+      ];
+      csv += row.map(v => `"${v}"`).join(',') + '\n';
+    });
+    downloadFile(csv, `Sobrecosto_${entityName}_${timestamp}.csv`, 'text/csv');
+  } else if (format === 'pdf') {
+    generateSobrecostoPDF(sobrecostos, entityName, timestamp);
+  }
+}
+
+// Export Vendors data
+function exportVendorsData(format, entityName, timestamp) {
+  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+  const vendorMap = {};
+  data.forEach(a => {
+    const vendor = a.proveedor_nombre || '—';
+    if (!vendorMap[vendor]) {
+      vendorMap[vendor] = { count: 0, monto: 0 };
+    }
+    vendorMap[vendor].count++;
+    vendorMap[vendor].monto += Number(a.monto_contrato || 0);
+  });
+
+  const vendors = Object.entries(vendorMap)
+    .map(([name, d]) => ({ name, ...d }))
+    .sort((a, b) => b.monto - a.monto);
+
+  const totalMonto = vendors.reduce((s, v) => s + v.monto, 0);
+
+  if (format === 'csv') {
+    let csv = 'Entidad,Proveedor,Cantidad Alertas,Monto Total (L),Porcentaje Mercado (%)\n';
+    vendors.forEach(v => {
+      const pct = totalMonto > 0 ? ((v.monto / totalMonto) * 100).toFixed(1) : 0;
+      const row = [
+        entityName,
+        v.name.replace(/,/g, ';'),
+        v.count,
+        v.monto.toFixed(2),
+        pct
+      ];
+      csv += row.map(val => `"${val}"`).join(',') + '\n';
+    });
+    downloadFile(csv, `Proveedores_${entityName}_${timestamp}.csv`, 'text/csv');
+  } else if (format === 'pdf') {
+    generateVendorsPDF(vendors, totalMonto, entityName, timestamp);
+  }
+}
+
+// Export Vendor Detail data
+function exportVendorDetailData(format, entityName, timestamp) {
+  const vendorName = document.getElementById('ep-vendor-detail-title').textContent.split(' — ')[0];
+  const contracts = allAlerts.filter(a => {
+    const vendor = a.proveedor_nombre || '';
+    const entity = a.entity_name || '';
+    return vendor === vendorName && entity === entityName;
+  });
+
+  if (format === 'csv') {
+    let csv = 'Entidad,Proveedor,Alert ID,Monto Contrato (L),Monto Pagado (L),Sobrecosto (L),Sobrecosto (%),Severity,Patrones,Tipo Contratación,Fecha Contrato\n';
+    contracts.forEach(c => {
+      const mc = Number(c.monto_contrato || 0);
+      const mp = Number(c.monto_pagado || 0);
+      const sobrecosto = mc > 0 && mp > mc * 1.15 ? mp - mc : 0;
+      const sobrecostoPct = sobrecosto > 0 ? (((sobrecosto / mc) * 100).toFixed(1)) : '—';
+      const pats = (c.patterns || '').split(',').map(p => PATTERN_LABELS[p.trim()] || p.trim()).filter(Boolean).join('; ');
+
+      const row = [
+        entityName,
+        vendorName.replace(/,/g, ';'),
+        c.alert_id || '#' + c.id,
+        mc || '—',
+        mp || '—',
+        sobrecosto > 0 ? sobrecosto.toFixed(2) : '—',
+        sobrecostoPct,
+        c.severity || '—',
+        (pats || '—').replace(/,/g, ';'),
+        (c.tipo_contratacion || '—').replace(/,/g, ';'),
+        c.fecha_contrato || '—'
+      ];
+      csv += row.map(val => `"${val}"`).join(',') + '\n';
+    });
+    downloadFile(csv, `Contratos_${vendorName.replace(/\s+/g, '_')}_${timestamp}.csv`, 'text/csv');
+  } else if (format === 'pdf') {
+    generateVendorDetailPDF(contracts, vendorName, entityName, timestamp);
+  }
+}
+
+// Download file helper
+function downloadFile(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`📥 ${filename} descargado`);
+}
+
+// PDF generation helpers
+function generateSobrecostoPDF(sobrecostos, entityName, timestamp) {
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sobrecosto - ${entityName}</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 10pt; color: #333; }
+  h1 { color: #0A1628; margin-bottom: 4px; }
+  h2 { color: #1A3A6B; font-size: 11pt; margin: 14px 0 8px 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th { background: #1A3A6B; color: #fff; padding: 6px 8px; text-align: left; font-size: 9pt; }
+  td { padding: 5px 8px; border-bottom: 1px solid #ddd; }
+  .highlight { color: #C0392B; font-weight: bold; }
+  .meta { color: #888; font-size: 8pt; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<h1>Reporte de SOBRECOSTO</h1>
+<h2>${entityName}</h2>
+<p class="meta">Generado: ${timestamp} | Total registros: ${sobrecostos.length}</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Alert ID</th>
+      <th>Proveedor</th>
+      <th>Monto Contrato</th>
+      <th>Monto Pagado</th>
+      <th>Sobrecosto (L)</th>
+      <th>% Sobrecosto</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${sobrecostos.map(s => `
+    <tr>
+      <td>${s.alert.alert_id || '#' + s.alert.id}</td>
+      <td>${s.alert.proveedor_nombre || '—'}</td>
+      <td>L ${Number(s.alert.monto_contrato || 0).toLocaleString('es-HN')}</td>
+      <td>L ${Number(s.alert.monto_pagado || 0).toLocaleString('es-HN')}</td>
+      <td class="highlight">L ${s.diff.toLocaleString('es-HN')}</td>
+      <td class="highlight">+${s.pct}%</td>
+    </tr>`).join('')}
+  </tbody>
+</table>
+</body>
+</html>`;
+
+  const pw = window.open('', '_blank', 'width=1000,height=800');
+  pw.document.write(html);
+  pw.document.close();
+}
+
+function generateVendorsPDF(vendors, totalMonto, entityName, timestamp) {
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Proveedores - ${entityName}</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 10pt; color: #333; }
+  h1 { color: #0A1628; margin-bottom: 4px; }
+  h2 { color: #1A3A6B; font-size: 11pt; margin: 14px 0 8px 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th { background: #1A3A6B; color: #fff; padding: 6px 8px; text-align: left; font-size: 9pt; }
+  td { padding: 5px 8px; border-bottom: 1px solid #ddd; }
+  .meta { color: #888; font-size: 8pt; margin-bottom: 12px; }
+  .bar { background: #E8EAED; height: 8px; border-radius: 2px; }
+  .bar-fill { background: #1A3A6B; height: 100%; border-radius: 2px; }
+</style>
+</head>
+<body>
+<h1>Análisis de Concentración — Proveedores</h1>
+<h2>${entityName}</h2>
+<p class="meta">Generado: ${timestamp}</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Proveedor</th>
+      <th>Cantidad</th>
+      <th>Monto Total</th>
+      <th>% Mercado</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${vendors.map(v => {
+      const pct = totalMonto > 0 ? ((v.monto / totalMonto) * 100).toFixed(1) : 0;
+      return `
+    <tr>
+      <td>${v.name}</td>
+      <td>${v.count}</td>
+      <td>L ${v.monto.toLocaleString('es-HN')}</td>
+      <td>${pct}%</td>
+    </tr>`;
+    }).join('')}
+  </tbody>
+</table>
+</body>
+</html>`;
+
+  const pw = window.open('', '_blank', 'width=1000,height=800');
+  pw.document.write(html);
+  pw.document.close();
+}
+
+function generateVendorDetailPDF(contracts, vendorName, entityName, timestamp) {
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Contratos - ${vendorName}</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 9pt; color: #333; }
+  h1 { color: #0A1628; margin-bottom: 2px; }
+  h2 { color: #1A3A6B; font-size: 10pt; margin: 10px 0 6px 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th { background: #1A3A6B; color: #fff; padding: 5px 6px; text-align: left; font-size: 8pt; }
+  td { padding: 4px 6px; border-bottom: 1px solid #ddd; }
+  .meta { color: #888; font-size: 8pt; margin-bottom: 8px; }
+  .red { color: #C0392B; font-weight: bold; }
+  .amber { color: #C05000; font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>Contratos: ${vendorName}</h1>
+<h2>${entityName}</h2>
+<p class="meta">Generado: ${timestamp} | Total contratos: ${contracts.length}</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Contrato (L)</th>
+      <th>Pagado (L)</th>
+      <th>Sobrecosto (L)</th>
+      <th>Severidad</th>
+      <th>Patrones</th>
+      <th>Fecha</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${contracts.map(c => {
+      const mc = Number(c.monto_contrato || 0);
+      const mp = Number(c.monto_pagado || 0);
+      const sobrecosto = mc > 0 && mp > mc * 1.15 ? mp - mc : 0;
+      const pats = (c.patterns || '').split(',').map(p => PATTERN_LABELS[p.trim()] || p.trim()).filter(Boolean).join(', ');
+
+      return `
+    <tr>
+      <td>${c.alert_id || '#' + c.id}</td>
+      <td>L ${mc.toLocaleString('es-HN')}</td>
+      <td>L ${mp.toLocaleString('es-HN')}</td>
+      <td class="${sobrecosto > 0 ? 'red' : ''}">${sobrecosto > 0 ? 'L ' + sobrecosto.toLocaleString('es-HN') : '—'}</td>
+      <td>${c.severity || '—'}</td>
+      <td>${pats || '—'}</td>
+      <td>${c.fecha_contrato || '—'}</td>
+    </tr>`;
+    }).join('')}
+  </tbody>
+</table>
+</body>
+</html>`;
+
+  const pw = window.open('', '_blank', 'width=1200,height=800');
+  pw.document.write(html);
+  pw.document.close();
 }
 
 // ════════════════════════════════════════════════════════════

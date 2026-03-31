@@ -946,6 +946,16 @@ body::after {
 .ep-drill-item-highlight {
   color: var(--amber); font-weight: bold;
 }
+
+/* Severity badges in drill-down */
+.sev-badge {
+  display: inline-block; border-radius: 4px; font-weight: 600;
+  color: #fff; padding: 4px 8px; font-size: 10px;
+}
+.sev-badge.critica { background: #ff3d57; }
+.sev-badge.alta    { background: var(--amber); }
+.sev-badge.media   { background: var(--electric); }
+.sev-badge.baja    { background: #4caf50; }
 </style>
 </head>
 <body>
@@ -1295,6 +1305,15 @@ body::after {
       <div class="fuente-chart-card">
         <div class="fuente-recent-title">🏢 Top Proveedores (por monto y cantidad)</div>
         <div id="ep-vendor-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Vendor contracts detail drill-down (hidden by default) -->
+    <div class="ep-drill-content" id="ep-drill-vendor-detail">
+      <button class="fuente-back" onclick="closeVendorDetail()" style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);background:none;border:none;cursor:pointer;margin-bottom:16px;padding:0;transition:color .15s;">← Volver a Proveedores</button>
+      <div class="fuente-chart-card">
+        <div class="fuente-recent-title" id="ep-vendor-detail-title">Contratos — Proveedor</div>
+        <div id="ep-vendor-contract-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
 
@@ -2879,8 +2898,8 @@ function populateEntityVendors(entityName) {
         const pct = totalMonto > 0 ? ((v.monto / totalMonto) * 100).toFixed(1) : 0;
         const pctBar = Math.min(100, pct);
         return `
-        <div class="ep-drill-item">
-          <div class="ep-drill-item-title">${v.name}</div>
+        <div class="ep-drill-item" style="cursor:pointer;" onclick="showVendorContractDetail('${v.name.replace(/'/g, "\\'")}', '${entityName.replace(/'/g, "\\'")}')">
+          <div class="ep-drill-item-title" style="color:var(--electric);transition:color .2s;">📋 ${v.name}</div>
           <div style="display:flex;align-items:center;gap:8px;width:100%;">
             <div style="flex:1;height:4px;background:var(--glass);border-radius:2px;overflow:hidden;">
               <div style="height:100%;width:${pctBar}%;background:var(--electric);"></div>
@@ -2890,6 +2909,7 @@ function populateEntityVendors(entityName) {
           <div class="ep-drill-item-meta">
             <span>${v.count} alertas</span>
             <span>Monto: ${fmtL(v.monto)}</span>
+            <span style="color:var(--text-dim);font-style:italic;">Haz clic para ver contratos →</span>
           </div>
         </div>`
       }).join('')
@@ -2937,6 +2957,81 @@ function populateEntityPatterns(entityName) {
         </div>`
       }).join('')
     : '<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin patrones detectados.</div>';
+}
+
+// ════════════════════════════════════════════════════════════
+// VENDOR CONTRACT DETAIL DRILL-DOWN
+// ════════════════════════════════════════════════════════════
+function showVendorContractDetail(vendorName, entityName) {
+  // Filter alerts: this vendor + this entity
+  const contracts = allAlerts.filter(a => {
+    const vendor = a.proveedor_nombre || '';
+    const entity = a.entity_name || '';
+    return vendor === vendorName && entity === entityName;
+  });
+
+  const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
+  const sevColor = s => {
+    const n = normSev(s);
+    if (n.includes('critica')) return '#ff3d57';
+    if (n.includes('alta'))    return 'var(--amber)';
+    if (n.includes('media'))   return 'var(--electric)';
+    return '#4caf50';
+  };
+
+  // Update title
+  document.getElementById('ep-vendor-detail-title').textContent = `${vendorName} — Contratos con ${entityName}`;
+
+  // Render contracts list
+  document.getElementById('ep-vendor-contract-list').innerHTML = contracts.length
+    ? contracts.map(c => {
+        const mc = Number(c.monto_contrato || 0);
+        const mp = Number(c.monto_pagado || 0);
+        const pats = (c.patterns || '').split(',').map(p => PATTERN_LABELS[p.trim()] || p.trim()).filter(Boolean).join(', ');
+        const sobrecosto = mc > 0 && mp > mc * 1.15 ? `<span style="color:var(--amber);font-weight:bold;">+${(((mp-mc)/mc)*100).toFixed(1)}%</span>` : '';
+
+        return `
+        <div class="ep-drill-item">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <div style="flex:1;">
+              <div class="ep-drill-item-title">ID: ${c.alert_id || '#' + c.id}</div>
+              <div class="ep-drill-item-meta">
+                <span>Tipo: ${c.tipo_contratacion || '—'}</span>
+                <span>Fecha: ${fmtDate(c.fecha_contrato)}</span>
+              </div>
+            </div>
+            <span class="sev-badge ${normSev(c.severity)}" style="padding:4px 8px;font-size:10px;">${c.severity || '—'}</span>
+          </div>
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+            <div style="display:flex;gap:16px;margin-bottom:6px;">
+              <div>
+                <span style="color:var(--text-dim);font-size:10px;">Contrato:</span>
+                <div style="color:var(--text);font-weight:600;">${fmtL(mc)}</div>
+              </div>
+              <div>
+                <span style="color:var(--text-dim);font-size:10px;">Pagado:</span>
+                <div style="color:var(--text);font-weight:600;">${fmtL(mp)}</div>
+              </div>
+              ${sobrecosto ? `<div><span style="color:var(--text-dim);font-size:10px;">Sobrecosto:</span><div style="color:var(--amber);font-weight:600;">${sobrecosto}</div></div>` : ''}
+            </div>
+            ${pats ? `<div style="margin-top:6px;"><span style="color:var(--text-dim);font-size:10px;">Patrones:</span> ${pats}</div>` : ''}
+          </div>
+        </div>`
+      }).join('')
+    : '<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos para esta combinación.</div>';
+
+  // Hide vendors tab, show detail tab
+  document.querySelectorAll('.ep-drill-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.ep-drill-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('ep-drill-vendor-detail').classList.add('active');
+}
+
+// Close vendor detail and return to vendors tab
+function closeVendorDetail() {
+  document.querySelectorAll('.ep-drill-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('ep-drill-vendors').classList.add('active');
+  document.querySelectorAll('.ep-drill-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('.ep-drill-tab[data-tab="vendors"]').classList.add('active');
 }
 
 // ════════════════════════════════════════════════════════════

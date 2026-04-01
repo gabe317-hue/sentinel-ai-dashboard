@@ -4853,6 +4853,63 @@ function generateVendorDetailPDF(detail, timestamp) {
 }
 
 // ════════════════════════════════════════════════════════════
+// DEBUG FUNCTIONS — for console testing
+// ════════════════════════════════════════════════════════════
+
+function debugSobrecosto() {
+  console.clear();
+  console.log('🔍 DEBUG SOBRECOSTO');
+  console.log('═══════════════════════════════════════════════════════');
+
+  console.log(`\n📊 TOTAL ALERTS: ${allAlerts.length}`);
+
+  if (allAlerts.length === 0) {
+    console.warn('⚠️  NO HAY DATOS EN allAlerts');
+    return;
+  }
+
+  // Check monto_pagado
+  const with_pagado = allAlerts.filter(a => a.monto_pagado != null).length;
+  const with_budget = allAlerts.filter(a => a.budget_amount != null).length;
+  console.log(`📈 Con monto_pagado: ${with_pagado}`);
+  console.log(`📈 Con budget_amount: ${with_budget}`);
+
+  // List entities
+  const entities = new Set(allAlerts.map(a => a.entity_name || a.entidad || 'UNKNOWN'));
+  console.log(`\n🏢 ENTIDADES (${entities.size}):`);
+  entities.forEach(e => {
+    const count = allAlerts.filter(a => (a.entity_name || a.entidad) === e).length;
+    console.log(`   • ${e} (${count} alertas)`);
+  });
+
+  // Check SOBRECOSTO detection
+  const sobrecostos = allAlerts.filter(a => {
+    const mc = Number(a.monto_contrato || 0);
+    const mp = Number(a.monto_pagado || 0);
+    const budget = Number(a.budget_amount || 0);
+    return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
+  });
+
+  console.log(`\n🚨 SOBRECOSTOS DETECTADOS: ${sobrecostos.length}`);
+  if (sobrecostos.length > 0) {
+    sobrecostos.slice(0, 5).forEach(s => {
+      const mc = Number(s.monto_contrato || 0);
+      const mp = Number(s.monto_pagado || 0);
+      const budget = Number(s.budget_amount || 0);
+      const comp = mp > 0 ? mp : budget;
+      const pct = ((comp / mc - 1) * 100).toFixed(1);
+      console.log(`   ✓ ${s.alert_id || s.id} | ${s.entity_name || s.entidad} | +${pct}%`);
+    });
+  } else {
+    console.warn('⚠️  NINGÚN SOBRECOSTO ENCONTRADO');
+  }
+
+  // Sample record
+  console.log(`\n📋 SAMPLE RECORD:`);
+  console.log(allAlerts[0]);
+}
+
+// ════════════════════════════════════════════════════════════
 // DEBUG: INSERT TEST SOBRECOSTO DATA
 // Call from browser console: insertTestSobrecostoData()
 // ════════════════════════════════════════════════════════════

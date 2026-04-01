@@ -2949,23 +2949,34 @@ function switchEntityDrillTab(tabName, btn) {
 
 // ════════════════════════════════════════════════════════════
 // POPULATE DRILL-DOWN: SOBRECOSTO DETAILS
+// SUPPORTS: monto_pagado (manual alerts) + budget_amount (SEFIN data)
 // ════════════════════════════════════════════════════════════
 function populateEntitySobrecosto(entityName) {
-  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+  const data = allAlerts.filter(a => (a.entity_name || a.entidad || '') === entityName);
 
-  // Filter to contracts with sobrecosto (monto_pagado > monto_contrato by > 15%)
+  // Filter to contracts with sobrecosto
+  // Checks BOTH monto_pagado (manual) and budget_amount (SEFIN)
   const sobrecostos = data
     .filter(a => {
       const mc = Number(a.monto_contrato || 0);
       const mp = Number(a.monto_pagado || 0);
-      return mc > 0 && mp > mc * 1.15; // 15% threshold
+      const budget = Number(a.budget_amount || 0);
+
+      // SOBRECOSTO if either field exceeds contract by >15%
+      return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
     })
     .map(a => {
       const mc = Number(a.monto_contrato);
-      const mp = Number(a.monto_pagado);
-      const diff = mp - mc;
+      const mp = Number(a.monto_pagado || 0);
+      const budget = Number(a.budget_amount || 0);
+
+      // Use monto_pagado if available, otherwise use budget_amount
+      const comparison = mp > 0 ? mp : budget;
+      const sourceLabel = mp > 0 ? 'Pagado' : 'Presupuesto';
+
+      const diff = comparison - mc;
       const pct = ((diff / mc) * 100).toFixed(1);
-      return { alert: a, diff, pct };
+      return { alert: a, diff, pct, sourceLabel, comparisonAmount: comparison };
     })
     .sort((a, b) => {
       // Primary: Most recent first (by created_at)
@@ -2983,12 +2994,12 @@ function populateEntitySobrecosto(entityName) {
     ? sobrecostos.map(s => `
         <div class="ep-drill-item">
           <div class="ep-drill-item-title">
-            ${s.alert.proveedor_nombre || s.alert.entity_name || '—'}
+            ${s.alert.proveedor_nombre || s.alert.proveedor || s.alert.entity_name || '—'}
           </div>
           <div class="ep-drill-item-meta">
             <span>ID: ${s.alert.alert_id || '#' + s.alert.id}</span>
             <span>Contrato: ${fmtL(s.alert.monto_contrato)}</span>
-            <span>Pagado: ${fmtL(s.alert.monto_pagado)}</span>
+            <span>${s.sourceLabel}: ${fmtL(s.comparisonAmount)}</span>
             <span class="ep-drill-item-highlight">+${s.pct}% (${fmtL(s.diff)})</span>
           </div>
         </div>`).join('')

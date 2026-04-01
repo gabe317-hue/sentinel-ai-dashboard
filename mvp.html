@@ -4939,11 +4939,9 @@ async function insertTestSobrecostoData() {
 
     testAlerts.push({
       alert_id: `TEST-${String(id).padStart(4, '0')}`,
-      description: `[TEST] Contrato con sobrecosto detectado`,
+      description: `[TEST] Contrato con sobrecosto detectado - Proveedor: ${vendor}`,
       entity_name: entity,
-      entidad: entity,
       proveedor_nombre: vendor,
-      proveedor: vendor,
       severity: ['Crítica', 'Alta', 'Media'][Math.floor(Math.random() * 3)],
       data_source: 'Manual - Test',
       monto_contrato: monto_contrato,

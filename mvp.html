@@ -4853,9 +4853,48 @@ function generateVendorDetailPDF(detail, timestamp) {
 }
 
 // ════════════════════════════════════════════════════════════
-// SEFIN DATA INTEGRATION — Automated sync with EDCA API
-// Portal: http://contratacionesabiertas.gob.hn/api/v1/
+// SEFIN DATA INTEGRATION — CSV Download Strategy
+// Portal: http://contratacionesabiertas.gob.hn/api/v1/descargas/
+// Strategy: Download monthly CSV files (more reliable, no CORS issues)
 // ════════════════════════════════════════════════════════════
+
+async function downloadSEFINCSV(url) {
+  // Use CORS proxy to avoid CORS blocking
+  const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+  try {
+    const response = await fetch(proxyUrl + url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.text();
+  } catch (err) {
+    console.warn('⚠️  CORS proxy failed, trying direct download...');
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.text();
+    } catch (e) {
+      throw new Error(`No se pudo descargar: ${url}`);
+    }
+  }
+}
+
+function parseCSVtoJSON(csv) {
+  const lines = csv.trim().split('\n');
+  if (lines.length < 2) return [];
+
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  const records = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const obj = {};
+    const values = lines[i].split(',');
+    headers.forEach((header, index) => {
+      obj[header] = (values[index] || '').trim();
+    });
+    records.push(obj);
+  }
+
+  return records;
+}
 
 async function syncSEFINHistoricalData() {
   if (!db) {
@@ -4863,93 +4902,86 @@ async function syncSEFINHistoricalData() {
     return;
   }
 
-  console.log('📥 Iniciando descarga histórica de datos SEFIN...');
-  const SEFIN_API = 'http://contratacionesabiertas.gob.hn/api/v1';
-  let allRecords = [];
-  let page = 1;
-  let totalRecords = 0;
+  console.log('📥 Descargando listado de archivos SEFIN disponibles...');
 
   try {
-    while (true) {
-      const url = `${SEFIN_API}/record/?page=${page}&publisher=sefin`;
-      console.log(`📄 Descargando página ${page}...`);
+    // Get list of available CSV files
+    const response = await fetch('http://contratacionesabiertas.gob.hn/api/v1/descargas/');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const downloads = data.descargas || [];
 
-      const data = await response.json();
-      const recordPackage = data.recordPackage || [];
+    if (downloads.length === 0) {
+      console.warn('⚠️  No hay archivos disponibles para descargar');
+      return;
+    }
 
-      if (recordPackage.length === 0) {
-        console.log(`✅ Fin de datos en página ${page}`);
-        break;
-      }
+    console.log(`📋 Encontrados ${downloads.length} archivos`);
+    console.log('Descargando los 5 archivos más recientes...\n');
 
-      totalRecords += recordPackage.length;
-      console.log(`   +${recordPackage.length} registros (total: ${totalRecords})`);
+    let totalInserted = 0;
 
-      // Transform SEFIN data to alerts schema
-      const transformed = recordPackage.map(record => {
-        const ocid = record.ocid || record.id;
-        const buyer = record.buyer || {};
-        const supplier = record.supplier || {};
-        const tender = record.tender || {};
-        const contracts = record.contracts || [];
-        const contract = contracts[0] || {};
+    // Download the 5 most recent files
+    for (let i = 0; i < Math.min(5, downloads.length); i++) {
+      const file = downloads[i];
+      const csvUrl = file.urls?.csv;
 
-        return {
-          alert_id: ocid,
-          description: `SEFIN: ${tender.title || 'Sin título'}`,
-          entity_name: buyer.name || 'Entidad desconocida',
-          proveedor_nombre: supplier.name || 'Proveedor desconocido',
-          severity: detectSEFINRisk(record),
-          data_source: 'SEFIN-EDCA',
-          monto_contrato: Number(contract.value?.amount || tender.value?.amount || 0),
-          budget_amount: Number(tender.budget?.amount || 0),
-          fecha_contrato: contract.dateSigned || record.date,
-          status: 'Procesado',
-          created_at: new Date(record.date || Date.now()).toISOString()
-        };
-      });
+      if (!csvUrl) continue;
 
-      allRecords = allRecords.concat(transformed);
+      console.log(`⬇️  Descargando: ${file.año}-${file.mes} (${file.publicador})...`);
 
-      // Batch insert every 50 records to avoid timeouts
-      if (allRecords.length >= 50) {
-        const { error } = await db.from('alerts').insert(allRecords);
-        if (error) {
-          console.warn('⚠️  Error al insertar lote:', error.message);
-        } else {
-          console.log(`✅ Insertados ${allRecords.length} registros`);
+      try {
+        const csvContent = await downloadSEFINCSV(csvUrl);
+        const records = parseCSVtoJSON(csvContent);
+
+        if (records.length === 0) {
+          console.log('   ℹ️  Archivo vacío');
+          continue;
         }
-        allRecords = [];
+
+        // Transform CSV records to alerts schema
+        const transformed = records.map((row, idx) => {
+          const monto = Number(row['monto_contrato'] || row['valor'] || 0);
+          const budget = Number(row['presupuesto'] || row['budget_amount'] || 0);
+
+          return {
+            alert_id: row['ocid'] || row['id'] || `SEFIN-${file.año}-${i}-${idx}`,
+            description: row['titulo'] || row['title'] || `SEFIN ${file.año}-${file.mes}`,
+            entity_name: row['entidad'] || row['entity'] || 'Entidad desconocida',
+            proveedor_nombre: row['proveedor'] || row['supplier'] || 'Proveedor desconocido',
+            severity: detectSEFINRisk(monto, budget),
+            data_source: 'SEFIN-CSV',
+            monto_contrato: monto,
+            budget_amount: budget,
+            fecha_contrato: row['fecha_contrato'] || row['date'],
+            status: 'Procesado',
+            created_at: new Date().toISOString()
+          };
+        });
+
+        // Batch insert
+        if (transformed.length > 0) {
+          const { error } = await db.from('alerts').insert(transformed);
+          if (error) {
+            console.warn(`   ⚠️  Error al insertar: ${error.message}`);
+          } else {
+            console.log(`   ✅ Insertados ${transformed.length} registros`);
+            totalInserted += transformed.length;
+          }
+        }
+
+        // Delay between downloads
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+      } catch (err) {
+        console.warn(`   ❌ Error: ${err.message}`);
       }
-
-      page++;
-
-      // Safety limit: max 100 pages
-      if (page > 100) {
-        console.warn('⚠️  Límite de páginas alcanzado (100)');
-        break;
-      }
-
-      // Add delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    // Insert remaining records
-    if (allRecords.length > 0) {
-      const { error } = await db.from('alerts').insert(allRecords);
-      if (error) {
-        console.warn('⚠️  Error al insertar lote final:', error.message);
-      } else {
-        console.log(`✅ Insertados ${allRecords.length} registros finales`);
-      }
-    }
-
-    console.log(`\n✅ DESCARGA COMPLETADA`);
-    console.log(`📊 Total de registros SEFIN: ${totalRecords}`);
-    console.log(`🔄 Recargando datos en dashboard...`);
+    console.log(`\n✅ DESCARGA HISTÓRICA COMPLETADA`);
+    console.log(`📊 Total insertado: ${totalInserted} registros`);
+    console.log(`🔄 Recargando dashboard...`);
     await loadAlerts();
 
   } catch (err) {
@@ -4963,45 +4995,66 @@ async function syncSEFINDaily() {
     return;
   }
 
-  console.log('🔄 Ejecutando sincronización diaria de SEFIN...');
-  const SEFIN_API = 'http://contratacionesabiertas.gob.hn/api/v1';
+  console.log('🔄 Sincronización diaria de SEFIN (CSV)...');
 
   try {
-    // Get last sync date from localStorage
-    const lastSync = localStorage.getItem('sefin_last_sync');
-    const lastSyncDate = lastSync ? new Date(lastSync) : new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-    console.log(`📅 Buscando cambios desde: ${lastSyncDate.toISOString()}`);
-
-    const response = await fetch(`${SEFIN_API}/record/?page=1&publisher=sefin`);
+    // Get list of available files
+    const response = await fetch('http://contratacionesabiertas.gob.hn/api/v1/descargas/');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const data = await response.json();
-    const recordPackage = data.recordPackage || [];
+    const downloads = data.descargas || [];
 
-    // Filter for new/updated records
-    const newRecords = recordPackage
-      .filter(r => new Date(r.date || Date.now()) > lastSyncDate)
-      .map(record => {
-        const ocid = record.ocid || record.id;
-        const buyer = record.buyer || {};
-        const supplier = record.supplier || {};
-        const tender = record.tender || {};
-        const contracts = record.contracts || [];
-        const contract = contracts[0] || {};
+    if (downloads.length === 0) {
+      console.log('ℹ️  Sin archivos disponibles');
+      return;
+    }
+
+    // Get the most recent file only
+    const latestFile = downloads[0];
+    const csvUrl = latestFile.urls?.csv;
+
+    if (!csvUrl) {
+      console.warn('⚠️  No hay URL de descarga disponible');
+      return;
+    }
+
+    console.log(`📥 Descargando más reciente: ${latestFile.año}-${latestFile.mes}`);
+
+    const csvContent = await downloadSEFINCSV(csvUrl);
+    const records = parseCSVtoJSON(csvContent);
+
+    if (records.length === 0) {
+      console.log('ℹ️  Archivo vacío');
+      return;
+    }
+
+    // Get last sync date
+    const lastSync = localStorage.getItem('sefin_last_sync');
+    const lastSyncDate = lastSync ? new Date(lastSync) : new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    // Filter new records
+    const newRecords = records
+      .filter(row => {
+        const recordDate = new Date(row['fecha_contrato'] || row['date'] || Date.now());
+        return recordDate > lastSyncDate;
+      })
+      .map((row, idx) => {
+        const monto = Number(row['monto_contrato'] || row['valor'] || 0);
+        const budget = Number(row['presupuesto'] || row['budget_amount'] || 0);
 
         return {
-          alert_id: ocid,
-          description: `SEFIN: ${tender.title || 'Sin título'}`,
-          entity_name: buyer.name || 'Entidad desconocida',
-          proveedor_nombre: supplier.name || 'Proveedor desconocido',
-          severity: detectSEFINRisk(record),
-          data_source: 'SEFIN-EDCA',
-          monto_contrato: Number(contract.value?.amount || tender.value?.amount || 0),
-          budget_amount: Number(tender.budget?.amount || 0),
-          fecha_contrato: contract.dateSigned || record.date,
+          alert_id: row['ocid'] || row['id'] || `SEFIN-DAILY-${idx}`,
+          description: row['titulo'] || row['title'] || 'SEFIN Contrato',
+          entity_name: row['entidad'] || row['entity'] || 'Entidad desconocida',
+          proveedor_nombre: row['proveedor'] || row['supplier'] || 'Proveedor desconocido',
+          severity: detectSEFINRisk(monto, budget),
+          data_source: 'SEFIN-CSV',
+          monto_contrato: monto,
+          budget_amount: budget,
+          fecha_contrato: row['fecha_contrato'] || row['date'],
           status: 'Procesado',
-          created_at: new Date(record.date || Date.now()).toISOString()
+          created_at: new Date().toISOString()
         };
       });
 
@@ -5010,7 +5063,7 @@ async function syncSEFINDaily() {
       if (error) {
         console.error('❌ Error al insertar:', error.message);
       } else {
-        console.log(`✅ ${newRecords.length} registros nuevos insertados`);
+        console.log(`✅ ${newRecords.length} registros nuevos sincronizados`);
         localStorage.setItem('sefin_last_sync', new Date().toISOString());
         await loadAlerts();
       }
@@ -5023,17 +5076,12 @@ async function syncSEFINDaily() {
   }
 }
 
-function detectSEFINRisk(record) {
-  // Simple risk detection based on SEFIN contract data
-  const tender = record.tender || {};
-  const amount = Number(tender.value?.amount || 0);
-  const budget = Number(tender.budget?.amount || 0);
-
-  // High risk: amount > budget * 1.15
-  if (budget > 0 && amount > budget * 1.15) return 'Crítica';
+function detectSEFINRisk(monto, budget) {
+  // High risk: monto > budget * 1.15
+  if (budget > 0 && monto > budget * 1.15) return 'Crítica';
 
   // Medium risk: high value contracts
-  if (amount > 1000000) return 'Alta';
+  if (monto > 1000000) return 'Alta';
 
   // Low risk
   return 'Media';

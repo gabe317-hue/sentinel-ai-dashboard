@@ -4853,6 +4853,193 @@ function generateVendorDetailPDF(detail, timestamp) {
 }
 
 // ════════════════════════════════════════════════════════════
+// SEFIN DATA INTEGRATION — Automated sync with EDCA API
+// Portal: http://contratacionesabiertas.gob.hn/api/v1/
+// ════════════════════════════════════════════════════════════
+
+async function syncSEFINHistoricalData() {
+  if (!db) {
+    console.error('❌ Supabase no inicializado');
+    return;
+  }
+
+  console.log('📥 Iniciando descarga histórica de datos SEFIN...');
+  const SEFIN_API = 'http://contratacionesabiertas.gob.hn/api/v1';
+  let allRecords = [];
+  let page = 1;
+  let totalRecords = 0;
+
+  try {
+    while (true) {
+      const url = `${SEFIN_API}/record/?page=${page}&publisher=sefin`;
+      console.log(`📄 Descargando página ${page}...`);
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json();
+      const recordPackage = data.recordPackage || [];
+
+      if (recordPackage.length === 0) {
+        console.log(`✅ Fin de datos en página ${page}`);
+        break;
+      }
+
+      totalRecords += recordPackage.length;
+      console.log(`   +${recordPackage.length} registros (total: ${totalRecords})`);
+
+      // Transform SEFIN data to alerts schema
+      const transformed = recordPackage.map(record => {
+        const ocid = record.ocid || record.id;
+        const buyer = record.buyer || {};
+        const supplier = record.supplier || {};
+        const tender = record.tender || {};
+        const contracts = record.contracts || [];
+        const contract = contracts[0] || {};
+
+        return {
+          alert_id: ocid,
+          description: `SEFIN: ${tender.title || 'Sin título'}`,
+          entity_name: buyer.name || 'Entidad desconocida',
+          proveedor_nombre: supplier.name || 'Proveedor desconocido',
+          severity: detectSEFINRisk(record),
+          data_source: 'SEFIN-EDCA',
+          monto_contrato: Number(contract.value?.amount || tender.value?.amount || 0),
+          budget_amount: Number(tender.budget?.amount || 0),
+          fecha_contrato: contract.dateSigned || record.date,
+          status: 'Procesado',
+          created_at: new Date(record.date || Date.now()).toISOString()
+        };
+      });
+
+      allRecords = allRecords.concat(transformed);
+
+      // Batch insert every 50 records to avoid timeouts
+      if (allRecords.length >= 50) {
+        const { error } = await db.from('alerts').insert(allRecords);
+        if (error) {
+          console.warn('⚠️  Error al insertar lote:', error.message);
+        } else {
+          console.log(`✅ Insertados ${allRecords.length} registros`);
+        }
+        allRecords = [];
+      }
+
+      page++;
+
+      // Safety limit: max 100 pages
+      if (page > 100) {
+        console.warn('⚠️  Límite de páginas alcanzado (100)');
+        break;
+      }
+
+      // Add delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    // Insert remaining records
+    if (allRecords.length > 0) {
+      const { error } = await db.from('alerts').insert(allRecords);
+      if (error) {
+        console.warn('⚠️  Error al insertar lote final:', error.message);
+      } else {
+        console.log(`✅ Insertados ${allRecords.length} registros finales`);
+      }
+    }
+
+    console.log(`\n✅ DESCARGA COMPLETADA`);
+    console.log(`📊 Total de registros SEFIN: ${totalRecords}`);
+    console.log(`🔄 Recargando datos en dashboard...`);
+    await loadAlerts();
+
+  } catch (err) {
+    console.error('❌ Error en syncSEFINHistoricalData:', err.message);
+  }
+}
+
+async function syncSEFINDaily() {
+  if (!db) {
+    console.error('❌ Supabase no inicializado');
+    return;
+  }
+
+  console.log('🔄 Ejecutando sincronización diaria de SEFIN...');
+  const SEFIN_API = 'http://contratacionesabiertas.gob.hn/api/v1';
+
+  try {
+    // Get last sync date from localStorage
+    const lastSync = localStorage.getItem('sefin_last_sync');
+    const lastSyncDate = lastSync ? new Date(lastSync) : new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    console.log(`📅 Buscando cambios desde: ${lastSyncDate.toISOString()}`);
+
+    const response = await fetch(`${SEFIN_API}/record/?page=1&publisher=sefin`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    const recordPackage = data.recordPackage || [];
+
+    // Filter for new/updated records
+    const newRecords = recordPackage
+      .filter(r => new Date(r.date || Date.now()) > lastSyncDate)
+      .map(record => {
+        const ocid = record.ocid || record.id;
+        const buyer = record.buyer || {};
+        const supplier = record.supplier || {};
+        const tender = record.tender || {};
+        const contracts = record.contracts || [];
+        const contract = contracts[0] || {};
+
+        return {
+          alert_id: ocid,
+          description: `SEFIN: ${tender.title || 'Sin título'}`,
+          entity_name: buyer.name || 'Entidad desconocida',
+          proveedor_nombre: supplier.name || 'Proveedor desconocido',
+          severity: detectSEFINRisk(record),
+          data_source: 'SEFIN-EDCA',
+          monto_contrato: Number(contract.value?.amount || tender.value?.amount || 0),
+          budget_amount: Number(tender.budget?.amount || 0),
+          fecha_contrato: contract.dateSigned || record.date,
+          status: 'Procesado',
+          created_at: new Date(record.date || Date.now()).toISOString()
+        };
+      });
+
+    if (newRecords.length > 0) {
+      const { error } = await db.from('alerts').insert(newRecords);
+      if (error) {
+        console.error('❌ Error al insertar:', error.message);
+      } else {
+        console.log(`✅ ${newRecords.length} registros nuevos insertados`);
+        localStorage.setItem('sefin_last_sync', new Date().toISOString());
+        await loadAlerts();
+      }
+    } else {
+      console.log('ℹ️  Sin cambios desde última sincronización');
+    }
+
+  } catch (err) {
+    console.error('❌ Error en syncSEFINDaily:', err.message);
+  }
+}
+
+function detectSEFINRisk(record) {
+  // Simple risk detection based on SEFIN contract data
+  const tender = record.tender || {};
+  const amount = Number(tender.value?.amount || 0);
+  const budget = Number(tender.budget?.amount || 0);
+
+  // High risk: amount > budget * 1.15
+  if (budget > 0 && amount > budget * 1.15) return 'Crítica';
+
+  // Medium risk: high value contracts
+  if (amount > 1000000) return 'Alta';
+
+  // Low risk
+  return 'Media';
+}
+
+// ════════════════════════════════════════════════════════════
 // DEBUG FUNCTIONS — for console testing
 // ════════════════════════════════════════════════════════════
 

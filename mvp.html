@@ -1125,6 +1125,7 @@ body::after {
     <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
     <button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" onclick="setPatternFilter('PROVEEDOR_SANCIONADO')">🚨 SANCIONADO OFAC</button>
     <button class="filter-btn filter-btn-sobrecosto" data-p="SOBRECOSTO"           onclick="setPatternFilter('SOBRECOSTO')">📈 SOBRECOSTO</button>
+    <button class="filter-btn" style="margin-left:auto;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.3);" onclick="showGlobalSobrecostos()">📊 Ver Resumen Global de Sobrecostos</button>
   </div>
 
   <!-- Risk scoring legend -->
@@ -1715,6 +1716,44 @@ body::after {
           <div style="color:var(--text-dim);font-size:13px;padding:4px">Sin otros contratos registrados.</div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ══ GLOBAL SOBRECOSTOS SUMMARY PANEL ══ -->
+  <div class="fuente-panel" id="sobrecostoPanel">
+    <button class="fuente-back" onclick="hideGlobalSobrecostos()">← Todas las Alertas</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title">📊 Resumen de <span>Sobrecostos</span></div>
+    </div>
+
+    <!-- Summary stats row -->
+    <div class="fuente-stats-row" style="margin-bottom:16px;">
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="sp-total-count">0</div>
+        <div class="fuente-stat-lbl">Total Sobrecostos</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" style="color:var(--red);" id="sp-total-amount">L —</div>
+        <div class="fuente-stat-lbl">Monto Total Exceso</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" style="color:var(--amber);" id="sp-avg-pct">—</div>
+        <div class="fuente-stat-lbl">% Promedio Exceso</div>
+      </div>
+    </div>
+
+    <!-- Breakdown by entity -->
+    <div class="fuente-chart-card" style="margin-bottom:20px;">
+      <div class="fuente-recent-title">Desglose por Entidad</div>
+      <div class="fuente-recent-list" id="sp-entity-breakdown"></div>
+    </div>
+
+    <!-- All sobrecostos list -->
+    <div class="fuente-chart-card">
+      <div class="fuente-recent-title">Detalle de Sobrecostos (Últimos 50)</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Ordenados por monto de exceso — mayor primero</div>
+      <div class="fuente-recent-list" id="sp-sobrecosto-list"></div>
     </div>
   </div>
 
@@ -3676,6 +3715,134 @@ function hideEntityPanel() {
     document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
     document.querySelector('.table-container').style.display = '';
   }
+}
+
+// ════════════════════════════════════════════════════════════
+// GLOBAL SOBRECOSTOS SUMMARY
+// ════════════════════════════════════════════════════════════
+function showGlobalSobrecostos() {
+  // Close other panels
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('entityPanel').classList.remove('open');
+  document.getElementById('analyticsPanel').classList.remove('open');
+  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+
+  // Hide main dashboard
+  document.querySelector('.stats-grid').style.display     = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+  document.querySelector('.table-container').style.display = 'none';
+
+  // Populate and show sobrecosto panel
+  populateGlobalSobrecostos();
+  document.getElementById('sobrecostoPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hideGlobalSobrecostos() {
+  document.getElementById('sobrecostoPanel').classList.remove('open');
+  document.querySelector('.stats-grid').style.display     = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.querySelector('.table-container').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function populateGlobalSobrecostos() {
+  // Filter all alerts for SOBRECOSTOS using same logic as entity drill-down
+  const sobrecostos = allAlerts
+    .filter(a => {
+      const mc = Number(a.monto_contrato || 0);
+      const mp = Number(a.monto_pagado || 0);
+      const budget = Number(a.budget_amount || 0);
+      // SOBRECOSTO if either field exceeds contract by >15%
+      return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
+    })
+    .map(a => {
+      const mc = Number(a.monto_contrato);
+      const mp = Number(a.monto_pagado || 0);
+      const budget = Number(a.budget_amount || 0);
+      const comparison = mp > 0 ? mp : budget;
+      const sourceLabel = mp > 0 ? 'Pagado' : 'Presupuesto';
+      const diff = comparison - mc;
+      const pct = ((diff / mc) * 100).toFixed(1);
+      return {
+        alert: a,
+        diff,
+        pct,
+        sourceLabel,
+        comparisonAmount: comparison,
+        entityName: a.entity_name || a.entidad || 'Desconocida',
+        vendorName: a.proveedor_nombre || a.proveedor || 'Desconocido'
+      };
+    })
+    .sort((a, b) => b.diff - a.diff); // Sort by amount of overpayment (descending)
+
+  const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
+
+  // Calculate summary statistics
+  const totalCount = sobrecostos.length;
+  const totalAmount = sobrecostos.reduce((sum, s) => sum + s.diff, 0);
+  const avgPct = totalCount > 0 ? (sobrecostos.reduce((sum, s) => sum + Number(s.pct), 0) / totalCount).toFixed(1) : 0;
+
+  // Update summary stats
+  document.getElementById('sp-total-count').textContent = totalCount;
+  document.getElementById('sp-total-amount').textContent = fmtL(totalAmount);
+  document.getElementById('sp-avg-pct').textContent = `+${avgPct}%`;
+
+  // Group by entity for breakdown
+  const entityMap = {};
+  sobrecostos.forEach(s => {
+    const entity = s.entityName;
+    if (!entityMap[entity]) {
+      entityMap[entity] = { count: 0, totalAmount: 0, totalPct: 0, records: [] };
+    }
+    entityMap[entity].count++;
+    entityMap[entity].totalAmount += s.diff;
+    entityMap[entity].totalPct += Number(s.pct);
+    entityMap[entity].records.push(s);
+  });
+
+  // Sort entities by total amount
+  const entities = Object.entries(entityMap)
+    .map(([name, data]) => ({
+      name,
+      ...data,
+      avgPct: (data.totalPct / data.count).toFixed(1)
+    }))
+    .sort((a, b) => b.totalAmount - a.totalAmount);
+
+  // Display entity breakdown
+  document.getElementById('sp-entity-breakdown').innerHTML = entities.length
+    ? entities.map(e => `
+        <div class="fuente-recent-item">
+          <div style="flex:1;">
+            <div class="fri-desc" style="color:var(--electric);font-weight:600;">${e.name}</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">
+              ${e.count} sobrecostos · Exceso promedio: +${e.avgPct}%
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="color:var(--red);font-weight:600;font-size:12px;">${fmtL(e.totalAmount)}</div>
+          </div>
+        </div>`).join('')
+    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin sobrecostos detectados en ninguna entidad.</div>';
+
+  // Display all sobrecostos (top 50)
+  document.getElementById('sp-sobrecosto-list').innerHTML = sobrecostos.length
+    ? sobrecostos.slice(0, 50).map(s => `
+        <div class="fuente-recent-item">
+          <div style="flex:1;">
+            <div class="fri-desc" style="color:var(--electric);">${s.vendorName}</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">
+              ID: ${s.alert.alert_id || '#' + s.alert.id} · Entidad: ${s.entityName}
+              <br/>Contrato: ${fmtL(s.alert.monto_contrato)} → ${s.sourceLabel}: ${fmtL(s.comparisonAmount)}
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="color:var(--red);font-weight:600;font-size:12px;">+${s.pct}%</div>
+            <div style="color:var(--amber);font-weight:600;font-size:11px;margin-top:2px;">${fmtL(s.diff)}</div>
+          </div>
+        </div>`).join('')
+    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin sobrecostos detectados.</div>';
 }
 
 // Open entity panel from analytics — back button returns to analytics

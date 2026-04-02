@@ -4003,6 +4003,95 @@ function showPerformanceMetrics() {
 }
 
 // ════════════════════════════════════════════════════════════
+// PHASE 3c: PAYMENT API RESEARCH & INVESTIGATION
+// Test endpoint: /documentoF01F07/ from SEFIN
+// ════════════════════════════════════════════════════════════
+
+async function testPaymentAPIEndpoint(documentId = '1') {
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('🔬 TESTING SEFIN PAYMENT API ENDPOINT');
+  console.log('═══════════════════════════════════════════════════════');
+  console.log(`\n📍 Endpoint: /datosabiertos/api/v1/documentoF01F07/${documentId}`);
+  console.log(`🌐 Base: https://guancasco.sefin.gob.hn/EDCA_WEBAPI/`);
+
+  const url = `https://guancasco.sefin.gob.hn/EDCA_WEBAPI/datosabiertos/api/v1/documentoF01F07/${documentId}`;
+
+  try {
+    console.log(`\n⏳ Calling API...`);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log(`\n✅ Response Status: ${response.status} ${response.statusText}`);
+
+    if (response.status === 200) {
+      const data = await response.json();
+      console.log(`\n📊 Response Structure:`);
+      console.log(data);
+
+      // Document key fields
+      console.log(`\n🔍 KEY FIELDS FOUND:`);
+      if (data.implementation) {
+        console.log(`   ✅ implementation: Object`);
+        if (data.implementation.transactions) {
+          console.log(`      ✅ transactions: Array (${data.implementation.transactions.length} items)`);
+          if (data.implementation.transactions.length > 0) {
+            console.log(`         Sample transaction:`, data.implementation.transactions[0]);
+          }
+        }
+        if (data.implementation.financialObligations) {
+          console.log(`      ✅ financialObligations: Array`);
+        }
+      }
+      if (data.awards) console.log(`   ✅ awards: Array`);
+      if (data.contracts) console.log(`   ✅ contracts: Array`);
+      if (data.planning) console.log(`   ✅ planning: Object`);
+
+      console.log(`\n✅ SUCCESS: API endpoint is accessible!`);
+      return { success: true, data };
+    } else if (response.status === 404) {
+      console.log(`\n❌ ERROR 404: Document not found`);
+      console.log(`   Hint: Try with a valid SEFIN document ID`);
+      return { success: false, error: 'Document not found' };
+    } else {
+      const text = await response.text();
+      console.log(`\n❌ ERROR: Status ${response.status}`);
+      console.log(`   Response:`, text.slice(0, 200));
+      return { success: false, error: `HTTP ${response.status}` };
+    }
+  } catch (error) {
+    console.log(`\n❌ CORS or Network Error:`);
+    console.log(`   ${error.message}`);
+    console.log(`\n💡 ANALYSIS:`);
+    if (error.message.includes('CORS')) {
+      console.log(`   → CORS ISSUE DETECTED`);
+      console.log(`   → Solution: Use backend proxy (sefin-sync.js)`);
+    } else {
+      console.log(`   → Network/Fetch error`);
+    }
+    return { success: false, error: error.message };
+  }
+}
+
+async function discoverPaymentAPIStructure() {
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('🔎 DISCOVERING PAYMENT API STRUCTURE');
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('\n📝 Instructions:');
+  console.log('   1. Go to SEFIN and find a contract ID');
+  console.log('   2. Run: testPaymentAPIEndpoint("CONTRACT_ID")');
+  console.log('   3. Check console for response structure');
+  console.log('\n💡 Example:');
+  console.log('   testPaymentAPIEndpoint("123456")');
+  console.log('\n⚠️  Note: If you get CORS error, we need backend proxy');
+  console.log('═══════════════════════════════════════════════════════');
+}
+
+// ════════════════════════════════════════════════════════════
 // AUTH — Login / Logout / Session
 // Uses sessionStorage to persist across page reloads.
 // Keeps persistSession:false on the db client (DataCloneError fix).

@@ -1021,6 +1021,9 @@ body::after {
       <button class="nav-item" id="nav-sobrecostos" onclick="showGlobalSobrecostos()">
         <span class="nav-icon">📊</span> Ver Resumen Global
       </button>
+      <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()">
+        <span class="nav-icon">🔍</span> Phase 4 Detection
+      </button>
     </div>
 
     <div class="nav-section">
@@ -1755,6 +1758,52 @@ body::after {
       <div class="fuente-recent-title">Detalle de Sobrecostos (Últimos 50)</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Ordenados por monto de exceso — mayor primero</div>
       <div class="fuente-recent-list" id="sp-sobrecosto-list"></div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 DETECTION REPORT PANEL -->
+  <div class="fuente-panel" id="phase4Panel">
+    <button class="fuente-back" onclick="hidePhase4Detection()">← Todas las Alertas</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title">🔍 <span>Phase 4 Detection Report</span></div>
+    </div>
+
+    <!-- Summary stats row -->
+    <div class="fuente-stats-row" style="margin-bottom:16px;">
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="p4-velocity-count">0</div>
+        <div class="fuente-stat-lbl">Velocity Threats</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="p4-anomaly-count">0</div>
+        <div class="fuente-stat-lbl">Anomalies Detected</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="p4-risk-critical">0</div>
+        <div class="fuente-stat-lbl">Critical Suppliers</div>
+      </div>
+    </div>
+
+    <!-- Velocity Threats Section -->
+    <div class="fuente-chart-card" style="margin-bottom:20px;">
+      <div class="fuente-recent-title">⚡ Velocity Threats - Vendors with Multiple Overpayments</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Vendors appearing in 3+ overpayment incidents</div>
+      <div class="fuente-recent-list" id="p4-velocity-list"></div>
+    </div>
+
+    <!-- Risk Scores Section -->
+    <div class="fuente-chart-card" style="margin-bottom:20px;">
+      <div class="fuente-recent-title">📊 Supplier Risk Scores - Top 10 High Risk</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Multi-factor behavioral risk analysis (0-100 scale)</div>
+      <div class="fuente-recent-list" id="p4-risk-list"></div>
+    </div>
+
+    <!-- Anomalies Section -->
+    <div class="fuente-chart-card">
+      <div class="fuente-recent-title">🚨 Statistical Anomalies - Deviation from Entity Averages</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Overpayments deviating >2σ from entity baseline</div>
+      <div class="fuente-recent-list" id="p4-anomaly-list"></div>
     </div>
   </div>
 
@@ -3873,6 +3922,83 @@ function hideFuentePanel() {
   document.querySelector('.table-container').style.display = '';
   // Remove fuente active state, restore dashboard active
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+}
+
+// ════════════════════════════════════════════════════════════
+// PHASE 4 DETECTION: PANEL FUNCTIONS
+// Velocity Threats, Anomalies, Risk Scores
+// ════════════════════════════════════════════════════════════
+
+function showPhase4Detection() {
+  populatePhase4Detection();
+  document.getElementById('phase4Panel').classList.add('open');
+  document.querySelector('.stats-grid').style.display = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+  document.querySelector('.table-container').style.display = 'none';
+}
+
+function hidePhase4Detection() {
+  document.getElementById('phase4Panel').classList.remove('open');
+  document.querySelector('.stats-grid').style.display = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.querySelector('.table-container').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function populatePhase4Detection() {
+  // Get detection results
+  const velocityThreats = detectVelocityThreats(allAlerts);
+  const anomalies = detectAnomalies(allAlerts);
+  const riskScores = calculateSupplierRiskScores(allAlerts);
+
+  // Update summary stats
+  const criticalCount = riskScores.filter(r => r.severity === 'critical').length;
+  document.getElementById('p4-velocity-count').textContent = velocityThreats.length;
+  document.getElementById('p4-anomaly-count').textContent = anomalies.length;
+  document.getElementById('p4-risk-critical').textContent = criticalCount;
+
+  // Populate Velocity Threats (top 10)
+  const velocityHTML = velocityThreats.slice(0, 10).map(threat => `
+    <div class="fuente-list-item" style="border-left: 4px solid ${threat.severity === 'critical' ? '#e63946' : threat.severity === 'high' ? '#f77f00' : '#fcbf49'};">
+      <div style="font-weight:600;color:#00c8ff;">${threat.vendor}</div>
+      <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
+        🔴 Incidents: ${threat.count} | Risk Score: ${threat.risk_score.toFixed(0)}/100 | Severity: <strong>${threat.severity.toUpperCase()}</strong>
+      </div>
+      <div style="font-size:12px;color:var(--red);margin-top:4px;">
+        Total Excess: L ${(threat.totalExcess || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('p4-velocity-list').innerHTML = velocityHTML || '<div style="padding:12px;color:var(--text-dim);">No velocity threats detected</div>';
+
+  // Populate Risk Scores (top 10)
+  const riskHTML = riskScores.slice(0, 10).map(supplier => `
+    <div class="fuente-list-item" style="border-left: 4px solid ${supplier.severity === 'critical' ? '#e63946' : supplier.severity === 'high' ? '#f77f00' : '#fcbf49'};">
+      <div style="font-weight:600;color:#00c8ff;">${supplier.vendor}</div>
+      <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
+        📊 Risk Score: <strong>${supplier.risk_score.toFixed(0)}/100</strong> | Severity: ${supplier.severity.toUpperCase()} | Contracts: ${supplier.total_contracts}
+      </div>
+      <div style="font-size:11px;color:#aaa;margin-top:4px;">
+        Overpayments: ${supplier.overpay_count} | Excess: L ${(supplier.overpay_total || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})} | Entities: ${supplier.entities_count}
+      </div>
+      ${supplier.risk_factors.length > 0 ? `<div style="font-size:11px;color:#fcbf49;margin-top:4px;">⚠️ Risk Factors: ${supplier.risk_factors.join(', ')}</div>` : ''}
+    </div>
+  `).join('');
+  document.getElementById('p4-risk-list').innerHTML = riskHTML || '<div style="padding:12px;color:var(--text-dim);">No suppliers with risk factors</div>';
+
+  // Populate Anomalies (top 5)
+  const anomalyHTML = anomalies.slice(0, 5).map(anom => `
+    <div class="fuente-list-item" style="border-left: 4px solid #e63946;">
+      <div style="font-weight:600;color:#00c8ff;">Alert ID: ${anom.alert_id} | ${anom.vendor}</div>
+      <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
+        📍 Entity: ${anom.entity} | Deviation: <strong>${anom.deviation_score.toFixed(1)}σ</strong> | Severity: ${anom.severity}
+      </div>
+      <div style="font-size:12px;color:var(--red);margin-top:4px;">
+        Overpayment: ${anom.actual_overpay.toFixed(1)}% (Entity avg: ${anom.entity_avg.toFixed(1)}%)
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('p4-anomaly-list').innerHTML = anomalyHTML || '<div style="padding:12px;color:var(--text-dim);">No statistical anomalies detected</div>';
 }
 
 // ════════════════════════════════════════════════════════════

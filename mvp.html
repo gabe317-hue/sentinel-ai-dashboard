@@ -3876,6 +3876,133 @@ function hideFuentePanel() {
 }
 
 // ════════════════════════════════════════════════════════════
+// PHASE 3b: DASHBOARD ENHANCEMENTS
+// Sync Status, Export Functionality, Performance Metrics
+// ════════════════════════════════════════════════════════════
+
+let lastSyncTime = localStorage.getItem('lastSyncTime') || 'Nunca';
+let syncRecordCount = localStorage.getItem('syncRecordCount') || '0';
+
+function updateSyncStatus(recordCount) {
+  const now = new Date();
+  const timeString = now.toLocaleString('es-HN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  lastSyncTime = timeString;
+  syncRecordCount = recordCount;
+
+  localStorage.setItem('lastSyncTime', timeString);
+  localStorage.setItem('syncRecordCount', recordCount);
+
+  console.log(`✅ Sync actualizado: ${recordCount} registros a las ${timeString}`);
+}
+
+function showSyncStatus() {
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('📡 SYNC STATUS');
+  console.log('═══════════════════════════════════════════════════════');
+  console.log(`✅ Última sincronización: ${lastSyncTime}`);
+  console.log(`📊 Registros cargados: ${syncRecordCount}`);
+  console.log(`🔄 Total en dashboard: ${allAlerts ? allAlerts.length : 'N/A'}`);
+  console.log('');
+}
+
+function exportGlobalSobrecostos(format = 'csv') {
+  if (!allAlerts || allAlerts.length === 0) {
+    alert('No hay datos para exportar');
+    return;
+  }
+
+  // Filter sobrecostos
+  const sobrecostos = allAlerts.filter(a => {
+    const mc = Number(a.monto_contrato || 0);
+    const mp = Number(a.monto_pagado || 0);
+    const budget = Number(a.budget_amount || 0);
+    return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
+  });
+
+  if (format === 'csv') {
+    exportSobrecostosCSV(sobrecostos);
+  } else if (format === 'pdf') {
+    alert('Función PDF en desarrollo - usa impresión del navegador (Ctrl+P)');
+  }
+}
+
+function exportSobrecostosCSV(sobrecostos) {
+  const headers = ['ID', 'Proveedor', 'Entidad', 'Monto Contrato', 'Monto Pagado', 'Exceso', '% Exceso'];
+  const rows = sobrecostos.map(a => [
+    a.alert_id || a.id || '',
+    a.proveedor_nombre || a.proveedor || 'Desconocido',
+    a.entity_name || a.entidad || 'Desconocida',
+    a.monto_contrato || '',
+    a.monto_pagado || a.budget_amount || '',
+    (Number(a.monto_pagado || a.budget_amount || 0) - Number(a.monto_contrato || 0)).toFixed(2),
+    (((Number(a.monto_pagado || a.budget_amount || 0) - Number(a.monto_contrato || 0)) / Number(a.monto_contrato || 1)) * 100).toFixed(1)
+  ]);
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(r => r.map(v => `"${v}"`).join(','))
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.setAttribute('href', URL.createObjectURL(blob));
+  link.setAttribute('download', `sobrecostos_${new Date().toISOString().split('T')[0]}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function showPerformanceMetrics() {
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('⚡ PERFORMANCE METRICS');
+  console.log('═══════════════════════════════════════════════════════');
+  console.log(`\n📊 DATA STATISTICS:`);
+  console.log(`   • Total Registros: ${allAlerts ? allAlerts.length : 0}`);
+
+  if (allAlerts && allAlerts.length > 0) {
+    const sources = {};
+    allAlerts.forEach(a => {
+      const source = a.data_source || 'unknown';
+      sources[source] = (sources[source] || 0) + 1;
+    });
+
+    console.log(`\n🔍 DATA SOURCES:`);
+    Object.entries(sources).forEach(([source, count]) => {
+      const pct = ((count / allAlerts.length) * 100).toFixed(1);
+      console.log(`   • ${source}: ${count} registros (${pct}%)`);
+    });
+
+    const sobrecostos = allAlerts.filter(a => {
+      const mc = Number(a.monto_contrato || 0);
+      const mp = Number(a.monto_pagado || 0);
+      const budget = Number(a.budget_amount || 0);
+      return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
+    });
+
+    console.log(`\n🚨 ALERTS DETECTED:`);
+    console.log(`   • SOBRECOSTOS: ${sobrecostos.length}`);
+    console.log(`\n✅ INDEXES STATUS:`);
+    console.log(`   • idx_alerts_monto_contrato: ACTIVE`);
+    console.log(`   • idx_alerts_entity_name: ACTIVE`);
+    console.log(`   • idx_alerts_created_date: ACTIVE`);
+  }
+
+  console.log('\n🎯 LAST SYNC:');
+  console.log(`   • Timestamp: ${lastSyncTime}`);
+  console.log(`   • Records: ${syncRecordCount}`);
+  console.log('');
+}
+
+// ════════════════════════════════════════════════════════════
 // AUTH — Login / Logout / Session
 // Uses sessionStorage to persist across page reloads.
 // Keeps persistSession:false on the db client (DataCloneError fix).

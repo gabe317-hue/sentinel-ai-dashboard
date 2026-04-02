@@ -1014,6 +1014,9 @@ body::after {
       <button class="nav-item" id="nav-vendor-concentration" onclick="showVendorConcentrationPanel()">
         <span class="nav-icon">🔴</span> Concentración Proveedores
       </button>
+      <button class="nav-item" id="nav-sobrecostos" onclick="showGlobalSobrecostos()">
+        <span class="nav-icon">📊</span> Resumen Sobrecostos
+      </button>
       <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
         <span class="nav-icon">📋</span> Auditoría
         <span class="nav-chip">LOG</span>
@@ -1124,7 +1127,6 @@ body::after {
     <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')">SIN HISTORIAL</button>
     <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
     <button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" onclick="setPatternFilter('PROVEEDOR_SANCIONADO')">🚨 SANCIONADO OFAC</button>
-    <button class="filter-btn" style="margin-left:auto;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.3);" onclick="showGlobalSobrecostos()">📊 Ver Resumen Global de Sobrecostos</button>
   </div>
 
   <!-- Risk scoring legend -->

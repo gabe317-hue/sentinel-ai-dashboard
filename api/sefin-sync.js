@@ -51,10 +51,13 @@ module.exports = async function handler(req, res) {
       case 'sync':
         return handleSync(req, res);
 
+      case 'payment':
+        return handlePaymentData(req, res);
+
       default:
         return res.status(400).json({
           error: 'Invalid action',
-          valid: ['list', 'download', 'sync'],
+          valid: ['list', 'download', 'sync', 'payment'],
         });
     }
   } catch (error) {
@@ -300,6 +303,80 @@ function parseCSVtoJSON(csvContent) {
   } catch (error) {
     console.error('[SEFIN] CSV parse error:', error.message);
     return [];
+  }
+}
+
+/**
+ * GET /api/sefin-sync?action=payment&docId=...
+ * Fetch payment data from SEFIN documentoF01F07 endpoint
+ */
+async function handlePaymentData(req, res) {
+  const docId = req.query.docId;
+
+  if (!docId) {
+    return res.status(400).json({
+      error: 'Missing docId parameter',
+      example: '/api/sefin-sync?action=payment&docId=OCDS-87BJ3A-123456',
+    });
+  }
+
+  console.log(`[PAYMENT] Fetching payment data for document: ${docId}`);
+
+  try {
+    const paymentUrl = `https://guancasco.sefin.gob.hn/EDCA_WEBAPI/datosabiertos/api/v1/documentoF01F07/${docId}`;
+
+    const response = await fetch(paymentUrl, {
+      method: 'GET',
+      timeout: 30000,
+      headers: {
+        'User-Agent': 'Sentinel-AI-Honduras/1.0',
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.warn(`[PAYMENT] API returned ${response.status} for ${docId}`);
+      return res.status(response.status).json({
+        success: false,
+        error: `SEFIN API returned ${response.status}`,
+        docId: docId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const paymentData = await response.json();
+    console.log(`[PAYMENT] Successfully fetched payment data for ${docId}`);
+
+    // Extract key fields for SOBRECOSTO detection
+    const extracted = {
+      docId: docId,
+      implementation: {
+        transactions: paymentData.implementation?.transactions || [],
+        financialObligations: paymentData.implementation?.financialObligations || [],
+      },
+      contracts: paymentData.contracts || [],
+      planning: paymentData.planning || {},
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: extracted,
+      recordsAvailable: {
+        transactions: extracted.implementation.transactions.length,
+        obligations: extracted.implementation.financialObligations.length,
+        contracts: extracted.contracts.length,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('[PAYMENT] Fetch failed:', error.message);
+    return res.status(503).json({
+      success: false,
+      error: 'No se pudo conectar a SEFIN Payment API',
+      detail: error.message,
+      docId: docId,
+      timestamp: new Date().toISOString(),
+    });
   }
 }
 

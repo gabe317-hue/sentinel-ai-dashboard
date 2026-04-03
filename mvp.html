@@ -1024,6 +1024,9 @@ body::after {
       <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()">
         <span class="nav-icon">🔍</span> Phase 4 Detection
       </button>
+      <button class="nav-item" id="nav-report" onclick="openReportModal()" style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px;">
+        <span class="nav-icon">📄</span> Generar Reporte
+      </button>
     </div>
 
     <div class="nav-section">
@@ -1953,6 +1956,31 @@ body::after {
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
 
+<!-- Report Format Modal -->
+<div class="modal-overlay" id="reportModalOverlay" style="display:none;" onclick="closeReportModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title">📄 Generar Reporte Ejecutivo</div>
+    <div style="padding:20px;color:var(--text);font-size:14px;">
+      <div style="margin-bottom:20px;opacity:0.8;">Selecciona el formato de salida para tu reporte ejecutivo con análisis de concentración, Phase 4 Detection y sobrecostos:</div>
+      <div style="display:flex;gap:12px;flex-direction:column;">
+        <button onclick="generateReportWord()" style="padding:12px 16px;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.3);border-radius:6px;color:var(--text);cursor:pointer;font-size:13px;font-weight:500;transition:all 0.2s;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">📘</span>
+          <span>Descargar como Word (DOCX)</span>
+          <span style="margin-left:auto;color:var(--text-dim);font-size:11px;">v5.0</span>
+        </button>
+        <button onclick="generateReportPDF()" style="padding:12px 16px;background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.3);border-radius:6px;color:var(--text);cursor:pointer;font-size:13px;font-weight:500;transition:all 0.2s;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">📕</span>
+          <span>Descargar como PDF</span>
+          <span style="margin-left:auto;color:var(--text-dim);font-size:11px;">Filtros actuales</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeReportModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
 <script>
 // ════════════════════════════════════════════════════════════
@@ -2594,6 +2622,345 @@ function openSendModal(id) {
 function closeSendModal() {
   document.getElementById('sendModalOverlay').classList.remove('open');
   sendTargetId = null;
+}
+
+// ════════════════════════════════════════════════════════════
+// REPORT GENERATION FUNCTIONS
+// ════════════════════════════════════════════════════════════
+
+function openReportModal() {
+  document.getElementById('reportModalOverlay').style.display = 'flex';
+}
+
+function closeReportModal() {
+  document.getElementById('reportModalOverlay').style.display = 'none';
+}
+
+async function generateReportWord() {
+  const btn = event.target.closest('button');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Generando...';
+  btn.disabled = true;
+
+  try {
+    closeReportModal();
+
+    // Collect data for the report
+    const now = new Date();
+    const fechaStr = now.toLocaleDateString('es-ES', { year:'numeric', month:'long', day:'numeric' });
+
+    // Get alert statistics
+    let counts = { critica: 0, alta: 0, media: 0, baja: 0 };
+    let totalMonto = 0;
+    let sobrecostos = 0;
+    let sobrecostoMonto = 0;
+
+    for (const a of allAlerts) {
+      const sev = (a.severity || 'Baja').toLowerCase();
+      if (counts[sev] !== undefined) counts[sev]++;
+      totalMonto += parseFloat(a.monto_contrato || 0);
+
+      // Check for sobrecostos
+      const mc = Number(a.monto_contrato || 0);
+      const mp = Number(a.monto_pagado || 0);
+      const ba = Number(a.budget_amount || 0);
+      if (mc > 0 && (mp > mc * 1.15 || ba > mc * 1.15)) {
+        sobrecostos++;
+        const excess = Math.max(mp - mc, ba - mc);
+        sobrecostoMonto += excess;
+      }
+    }
+
+    // Create Word document using HTML-DOCX
+    const docContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+          h1 { color: #1F4E78; font-size: 24px; margin-bottom: 10px; }
+          h2 { color: #2E5090; font-size: 18px; margin-top: 20px; margin-bottom: 10px; border-bottom: 2px solid #1F4E78; padding-bottom: 5px; }
+          table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+          th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+          th { background-color: #D9E8F5; font-weight: bold; }
+          .metric-box { background: #E8F4F8; padding: 15px; border-radius: 5px; margin: 10px 0; }
+          .section-title { margin-top: 30px; }
+        </style>
+      </head>
+      <body>
+        <h1>SENTINEL-AI</h1>
+        <p><em>Sistema de Detección de Anomalías en Contrataciones Públicas</em></p>
+
+        <h2>INFORME EJECUTIVO — VERSIÓN 5.0</h2>
+        <p><strong>Fecha de emisión:</strong> ${fechaStr}</p>
+        <p><strong>Período analizado:</strong> Enero 2023 - Abril 2026</p>
+        <p><strong>Contratos analizados:</strong> ${allAlerts.length.toLocaleString()}</p>
+
+        <h2>1. Resumen Ejecutivo</h2>
+        <div class="metric-box">
+          <p><strong>Total Alertas:</strong> ${allAlerts.length.toLocaleString()}</p>
+          <p><strong>Exposición Total:</strong> L. ${totalMonto.toLocaleString('es-ES', {maximumFractionDigits: 0})}</p>
+          <p><strong>Sobrecostos Detectados:</strong> ${sobrecostos}</p>
+          <p><strong>Monto Total Sobrecosto:</strong> L. ${sobrecostoMonto.toLocaleString('es-ES', {maximumFractionDigits: 0})}</p>
+        </div>
+
+        <h2>2. Distribución por Nivel de Riesgo</h2>
+        <table>
+          <tr>
+            <th>Nivel</th>
+            <th>Contratos</th>
+            <th>% Total</th>
+            <th>Descripción</th>
+          </tr>
+          <tr>
+            <td><strong>CRÍTICA</strong></td>
+            <td>${counts.critica}</td>
+            <td>${allAlerts.length > 0 ? ((counts.critica / allAlerts.length * 100).toFixed(1)) : '0'}%</td>
+            <td>Puntaje ≥9 — Referir a PGR</td>
+          </tr>
+          <tr>
+            <td><strong>ALTA</strong></td>
+            <td>${counts.alta}</td>
+            <td>${allAlerts.length > 0 ? ((counts.alta / allAlerts.length * 100).toFixed(1)) : '0'}%</td>
+            <td>Puntaje 6-8 — Escalada legal</td>
+          </tr>
+          <tr>
+            <td><strong>MEDIA</strong></td>
+            <td>${counts.media}</td>
+            <td>${allAlerts.length > 0 ? ((counts.media / allAlerts.length * 100).toFixed(1)) : '0'}%</td>
+            <td>Puntaje 3-5 — Monitoreo</td>
+          </tr>
+          <tr>
+            <td><strong>BAJA</strong></td>
+            <td>${counts.baja}</td>
+            <td>${allAlerts.length > 0 ? ((counts.baja / allAlerts.length * 100).toFixed(1)) : '0'}%</td>
+            <td>Puntaje 0-2 — Referencia</td>
+          </tr>
+        </table>
+
+        <h2>3. Análisis de Sobrecostos</h2>
+        <p>Detectados <strong>${sobrecostos}</strong> contratos donde el monto pagado excede el monto contratado en más del 15%.</p>
+        <div class="metric-box">
+          <p><strong>Total Sobrecostos:</strong> ${sobrecostos}</p>
+          <p><strong>Monto Total Exceso:</strong> L. ${sobrecostoMonto.toLocaleString('es-ES', {maximumFractionDigits: 0})}</p>
+          <p><strong>Promedio:</strong> ${sobrecostos > 0 ? '+' + (sobrecostoMonto / sobrecostos).toLocaleString('es-ES', {maximumFractionDigits: 0}) + ' L.' : '—'}</p>
+        </div>
+
+        <h2>4. Recomendaciones</h2>
+        <ul>
+          <li>Priorizar investigación en los ${counts.critica} contratos de nivel Crítico</li>
+          <li>Revisar los ${counts.alta} contratos de nivel Alto mediante unidades legales</li>
+          <li>Implementar controles preventivos en tiempo real para patrones de fraccionamiento</li>
+          <li>Auditar declaratorias de emergencia que sustentan contratos</li>
+          <li>Fortalecer requisitos de habilitación para proveedores sin historial</li>
+        </ul>
+
+        <h2>5. Descargos</h2>
+        <p style="font-size: 12px; opacity: 0.8;">
+          Este análisis tiene carácter estadístico y orientativo. Los patrones identificados son indicadores de riesgo, no prueba de irregularidad.
+          La evaluación de cada caso concreto requiere revisión documental de expedientes contractuales y aplicación de criterios jurídicos.
+        </p>
+
+        <p style="margin-top: 30px; font-size: 11px; color: #666;">
+          <strong>Generado:</strong> ${now.toLocaleString('es-ES')}<br>
+          <strong>Sistema:</strong> Sentinel-AI v5.0<br>
+          <strong>Datos:</strong> ${allAlerts.length} registros analizados
+        </p>
+      </body>
+      </html>
+    `;
+
+    // Convert to DOCX
+    const docBlob = new Blob([docContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const docurl = URL.createObjectURL(docBlob);
+
+    // Use html-docx to create proper DOCX
+    const fileName = 'Sentinel_Informe_' + now.toISOString().slice(0, 10) + '.docx';
+    const converted = HtmlDocx.asBlob(docContent);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(converted);
+    link.download = fileName;
+    link.click();
+
+    showToast('✅ Reporte Word descargado correctamente', 'success');
+  } catch (error) {
+    console.error('Error generando Word:', error);
+    showToast('❌ Error al generar reporte Word: ' + error.message, 'error');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+async function generateReportPDF() {
+  const btn = event.target.closest('button');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Generando...';
+  btn.disabled = true;
+
+  try {
+    closeReportModal();
+
+    // Crear contenido HTML para PDF
+    const now = new Date();
+    const fechaStr = now.toLocaleDateString('es-ES', { year:'numeric', month:'long', day:'numeric' });
+
+    // Get statistics
+    let counts = { critica: 0, alta: 0, media: 0, baja: 0 };
+    let totalMonto = 0;
+    let sobrecostos = 0;
+    let sobrecostoMonto = 0;
+
+    for (const a of allAlerts) {
+      const sev = (a.severity || 'Baja').toLowerCase();
+      if (counts[sev] !== undefined) counts[sev]++;
+      totalMonto += parseFloat(a.monto_contrato || 0);
+
+      const mc = Number(a.monto_contrato || 0);
+      const mp = Number(a.monto_pagado || 0);
+      const ba = Number(a.budget_amount || 0);
+      if (mc > 0 && (mp > mc * 1.15 || ba > mc * 1.15)) {
+        sobrecostos++;
+        const excess = Math.max(mp - mc, ba - mc);
+        sobrecostoMonto += excess;
+      }
+    }
+
+    // Crear documento para imprimir como PDF
+    const printWindow = window.open('', '_blank');
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Sentinel Informe Ejecutivo</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; color: #333; background: white; }
+          .container { max-width: 850px; margin: 40px auto; padding: 0 20px; }
+          h1 { color: #1F4E78; font-size: 28px; margin-bottom: 5px; }
+          .subtitle { color: #666; font-style: italic; margin-bottom: 30px; }
+          h2 { color: #2E5090; font-size: 18px; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #1F4E78; padding-bottom: 8px; }
+          .metadata { background: #F5F7FA; padding: 15px; border-radius: 5px; margin-bottom: 25px; font-size: 13px; }
+          .metadata p { margin: 5px 0; }
+          .metric-box { background: #E8F4F8; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #00C8FF; }
+          .metric-box p { margin: 8px 0; }
+          table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background-color: #D9E8F5; font-weight: bold; color: #1F4E78; }
+          tr:nth-child(even) { background-color: #F9FAFB; }
+          ul { margin: 15px 0 15px 25px; }
+          li { margin: 8px 0; }
+          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 11px; color: #999; }
+          @media print { body { background: white; } .container { margin: 0; } }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>SENTINEL-AI</h1>
+          <p class="subtitle">Sistema de Detección de Anomalías en Contrataciones Públicas</p>
+
+          <div class="metadata">
+            <p><strong>Fecha de emisión:</strong> ${fechaStr}</p>
+            <p><strong>Período analizado:</strong> Enero 2023 - Abril 2026</p>
+            <p><strong>Contratos analizados:</strong> ${allAlerts.length.toLocaleString()}</p>
+            <p><strong>Versión:</strong> 5.0</p>
+          </div>
+
+          <h2>1. Resumen Ejecutivo</h2>
+          <div class="metric-box">
+            <p><strong>Total Alertas:</strong> ${allAlerts.length.toLocaleString()}</p>
+            <p><strong>Exposición Total:</strong> L. ${totalMonto.toLocaleString('es-ES', {maximumFractionDigits: 0})}</p>
+            <p><strong>Sobrecostos Detectados:</strong> ${sobrecostos}</p>
+            <p><strong>Monto Total Sobrecosto:</strong> L. ${sobrecostoMonto.toLocaleString('es-ES', {maximumFractionDigits: 0})}</p>
+          </div>
+
+          <h2>2. Distribución por Nivel de Riesgo</h2>
+          <table>
+            <tr>
+              <th>Nivel</th>
+              <th>Contratos</th>
+              <th>% Total</th>
+              <th>Descripción</th>
+            </tr>
+            <tr>
+              <td><strong>CRÍTICA</strong></td>
+              <td>${counts.critica}</td>
+              <td>${allAlerts.length > 0 ? ((counts.critica / allAlerts.length * 100).toFixed(1)) : '0'}%</td>
+              <td>Puntaje ≥9 — Referir a PGR</td>
+            </tr>
+            <tr>
+              <td><strong>ALTA</strong></td>
+              <td>${counts.alta}</td>
+              <td>${allAlerts.length > 0 ? ((counts.alta / allAlerts.length * 100).toFixed(1)) : '0'}%</td>
+              <td>Puntaje 6-8 — Escalada legal</td>
+            </tr>
+            <tr>
+              <td><strong>MEDIA</strong></td>
+              <td>${counts.media}</td>
+              <td>${allAlerts.length > 0 ? ((counts.media / allAlerts.length * 100).toFixed(1)) : '0'}%</td>
+              <td>Puntaje 3-5 — Monitoreo</td>
+            </tr>
+            <tr>
+              <td><strong>BAJA</strong></td>
+              <td>${counts.baja}</td>
+              <td>${allAlerts.length > 0 ? ((counts.baja / allAlerts.length * 100).toFixed(1)) : '0'}%</td>
+              <td>Puntaje 0-2 — Referencia</td>
+            </tr>
+          </table>
+
+          <h2>3. Análisis de Sobrecostos</h2>
+          <p>Detectados <strong>${sobrecostos}</strong> contratos donde el monto pagado excede el monto contratado en más del 15%.</p>
+          <div class="metric-box">
+            <p><strong>Total Sobrecostos:</strong> ${sobrecostos}</p>
+            <p><strong>Monto Total Exceso:</strong> L. ${sobrecostoMonto.toLocaleString('es-ES', {maximumFractionDigits: 0})}</p>
+            <p><strong>Promedio:</strong> ${sobrecostos > 0 ? '+' + (sobrecostoMonto / sobrecostos).toLocaleString('es-ES', {maximumFractionDigits: 0}) + ' L.' : '—'}</p>
+          </div>
+
+          <h2>4. Recomendaciones</h2>
+          <ul>
+            <li>Priorizar investigación en los ${counts.critica} contratos de nivel Crítico (puntaje ≥9)</li>
+            <li>Revisar los ${counts.alta} contratos de nivel Alto mediante unidades legales (puntaje 6-8)</li>
+            <li>Implementar controles preventivos en tiempo real para patrones de fraccionamiento</li>
+            <li>Auditar el 100% de declaratorias de emergencia que sustentan contratos</li>
+            <li>Fortalecer requisitos de habilitación para proveedores sin historial en adjudicaciones directas</li>
+          </ul>
+
+          <h2>5. Metodología</h2>
+          <p>El sistema Sentinel-AI utiliza 7 patrones de anomalía independientes con análisis multi-patrón para detectar irregularidades en contrataciones públicas. Los patrones incluyen: compra de emergencia, adjudicación directa, urgencia injustificada, monto fraccionado, fraccionamiento de contratos, proveedor sin historial y proveedor sancionado OFAC.</p>
+
+          <h2>6. Descargos</h2>
+          <p style="font-size: 12px; opacity: 0.85;">
+            Este análisis tiene carácter estadístico y orientativo. Los patrones identificados son indicadores de riesgo, no prueba de irregularidad. La evaluación de cada caso concreto requiere revisión documental de expedientes contractuales y aplicación de criterios jurídicos conforme a la legislación hondureña vigente.
+          </p>
+
+          <div class="footer">
+            <p><strong>Generado:</strong> ${now.toLocaleString('es-ES')}</p>
+            <p><strong>Sistema:</strong> Sentinel-AI v5.0</p>
+            <p><strong>Datos:</strong> ${allAlerts.length} registros analizados</p>
+            <p style="margin-top: 10px;">Para uso informativo y estadístico únicamente.</p>
+          </div>
+        </div>
+        <script>
+          window.onload = function() { window.print(); };
+          window.onafterprint = function() { window.close(); };
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+
+    showToast('✅ PDF listo para descargar — Usa Ctrl+P o el botón de imprimir', 'success');
+  } catch (error) {
+    console.error('Error generando PDF:', error);
+    showToast('❌ Error al generar PDF: ' + error.message, 'error');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
 }
 
 function toggleDest(cb) {

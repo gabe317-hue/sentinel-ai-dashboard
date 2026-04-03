@@ -5554,8 +5554,13 @@ async function init() {
   if (hasSession) {
     await loadAlerts();
     startRealtime();
+  } else {
+    // Auto-load dashboard without login
+    setCurrentUser('MVP Demo');
+    document.getElementById('loginScreen').classList.add('hidden');
+    await loadAlerts();
+    startRealtime();
   }
-  // If no session, login screen is already visible (not hidden)
 }
 
 // ════════════════════════════════════════════════════════════════

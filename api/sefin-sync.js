@@ -343,6 +343,10 @@ async function handleRecordData(req, res) {
       },
       transactions: transactions,
       obligations: obligations,
+      _debug_top_keys: Object.keys(recordData),
+      _debug_record_keys: Object.keys(record || {}),
+      _debug_compiled_keys: Object.keys(compiledRelease || {}),
+      _debug_releases_count: releases.length,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

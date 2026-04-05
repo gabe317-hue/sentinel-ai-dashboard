@@ -286,7 +286,7 @@ async function handleRecordData(req, res) {
 
     const response = await fetch(recordUrl, {
       method: 'GET',
-      timeout: 30000,
+      timeout: 8000,
       headers: {
         'User-Agent': 'Sentinel-AI-Honduras/1.0',
         'Accept': 'application/json',
@@ -304,8 +304,28 @@ async function handleRecordData(req, res) {
       });
     }
 
-    const recordData = await response.json();
-    console.log(`[RECORD] Successfully fetched record for ${ocid}`);
+    // Use text() first to avoid hanging on malformed JSON
+    const rawText = await response.text();
+    console.log(`[RECORD] Got response: ${rawText.length} bytes`);
+
+    // Return raw text preview so we can see what the API returns
+    let recordData = {};
+    let parseError = null;
+    try {
+      recordData = JSON.parse(rawText);
+    } catch (e) {
+      parseError = e.message;
+    }
+
+    if (parseError) {
+      return res.status(200).json({
+        success: false,
+        ocid: ocid,
+        parse_error: parseError,
+        raw_preview: rawText.substring(0, 500),
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     // Extract key fields for SOBRECOSTO detection
     const record = recordData.record || recordData;
@@ -318,20 +338,14 @@ async function handleRecordData(req, res) {
     const awards = compiledRelease.awards || [];
     const planning = compiledRelease.planning || {};
 
-    // Calculate total paid amount from transactions
-    const totalPagado = transactions.reduce((sum, t) => {
-      return sum + (Number(t.value?.amount) || 0);
-    }, 0);
-
-    // Get contract amount from contracts array
+    const totalPagado = transactions.reduce((sum, t) => sum + (Number(t.value?.amount) || 0), 0);
     const montoContrato = contracts[0]?.value?.amount || awards[0]?.value?.amount || 0;
-
-    // Get budget amount from planning
     const montoPlanificado = planning.budget?.amount?.amount || 0;
 
     return res.status(200).json({
       success: true,
       ocid: ocid,
+      bytes: rawText.length,
       summary: {
         monto_contrato: montoContrato,
         monto_planificado: montoPlanificado,
@@ -341,12 +355,11 @@ async function handleRecordData(req, res) {
         sobrecosto: montoContrato > 0 && totalPagado > montoContrato * 1.15,
         pct_exceso: montoContrato > 0 ? Math.round((totalPagado / montoContrato - 1) * 100) : null,
       },
-      transactions: transactions,
-      obligations: obligations,
-      _debug_top_keys: Object.keys(recordData),
-      _debug_record_keys: Object.keys(record || {}),
-      _debug_compiled_keys: Object.keys(compiledRelease || {}),
-      _debug_releases_count: releases.length,
+      top_keys: Object.keys(recordData).slice(0, 10),
+      record_keys: Object.keys(record || {}).slice(0, 10),
+      compiled_keys: Object.keys(compiledRelease || {}).slice(0, 10),
+      releases_count: releases.length,
+      transactions: transactions.slice(0, 3),
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

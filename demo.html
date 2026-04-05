@@ -961,7 +961,7 @@ body::after {
 <body>
 
 <!-- ═══════════════════ LOGIN SCREEN ═══════════════════ -->
-<div class="login-screen hidden" id="loginScreen">
+<div class="login-screen" id="loginScreen">
   <div class="login-box">
     <div class="login-shield">🛡️</div>
     <div class="login-logo">SENTINEL<span>-AI</span></div>
@@ -5183,10 +5183,12 @@ tickClock();
 setInterval(tickClock, 1000);
 
 async function init() {
-  // Auto-load dashboard without login requirement (public MVP access)
-  document.getElementById('loginScreen').classList.add('hidden');
-  await loadAlerts();
-  startRealtime();
+  const hasSession = checkStoredSession();
+  if (hasSession) {
+    await loadAlerts();
+    startRealtime();
+  }
+  // If no session, login screen is already visible (not hidden)
 }
 
 // ════════════════════════════════════════════════════════════════

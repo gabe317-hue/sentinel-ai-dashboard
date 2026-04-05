@@ -54,10 +54,13 @@ module.exports = async function handler(req, res) {
       case 'payment':
         return handlePaymentData(req, res);
 
+      case 'record':
+        return handleRecordData(req, res);
+
       default:
         return res.status(400).json({
           error: 'Invalid action',
-          valid: ['list', 'download', 'sync', 'payment'],
+          valid: ['list', 'download', 'sync', 'payment', 'record'],
         });
     }
   } catch (error) {
@@ -256,6 +259,99 @@ async function handleSync(req, res) {
       success: false,
       error: 'Error en sincronización SEFIN',
       detail: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+/**
+ * GET /api/sefin-sync?action=record&ocid=...
+ * Fetch full contract lifecycle from SEFIN record endpoint (OCDS format)
+ * Returns planning, awards, contracts, and implementation.transactions (PAGADO stage)
+ */
+async function handleRecordData(req, res) {
+  const ocid = req.query.ocid;
+
+  if (!ocid) {
+    return res.status(400).json({
+      error: 'Missing ocid parameter',
+      example: '/api/sefin-sync?action=record&ocid=ocds-lcuori-P2023-60-60-400',
+    });
+  }
+
+  console.log(`[RECORD] Fetching full record for OCID: ${ocid}`);
+
+  try {
+    const recordUrl = `https://guancasco.sefin.gob.hn/EDCA_WEBAPI/datosabiertos/api/v1/record/${encodeURIComponent(ocid)}/`;
+
+    const response = await fetch(recordUrl, {
+      method: 'GET',
+      timeout: 30000,
+      headers: {
+        'User-Agent': 'Sentinel-AI-Honduras/1.0',
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.warn(`[RECORD] API returned ${response.status} for ${ocid}`);
+      return res.status(response.status).json({
+        success: false,
+        error: `SEFIN API returned ${response.status}`,
+        ocid: ocid,
+        url: recordUrl,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const recordData = await response.json();
+    console.log(`[RECORD] Successfully fetched record for ${ocid}`);
+
+    // Extract key fields for SOBRECOSTO detection
+    const record = recordData.record || recordData;
+    const releases = record.releases || recordData.releases || [];
+    const compiledRelease = record.compiledRelease || releases[releases.length - 1] || {};
+
+    const transactions = compiledRelease.implementation?.transactions || [];
+    const obligations = compiledRelease.implementation?.financialObligations || [];
+    const contracts = compiledRelease.contracts || [];
+    const awards = compiledRelease.awards || [];
+    const planning = compiledRelease.planning || {};
+
+    // Calculate total paid amount from transactions
+    const totalPagado = transactions.reduce((sum, t) => {
+      return sum + (Number(t.value?.amount) || 0);
+    }, 0);
+
+    // Get contract amount from contracts array
+    const montoContrato = contracts[0]?.value?.amount || awards[0]?.value?.amount || 0;
+
+    // Get budget amount from planning
+    const montoPlanificado = planning.budget?.amount?.amount || 0;
+
+    return res.status(200).json({
+      success: true,
+      ocid: ocid,
+      summary: {
+        monto_contrato: montoContrato,
+        monto_planificado: montoPlanificado,
+        monto_pagado_real: totalPagado,
+        num_transactions: transactions.length,
+        num_obligations: obligations.length,
+        sobrecosto: montoContrato > 0 && totalPagado > montoContrato * 1.15,
+        pct_exceso: montoContrato > 0 ? Math.round((totalPagado / montoContrato - 1) * 100) : null,
+      },
+      transactions: transactions,
+      obligations: obligations,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('[RECORD] Fetch failed:', error.message);
+    return res.status(503).json({
+      success: false,
+      error: 'No se pudo conectar a SEFIN Record API',
+      detail: error.message,
+      ocid: ocid,
       timestamp: new Date().toISOString(),
     });
   }

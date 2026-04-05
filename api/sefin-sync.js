@@ -282,7 +282,7 @@ async function handleRecordData(req, res) {
   console.log(`[RECORD] Fetching full record for OCID: ${ocid}`);
 
   try {
-    const recordUrl = `https://guancasco.sefin.gob.hn/EDCA_WEBAPI/datosabiertos/api/v1/record/${encodeURIComponent(ocid)}/`;
+    const recordUrl = `http://contratacionesabiertas.gob.hn/api/v1/record/${encodeURIComponent(ocid)}/`;
 
     const response = await fetch(recordUrl, {
       method: 'GET',

@@ -1673,7 +1673,7 @@ body::after {
         </div>
         <div class="adp-field">
           <span class="adp-field-label">Monto Pagado (Ejecución)</span>
-          <span class="adp-field-value" id="adp-monto-pagado" style="color:var(--green)">Sin datos</span>
+          <span class="adp-field-value" id="adp-monto-pagado" style="color:var(--green)">Sin datos</span><span id="adp-siafi-badge" style="display:none;background:rgba(0,168,214,0.15);color:var(--electric);border:1px solid var(--electric);border-radius:3px;padding:1px 6px;font-size:9px;margin-left:6px;font-weight:600;vertical-align:middle;">✓ Real SIAFI2</span>
         </div>
         <!-- Derived SOBRECOSTO alert — shown when monto_pagado > monto_contrato * 1.15 -->
         <div id="adp-sobrecosto-pagado-section" style="display:none;margin:8px 0;padding:8px 12px;background:rgba(255,61,87,0.1);border:1px solid var(--red);border-radius:6px;">
@@ -3142,6 +3142,7 @@ function populateEntitySobrecosto(entityName) {
         <div class="ep-drill-item">
           <div class="ep-drill-item-title">
             ${s.alert.proveedor_nombre || s.alert.proveedor || s.alert.entity_name || '—'}
+            ${isSiafiReal(s.alert) ? '<span style="background:rgba(0,168,214,0.15);color:#00A8D6;border:1px solid #00A8D6;border-radius:3px;padding:1px 5px;font-size:9px;margin-left:6px;font-weight:600;vertical-align:middle;">✓ Real SIAFI2</span>' : ''}
           </div>
           <div class="ep-drill-item-meta">
             <span>ID: ${s.alert.alert_id || '#' + s.alert.id}</span>
@@ -3646,6 +3647,17 @@ function generateVendorDetailPDF(contracts, vendorName, entityName, timestamp) {
 }
 
 // ════════════════════════════════════════════════════════════
+// SIAFI2 BADGE HELPER
+// Returns true if this alert has REAL payment data from SIAFI2 2023
+// ════════════════════════════════════════════════════════════
+function isSiafiReal(a) {
+  return Number(a.monto_pagado || 0) > 0
+    && a.contract_id
+    && a.contract_id.includes('P2023-')
+    && (a.data_source || '').includes('EDCA-SEFIN');
+}
+
+// ════════════════════════════════════════════════════════════
 // ALERT DETAIL PANEL — drill-down for a single alert row
 // ════════════════════════════════════════════════════════════
 function openAlertDetail(alertId, event) {
@@ -3687,6 +3699,8 @@ function openAlertDetail(alertId, event) {
   document.getElementById('adp-monto').textContent  = monto  != null ? fmtL(monto)  : '—';
   document.getElementById('adp-budget').textContent = budget != null ? fmtL(budget) : 'Sin datos';
   document.getElementById('adp-monto-pagado').textContent = mpago != null ? fmtL(mpago) : 'Sin datos';
+  const siafiBadgeEl = document.getElementById('adp-siafi-badge');
+  if (siafiBadgeEl) siafiBadgeEl.style.display = isSiafiReal(a) ? 'inline-block' : 'none';
 
   // -- Derived SOBRECOSTO from monto_pagado vs monto_contrato --
   const sobrecostoSection = document.getElementById('adp-sobrecosto-pagado-section');

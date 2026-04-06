@@ -4205,6 +4205,14 @@ function exportRiesgoGlobalPDF() {
       El análisis Pareto indica que <strong class="pareto-highlight">${pareto80idx} contratos (${((pareto80idx/riesgoAll.length)*100).toFixed(1)}%)</strong>
       concentran el 80% del riesgo financiero total.
     </p>
+    <p style="margin-top:12px;line-height:1.7;color:#555;font-size:11px;border-left:3px solid #00A8D6;padding-left:12px;">
+      <strong>Metodología de detección:</strong> En contratación pública, el precio justo se establece mediante competencia abierta entre proveedores.
+      Cuando un contrato se adjudica directamente (<strong>ADJUDICACION_DIRECTA</strong>) o bajo figura de emergencia (<strong>COMPRA_EMERGENCIA</strong>),
+      ese mecanismo de control desaparece — el Estado acepta el precio que propone un solo proveedor sin compararlo con el mercado.
+      Estudios del Banco Mundial y la OCDE documentan que estos contratos tienen entre 20% y 40% más probabilidad de resultar en pagos finales
+      superiores al monto contratado. Sentinel marca estos contratos como riesgo potencial de sobrecosto <em>preventivamente</em>,
+      antes de que ocurra el pago, permitiendo intervención oportuna por parte de los organismos fiscalizadores.
+    </p>
   </div>
 
   <div class="section">
@@ -4214,7 +4222,7 @@ function exportRiesgoGlobalPDF() {
       El ${((pareto80idx/riesgoAll.length)*100).toFixed(1)}% de los contratos concentra la mayor exposición financiera.
     </p>
     <table>
-      <thead><tr><th>#</th><th>Entidad</th><th>Proveedor</th><th>Tipo Riesgo</th><th style="text-align:right;">Monto Contrato</th><th style="text-align:right;">% del Total</th></tr></thead>
+      <thead><tr><th>#</th><th>ID Contrato</th><th>Entidad</th><th>Proveedor</th><th>Tipo Riesgo</th><th style="text-align:right;">Monto Contrato</th><th style="text-align:right;">% del Total</th></tr></thead>
       <tbody>
         ${riesgoAll.slice(0, 30).map((a, i) => {
           const mc   = Number(a.monto_contrato || 0);
@@ -4223,8 +4231,10 @@ function exportRiesgoGlobalPDF() {
             ? '<span class="badge-emergencia">🚨 EMERGENCIA</span>'
             : '<span class="badge-directa">⚡ DIRECTA</span>';
           const isParetoRow = i < pareto80idx ? 'style="background:#fff8f8;"' : '';
+          const contractId = a.alert_id || a.ocid || a.id || '—';
           return `<tr ${isParetoRow}>
             <td style="color:#888;">${i+1}</td>
+            <td style="font-size:10px;color:#555;font-family:monospace;">${contractId}</td>
             <td>${a.entity_name || a.entidad || '—'}</td>
             <td style="color:#0A1628;">${a.proveedor_nombre || a.proveedor || '—'}</td>
             <td>${tipo}</td>

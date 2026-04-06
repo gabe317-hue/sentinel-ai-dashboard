@@ -4195,6 +4195,16 @@ function exportRiesgoGlobalPDF() {
   });
   const topEntities = Object.entries(byEntity).sort((a, b) => b[1].total - a[1].total);
 
+  // Vendor entity count — how many distinct entities each vendor appears in
+  const vendorEntityMapR = {};
+  allAlerts.forEach(a => {
+    const v = a.proveedor_nombre || a.proveedor || '';
+    const e = a.entity_name || a.entidad || '';
+    if (!v) return;
+    if (!vendorEntityMapR[v]) vendorEntityMapR[v] = new Set();
+    vendorEntityMapR[v].add(e);
+  });
+
   const pw = window.open('', '_blank', 'width=1000,height=780');
   if (!pw) { alert('Permite ventanas emergentes para exportar el PDF.'); return; }
 
@@ -4260,21 +4270,28 @@ function exportRiesgoGlobalPDF() {
       El ${((pareto80idx/riesgoAll.length)*100).toFixed(1)}% de los contratos concentra la mayor exposición financiera.
     </p>
     <table>
-      <thead><tr><th>#</th><th>ID Contrato</th><th>Entidad</th><th>Proveedor</th><th>Tipo Riesgo</th><th style="text-align:right;">Monto Contrato</th><th style="text-align:right;">% del Total</th></tr></thead>
+      <thead><tr><th>#</th><th>ID Contrato</th><th>Entidad</th><th>Proveedor</th><th style="text-align:center;">Ents.</th><th>Fecha Contrato</th><th>Tipo Riesgo</th><th style="text-align:right;">Monto Contrato</th><th style="text-align:right;">% del Total</th></tr></thead>
       <tbody>
         ${riesgoAll.slice(0, 30).map((a, i) => {
-          const mc   = Number(a.monto_contrato || 0);
-          const pats = getPatterns(a);
-          const tipo = pats.includes('COMPRA_EMERGENCIA')
+          const mc        = Number(a.monto_contrato || 0);
+          const pats      = getPatterns(a);
+          const tipo      = pats.includes('COMPRA_EMERGENCIA')
             ? '<span class="badge-emergencia">🚨 EMERGENCIA</span>'
             : '<span class="badge-directa">⚡ DIRECTA</span>';
           const isParetoRow = i < pareto80idx ? 'style="background:#fff8f8;"' : '';
-          const contractId = a.alert_id || a.ocid || a.id || '—';
+          const contractId  = a.alert_id || a.ocid || a.id || '—';
+          const vendor      = a.proveedor_nombre || a.proveedor || '—';
+          const entCount    = (vendorEntityMapR[vendor] || new Set()).size;
+          const entFlag     = entCount >= 3 ? ` style="color:#c0392b;font-weight:700;"` : entCount >= 2 ? ` style="color:#d35400;"` : '';
+          const fechaRaw    = a.fecha_contrato || a.fecha_adjudicacion || '';
+          const fecha       = fechaRaw ? fechaRaw.substring(0, 10) : '—';
           return `<tr ${isParetoRow}>
             <td style="color:#888;">${i+1}</td>
             <td style="font-size:10px;color:#555;font-family:monospace;">${contractId}</td>
             <td>${a.entity_name || a.entidad || '—'}</td>
-            <td style="color:#0A1628;">${a.proveedor_nombre || a.proveedor || '—'}</td>
+            <td style="color:#0A1628;">${vendor}</td>
+            <td style="text-align:center;font-size:11px;"${entFlag}>${entCount}</td>
+            <td style="font-size:10px;color:#555;">${fecha}</td>
             <td>${tipo}</td>
             <td style="text-align:right;font-weight:600;color:#c0392b;">${fmtL(mc)}</td>
             <td style="text-align:right;color:#888;">${(mc/riesgoTotal*100).toFixed(2)}%</td>
@@ -4282,7 +4299,10 @@ function exportRiesgoGlobalPDF() {
         }).join('')}
       </tbody>
     </table>
-    ${riesgoAll.length > 30 ? `<p style="margin-top:8px;font-size:10px;color:#888;">Mostrando top 30 de ${riesgoAll.length} contratos. Exportar datos completos vía CSV desde el panel de entidad.</p>` : ''}
+    <p style="margin-top:8px;font-size:10px;color:#888;">
+      ${riesgoAll.length > 30 ? `Mostrando top 30 de ${riesgoAll.length} contratos. ` : ''}
+      Ents. = entidades distintas donde aparece el proveedor. Rojo (≥3) o naranja (2) = posible red de corrupción.
+    </p>
   </div>
 
   <div class="section">
@@ -4373,6 +4393,16 @@ function exportSobrecostoRealPDF() {
   // Top entity for narrative
   const topEntity = entities[0];
   const top3entities = entities.slice(0, 3).map(e => e.name).join(', ');
+
+  // Vendor entity count — how many distinct entities each vendor appears in (across ALL alerts)
+  const vendorEntityMap = {};
+  allAlerts.forEach(a => {
+    const v = a.proveedor_nombre || a.proveedor || '';
+    const e = a.entity_name || a.entidad || '';
+    if (!v) return;
+    if (!vendorEntityMap[v]) vendorEntityMap[v] = new Set();
+    vendorEntityMap[v].add(e);
+  });
 
   const pw = window.open('', '_blank', 'width=1000,height=780');
   if (!pw) { alert('Permite ventanas emergentes para exportar el PDF.'); return; }
@@ -4484,6 +4514,8 @@ function exportSobrecostoRealPDF() {
           <th>ID Contrato</th>
           <th>Entidad</th>
           <th>Proveedor</th>
+          <th style="text-align:center;">Ents.</th>
+          <th>Fecha Contrato</th>
           <th style="text-align:right;">Contratado</th>
           <th style="text-align:right;">Referencia</th>
           <th style="text-align:right;">Exceso</th>
@@ -4491,19 +4523,27 @@ function exportSobrecostoRealPDF() {
         </tr>
       </thead>
       <tbody>
-        ${sobrecostos.map((s, i) => `
-          <tr>
+        ${sobrecostos.map((s, i) => {
+          const entCount = (vendorEntityMap[s.vendorName] || new Set()).size;
+          const entFlag  = entCount >= 3 ? ` style="color:#c0392b;font-weight:700;"` : entCount >= 2 ? ` style="color:#d35400;"` : '';
+          const fechaRaw = s.alert.fecha_contrato || s.alert.fecha_adjudicacion || '';
+          const fecha    = fechaRaw ? fechaRaw.substring(0, 10) : '—';
+          return `<tr>
             <td style="color:#888;">${i + 1}</td>
             <td style="font-size:9px;color:#555;font-family:monospace;">${s.alert.alert_id || s.alert.contract_id || '#' + s.alert.id}${s.siafi ? ' <span class="badge-siafi">✓ SIAFI2</span>' : ''}</td>
             <td style="font-size:10px;">${s.entityName}</td>
             <td style="color:#0A1628;">${s.vendorName}</td>
+            <td style="text-align:center;font-size:11px;"${entFlag}>${entCount}</td>
+            <td style="font-size:10px;color:#555;">${fecha}</td>
             <td style="text-align:right;">${fmtL(s.alert.monto_contrato)}</td>
             <td style="text-align:right;font-size:10px;color:#555;">${fmtL(s.comparison)} <span style="font-size:9px;color:#888;">(${s.sourceLabel})</span></td>
             <td style="text-align:right;font-weight:600;color:#c0392b;">${fmtL(s.diff)}</td>
             <td style="text-align:right;color:#d35400;font-weight:600;">${fmtPct(s.pct)}</td>
-          </tr>`).join('')}
+          </tr>`;
+        }).join('')}
       </tbody>
     </table>
+    <p style="margin-top:8px;font-size:10px;color:#888;">Ents. = número de entidades distintas donde aparece el proveedor en toda la base de datos. Rojo (≥3) o naranja (2) indica proveedor con presencia en múltiples entidades — señal de posible red de corrupción.</p>
   </div>
 
   <div class="footer">

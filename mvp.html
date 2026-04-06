@@ -3988,7 +3988,7 @@ function populateGlobalSobrecostos() {
   if (riskEntitiesEl) {
     riskEntitiesEl.innerHTML = topRiesgo.length
       ? topRiesgo.map(([entity, d]) => `
-          <div class="fuente-recent-item" onclick="showRiesgoEntityDrilldown('${entity.replace(/'/g,"\\'")}', riesgoAll)" style="cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,168,214,0.06)'" onmouseout="this.style.background=''">
+          <div class="fuente-recent-item" onclick="showRiesgoEntityDrilldown('${entity.replace(/'/g,"\\'")}', null)" style="cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,168,214,0.06)'" onmouseout="this.style.background=''">
             <div style="flex:1;">
               <div class="fri-desc" style="color:var(--amber);font-weight:600;">${entity}</div>
               <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">

@@ -1785,6 +1785,31 @@ body::after {
       <div style="margin-bottom:8px;font-size:11px;color:var(--electric);font-weight:600;">🏛️ Top Entidades por Monto en Riesgo:</div>
       <div class="fuente-recent-list" id="sp-risk-entities"></div>
     </div>
+
+    <!-- DRILL-DOWN POR ENTIDAD (inline expandible) -->
+    <div id="sp-entity-drilldown" style="display:none;margin-top:16px;">
+      <div class="fuente-chart-card" style="border:1px solid rgba(0,168,214,0.4);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="fuente-recent-title" id="sp-drilldown-title" style="color:var(--electric);margin-bottom:0;font-size:12px;"></div>
+          <button onclick="hideRiesgoEntityDrilldown()" style="padding:3px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;">✕ Cerrar</button>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:10px;opacity:0.7;">Contratos de alto riesgo — ordenados por monto</div>
+        <div id="sp-drilldown-list" style="display:flex;flex-direction:column;gap:7px;max-height:320px;overflow-y:auto;"></div>
+      </div>
+    </div>
+
+    <!-- ANÁLISIS PARETO -->
+    <div class="fuente-chart-card" style="margin-top:20px;">
+      <div class="fuente-recent-title">📊 Análisis Pareto — Concentración de Riesgo</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.6;" id="sp-pareto-summary"></div>
+      <div id="sp-pareto-bars" style="display:flex;flex-direction:column;gap:5px;"></div>
+    </div>
+
+    <!-- BOTÓN EXPORTAR PDF -->
+    <div style="margin-top:20px;text-align:right;padding-bottom:8px;">
+      <button onclick="exportRiesgoGlobalPDF()" style="padding:8px 18px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.12);color:var(--electric);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.04em;">📥 Exportar Reporte PDF</button>
+    </div>
+
   </div>
 
   <!-- PHASE 4 DETECTION REPORT PANEL -->
@@ -3963,12 +3988,13 @@ function populateGlobalSobrecostos() {
   if (riskEntitiesEl) {
     riskEntitiesEl.innerHTML = topRiesgo.length
       ? topRiesgo.map(([entity, d]) => `
-          <div class="fuente-recent-item">
+          <div class="fuente-recent-item" onclick="showRiesgoEntityDrilldown('${entity.replace(/'/g,"\\'")}', riesgoAll)" style="cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,168,214,0.06)'" onmouseout="this.style.background=''">
             <div style="flex:1;">
               <div class="fri-desc" style="color:var(--amber);font-weight:600;">${entity}</div>
               <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">
                 ${d.directa    > 0 ? `<span style="color:var(--red);margin-right:8px;">⚡ ${d.directa} directas</span>` : ''}
                 ${d.emergencia > 0 ? `<span style="color:var(--amber);">🚨 ${d.emergencia} emergencias</span>` : ''}
+                <span style="color:var(--electric);margin-left:6px;font-size:9px;">👆 ver contratos</span>
               </div>
             </div>
             <div style="text-align:right;flex-shrink:0;">
@@ -3978,6 +4004,261 @@ function populateGlobalSobrecostos() {
           </div>`).join('')
       : '<div style="color:var(--text-dim);font-size:12px;padding:4px;">Sin contratos de riesgo detectados.</div>';
   }
+
+  // ── ANÁLISIS PARETO ──
+  const sortedByMonto = [...riesgoAll].sort((a, b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
+  let cumulative = 0;
+  let pareto80idx = sortedByMonto.length;
+  for (let i = 0; i < sortedByMonto.length; i++) {
+    cumulative += Number(sortedByMonto[i].monto_contrato || 0);
+    if (cumulative >= riesgoTotal * 0.8 && pareto80idx === sortedByMonto.length) {
+      pareto80idx = i + 1;
+    }
+  }
+  const paretoPct = riesgoTotal > 0 ? ((pareto80idx / sortedByMonto.length) * 100).toFixed(1) : 0;
+
+  const paretoSummaryEl = document.getElementById('sp-pareto-summary');
+  const paretoBarsEl    = document.getElementById('sp-pareto-bars');
+
+  if (paretoSummaryEl) {
+    paretoSummaryEl.innerHTML = `
+      <strong style="color:var(--electric);">${pareto80idx} contratos</strong> (${paretoPct}% del total)
+      concentran el <strong style="color:var(--red);">80% del riesgo financiero</strong> —
+      equivalente a <strong>${fmtL(riesgoTotal * 0.8)}</strong> de los ${fmtL(riesgoTotal)} totales en riesgo.
+    `;
+  }
+
+  if (paretoBarsEl) {
+    const top10 = sortedByMonto.slice(0, 10);
+    const maxMonto = Number(top10[0]?.monto_contrato || 1);
+    paretoBarsEl.innerHTML = `
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;font-weight:600;letter-spacing:.06em;">TOP 10 CONTRATOS POR MONTO EN RIESGO</div>
+      ${top10.map((a, i) => {
+        const mc   = Number(a.monto_contrato || 0);
+        const pcts = (mc / riesgoTotal * 100).toFixed(1);
+        const barW = (mc / maxMonto * 100).toFixed(1);
+        const pats = getPatterns(a);
+        const tag  = pats.includes('COMPRA_EMERGENCIA') ? '🚨' : '⚡';
+        return `
+          <div style="margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;">
+              <span style="color:var(--text-dim);max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${tag} ${a.entity_name || a.entidad || 'Desconocida'}</span>
+              <span style="color:var(--amber);font-weight:600;">${fmtL(mc)} <span style="color:var(--text-dim);font-weight:400;">(${pcts}%)</span></span>
+            </div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:${barW}%;background:${i < pareto80idx ? 'var(--red)' : 'var(--amber)'};border-radius:3px;transition:width .4s;"></div>
+            </div>
+          </div>`;
+      }).join('')}
+      <div style="margin-top:10px;font-size:10px;color:var(--text-dim);opacity:0.7;">
+        🔴 Rojo = dentro del 80% Pareto &nbsp;|&nbsp; 🟡 Amarillo = restante 20%
+      </div>
+    `;
+  }
+}
+
+// ══ DRILL-DOWN POR ENTIDAD (Riesgo Sobrecosto) ══════════════════
+function showRiesgoEntityDrilldown(entityName, riesgoAll) {
+  const fmtL = n => n > 0 ? 'L ' + Number(n).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
+  const getPatterns = a => Array.isArray(a.patterns)
+    ? a.patterns.map(p => String(p).trim())
+    : (a.patterns ? String(a.patterns).split(',').map(p => p.trim()) : []);
+
+  const contracts = (riesgoAll || allAlerts)
+    .filter(a => (a.entity_name || a.entidad || 'Desconocida') === entityName)
+    .filter(a => {
+      const pats = getPatterns(a);
+      return pats.includes('ADJUDICACION_DIRECTA') || pats.includes('COMPRA_EMERGENCIA');
+    })
+    .sort((a, b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
+
+  const titleEl = document.getElementById('sp-drilldown-title');
+  const listEl  = document.getElementById('sp-drilldown-list');
+  const panelEl = document.getElementById('sp-entity-drilldown');
+
+  if (titleEl) titleEl.textContent = `🏛️ ${entityName} — ${contracts.length} contratos en riesgo`;
+
+  if (listEl) {
+    listEl.innerHTML = contracts.length
+      ? contracts.map(a => {
+          const mc   = Number(a.monto_contrato || 0);
+          const pats = getPatterns(a);
+          const tags = pats.filter(p => p === 'ADJUDICACION_DIRECTA' || p === 'COMPRA_EMERGENCIA');
+          const tagBadges = tags.map(t =>
+            t === 'COMPRA_EMERGENCIA'
+              ? `<span style="background:rgba(255,165,0,0.2);color:var(--amber);border:1px solid var(--amber);border-radius:3px;padding:1px 5px;font-size:9px;margin-right:4px;">🚨 EMERGENCIA</span>`
+              : `<span style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid var(--red);border-radius:3px;padding:1px 5px;font-size:9px;margin-right:4px;">⚡ DIRECTA</span>`
+          ).join('');
+          return `
+            <div class="fuente-recent-item" style="border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:8px;">
+              <div style="flex:1;">
+                <div style="font-size:11px;color:var(--text);font-weight:500;margin-bottom:3px;">${a.proveedor_nombre || a.proveedor || 'Proveedor desconocido'}</div>
+                <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;">ID: ${a.alert_id || a.id || '—'}</div>
+                <div>${tagBadges}</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0;margin-left:12px;">
+                <div style="color:var(--amber);font-weight:700;font-size:12px;">${fmtL(mc)}</div>
+              </div>
+            </div>`;
+        }).join('')
+      : '<div style="color:var(--text-dim);font-size:12px;padding:8px;">Sin contratos encontrados.</div>';
+  }
+
+  if (panelEl) {
+    panelEl.style.display = 'block';
+    setTimeout(() => panelEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  }
+}
+
+function hideRiesgoEntityDrilldown() {
+  const panelEl = document.getElementById('sp-entity-drilldown');
+  if (panelEl) panelEl.style.display = 'none';
+}
+
+// ══ EXPORTAR REPORTE PDF (Riesgo Sobrecosto Global) ══════════════
+function exportRiesgoGlobalPDF() {
+  const fmtL = n => n > 0 ? 'L ' + Number(n).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : '—';
+  const getPatterns = a => Array.isArray(a.patterns)
+    ? a.patterns.map(p => String(p).trim())
+    : (a.patterns ? String(a.patterns).split(',').map(p => p.trim()) : []);
+
+  const directaAlerts   = allAlerts.filter(a => getPatterns(a).includes('ADJUDICACION_DIRECTA'));
+  const emergenciaAlerts = allAlerts.filter(a => getPatterns(a).includes('COMPRA_EMERGENCIA'));
+  const riesgoMap = new Map();
+  [...directaAlerts, ...emergenciaAlerts].forEach(a => riesgoMap.set(a.id, a));
+  const riesgoAll = [...riesgoMap.values()].sort((a, b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
+  const riesgoTotal = riesgoAll.reduce((s, a) => s + Number(a.monto_contrato||0), 0);
+
+  const timestamp = new Date().toLocaleString('es-HN', { timeZone: 'America/Tegucigalpa' });
+
+  // Pareto calc
+  let cumulative = 0, pareto80idx = riesgoAll.length;
+  for (let i = 0; i < riesgoAll.length; i++) {
+    cumulative += Number(riesgoAll[i].monto_contrato || 0);
+    if (cumulative >= riesgoTotal * 0.8 && pareto80idx === riesgoAll.length) pareto80idx = i + 1;
+  }
+
+  // Group by entity
+  const byEntity = {};
+  riesgoAll.forEach(a => {
+    const e = a.entity_name || a.entidad || 'Desconocida';
+    if (!byEntity[e]) byEntity[e] = { count: 0, total: 0, directa: 0, emergencia: 0 };
+    byEntity[e].count++;
+    byEntity[e].total += Number(a.monto_contrato || 0);
+    if (getPatterns(a).includes('ADJUDICACION_DIRECTA')) byEntity[e].directa++;
+    if (getPatterns(a).includes('COMPRA_EMERGENCIA'))    byEntity[e].emergencia++;
+  });
+  const topEntities = Object.entries(byEntity).sort((a, b) => b[1].total - a[1].total);
+
+  const pw = window.open('', '_blank', 'width=1000,height=780');
+  if (!pw) { alert('Permite ventanas emergentes para exportar el PDF.'); return; }
+
+  pw.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Reporte Riesgo Sobrecosto — SENTINEL-AI</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 12px; }
+    .header { background: #0A1628; color: #fff; padding: 20px 28px; display:flex; justify-content:space-between; align-items:center; }
+    .header h1 { font-size: 16px; letter-spacing:.06em; }
+    .header .meta { font-size: 10px; color: #00A8D6; text-align:right; }
+    .section { padding: 20px 28px; border-bottom: 1px solid #e8ecf0; }
+    .section-title { font-size: 13px; font-weight: 700; color: #0A1628; margin-bottom: 14px; text-transform:uppercase; letter-spacing:.05em; border-left:3px solid #00A8D6; padding-left:10px; }
+    .kpi-row { display:flex; gap:16px; margin-bottom:6px; }
+    .kpi { background:#D6E4F0; border-radius:6px; padding:12px 16px; flex:1; text-align:center; }
+    .kpi.alert { background:#FADBD8; }
+    .kpi-val { font-size:18px; font-weight:700; color:#0A1628; }
+    .kpi-lbl { font-size:10px; color:#555; margin-top:3px; }
+    table { width:100%; border-collapse:collapse; font-size:11px; }
+    th { background:#0A1628; color:#fff; padding:7px 10px; text-align:left; font-weight:600; }
+    tr:nth-child(even) td { background:#f5f8fb; }
+    td { padding:7px 10px; border-bottom:1px solid #e8ecf0; vertical-align:middle; }
+    .badge-directa { background:#fde8e8; color:#c0392b; border-radius:3px; padding:1px 6px; font-size:9px; font-weight:600; }
+    .badge-emergencia { background:#fef3e2; color:#d35400; border-radius:3px; padding:1px 6px; font-size:9px; font-weight:600; }
+    .pareto-highlight { color:#c0392b; font-weight:700; }
+    .footer { background:#f5f8fb; padding:12px 28px; font-size:10px; color:#888; display:flex; justify-content:space-between; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .no-print { display:none; } }
+  </style></head><body>
+  <div class="header">
+    <div><div style="font-size:10px;color:#00A8D6;letter-spacing:.1em;margin-bottom:4px;">SENTINEL-AI | Honduras Procurement Intelligence</div>
+    <h1>⚠️ Reporte: Riesgo Sobrecosto — Contratos SEFIN</h1></div>
+    <div class="meta">Generado: ${timestamp}<br/>Total registros analizados: ${allAlerts.length.toLocaleString()}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Resumen Ejecutivo</div>
+    <div class="kpi-row">
+      <div class="kpi alert"><div class="kpi-val">${fmtL(riesgoTotal)}</div><div class="kpi-lbl">Total en Riesgo</div></div>
+      <div class="kpi alert"><div class="kpi-val">${riesgoAll.length.toLocaleString()}</div><div class="kpi-lbl">Contratos en Riesgo</div></div>
+      <div class="kpi"><div class="kpi-val">${directaAlerts.length.toLocaleString()}</div><div class="kpi-lbl">Adjudicación Directa</div></div>
+      <div class="kpi"><div class="kpi-val">${emergenciaAlerts.length.toLocaleString()}</div><div class="kpi-lbl">Compra Emergencia</div></div>
+    </div>
+    <p style="margin-top:14px;line-height:1.6;color:#444;">
+      Los datos EDCA/SEFIN (etapa COMPROMISO) no incluyen montos pagados. Se identifican <strong>${riesgoAll.length}</strong> contratos
+      adjudicados sin competencia abierta, categorías históricamente asociadas a sobrecostos en Honduras.
+      El análisis Pareto indica que <strong class="pareto-highlight">${pareto80idx} contratos (${((pareto80idx/riesgoAll.length)*100).toFixed(1)}%)</strong>
+      concentran el 80% del riesgo financiero total.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Análisis Pareto — Concentración de Riesgo</div>
+    <p style="margin-bottom:14px;color:#444;line-height:1.6;">
+      <strong>${pareto80idx} contratos</strong> representan el 80% del riesgo total (${fmtL(riesgoTotal * 0.8)}).
+      El ${((pareto80idx/riesgoAll.length)*100).toFixed(1)}% de los contratos concentra la mayor exposición financiera.
+    </p>
+    <table>
+      <thead><tr><th>#</th><th>Entidad</th><th>Proveedor</th><th>Tipo Riesgo</th><th style="text-align:right;">Monto Contrato</th><th style="text-align:right;">% del Total</th></tr></thead>
+      <tbody>
+        ${riesgoAll.slice(0, 30).map((a, i) => {
+          const mc   = Number(a.monto_contrato || 0);
+          const pats = getPatterns(a);
+          const tipo = pats.includes('COMPRA_EMERGENCIA')
+            ? '<span class="badge-emergencia">🚨 EMERGENCIA</span>'
+            : '<span class="badge-directa">⚡ DIRECTA</span>';
+          const isParetoRow = i < pareto80idx ? 'style="background:#fff8f8;"' : '';
+          return `<tr ${isParetoRow}>
+            <td style="color:#888;">${i+1}</td>
+            <td>${a.entity_name || a.entidad || '—'}</td>
+            <td style="color:#0A1628;">${a.proveedor_nombre || a.proveedor || '—'}</td>
+            <td>${tipo}</td>
+            <td style="text-align:right;font-weight:600;color:#c0392b;">${fmtL(mc)}</td>
+            <td style="text-align:right;color:#888;">${(mc/riesgoTotal*100).toFixed(2)}%</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    ${riesgoAll.length > 30 ? `<p style="margin-top:8px;font-size:10px;color:#888;">Mostrando top 30 de ${riesgoAll.length} contratos. Exportar datos completos vía CSV desde el panel de entidad.</p>` : ''}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Desglose por Entidad</div>
+    <table>
+      <thead><tr><th>Entidad</th><th style="text-align:center;">Contratos</th><th style="text-align:center;">⚡ Directas</th><th style="text-align:center;">🚨 Emergencias</th><th style="text-align:right;">Monto Total</th><th style="text-align:right;">% Riesgo</th></tr></thead>
+      <tbody>
+        ${topEntities.map(([entity, d]) => `
+          <tr>
+            <td style="font-weight:500;">${entity}</td>
+            <td style="text-align:center;">${d.count}</td>
+            <td style="text-align:center;color:#c0392b;">${d.directa || '—'}</td>
+            <td style="text-align:center;color:#d35400;">${d.emergencia || '—'}</td>
+            <td style="text-align:right;font-weight:600;">${fmtL(d.total)}</td>
+            <td style="text-align:right;color:#888;">${(d.total/riesgoTotal*100).toFixed(1)}%</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <span>SENTINEL-AI | sentinel-ai-dashboard-beta.vercel.app/mvp.html</span>
+    <span>Datos: EDCA/SEFIN Fiscal 2023–2025 | ${riesgoAll.length} contratos analizados</span>
+  </div>
+
+  <div class="no-print" style="padding:16px 28px;background:#f0f4f8;text-align:center;">
+    <button onclick="window.print()" style="padding:10px 24px;background:#0A1628;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin-right:10px;">🖨️ Imprimir / Guardar PDF</button>
+    <button onclick="window.close()" style="padding:10px 20px;background:#e8ecf0;color:#444;border:none;border-radius:6px;font-size:13px;cursor:pointer;">✕ Cerrar</button>
+  </div>
+  </body></html>`);
+  pw.document.close();
 }
 
 // Open entity panel from analytics — back button returns to analytics

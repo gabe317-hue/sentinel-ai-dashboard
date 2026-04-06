@@ -1767,6 +1767,13 @@ body::after {
         Los datos EDCA/SEFIN no incluyen montos pagados (etapa PAGADO). Se identifican contratos de
         <strong style="color:var(--red);">ALTO RIESGO</strong> por ausencia de competencia o uso de emergencia —
         categorías históricamente asociadas a sobrecostos en Honduras.
+        <br/><br/>
+        La lógica de detección funciona así: en contratación pública, el precio justo se establece mediante competencia abierta entre proveedores.
+        Cuando un contrato se adjudica directamente (<strong style="color:var(--red);">ADJUDICACION_DIRECTA</strong>) o bajo figura de emergencia
+        (<strong style="color:var(--amber);">COMPRA_EMERGENCIA</strong>), ese mecanismo de control desaparece — el Estado acepta el precio que
+        propone un solo proveedor sin compararlo. Estudios del Banco Mundial y OCDE documentan que estos contratos tienen
+        entre 20% y 40% más probabilidad de resultar en pagos finales superiores al monto contratado.
+        Sentinel marca estos contratos como riesgo potencial de sobrecosto <em>preventivamente</em>, antes de que ocurra el pago.
       </div>
       <div class="fuente-stats-row" style="margin-bottom:16px;">
         <div class="fuente-stat">

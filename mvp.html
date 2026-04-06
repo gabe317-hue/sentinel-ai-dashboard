@@ -1021,6 +1021,9 @@ body::after {
       <button class="nav-item" id="nav-sobrecostos" onclick="showGlobalSobrecostos()">
         <span class="nav-icon">📊</span> Ver Resumen Global
       </button>
+      <button class="nav-item" id="nav-riesgo-sobrecosto" onclick="showRiesgoSobrecostos()" style="color:var(--amber);">
+        <span class="nav-icon">⚠️</span> Riesgo Sobrecosto
+      </button>
       <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()">
         <span class="nav-icon">🔍</span> Phase 4 Detection
       </button>
@@ -1761,7 +1764,7 @@ body::after {
     </div>
 
     <!-- RIESGO SOBRECOSTO — contratos sin competencia de datos reales SEFIN -->
-    <div class="fuente-chart-card" style="margin-top:20px;border:1px solid rgba(255,165,0,0.35);">
+    <div id="sp-riesgo-section" class="fuente-chart-card" style="margin-top:20px;border:1px solid rgba(255,165,0,0.35);">
       <div class="fuente-recent-title" style="color:var(--amber);">⚠️ RIESGO SOBRECOSTO — Contratos Reales SEFIN</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.5;">
         Los datos EDCA/SEFIN no incluyen montos pagados (etapa PAGADO). Se identifican contratos de
@@ -3858,6 +3861,16 @@ function showGlobalSobrecostos() {
   populateGlobalSobrecostos();
   document.getElementById('sobrecostoPanel').classList.add('open');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showRiesgoSobrecostos() {
+  // Reuse the same panel — open it, then scroll to the RIESGO section
+  showGlobalSobrecostos();
+  // Wait for render then scroll to risk section
+  setTimeout(() => {
+    const riesgoEl = document.getElementById('sp-riesgo-section');
+    if (riesgoEl) riesgoEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
 }
 
 function hideGlobalSobrecostos() {

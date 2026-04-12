@@ -1208,6 +1208,9 @@ body::after {
       <button class="nav-item" id="nav-vendor-concentration" onclick="showVendorConcentrationPanel()">
         <span class="nav-icon">🔴</span> Concentración Proveedores
       </button>
+      <button class="nav-item" id="nav-sobrecostos" onclick="showGlobalSobrecostos()">
+        <span class="nav-icon">📊</span> Resumen Global
+      </button>
       <button class="nav-item" id="nav-riesgo-sobrecosto" onclick="showRiesgoSobrecostos()" style="color:var(--amber);">
         <span class="nav-icon">⚠️</span> Riesgo Sobrecosto
       </button>
@@ -4950,6 +4953,7 @@ function showPhase4Detection() {
   document.querySelector('.stats-grid').style.display = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.getElementById('mainTableContainer').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
   // Defer heavy computation so panel renders first
   setTimeout(() => {

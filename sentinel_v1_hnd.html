@@ -948,14 +948,7 @@ body::after {
 }
 
 /* Severity badges in drill-down */
-.sev-badge {
-  display: inline-block; border-radius: 4px; font-weight: 600;
-  color: #fff; padding: 4px 8px; font-size: 10px;
-}
-.sev-badge.critica { background: #ff3d57; }
-.sev-badge.alta    { background: var(--amber); }
-.sev-badge.media   { background: var(--electric); }
-.sev-badge.baja    { background: #4caf50; }
+/* sev-badge secondary block removed — using primary definition at top of stylesheet */
 
 /* ─── INST-COLLAB-BAR (from demo) ─── */
 .inst-collab-bar {
@@ -7341,10 +7334,17 @@ function renderEjecutiva() {
     const patterns = Array.isArray(a.patterns) ? a.patterns : (a.patterns ? [a.patterns] : []);
     const patStr = patterns.slice(0,2).map(p => `<span style="font-size:10px;background:var(--red-dim);color:var(--red);padding:2px 6px;border-radius:4px;margin-right:4px;">${p}</span>`).join('');
     const monto = parseFloat(a.monto_contrato)||0;
+    const proveedorDisplay = (a.proveedor_nombre || a.vendor_name || a.title || '—').substring(0, 50);
+    const entidadDisplay   = (a.entity_name || '—').substring(0, 40);
+    const alertId          = a.alert_id || ('#' + a.id);
     return `<tr onclick="openAlertDetail(${a.id}, event)" style="cursor:pointer;">
-      <td class="cell-id">${a.alert_id||'—'}</td>
-      <td class="cell-desc" style="max-width:200px;">${(a.vendor_name||a.title||'—').substring(0,60)}</td>
-      <td class="cell-entity">${(a.entity_name||'—').substring(0,40)}</td>
+      <td class="cell-id">${alertId}</td>
+      <td class="cell-desc" style="max-width:180px;">
+        <button class="cell-entity-link" onclick="event.stopPropagation();showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button>
+      </td>
+      <td class="cell-entity">
+        <button class="cell-entity-link" onclick="event.stopPropagation();showEntityPanel('${entidadDisplay.replace(/'/g,"\\'")}')">${entidadDisplay}</button>
+      </td>
       <td class="cell-amount">${monto > 0 ? 'L '+monto.toLocaleString('es-HN',{maximumFractionDigits:0}) : '—'}</td>
       <td>${patStr}</td>
       <td><span class="sev-badge critica">CRÍTICA</span></td>

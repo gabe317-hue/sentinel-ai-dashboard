@@ -2447,11 +2447,11 @@ async function loadAlerts() {
     }
 
     allAlerts = all;
+    window.allAlerts = allAlerts; // expose for Vista Ejecutiva
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
     setStatus('connected');
     hideError();
-    window.allAlerts = alerts; // expose for Vista Ejecutiva
-  render();
+    render();
 
   } catch (err) {
     console.error('❌ loadAlerts failed:', err.message);

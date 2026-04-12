@@ -1876,8 +1876,8 @@ body::after {
 
         <!-- MODAL BODY (scrollable) -->
         <div style="flex:1;overflow-y:auto;padding:20px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">📍 Entidades donde opera</div>
-          <div id="vcDetailEntityList" style="display:flex;flex-direction:column;gap:10px;"></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">📋 Contratos — ordenados por monto</div>
+          <div id="vcDetailEntityList" style="overflow-x:auto;"></div>
 
           <!-- PAGINATION -->
           <div id="vcPaginationContainer" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
@@ -6394,22 +6394,26 @@ function showVendorConcentrationDetail(vendorName) {
   const vendorData = window.vendorConcentrationData?.vendors.find(v => v.name === vendorName);
   if (!vendorData) return;
 
-  // Set title
-  document.getElementById('vcModalTitle').textContent = `📦 ${vendorName}`;
+  // Get individual contracts for this vendor, sorted by monto desc
+  const vendorContracts = (window.globalAlerts || []).filter(a => {
+    const vendor = a.proveedor_nombre || a.proveedor || 'Desconocido';
+    return vendor === vendorName;
+  }).sort((a, b) => (Number(b.monto_contrato || b.monto_contratado || 0)) - (Number(a.monto_contrato || a.monto_contratado || 0)));
 
-  // Store pagination state
-  const totalMonto = window.vendorConcentrationData.totalMonto;
-  const entityList = Array.from(vendorData.entities).sort();
+  // Set title with contract count
+  document.getElementById('vcModalTitle').textContent = `📦 ${vendorName} — ${vendorContracts.length} contratos`;
 
+  // Store pagination state (allEntities reused to hold contracts array)
   window.vcPaginationState.currentPage = 1;
-  window.vcPaginationState.totalItems = entityList.length;
-  window.vcPaginationState.allEntities = entityList;
+  window.vcPaginationState.totalItems = vendorContracts.length;
+  window.vcPaginationState.allEntities = vendorContracts;
 
   // Store current detail data for export
   window.currentVendorDetail = {
     vendorName: vendorName,
-    entities: entityList,
-    totalMonto: totalMonto
+    contracts: vendorContracts,
+    entities: Array.from(vendorData.entities).sort(),
+    totalMonto: window.vendorConcentrationData.totalMonto
   };
 
   // Render first page
@@ -6420,54 +6424,67 @@ function showVendorConcentrationDetail(vendorName) {
 }
 
 function renderVCDetailPage() {
-  const { currentPage, itemsPerPage, allEntities } = window.vcPaginationState;
-  const totalMonto = window.currentVendorDetail.totalMonto;
-  const vendorName = window.currentVendorDetail.vendorName;
+  const { currentPage, itemsPerPage, allEntities: allContracts } = window.vcPaginationState;
+  const totalPages = Math.ceil(allContracts.length / itemsPerPage);
+
+  if (allContracts.length === 0) {
+    document.getElementById('vcDetailEntityList').innerHTML = '<div style="color:var(--text-dim);text-align:center;padding:20px;">Sin contratos encontrados para este proveedor.</div>';
+    document.getElementById('vcPageInfo').textContent = '0 / 0';
+    document.getElementById('vcPaginationContainer').style.display = 'none';
+    return;
+  }
 
   const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = Math.min(startIdx + itemsPerPage, allEntities.length);
-  const pageEntities = allEntities.slice(startIdx, endIdx);
+  const endIdx = Math.min(startIdx + itemsPerPage, allContracts.length);
+  const pageContracts = allContracts.slice(startIdx, endIdx);
 
-  const entityHTML = pageEntities.map(entity => {
-    const entityAlerts = window.globalAlerts.filter(a => {
-      const vendor = a.proveedor_nombre || a.proveedor || 'Desconocido';
-      const ent = a.entity_name || a.entidad || 'Desconocida';
-      return vendor === vendorName && ent === entity;
-    });
-    const alertCount = entityAlerts.length;
-    const montoSum = entityAlerts.reduce((sum, a) => sum + (Number(a.monto_contrato || a.monto_contratado || 0)), 0);
-    const share = (montoSum / totalMonto * 100);
+  const sevColors = { critica:'#ff3d57', alta:'#ffb300', media:'#00c8ff', baja:'#4caf50' };
 
+  const rows = pageContracts.map(a => {
+    const contractId = a.alert_id || ('#' + a.id);
+    const entity = (a.entity_name || a.entidad || '—').substring(0, 38);
+    const fecha = (a.fecha_contrato || a.fecha_publicacion || '—').substring(0, 10);
+    const monto = Number(a.monto_contrato || a.monto_contratado || 0);
+    const montoStr = monto > 0 ? 'L. ' + (monto >= 1000000 ? (monto/1000000).toFixed(2)+'M' : (monto/1000).toFixed(0)+'K') : '—';
+    const patterns = a.patterns || a.patrones || [];
+    const patternStr = Array.isArray(patterns) ? (patterns.slice(0, 2).join(', ') || '—') : (patterns || '—');
+    const sev = (a.severity || a.severidad || '').toLowerCase();
+    const sevColor = sevColors[sev] || 'var(--text-dim)';
     return `
-      <div style="background:rgba(0,200,255,0.03);border:1px solid var(--border);border-radius:6px;padding:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="color:var(--text);font-weight:600;font-size:12px;">${entity}</div>
-            <div style="color:var(--text-dim);font-size:10px;margin-top:4px;">${alertCount} contratos • L. ${(montoSum/1000).toFixed(0)}K</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="color:var(--electric);font-weight:600;font-size:12px;">${share.toFixed(1)}%</div>
-          </div>
-        </div>
-      </div>
-    `;
+      <tr style="border-bottom:1px solid rgba(0,200,255,0.06);cursor:pointer;" onclick="closeVendorConcentrationDetail();setTimeout(()=>openAlertDetail(${a.id}),100)">
+        <td style="padding:7px 6px;color:var(--electric);font-family:'JetBrains Mono',monospace;font-size:10px;white-space:nowrap;">${contractId}</td>
+        <td style="padding:7px 6px;color:var(--text);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${entity}">${entity}</td>
+        <td style="padding:7px 6px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;white-space:nowrap;">${fecha}</td>
+        <td style="padding:7px 6px;color:var(--text);text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap;">${montoStr}</td>
+        <td style="padding:7px 6px;color:var(--text-dim);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${patternStr}">${patternStr}</td>
+        <td style="padding:7px 6px;text-align:center;"><span style="color:${sevColor};font-weight:700;text-transform:uppercase;font-size:10px;">${sev || '—'}</span></td>
+      </tr>`;
   }).join('');
 
-  document.getElementById('vcDetailEntityList').innerHTML = entityHTML;
+  const tableHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead>
+        <tr style="background:rgba(0,200,255,0.08);">
+          <th style="padding:8px 6px;text-align:left;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);">ID</th>
+          <th style="padding:8px 6px;text-align:left;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);">Entidad</th>
+          <th style="padding:8px 6px;text-align:left;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);">Fecha</th>
+          <th style="padding:8px 6px;text-align:right;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);">Monto</th>
+          <th style="padding:8px 6px;text-align:left;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);">Patrones</th>
+          <th style="padding:8px 6px;text-align:center;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);">Sev.</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 
-  // Update pagination info
-  const totalPages = Math.ceil(allEntities.length / itemsPerPage);
+  document.getElementById('vcDetailEntityList').innerHTML = tableHTML;
+
+  // Pagination controls
   document.getElementById('vcPageInfo').textContent = `${currentPage} / ${totalPages}`;
-
-  // Update button states
   document.getElementById('vcPrevBtn').disabled = currentPage === 1;
   document.getElementById('vcNextBtn').disabled = currentPage === totalPages;
   document.getElementById('vcPrevBtn').style.opacity = currentPage === 1 ? '0.5' : '1';
   document.getElementById('vcNextBtn').style.opacity = currentPage === totalPages ? '0.5' : '1';
-
-  // Hide pagination if only one page
-  const paginationContainer = document.getElementById('vcPaginationContainer');
-  paginationContainer.style.display = totalPages > 1 ? 'flex' : 'none';
+  document.getElementById('vcPaginationContainer').style.display = totalPages > 1 ? 'flex' : 'none';
 }
 
 function vcNextPage() {
@@ -6502,11 +6519,37 @@ function exportVendorConcentration(format) {
     csv += `Índice HHI,${data.hhi.toFixed(0)},${data.hhhiLabel}\n`;
     csv += `Top 3 Market Share,${data.top3Share.toFixed(1)}%\n`;
     csv += `Nivel de Riesgo,${data.riskLevel}\n\n`;
-    csv += 'Proveedor,Contratos,Monto (L.),Market Share %\n';
 
+    // Summary section
+    csv += '=== RESUMEN POR PROVEEDOR ===\n';
+    csv += 'Proveedor,Contratos,Monto (L.),Market Share %\n';
     data.vendors.forEach(v => {
       const share = (v.monto / data.totalMonto * 100);
       csv += `"${v.name}",${v.alerts},${v.monto},${share.toFixed(2)}\n`;
+    });
+
+    // Contract detail section
+    csv += '\n=== CONTRATOS POR PROVEEDOR ===\n';
+    data.vendors.forEach(v => {
+      const vendorContracts = (window.globalAlerts || []).filter(a => {
+        const vendor = a.proveedor_nombre || a.proveedor || 'Desconocido';
+        return vendor === v.name;
+      }).sort((a, b) => (Number(b.monto_contrato || b.monto_contratado || 0)) - (Number(a.monto_contrato || a.monto_contratado || 0)));
+
+      const share = (v.monto / data.totalMonto * 100);
+      csv += `\n"=== ${v.name} — ${v.alerts} contratos | L. ${(v.monto/1000000).toFixed(2)}M | ${share.toFixed(1)}% share ==="\n`;
+      csv += 'ID,Entidad,Fecha,Monto (L.),Patrones,Severidad\n';
+
+      vendorContracts.forEach(a => {
+        const contractId = a.alert_id || ('#' + a.id);
+        const entity = (a.entity_name || a.entidad || '—').replace(/"/g, '""');
+        const fecha = (a.fecha_contrato || a.fecha_publicacion || '—').substring(0, 10);
+        const monto = Number(a.monto_contrato || a.monto_contratado || 0);
+        const patterns = a.patterns || a.patrones || [];
+        const patternStr = Array.isArray(patterns) ? patterns.join('|') : (patterns || '—');
+        const sev = a.severity || a.severidad || '—';
+        csv += `"${contractId}","${entity}","${fecha}",${monto},"${patternStr}","${sev}"\n`;
+      });
     });
 
     downloadFile(csv, `vendor-concentration-${timestamp}.csv`, 'text/csv');
@@ -6520,24 +6563,27 @@ function exportVendorConcentrationDetail(format) {
 
   const detail = window.currentVendorDetail;
   const timestamp = new Date().toISOString().split('T')[0];
+  const contracts = detail.contracts || [];
 
   if (format === 'csv') {
-    let csv = `PROVEEDOR: ${detail.vendorName}\n\n`;
-    csv += 'Entidad,Contratos,Monto (L.),Market Share %\n';
+    const montoTotal = contracts.reduce((sum, a) => sum + (Number(a.monto_contrato || a.monto_contratado || 0)), 0);
+    let csv = `CONTRATOS — PROVEEDOR: ${detail.vendorName}\n`;
+    csv += `Total contratos: ${contracts.length} | Monto total: L. ${(montoTotal/1000000).toFixed(2)}M\n\n`;
+    csv += 'ID,Entidad,Fecha,Monto (L.),Patrones,Severidad\n';
 
-    detail.entities.forEach(entity => {
-      const entityAlerts = window.globalAlerts.filter(a => {
-        const vendor = a.proveedor_nombre || a.proveedor || 'Desconocido';
-        const ent = a.entity_name || a.entidad || 'Desconocida';
-        return vendor === detail.vendorName && ent === entity;
-      });
-      const alertCount = entityAlerts.length;
-      const montoSum = entityAlerts.reduce((sum, a) => sum + (Number(a.monto_contrato || a.monto_contratado || 0)), 0);
-      const share = (montoSum / detail.totalMonto * 100);
-      csv += `"${entity}",${alertCount},${montoSum},${share.toFixed(2)}\n`;
+    contracts.forEach(a => {
+      const contractId = a.alert_id || ('#' + a.id);
+      const entity = (a.entity_name || a.entidad || '—').replace(/"/g, '""');
+      const fecha = (a.fecha_contrato || a.fecha_publicacion || '—').substring(0, 10);
+      const monto = Number(a.monto_contrato || a.monto_contratado || 0);
+      const patterns = a.patterns || a.patrones || [];
+      const patternStr = Array.isArray(patterns) ? patterns.join('|') : (patterns || '—');
+      const sev = a.severity || a.severidad || '—';
+      csv += `"${contractId}","${entity}","${fecha}",${monto},"${patternStr}","${sev}"\n`;
     });
 
-    downloadFile(csv, `vendor-detail-${detail.vendorName}-${timestamp}.csv`, 'text/csv');
+    const safeName = detail.vendorName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').substring(0, 30);
+    downloadFile(csv, `contratos-${safeName}-${timestamp}.csv`, 'text/csv');
   } else if (format === 'pdf') {
     generateVendorDetailPDF(detail, timestamp);
   }

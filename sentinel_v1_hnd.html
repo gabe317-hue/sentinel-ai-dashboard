@@ -4928,12 +4928,40 @@ function hideFuentePanel() {
 // ════════════════════════════════════════════════════════════
 
 function showPhase4Detection() {
+  // Close any other open panels first
+  document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('entityPanel').classList.remove('open');
+  document.getElementById('auditPanel').classList.remove('open');
+  document.getElementById('analyticsPanel').classList.remove('open');
+  document.getElementById('sobrecostoPanel').classList.remove('open');
+  document.getElementById('alertDetailPanel').classList.remove('open');
   document.getElementById('vistaEjecutiva').style.display = 'none';
-  populatePhase4Detection();
+
+  // Show panel immediately with loading state
+  document.getElementById('p4-velocity-count').textContent = '…';
+  document.getElementById('p4-anomaly-count').textContent = '…';
+  document.getElementById('p4-risk-critical').textContent = '…';
+  const loadingHTML = '<div style="padding:12px;color:var(--text-dim);font-family:\'JetBrains Mono\',monospace;font-size:11px;">⏳ Calculando sobre ' + (allAlerts ? allAlerts.length.toLocaleString() : '0') + ' contratos...</div>';
+  document.getElementById('p4-velocity-list').innerHTML = loadingHTML;
+  document.getElementById('p4-risk-list').innerHTML = loadingHTML;
+  document.getElementById('p4-anomaly-list').innerHTML = loadingHTML;
+
   document.getElementById('phase4Panel').classList.add('open');
   document.querySelector('.stats-grid').style.display = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.getElementById('mainTableContainer').style.display = 'none';
+
+  // Defer heavy computation so panel renders first
+  setTimeout(() => {
+    if (!allAlerts || allAlerts.length === 0) {
+      const emptyHTML = '<div style="padding:12px;color:var(--text-dim);">Sin datos cargados. Espere a que termine la carga.</div>';
+      document.getElementById('p4-velocity-list').innerHTML = emptyHTML;
+      document.getElementById('p4-risk-list').innerHTML = emptyHTML;
+      document.getElementById('p4-anomaly-list').innerHTML = emptyHTML;
+      return;
+    }
+    populatePhase4Detection();
+  }, 80);
 }
 
 function hidePhase4Detection() {

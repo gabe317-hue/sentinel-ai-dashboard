@@ -1476,7 +1476,7 @@ body::after {
   </div>
 
   <!-- Alerts table -->
-  <div class="table-container">
+  <div class="table-container" id="mainTableContainer">
     <div class="table-header-row">
       <span class="table-title">Registro de Contratos</span>
       <span class="table-count" id="tableCount">Cargando...</span>
@@ -2634,7 +2634,7 @@ function setPage(n) {
   currentPage = n;
   render();
   // Scroll table into view smoothly
-  document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('mainTableContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -3254,7 +3254,7 @@ function showFuentePanel(fuente) {
   document.getElementById('fuentePanel').classList.add('open');
   document.querySelector('.stats-grid').style.display    = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.querySelector('.table-container').style.display = 'none';
+  document.getElementById('mainTableContainer').style.display = 'none';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -3346,7 +3346,7 @@ function showEntityPanel(entityName) {
   document.getElementById('entityPanel').classList.add('open');
   document.querySelector('.stats-grid').style.display     = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.querySelector('.table-container').style.display = 'none';
+  document.getElementById('mainTableContainer').style.display = 'none';
 }
 
 // ── VENDOR PANEL — shows all alerts for a specific proveedor ─────────────────
@@ -3415,7 +3415,7 @@ function showVendorPanel(vendorName) {
   document.getElementById('entityPanel').classList.add('open');
   document.querySelector('.stats-grid').style.display      = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.querySelector('.table-container').style.display = 'none';
+  document.getElementById('mainTableContainer').style.display = 'none';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -4136,14 +4136,14 @@ function openAlertDetail(alertId, event) {
   document.getElementById('alertDetailPanel').classList.add('open');
   document.querySelector('.stats-grid').style.display      = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.querySelector('.table-container').style.display = 'none';
+  document.getElementById('mainTableContainer').style.display = 'none';
 }
 
 function closeAlertDetail() {
   document.getElementById('alertDetailPanel').classList.remove('open');
   document.querySelector('.stats-grid').style.display      = '';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.querySelector('.table-container').style.display = '';
+  document.getElementById('mainTableContainer').style.display = '';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -4174,7 +4174,7 @@ function hideEntityPanel() {
   } else {
     document.querySelector('.stats-grid').style.display     = '';
     document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-    document.querySelector('.table-container').style.display = '';
+    document.getElementById('mainTableContainer').style.display = '';
   }
 }
 
@@ -4192,7 +4192,7 @@ function showGlobalSobrecostos() {
   // Hide main dashboard
   document.querySelector('.stats-grid').style.display     = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.querySelector('.table-container').style.display = 'none';
+  document.getElementById('mainTableContainer').style.display = 'none';
 
   // Populate and show sobrecosto panel
   populateGlobalSobrecostos();
@@ -4214,7 +4214,7 @@ function hideGlobalSobrecostos() {
   document.getElementById('sobrecostoPanel').classList.remove('open');
   document.querySelector('.stats-grid').style.display     = '';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.querySelector('.table-container').style.display = '';
+  document.getElementById('mainTableContainer').style.display = '';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -4917,7 +4917,7 @@ function hideFuentePanel() {
   document.getElementById('nav-audit').classList.remove('active');
   document.querySelector('.stats-grid').style.display     = '';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.querySelector('.table-container').style.display = '';
+  document.getElementById('mainTableContainer').style.display = '';
   // Remove fuente active state, restore dashboard active
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
 }
@@ -4933,14 +4933,14 @@ function showPhase4Detection() {
   document.getElementById('phase4Panel').classList.add('open');
   document.querySelector('.stats-grid').style.display = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.querySelector('.table-container').style.display = 'none';
+  document.getElementById('mainTableContainer').style.display = 'none';
 }
 
 function hidePhase4Detection() {
   document.getElementById('phase4Panel').classList.remove('open');
   document.querySelector('.stats-grid').style.display = '';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.querySelector('.table-container').style.display = '';
+  document.getElementById('mainTableContainer').style.display = '';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -6045,7 +6045,7 @@ function showAnalyticsPanel() {
   document.getElementById('auditPanel').classList.remove('open');
   document.querySelector('.stats-grid').style.display      = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.querySelector('.table-container').style.display = 'none';
+  document.getElementById('mainTableContainer').style.display = 'none';
 
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById('nav-analytics').classList.add('active');
@@ -6065,7 +6065,7 @@ function hideAnalyticsPanel() {
   document.getElementById('nav-analytics').classList.remove('active');
   document.querySelector('.stats-grid').style.display      = '';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.querySelector('.table-container').style.display = '';
+  document.getElementById('mainTableContainer').style.display = '';
 }
 
 function showVendorConcentrationPanel() {
@@ -6094,7 +6094,7 @@ function showAuditPanel() {
   document.getElementById('entityPanel').classList.remove('open');
   document.querySelector('.stats-grid').style.display     = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.querySelector('.table-container').style.display = 'none';
+  document.getElementById('mainTableContainer').style.display = 'none';
 
   // Update nav active state
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
@@ -6110,7 +6110,7 @@ function hideAuditPanel() {
   document.getElementById('nav-audit').classList.remove('active');
   document.querySelector('.stats-grid').style.display     = '';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.querySelector('.table-container').style.display = '';
+  document.getElementById('mainTableContainer').style.display = '';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -7240,7 +7240,7 @@ function showVistaEjecutiva() {
   document.getElementById('phase4Panel')    && document.getElementById('phase4Panel').classList.remove('open');
   // Show/hide
   document.getElementById('vistaEjecutiva').style.display = 'block';
-  document.querySelector('.table-container') && (document.querySelector('.table-container').style.display = 'none');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = 'none');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = 'none');
   document.querySelector('.ticker-bar')      && (document.querySelector('.ticker-bar').style.display = 'flex');
@@ -7259,7 +7259,7 @@ function hideAllPanels() {
   document.getElementById('analyticsPanel') && document.getElementById('analyticsPanel').classList.remove('open');
   document.getElementById('sobrecostoPanel')&& document.getElementById('sobrecostoPanel').classList.remove('open');
   document.getElementById('phase4Panel')    && document.getElementById('phase4Panel').classList.remove('open');
-  document.querySelector('.table-container') && (document.querySelector('.table-container').style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = '');
   // Update active nav

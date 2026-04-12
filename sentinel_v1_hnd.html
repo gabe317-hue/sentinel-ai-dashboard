@@ -6692,6 +6692,54 @@ function generateVendorConcentrationPDF(data, timestamp) {
   para efectos de vigilancia y cumplimiento.
 </p>
 
+<h2 style="margin-top:24px;page-break-before:always;">Contratos por Proveedor</h2>
+${data.vendors.map(v => {
+  const vendorContracts = (window.globalAlerts || []).filter(a => {
+    const vendor = a.proveedor_nombre || a.proveedor || 'Desconocido';
+    return vendor === v.name;
+  }).sort((a, b) => (Number(b.monto_contrato || b.monto_contratado || 0)) - (Number(a.monto_contrato || a.monto_contratado || 0)));
+  const share = (v.monto / data.totalMonto * 100);
+  const montoTotal = vendorContracts.reduce((s, a) => s + (Number(a.monto_contrato || a.monto_contratado || 0)), 0);
+  const contractRows = vendorContracts.map(a => {
+    const contractId = a.alert_id || ('#' + a.id);
+    const entity = (a.entity_name || a.entidad || '—').substring(0, 50);
+    const fecha = (a.fecha_contrato || a.fecha_publicacion || '—').substring(0, 10);
+    const monto = Number(a.monto_contrato || a.monto_contratado || 0);
+    const patterns = a.patterns || a.patrones || [];
+    const patternStr = Array.isArray(patterns) ? (patterns.slice(0, 2).join(', ') || '—') : (patterns || '—');
+    const sev = a.severity || a.severidad || '—';
+    const sevColors = { critica:'#ff3d57', alta:'#e65100', media:'#0277bd', baja:'#2e7d32' };
+    const sevColor = sevColors[(sev||'').toLowerCase()] || '#555';
+    return `<tr>
+      <td style="font-family:monospace;font-size:8pt;">${contractId}</td>
+      <td>${entity}</td>
+      <td style="text-align:center;">${fecha}</td>
+      <td style="text-align:right;">L. ${monto > 0 ? monto.toLocaleString() : '—'}</td>
+      <td style="font-size:8pt;">${patternStr}</td>
+      <td style="text-align:center;color:${sevColor};font-weight:700;text-transform:uppercase;font-size:8pt;">${sev}</td>
+    </tr>`;
+  }).join('');
+  return `
+  <div style="margin-bottom:20px;page-break-inside:avoid;">
+    <div style="background:#1A3A6B;color:#fff;padding:7px 10px;border-radius:4px 4px 0 0;font-size:9pt;">
+      <strong>${v.name}</strong> &nbsp;|&nbsp; ${v.alerts} contratos &nbsp;|&nbsp; L. ${montoTotal.toLocaleString()} &nbsp;|&nbsp; ${share.toFixed(1)}% share
+    </div>
+    <table style="margin-top:0;border-top:none;">
+      <thead>
+        <tr>
+          <th style="font-size:8pt;">ID</th>
+          <th style="font-size:8pt;">Entidad</th>
+          <th style="text-align:center;font-size:8pt;">Fecha</th>
+          <th style="text-align:right;font-size:8pt;">Monto (L.)</th>
+          <th style="font-size:8pt;">Patrones</th>
+          <th style="text-align:center;font-size:8pt;">Sev.</th>
+        </tr>
+      </thead>
+      <tbody>${contractRows}</tbody>
+    </table>
+  </div>`;
+}).join('')}
+
 </body>
 </html>`;
 
@@ -6712,20 +6760,26 @@ function generateVendorConcentrationPDF(data, timestamp) {
 
 function generateVendorDetailPDF(detail, timestamp) {
   try {
-    const entityRows = detail.entities.map((entity, idx) => {
-      const entityAlerts = window.globalAlerts.filter(a => {
-        const vendor = a.proveedor_nombre || a.proveedor || 'Desconocido';
-        const ent = a.entity_name || a.entidad || 'Desconocida';
-        return vendor === detail.vendorName && ent === entity;
-      });
-      const alertCount = entityAlerts.length;
-      const montoSum = entityAlerts.reduce((sum, a) => sum + (Number(a.monto_contrato || a.monto_contratado || 0)), 0);
-      const share = (montoSum / detail.totalMonto * 100);
+    const contracts = detail.contracts || [];
+    const montoTotal = contracts.reduce((s, a) => s + (Number(a.monto_contrato || a.monto_contratado || 0)), 0);
+    const sevColors = { critica:'#ff3d57', alta:'#e65100', media:'#0277bd', baja:'#2e7d32' };
+
+    const contractRows = contracts.map(a => {
+      const contractId = a.alert_id || ('#' + a.id);
+      const entity = (a.entity_name || a.entidad || '—').substring(0, 55);
+      const fecha = (a.fecha_contrato || a.fecha_publicacion || '—').substring(0, 10);
+      const monto = Number(a.monto_contrato || a.monto_contratado || 0);
+      const patterns = a.patterns || a.patrones || [];
+      const patternStr = Array.isArray(patterns) ? (patterns.slice(0, 2).join(', ') || '—') : (patterns || '—');
+      const sev = a.severity || a.severidad || '—';
+      const sevColor = sevColors[(sev||'').toLowerCase()] || '#555';
       return `<tr>
+        <td style="font-family:monospace;font-size:8pt;">${contractId}</td>
         <td>${entity}</td>
-        <td style="text-align: center;">${alertCount}</td>
-        <td style="text-align: right;">L. ${montoSum.toLocaleString()}</td>
-        <td style="text-align: right;">${share.toFixed(1)}%</td>
+        <td style="text-align:center;">${fecha}</td>
+        <td style="text-align:right;">L. ${monto > 0 ? monto.toLocaleString() : '—'}</td>
+        <td style="font-size:8pt;">${patternStr}</td>
+        <td style="text-align:center;color:${sevColor};font-weight:700;text-transform:uppercase;font-size:8pt;">${sev}</td>
       </tr>`;
     }).join('');
 
@@ -6733,45 +6787,52 @@ function generateVendorDetailPDF(detail, timestamp) {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Vendor Detail ${timestamp}</title>
+<title>Contratos — ${detail.vendorName} — ${timestamp}</title>
 <style>
-  @page { size: A4 portrait; margin: 1.4cm 1cm 1.8cm 1cm; }
+  @page { size: A4 landscape; margin: 1.2cm 1cm 1.6cm 1cm; }
   @media print {
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .no-print { display: none !important; }
   }
-  body { font-family: Arial, sans-serif; font-size: 10pt; color: #222; margin: 0; padding: 16px; }
-  h1 { color: #0A1628; font-size: 18pt; margin-bottom: 5px; margin-top: 0; }
-  h2 { color: #1A3A6B; font-size: 12pt; margin-top: 16px; margin-bottom: 8px; }
-  .meta { color: #7F8C8D; font-size: 9pt; margin-bottom: 14px; }
+  body { font-family: Arial, sans-serif; font-size: 9pt; color: #222; margin: 0; padding: 16px; }
+  h1 { color: #0A1628; font-size: 16pt; margin-bottom: 4px; margin-top: 0; }
+  .meta { color: #7F8C8D; font-size: 8pt; margin-bottom: 12px; }
+  .summary-bar { background: #1A3A6B; color: #fff; padding: 8px 12px; border-radius: 4px; margin-bottom: 14px; font-size: 9pt; }
   table { border-collapse: collapse; width: 100%; margin-top: 8px; }
-  th { background: #1A3A6B; color: #fff; padding: 6px 8px; font-size: 9pt; text-align: left; }
-  td { padding: 5px 8px; border: 1px solid #D0D7E2; font-size: 9pt; }
+  th { background: #1A3A6B; color: #fff; padding: 6px 8px; font-size: 8pt; text-align: left; }
+  td { padding: 5px 8px; border: 1px solid #D0D7E2; font-size: 8pt; }
   tr:nth-child(even) { background: #f4f8ff; }
   .print-btn { display: inline-block; margin: 0 0 16px 0; padding: 8px 18px;
                background: #1A3A6B; color: #fff; border: none; border-radius: 6px;
-               font-size: 10pt; cursor: pointer; }
+               font-size: 9pt; cursor: pointer; }
 </style>
 </head>
 <body>
 
 <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
-<h1>Proveedor: ${detail.vendorName}</h1>
-<p class="meta">Reporte: ${timestamp}</p>
+<h1>📦 ${detail.vendorName}</h1>
+<p class="meta">Reporte de contratos — ${timestamp}</p>
 
-<h2>Entidades</h2>
+<div class="summary-bar">
+  <strong>Total contratos:</strong> ${contracts.length} &nbsp;|&nbsp;
+  <strong>Monto total:</strong> L. ${montoTotal.toLocaleString()} &nbsp;|&nbsp;
+  <strong>Ordenado por:</strong> Monto descendente
+</div>
+
 <table>
   <thead>
     <tr>
+      <th>ID Contrato</th>
       <th>Entidad</th>
-      <th style="text-align: center;">Contratos</th>
-      <th style="text-align: right;">Monto (L.)</th>
-      <th style="text-align: right;">Market Share %</th>
+      <th style="text-align:center;">Fecha</th>
+      <th style="text-align:right;">Monto (L.)</th>
+      <th>Patrones</th>
+      <th style="text-align:center;">Sev.</th>
     </tr>
   </thead>
   <tbody>
-    ${entityRows}
+    ${contractRows}
   </tbody>
 </table>
 

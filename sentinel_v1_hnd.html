@@ -957,7 +957,7 @@ body::after {
 .sev-badge.media   { background: var(--electric); }
 .sev-badge.baja    { background: #4caf50; }
 
-/* ─── INST-COLLAB-BAR ─── */
+/* ─── INST-COLLAB-BAR (from demo) ─── */
 .inst-collab-bar {
   background: rgba(0,200,255,0.04);
   border-bottom: 1px solid rgba(0,200,255,0.1);
@@ -967,86 +967,174 @@ body::after {
   letter-spacing: 2px; text-transform: uppercase;
   display: flex; align-items: center; gap: 16px;
 }
-/* ─── TICKER BAR ─── */
+
+/* ─── TICKER BAR (from demo) ─── */
 .ticker-bar {
   display: flex; align-items: center; gap: 16px;
-  padding: 8px 20px; background: rgba(0,200,255,0.04);
-  border: 1px solid var(--border); border-radius: 8px;
-  margin-bottom: 24px; overflow: hidden;
+  padding: 8px 20px;
+  background: rgba(0,200,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 24px; overflow: hidden;
 }
 .ticker-label {
   font-family: 'JetBrains Mono', monospace; font-size: 10px;
-  letter-spacing: 2px; color: var(--electric); text-transform: uppercase;
-  white-space: nowrap; padding-right: 16px; border-right: 1px solid var(--border);
+  letter-spacing: 2px; color: var(--electric);
+  text-transform: uppercase; white-space: nowrap;
+  padding-right: 16px; border-right: 1px solid var(--border);
 }
-.ticker-scroll { display: flex; gap: 40px; animation: ticker 35s linear infinite; white-space: nowrap; }
-@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.ticker-scroll {
+  display: flex; gap: 40px;
+  animation: ticker 35s linear infinite; white-space: nowrap;
+}
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 .ticker-item { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
 .ticker-item span { color: var(--text); }
 .ticker-item .up { color: var(--red); }
 .ticker-item .down { color: var(--green); }
-/* ─── LOGIN ENHANCEMENTS ─── */
+
+/* ─── VISTA EJECUTIVA ─── */
+.exec-header { margin-bottom: 24px; }
+.exec-title {
+  font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.3px;
+}
+.exec-subtitle {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-dim); margin-top: 6px; letter-spacing: 1px;
+}
+.exec-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-bottom: 32px;
+}
+.exec-card {
+  border-radius: 12px; padding: 22px 20px;
+  border: 1px solid var(--border); position: relative; overflow: hidden;
+  transition: all 0.2s;
+}
+.exec-card:hover { transform: translateY(-2px); border-color: rgba(0,200,255,0.25); }
+.exec-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+}
+.exec-card-red    { background: var(--red-dim); }
+.exec-card-red::before { background: var(--red); }
+.exec-card-orange { background: var(--orange-dim); }
+.exec-card-orange::before { background: var(--orange); }
+.exec-card-electric { background: var(--electric-dim); }
+.exec-card-electric::before { background: var(--electric); }
+.exec-card-green  { background: var(--green-dim); }
+.exec-card-green::before { background: var(--green); }
+.exec-card-amber  { background: var(--amber-dim); }
+.exec-card-amber::before { background: var(--amber); }
+.exec-card-glass  { background: var(--glass); }
+.exec-card-glass::before { background: var(--text-dim); }
+.exec-card-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--text-dim); margin-bottom: 10px;
+}
+.exec-card-value {
+  font-family: 'Syne', sans-serif; font-size: 38px;
+  font-weight: 800; line-height: 1; margin-bottom: 6px;
+}
+.exec-card-red    .exec-card-value { color: var(--red); }
+.exec-card-orange .exec-card-value { color: var(--orange); }
+.exec-card-electric .exec-card-value { color: var(--electric); }
+.exec-card-green  .exec-card-value { color: var(--green); }
+.exec-card-amber  .exec-card-value { color: var(--amber); }
+.exec-card-glass  .exec-card-value { color: var(--text); }
+.exec-card-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-dim); margin-bottom: 8px; opacity: 0.8;
+}
+.exec-card-note {
+  font-size: 11px; color: var(--text-dim); opacity: 0.6; font-style: italic;
+}
+.exec-section-title {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--text-dim); margin-bottom: 14px; margin-top: 8px;
+}
+.exec-sources-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-bottom: 8px;
+}
+.exec-source {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 6px;
+  transition: all 0.2s;
+}
+.exec-source.active { border-color: rgba(0,230,118,0.2); background: rgba(0,230,118,0.04); }
+.exec-source.pending { opacity: 0.65; }
+.exec-source-dot {
+  width: 7px; height: 7px; border-radius: 50%; margin-bottom: 2px;
+}
+.exec-source-dot.green { background: var(--green); box-shadow: 0 0 6px rgba(0,230,118,0.4); }
+.exec-source-dot.amber { background: var(--amber); }
+.exec-source-name {
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  font-weight: 600; color: var(--text);
+}
+.exec-source-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ─── LOGIN ENHANCEMENTS (from demo) ─── */
 .login-top-band {
   position: absolute; top: 0; left: 0; right: 0;
   background: rgba(0,200,255,0.04);
   border-bottom: 1px solid rgba(0,200,255,0.1);
-  padding: 12px 40px; display: flex; align-items: center; justify-content: space-between; z-index: 2;
+  padding: 12px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 2;
 }
 .login-top-band span {
-  font-family: 'JetBrains Mono', monospace; font-size: 11px;
-  color: rgba(0,200,255,0.5); letter-spacing: 2px; text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: rgba(0,200,255,0.5);
+  letter-spacing: 2px; text-transform: uppercase;
 }
 .login-country {
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
-  letter-spacing: 3px; color: rgba(0,200,255,0.6); text-transform: uppercase; margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 4px;
+  color: rgba(0,200,255,0.6);
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.login-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px; font-weight: 800;
+  color: var(--text); margin-bottom: 4px; letter-spacing: -0.5px;
+}
+.login-logo span { color: var(--electric); }
+.login-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--text-dim); text-align: center;
+  text-transform: uppercase; margin-bottom: 32px;
 }
 .login-warning {
-  margin-top: 16px; padding: 10px 14px;
-  background: rgba(255,61,87,0.07); border: 1px solid rgba(255,61,87,0.2);
-  border-radius: 8px; font-size: 11px; color: #ff8a98; line-height: 1.6; text-align: left;
+  margin-top: 20px; padding: 12px 16px;
+  background: rgba(255,61,87,0.07);
+  border: 1px solid rgba(255,61,87,0.2);
+  border-radius: 8px;
+  font-size: 11px; color: #ff8a98; line-height: 1.6; text-align: left;
 }
 .login-institutions {
-  margin-top: 16px; display: flex; justify-content: center; gap: 12px;
-  padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 20px; display: flex;
+  justify-content: center; gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.05);
 }
 .login-inst-tag {
-  font-family: 'JetBrains Mono', monospace; font-size: 9px;
-  color: rgba(255,255,255,0.25); letter-spacing: 1px; text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: rgba(255,255,255,0.25);
+  letter-spacing: 1px; text-transform: uppercase;
 }
-/* ─── VISTA EJECUTIVA ─── */
-.exec-header { margin-bottom: 24px; }
-.exec-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; color: var(--text); }
-.exec-subtitle { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); margin-top: 6px; letter-spacing: 1px; }
-.exec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
-.exec-card { border-radius: 12px; padding: 22px 20px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: all 0.2s; }
-.exec-card:hover { transform: translateY(-2px); }
-.exec-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
-.exec-card-red    { background: var(--red-dim); } .exec-card-red::before    { background: var(--red); }
-.exec-card-orange { background: var(--orange-dim); } .exec-card-orange::before { background: var(--orange); }
-.exec-card-electric { background: var(--electric-dim); } .exec-card-electric::before { background: var(--electric); }
-.exec-card-green  { background: var(--green-dim); } .exec-card-green::before  { background: var(--green); }
-.exec-card-amber  { background: var(--amber-dim); } .exec-card-amber::before  { background: var(--amber); }
-.exec-card-glass  { background: var(--glass); } .exec-card-glass::before  { background: var(--text-dim); }
-.exec-card-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 10px; }
-.exec-card-value { font-family: 'Syne', sans-serif; font-size: 38px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
-.exec-card-red .exec-card-value { color: var(--red); }
-.exec-card-orange .exec-card-value { color: var(--orange); }
-.exec-card-electric .exec-card-value { color: var(--electric); }
-.exec-card-green .exec-card-value { color: var(--green); }
-.exec-card-amber .exec-card-value { color: var(--amber); }
-.exec-card-glass .exec-card-value { color: var(--text); }
-.exec-card-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); margin-bottom: 8px; opacity: 0.8; }
-.exec-card-note { font-size: 11px; color: var(--text-dim); opacity: 0.6; font-style: italic; }
-.exec-section-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 14px; margin-top: 8px; }
-.exec-sources-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 8px; }
-.exec-source { background: var(--glass); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
-.exec-source.active { border-color: rgba(0,230,118,0.2); background: rgba(0,230,118,0.04); }
-.exec-source.pending { opacity: 0.6; }
-.exec-source-dot { width: 7px; height: 7px; border-radius: 50%; margin-bottom: 2px; }
-.exec-source-dot.green { background: var(--green); box-shadow: 0 0 6px rgba(0,230,118,0.4); }
-.exec-source-dot.amber { background: var(--amber); }
-.exec-source-name { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); }
-.exec-source-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
+
 </style>
 </head>
 <body>
@@ -1084,6 +1172,7 @@ body::after {
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">© Sentinel-AI v1.0</span>
     </div>
+    <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
 </div>
 
@@ -1099,16 +1188,18 @@ body::after {
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
     <div class="logo-version">v1.0 — HND</div>
   </div>
+
   <div class="nav">
     <div class="nav-section">
       <div class="nav-section-label">Monitor</div>
       <button class="nav-item active" id="nav-ejecutiva" onclick="showVistaEjecutiva()">
-        <span class="nav-icon">⬡</span> Vista Ejecutiva
+        <span class="nav-icon">📊</span> Vista Ejecutiva
       </button>
       <button class="nav-item" id="nav-contratos" onclick="hideAllPanels()">
         <span class="nav-icon">📋</span> Contratos Monitoreados
       </button>
     </div>
+
     <div class="nav-section">
       <div class="nav-section-label">Análisis</div>
       <button class="nav-item" id="nav-analytics" onclick="showAnalyticsPanel()">
@@ -1124,6 +1215,7 @@ body::after {
         <span class="nav-icon">🔍</span> Detección Fase 4
       </button>
     </div>
+
     <div class="nav-section">
       <div class="nav-section-label">Sistema</div>
       <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
@@ -1138,6 +1230,7 @@ body::after {
       </button>
     </div>
   </div>
+
   <div class="nav-footer">
     <div class="user-card">
       <div class="user-avatar" id="userAvatar">—</div>
@@ -1158,13 +1251,15 @@ body::after {
     <span id="errorMsg">Error de conexión con Supabase</span>
   </div>
 
-  <!-- Page header -->
+  <!-- Institutional collaboration bar -->
   <div class="inst-collab-bar">
-  <span>🇭🇳</span>
-  <span>República de Honduras · Procuraduría General de la República · Sistema Nacional Anticorrupción</span>
-  <span style="margin-left:auto; color:rgba(0,230,118,0.5);">● The Prieto Group — Dallas, TX</span>
-</div>
-<div class="page-header">
+    <span>🇭🇳</span>
+    <span>República de Honduras · Procuraduría General de la República · Sistema Nacional Anticorrupción</span>
+    <span style="margin-left:auto; color:rgba(0,230,118,0.5);">● The Prieto Group — Dallas, TX</span>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-header">
     <div class="page-header-left">
       <div class="page-title">Monitoreo de <span>Contratación Pública</span></div>
       <div class="page-subtitle">Honduras · SEFIN Fiscal 2023–2025 · Versión 1.0</div>
@@ -1180,92 +1275,141 @@ body::after {
     </div>
   </div>
 
-  <!-- Stat cards — updated by render() using normSev() fix -->
+  <!-- ═══════════════════ VISTA EJECUTIVA ═══════════════════ -->
+  <div id="vistaEjecutiva" style="display:none;">
+    <!-- Executive KPI summary — data from Supabase via renderEjecutiva() -->
+    <div class="exec-header">
+      <div class="exec-title">Resumen Ejecutivo</div>
+      <div class="exec-subtitle" id="execSubtitle">Cargando datos...</div>
+    </div>
+    <!-- 3-column grid: Critical alerts, Top risk entities, System status -->
+    <div class="exec-grid">
+      <!-- Critical alerts box -->
+      <div class="exec-card exec-card-red">
+        <div class="exec-card-label">Contratos Críticos</div>
+        <div class="exec-card-value" id="exec-criticos">—</div>
+        <div class="exec-card-sub" id="exec-criticos-monto">L —</div>
+        <div class="exec-card-note">▸ Referir a PGR inmediatamente</div>
+      </div>
+      <!-- High risk box -->
+      <div class="exec-card exec-card-orange">
+        <div class="exec-card-label">Riesgo Alto</div>
+        <div class="exec-card-value" id="exec-altos">—</div>
+        <div class="exec-card-sub" id="exec-altos-monto">L —</div>
+        <div class="exec-card-note">▸ Escalada legal recomendada</div>
+      </div>
+      <!-- OFAC sanctioned box -->
+      <div class="exec-card exec-card-electric">
+        <div class="exec-card-label">Proveedores OFAC</div>
+        <div class="exec-card-value" id="exec-ofac">—</div>
+        <div class="exec-card-sub">Lista de Sanciones EE.UU.</div>
+        <div class="exec-card-note">▸ Revisión inmediata</div>
+      </div>
+      <!-- Total monitored -->
+      <div class="exec-card exec-card-green">
+        <div class="exec-card-label">Total Monitoreados</div>
+        <div class="exec-card-value" id="exec-total">—</div>
+        <div class="exec-card-sub" id="exec-total-monto">L —</div>
+        <div class="exec-card-note">▸ Fiscal 2023–2025</div>
+      </div>
+      <!-- Sobrecosto box -->
+      <div class="exec-card exec-card-amber">
+        <div class="exec-card-label">Riesgo Sobrecosto</div>
+        <div class="exec-card-value" id="exec-sobrecosto">—</div>
+        <div class="exec-card-sub" id="exec-sobrecosto-monto">L —</div>
+        <div class="exec-card-note">▸ Análisis SIAFI2</div>
+      </div>
+      <!-- System status box -->
+      <div class="exec-card exec-card-glass">
+        <div class="exec-card-label">Estado del Sistema</div>
+        <div class="exec-card-value" style="font-size:20px;" id="exec-status-val">—</div>
+        <div class="exec-card-sub" id="exec-last-update">—</div>
+        <div class="exec-card-note">▸ Supabase · SEFIN · OFAC</div>
+      </div>
+    </div>
+    <!-- Top 5 critical contracts table -->
+    <div class="exec-section-title">Top Contratos Críticos — Acción Inmediata</div>
+    <div class="table-container" style="margin-bottom:24px;">
+      <table class="alert-table" id="execCriticalTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Proveedor</th>
+            <th>Entidad</th>
+            <th>Monto</th>
+            <th>Patrón</th>
+            <th>Severidad</th>
+          </tr>
+        </thead>
+        <tbody id="execCriticalBody">
+          <tr class="state-row"><td colspan="6"><span class="spinner"></span> Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Future data sources section -->
+    <div class="exec-section-title">Fuentes de Datos</div>
+    <div class="exec-sources-grid">
+      <div class="exec-source active">
+        <div class="exec-source-dot green"></div>
+        <div class="exec-source-name">SEFIN / EDCA</div>
+        <div class="exec-source-val" id="src-sefin">40,175 contratos</div>
+      </div>
+      <div class="exec-source active">
+        <div class="exec-source-dot green"></div>
+        <div class="exec-source-name">OFAC SDN List</div>
+        <div class="exec-source-val">16,885 entradas</div>
+      </div>
+      <div class="exec-source active">
+        <div class="exec-source-dot green"></div>
+        <div class="exec-source-name">SIAFI2</div>
+        <div class="exec-source-val">3,071 pagos reales</div>
+      </div>
+      <div class="exec-source pending">
+        <div class="exec-source-dot amber"></div>
+        <div class="exec-source-name">Medios de Comunicación</div>
+        <div class="exec-source-val">En integración</div>
+      </div>
+      <div class="exec-source pending">
+        <div class="exec-source-dot amber"></div>
+        <div class="exec-source-name">TSC Honduras</div>
+        <div class="exec-source-val">Pendiente datos</div>
+      </div>
+      <div class="exec-source pending">
+        <div class="exec-source-dot amber"></div>
+        <div class="exec-source-name">RNP Proveedores</div>
+        <div class="exec-source-val">En integración</div>
+      </div>
+    </div>
+    <!-- Go to full table button -->
+    <div style="margin-top:28px; text-align:center;">
+      <button class="btn-new-alert-header" onclick="hideAllPanels()" style="font-size:14px; padding:12px 28px;">
+        📋 Ver Todos los Contratos Monitoreados →
+      </button>
+    </div>
+  </div>
+
+    <!-- Ticker bar — live data feed -->
   <div class="ticker-bar">
-  <div class="ticker-label">⬡ EN VIVO</div>
-  <div class="ticker-scroll">
-    <span class="ticker-item">SEFIN · <span>40,175 contratos monitoreados · Fiscal 2023–2025</span></span>
-    <span class="ticker-item">OFAC SDN · <span>16,885 entidades sancionadas verificadas</span></span>
-    <span class="ticker-item">SIAFI2 · <span>3,071 pagos reales verificados</span></span>
-    <span class="ticker-item">HonduCompras <span class="up">↑ Monitoreo activo</span></span>
-    <span class="ticker-item">CPI 2025: Honduras 22/100 — Posición 157/182</span>
-    <span class="ticker-item">Sentinel-AI v1.0 · The Prieto Group · <span>Sistema Nacional Anticorrupción</span></span>
-    <span class="ticker-item">SEFIN · <span>40,175 contratos monitoreados · Fiscal 2023–2025</span></span>
-    <span class="ticker-item">OFAC SDN · <span>16,885 entidades sancionadas verificadas</span></span>
-    <span class="ticker-item">SIAFI2 · <span>3,071 pagos reales verificados</span></span>
-    <span class="ticker-item">HonduCompras <span class="up">↑ Monitoreo activo</span></span>
-  </div>
-</div>
-<div id="vistaEjecutiva" style="display:none; margin-bottom:32px;">
-  <div class="exec-header">
-    <div class="exec-title">Resumen Ejecutivo</div>
-    <div class="exec-subtitle" id="execSubtitle">Cargando datos...</div>
-  </div>
-  <div class="exec-grid">
-    <div class="exec-card exec-card-red">
-      <div class="exec-card-label">Contratos Críticos</div>
-      <div class="exec-card-value" id="exec-criticos">—</div>
-      <div class="exec-card-sub" id="exec-criticos-monto">L —</div>
-      <div class="exec-card-note">▸ Referir a PGR inmediatamente</div>
-    </div>
-    <div class="exec-card exec-card-orange">
-      <div class="exec-card-label">Riesgo Alto</div>
-      <div class="exec-card-value" id="exec-altos">—</div>
-      <div class="exec-card-sub" id="exec-altos-monto">L —</div>
-      <div class="exec-card-note">▸ Escalada legal recomendada</div>
-    </div>
-    <div class="exec-card exec-card-electric">
-      <div class="exec-card-label">Proveedores OFAC</div>
-      <div class="exec-card-value" id="exec-ofac">—</div>
-      <div class="exec-card-sub">Lista de Sanciones EE.UU.</div>
-      <div class="exec-card-note">▸ Revisión inmediata</div>
-    </div>
-    <div class="exec-card exec-card-green">
-      <div class="exec-card-label">Total Monitoreados</div>
-      <div class="exec-card-value" id="exec-total">—</div>
-      <div class="exec-card-sub" id="exec-total-monto">L —</div>
-      <div class="exec-card-note">▸ Fiscal 2023–2025</div>
-    </div>
-    <div class="exec-card exec-card-amber">
-      <div class="exec-card-label">Riesgo Sobrecosto</div>
-      <div class="exec-card-value" id="exec-sobrecosto">—</div>
-      <div class="exec-card-sub" id="exec-sobrecosto-monto">L —</div>
-      <div class="exec-card-note">▸ Análisis SIAFI2</div>
-    </div>
-    <div class="exec-card exec-card-glass">
-      <div class="exec-card-label">Estado del Sistema</div>
-      <div class="exec-card-value" style="font-size:20px;" id="exec-status-val">—</div>
-      <div class="exec-card-sub" id="exec-last-update">—</div>
-      <div class="exec-card-note">▸ Supabase · SEFIN · OFAC</div>
+    <div class="ticker-label">⬡ EN VIVO</div>
+    <div class="ticker-scroll" id="ticker">
+      <span class="ticker-item">HonduCompras <span class="up">↑ 3 nuevas anomalías</span></span>
+      <span class="ticker-item">SIAFI <span>— Monitoreo activo</span></span>
+      <span class="ticker-item">TSC Auditores <span class="down">✓ Sin irregularidades</span></span>
+      <span class="ticker-item">RNP <span>— 2.847 entidades registradas</span></span>
+      <span class="ticker-item">Portal Único IAIP <span class="up">↑ 2,456,463 documentos indexados</span></span>
+      <span class="ticker-item">ENEE — Pérdidas L46,000M · Caso #2025-0391 <span class="up">↑ Investigación activa</span></span>
+      <span class="ticker-item">CPI 2025: Honduras 22/100 — Posición 157/182 · Pérdidas estimadas $720M–$1,000M+ anuales</span>
+      <span class="ticker-item">Score promedio proveedores: <span>62.4/100</span></span>
+      <span class="ticker-item">HonduCompras <span class="up">↑ 3 nuevas anomalías</span></span>
+      <span class="ticker-item">SIAFI <span>— Monitoreo activo</span></span>
+      <span class="ticker-item">TSC Auditores <span class="down">✓ Sin irregularidades</span></span>
+      <span class="ticker-item">RNP <span>— 2.847 entidades registradas</span></span>
+      <span class="ticker-item">Portal Único IAIP <span class="up">↑ 2,456,463 documentos indexados</span></span>
     </div>
   </div>
-  <div class="exec-section-title">Top Contratos Críticos — Acción Inmediata</div>
-  <div class="table-container" style="margin-bottom:24px;">
-    <table class="alert-table" id="execCriticalTable">
-      <thead><tr>
-        <th>ID</th><th>Proveedor</th><th>Entidad</th><th>Monto</th><th>Patrón</th><th>Severidad</th>
-      </tr></thead>
-      <tbody id="execCriticalBody">
-        <tr class="state-row"><td colspan="6"><span class="spinner"></span> Cargando...</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="exec-section-title">Fuentes de Datos</div>
-  <div class="exec-sources-grid">
-    <div class="exec-source active"><div class="exec-source-dot green"></div><div class="exec-source-name">SEFIN / EDCA</div><div class="exec-source-val">40,175 contratos</div></div>
-    <div class="exec-source active"><div class="exec-source-dot green"></div><div class="exec-source-name">OFAC SDN List</div><div class="exec-source-val">16,885 entradas</div></div>
-    <div class="exec-source active"><div class="exec-source-dot green"></div><div class="exec-source-name">SIAFI2</div><div class="exec-source-val">3,071 pagos reales</div></div>
-    <div class="exec-source pending"><div class="exec-source-dot amber"></div><div class="exec-source-name">Medios de Comunicación</div><div class="exec-source-val">En integración</div></div>
-    <div class="exec-source pending"><div class="exec-source-dot amber"></div><div class="exec-source-name">TSC Honduras</div><div class="exec-source-val">Pendiente datos</div></div>
-    <div class="exec-source pending"><div class="exec-source-dot amber"></div><div class="exec-source-name">RNP Proveedores</div><div class="exec-source-val">En integración</div></div>
-  </div>
-  <div style="margin-top:28px; text-align:center;">
-    <button class="btn-new-alert-header" onclick="hideAllPanels()" style="font-size:14px; padding:12px 28px;">
-      📋 Ver Todos los Contratos Monitoreados →
-    </button>
-  </div>
-</div>
-<div class="stats-grid">
+
+  <!-- Stat cards — updated by render() using normSev() fix -->
+  <div class="stats-grid">
     <div class="stat-card s-total">
       <div class="stat-value" id="cnt-total">—</div>
       <div class="stat-label">Total Contratos</div>
@@ -2306,8 +2450,8 @@ async function loadAlerts() {
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
     setStatus('connected');
     hideError();
-    render();
-            if (document.getElementById('vistaEjecutiva').style.display !== 'none') renderEjecutiva();
+    window.allAlerts = alerts; // expose for Vista Ejecutiva
+  render();
 
   } catch (err) {
     console.error('❌ loadAlerts failed:', err.message);
@@ -3105,7 +3249,8 @@ function showFuentePanel(fuente) {
     }
   });
 
-  // Show panel, hide main table view
+  // Show panel, hide main table view + ejecutiva
+  document.getElementById('vistaEjecutiva').style.display = 'none';
   document.getElementById('fuentePanel').classList.add('open');
   document.querySelector('.stats-grid').style.display    = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
@@ -4037,7 +4182,8 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ════════════════════════════════════════════════════════════
 function showGlobalSobrecostos() {
-  // Close other panels
+  // Close other panels + ejecutiva
+  document.getElementById('vistaEjecutiva').style.display = 'none';
   document.getElementById('fuentePanel').classList.remove('open');
   document.getElementById('entityPanel').classList.remove('open');
   document.getElementById('analyticsPanel').classList.remove('open');
@@ -4782,6 +4928,7 @@ function hideFuentePanel() {
 // ════════════════════════════════════════════════════════════
 
 function showPhase4Detection() {
+  document.getElementById('vistaEjecutiva').style.display = 'none';
   populatePhase4Detection();
   document.getElementById('phase4Panel').classList.add('open');
   document.querySelector('.stats-grid').style.display = 'none';
@@ -5892,6 +6039,7 @@ function hidePatternDetail() {
 }
 
 function showAnalyticsPanel() {
+  document.getElementById('vistaEjecutiva').style.display  = 'none';
   document.getElementById('fuentePanel').classList.remove('open');
   document.getElementById('entityPanel').classList.remove('open');
   document.getElementById('auditPanel').classList.remove('open');
@@ -5940,7 +6088,8 @@ function showVendorConcentrationPanel() {
 }
 
 function showAuditPanel() {
-  // Hide other panels and main view
+  // Hide other panels, ejecutiva, and main view
+  document.getElementById('vistaEjecutiva').style.display  = 'none';
   document.getElementById('fuentePanel').classList.remove('open');
   document.getElementById('entityPanel').classList.remove('open');
   document.querySelector('.stats-grid').style.display     = 'none';
@@ -6091,9 +6240,6 @@ async function init() {
   document.getElementById('loginScreen').classList.add('hidden');
   await loadAlerts();
   startRealtime();
-
-  // Show Vista Ejecutiva by default after load
-  setTimeout(() => { if (allAlerts && allAlerts.length > 0) showVistaEjecutiva(); }, 2000);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -7082,99 +7228,103 @@ async function showDatabaseOptimizationStatus() {
 
 init();
 
-// ─── VISTA EJECUTIVA ───────────────────────────────────────────
+
+// ─── VISTA EJECUTIVA ───
 function showVistaEjecutiva() {
-  // Hide all panels
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('open');
-  });
-  // Show executive, hide table view
+  // Hide all fuente panels
+  document.getElementById('fuentePanel')    && document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('entityPanel')    && document.getElementById('entityPanel').classList.remove('open');
+  document.getElementById('auditPanel')     && document.getElementById('auditPanel').classList.remove('open');
+  document.getElementById('analyticsPanel') && document.getElementById('analyticsPanel').classList.remove('open');
+  document.getElementById('sobrecostoPanel')&& document.getElementById('sobrecostoPanel').classList.remove('open');
+  document.getElementById('phase4Panel')    && document.getElementById('phase4Panel').classList.remove('open');
+  // Show/hide
   document.getElementById('vistaEjecutiva').style.display = 'block';
-  const tbl = document.querySelector('.table-container');
-  if (tbl) tbl.style.display = 'none';
+  document.querySelector('.table-container') && (document.querySelector('.table-container').style.display = 'none');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  const sg = document.querySelector('.stats-grid');
-  if (sg) sg.style.display = 'none';
-  const adetail = document.getElementById('alertDetailPanel');
-  if (adetail) adetail.classList.remove('open');
-  // Nav active state
+  document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = 'none');
+  document.querySelector('.ticker-bar')      && (document.querySelector('.ticker-bar').style.display = 'flex');
+  // Update active nav
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const nav = document.getElementById('nav-ejecutiva');
-  if (nav) nav.classList.add('active');
-  // Populate data
+  document.getElementById('nav-ejecutiva') && document.getElementById('nav-ejecutiva').classList.add('active');
+  // Populate executive data from already-loaded alerts
   renderEjecutiva();
 }
 
 function hideAllPanels() {
   document.getElementById('vistaEjecutiva').style.display = 'none';
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('open');
-  });
-  const tbl = document.querySelector('.table-container');
-  if (tbl) tbl.style.display = '';
+  document.getElementById('fuentePanel')    && document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('entityPanel')    && document.getElementById('entityPanel').classList.remove('open');
+  document.getElementById('auditPanel')     && document.getElementById('auditPanel').classList.remove('open');
+  document.getElementById('analyticsPanel') && document.getElementById('analyticsPanel').classList.remove('open');
+  document.getElementById('sobrecostoPanel')&& document.getElementById('sobrecostoPanel').classList.remove('open');
+  document.getElementById('phase4Panel')    && document.getElementById('phase4Panel').classList.remove('open');
+  document.querySelector('.table-container') && (document.querySelector('.table-container').style.display = '');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  const sg = document.querySelector('.stats-grid');
-  if (sg) sg.style.display = '';
-  // Nav active state
+  document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = '');
+  // Update active nav
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const nav = document.getElementById('nav-contratos');
-  if (nav) nav.classList.add('active');
+  document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
 }
 
 function renderEjecutiva() {
-  // allAlerts is already a global variable set by loadAlerts()
-  if (!allAlerts || allAlerts.length === 0) {
+  // Uses the global `allAlerts` array already loaded by loadAlerts()
+  if (!window.allAlerts || window.allAlerts.length === 0) {
     document.getElementById('execSubtitle').textContent = 'Cargando datos desde Supabase...';
     return;
   }
-  const fmtL = n => n > 0 ? 'L ' + (n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : n.toFixed(0)) : 'L —';
+  const alerts = window.allAlerts;
+  const normSevLocal = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'');
+
+  // Counts by severity
+  const criticos  = alerts.filter(a => normSevLocal(a.severity) === 'critica');
+  const altos     = alerts.filter(a => normSevLocal(a.severity) === 'alta');
+  const ofac      = alerts.filter(a => a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SANCIONADO')));
+  const sobrecosto= alerts.filter(a => a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SOBRECOSTO')));
+
+  const fmtL = n => n > 0 ? 'L ' + (n >= 1e6 ? (n/1e6).toFixed(1)+'M' : (n/1e3).toFixed(0)+'K') : 'L —';
   const sumMonto = arr => arr.reduce((s,a) => s + (parseFloat(a.monto_contrato)||0), 0);
 
-  const criticos   = allAlerts.filter(a => normSev(a.severity) === 'critica');
-  const altos      = allAlerts.filter(a => normSev(a.severity) === 'alta');
-  const ofac       = allAlerts.filter(a => { const p = Array.isArray(a.patterns) ? a.patterns : (a.patterns ? String(a.patterns).split(',') : []); return p.some(x => String(x).includes('SANCIONADO')); });
-  const sobrecosto = allAlerts.filter(a => { const p = Array.isArray(a.patterns) ? a.patterns : (a.patterns ? String(a.patterns).split(',') : []); return p.some(x => String(x).includes('SOBRECOSTO')); });
+  document.getElementById('exec-criticos').textContent       = criticos.length.toLocaleString();
+  document.getElementById('exec-criticos-monto').textContent = fmtL(sumMonto(criticos));
+  document.getElementById('exec-altos').textContent          = altos.length.toLocaleString();
+  document.getElementById('exec-altos-monto').textContent    = fmtL(sumMonto(altos));
+  document.getElementById('exec-ofac').textContent           = ofac.length.toLocaleString();
+  document.getElementById('exec-total').textContent          = alerts.length.toLocaleString();
+  document.getElementById('exec-total-monto').textContent    = fmtL(sumMonto(alerts));
+  document.getElementById('exec-sobrecosto').textContent     = sobrecosto.length.toLocaleString();
+  document.getElementById('exec-sobrecosto-monto').textContent = fmtL(sumMonto(sobrecosto));
+  document.getElementById('exec-status-val').textContent     = '✅ Activo';
+  document.getElementById('exec-last-update').textContent    = 'Actualizado: ' + new Date().toLocaleTimeString('es-HN');
+  document.getElementById('execSubtitle').textContent        = `${alerts.length.toLocaleString()} contratos monitoreados · Fiscal 2023–2025 · ${new Date().toLocaleDateString('es-HN')}`;
 
-  document.getElementById('exec-criticos').textContent        = criticos.length.toLocaleString();
-  document.getElementById('exec-criticos-monto').textContent  = fmtL(sumMonto(criticos));
-  document.getElementById('exec-altos').textContent           = altos.length.toLocaleString();
-  document.getElementById('exec-altos-monto').textContent     = fmtL(sumMonto(altos));
-  document.getElementById('exec-ofac').textContent            = ofac.length.toLocaleString();
-  document.getElementById('exec-total').textContent           = allAlerts.length.toLocaleString();
-  document.getElementById('exec-total-monto').textContent     = fmtL(sumMonto(allAlerts));
-  document.getElementById('exec-sobrecosto').textContent      = sobrecosto.length.toLocaleString();
-  document.getElementById('exec-sobrecosto-monto').textContent= fmtL(sumMonto(sobrecosto));
-  document.getElementById('exec-status-val').textContent      = '✅ Activo';
-  document.getElementById('exec-last-update').textContent     = 'Actualizado: ' + new Date().toLocaleTimeString('es-HN');
-  document.getElementById('execSubtitle').textContent         = allAlerts.length.toLocaleString() + ' contratos monitoreados · Fiscal 2023–2025 · ' + new Date().toLocaleDateString('es-HN');
-
-  // Top 5 critical contracts
-  const top5 = criticos.slice().sort((a,b) => (parseFloat(b.monto_contrato)||0) - (parseFloat(a.monto_contrato)||0)).slice(0,5);
+  // Top 5 critical contracts table
+  const top5 = criticos.sort((a,b) => (parseFloat(b.monto_contrato)||0) - (parseFloat(a.monto_contrato)||0)).slice(0,5);
   const tbody = document.getElementById('execCriticalBody');
-  if (!top5.length) { tbody.innerHTML = '<tr class="state-row"><td colspan="6">No hay contratos críticos actualmente</td></tr>'; return; }
-  tbody.innerHTML = top5.map(row => {
-    const pats = Array.isArray(row.patterns) ? row.patterns : (row.patterns ? String(row.patterns).split(',') : []);
-    const patHtml = pats.slice(0,2).map(p => `<span style="font-size:10px;background:var(--red-dim);color:var(--red);padding:2px 6px;border-radius:4px;margin-right:3px;">${String(p).trim()}</span>`).join('');
-    const monto = parseFloat(row.monto_contrato)||0;
-    return `<tr>
-      <td class="cell-id">${row.alert_id||'—'}</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(row.vendor_name||row.title||'—').substring(0,55)}</td>
-      <td>${(row.entity_name||'—').substring(0,35)}</td>
-      <td class="cell-amount">${monto>0?'L '+monto.toLocaleString('es-HN',{maximumFractionDigits:0}):'—'}</td>
-      <td>${patHtml}</td>
+  if (top5.length === 0) {
+    tbody.innerHTML = '<tr class="state-row"><td colspan="6">No hay contratos críticos actualmente</td></tr>';
+    return;
+  }
+  tbody.innerHTML = top5.map(a => {
+    const patterns = Array.isArray(a.patterns) ? a.patterns : (a.patterns ? [a.patterns] : []);
+    const patStr = patterns.slice(0,2).map(p => `<span style="font-size:10px;background:var(--red-dim);color:var(--red);padding:2px 6px;border-radius:4px;margin-right:4px;">${p}</span>`).join('');
+    const monto = parseFloat(a.monto_contrato)||0;
+    return `<tr onclick="openAlertDetail(${a.id}, event)" style="cursor:pointer;">
+      <td class="cell-id">${a.alert_id||'—'}</td>
+      <td class="cell-desc" style="max-width:200px;">${(a.vendor_name||a.title||'—').substring(0,60)}</td>
+      <td class="cell-entity">${(a.entity_name||'—').substring(0,40)}</td>
+      <td class="cell-amount">${monto > 0 ? 'L '+monto.toLocaleString('es-HN',{maximumFractionDigits:0}) : '—'}</td>
+      <td>${patStr}</td>
       <td><span class="sev-badge critica">CRÍTICA</span></td>
     </tr>`;
   }).join('');
 }
 
 // Update login clock
-(function loginClockTick() {
-  const el = document.getElementById('loginClock');
-  if (el) el.textContent = new Date().toLocaleTimeString('es-HN');
-  setTimeout(loginClockTick, 1000);
-})();
+setInterval(() => {
+  const lc = document.getElementById('loginClock');
+  if(lc) lc.textContent = new Date().toLocaleTimeString('es-HN');
+}, 1000);
 
 </script>
 

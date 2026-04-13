@@ -1034,6 +1034,32 @@ body::after {
   font-size: 9px; cursor: pointer; transition: all .2s; letter-spacing: .05em;
 }
 .news-refresh-btn:hover { background: rgba(0,200,255,0.2); }
+
+/* ── OPCIÓN E: Cruce Noticias × Contratos ── */
+.news-match-bar {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  padding: 8px 10px; background: rgba(255,171,0,0.06);
+  border: 1px solid rgba(255,171,0,0.2); border-radius: 6px;
+  margin-top: 2px;
+}
+.news-match-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--amber); letter-spacing: .06em; white-space: nowrap;
+  flex-shrink: 0;
+}
+.news-match-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  padding: 3px 9px; border-radius: 4px; cursor: pointer;
+  border: 1px solid rgba(255,171,0,0.35);
+  background: rgba(255,171,0,0.12); color: var(--amber);
+  transition: all .2s; letter-spacing: .04em; white-space: nowrap;
+}
+.news-match-btn:hover { background: rgba(255,171,0,0.25); }
+.news-match-btn.vendor {
+  border-color: rgba(0,200,255,0.3);
+  background: rgba(0,200,255,0.08); color: var(--electric);
+}
+.news-match-btn.vendor:hover { background: rgba(0,200,255,0.18); }
 </style>
 </head>
 <body>
@@ -2233,6 +2259,7 @@ async function loadAlerts() {
 
     allAlerts = all;
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
+    buildNewsMatchIndex(); // Opción E — pre-builds entity/vendor index for news matching
     setStatus('connected');
     hideError();
     render();
@@ -3047,8 +3074,10 @@ function showEntityPanel(entityName) {
   // Reset back button text (may have been changed by fromAnalytics path)
   const backBtn = document.querySelector('#entityPanel .fuente-back');
   if (backBtn) backBtn.textContent = '← Todos los Contratos';
-  // Close fuente panel if open
+  // Close fuente panel and news panel if open
   document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('newsPanel').classList.remove('open');
+  if (newsTimer) { clearInterval(newsTimer); newsTimer = null; }
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
 
   const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
@@ -3138,6 +3167,8 @@ function showVendorPanel(vendorName) {
   const backBtn = document.querySelector('#entityPanel .fuente-back');
   if (backBtn) backBtn.textContent = '← Todos los Contratos';
   document.getElementById('fuentePanel').classList.remove('open');
+  document.getElementById('newsPanel').classList.remove('open');
+  if (newsTimer) { clearInterval(newsTimer); newsTimer = null; }
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
 
   // Filter by proveedor_nombre (or fallback to entity_name for legacy alerts)
@@ -7020,6 +7051,79 @@ const NEWS_SOURCES = [
   { key: 'icn',      name: 'ICN News',         color: '#ff6b35', bg: 'rgba(255,107,53,0.12)', url: 'https://icndiario.com/feed/' },
 ];
 
+// ── OPCIÓN E: Cruce Noticias × Contratos ─────────────────────────────────────
+// Builds a fast lookup index from allAlerts — called once after data loads.
+// Skips names shorter than 5 chars to avoid false positives (e.g. "SA", "de").
+let _newsMatchIndex = null;
+
+function buildNewsMatchIndex() {
+  const entityMap = {};
+  const vendorMap = {};
+
+  allAlerts.forEach(a => {
+    const ent = (a.entity_name || '').trim();
+    const ven = (a.proveedor_nombre || '').trim();
+    if (ent.length >= 5) entityMap[ent] = (entityMap[ent] || 0) + 1;
+    if (ven.length >= 5) vendorMap[ven] = (vendorMap[ven] || 0) + 1;
+  });
+
+  // Sort by contract count descending — gives priority to largest actors
+  _newsMatchIndex = {
+    entities: Object.entries(entityMap)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count),
+    vendors: Object.entries(vendorMap)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+  };
+  console.log(`🔗 Match index built: ${_newsMatchIndex.entities.length} entidades, ${_newsMatchIndex.vendors.length} proveedores`);
+}
+
+// Returns up to 3 matching entities and 3 matching vendors for a news item.
+function matchNewsToContracts(title, summary) {
+  if (!_newsMatchIndex) return { entities: [], vendors: [] };
+  const text = ((title || '') + ' ' + stripHtml(summary || '')).toLowerCase();
+
+  const entities = _newsMatchIndex.entities
+    .filter(e => text.includes(e.name.toLowerCase()))
+    .slice(0, 3);
+
+  const vendors = _newsMatchIndex.vendors
+    .filter(v => text.includes(v.name.toLowerCase()))
+    .slice(0, 3);
+
+  return { entities, vendors };
+}
+
+// Renders the match bar HTML for a news card.
+// Returns empty string if no matches found.
+function renderMatchBar(title, summary) {
+  const { entities, vendors } = matchNewsToContracts(title, summary);
+  const totalMatches = entities.length + vendors.length;
+  if (totalMatches === 0) return '';
+
+  const label = `⚡ ${totalMatches} relacionado${totalMatches > 1 ? 's' : ''} en BD`;
+
+  const entityBtns = entities.map(e => {
+    const safeName = e.name.replace(/'/g, "\\'");
+    return `<button class="news-match-btn" onclick="showEntityPanel('${safeName}')" title="Ver contratos de ${e.name}">
+      🏛 ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
+    </button>`;
+  }).join('');
+
+  const vendorBtns = vendors.map(v => {
+    const safeName = v.name.replace(/'/g, "\\'");
+    return `<button class="news-match-btn vendor" onclick="showVendorPanel('${safeName}')" title="Ver contratos de ${v.name}">
+      🏢 ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
+    </button>`;
+  }).join('');
+
+  return `<div class="news-match-bar">
+    <span class="news-match-label">${label}</span>
+    ${entityBtns}${vendorBtns}
+  </div>`;
+}
+
 const NEWS_KEYWORDS = [
   'SEFIN','ONCAE','TSC','licitación','contrato','contratación','corrupción',
   'sobrecosto','irregularidad','IHSS','fraude','compra directa','adjudicación',
@@ -7156,8 +7260,9 @@ function renderNewsCards() {
       ? new Date(item.pubDate).toLocaleDateString('es-HN',
           { day: '2-digit', month: 'short', year: 'numeric' })
       : '';
+    const matchBar = renderMatchBar(item.title, item.summary);
     return `
-      <div class="news-card">
+      <div class="news-card${matchBar ? ' has-matches' : ''}">
         <div class="news-card-header">
           <span class="news-source-badge"
             style="background:${item.bg};color:${item.color};border:1px solid ${item.color}44;">
@@ -7167,6 +7272,7 @@ function renderNewsCards() {
         </div>
         <div class="news-title">${highlightKeywords(item.title)}</div>
         ${item.summary ? `<div class="news-summary">${highlightKeywords(item.summary)}</div>` : ''}
+        ${matchBar}
         <a class="news-link" href="${item.link}" target="_blank" rel="noopener noreferrer">
           → Ver artículo
         </a>

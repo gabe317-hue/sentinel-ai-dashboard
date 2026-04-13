@@ -7282,14 +7282,14 @@ function renderNewsCards() {
     return;
   }
 
-  // Subtle one-liner — filtered count, no prominent block
-  const filterNote = hiddenCount > 0
-    ? `<p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);` +
-      `opacity:.55;margin-bottom:10px;letter-spacing:.04em;">` +
-      `🌎 ${hiddenCount} de otros países omitidos</p>`
-    : '';
+  // Append filtered count to the existing refresh label — no extra block in the grid
+  const label = document.getElementById('news-last-update');
+  if (label && hiddenCount > 0) {
+    const current = label.textContent.split('·').slice(0, 2).join('·').trim();
+    label.textContent = current + `  ·  🌎 ${hiddenCount} intl. omitidos`;
+  }
 
-  grid.innerHTML = filterNote + items.map(item => {
+  grid.innerHTML = items.map(item => {
     const dateStr = item.pubDate
       ? new Date(item.pubDate).toLocaleDateString('es-HN',
           { day: '2-digit', month: 'short', year: 'numeric' })

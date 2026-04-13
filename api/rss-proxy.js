@@ -17,7 +17,7 @@
  */
 
 const SOURCES = {
-  tribuna:  'https://www.latribuna.hn/feed/',
+  contracorriente: 'https://contracorriente.hn/feed/',
   elpais:   'https://www.elpais.hn/feed/',
   proceso:  'https://proceso.hn/feed/',
   criterio: 'https://criterio.hn/feed/',

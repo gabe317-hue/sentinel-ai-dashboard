@@ -1140,7 +1140,7 @@ body::after {
   </div>
   <div class="login-box">
     <div class="login-shield">🛡️</div>
-    <div class="login-country">República de Honduras · Procuraduría General de la República</div>
+    <div class="login-country">República de Honduras</div>
     <div class="login-logo">SENTINEL<span>-AI</span></div>
     <div class="login-sub">Sistema Anticorrupción · PGR Honduras</div>
     <div class="login-field">
@@ -1250,7 +1250,7 @@ body::after {
   <!-- Institutional collaboration bar -->
   <div class="inst-collab-bar">
     <span>🇭🇳</span>
-    <span>República de Honduras · Procuraduría General de la República · Sistema Nacional Anticorrupción</span>
+    <span>República de Honduras · Sistema Nacional Anticorrupción</span>
     <span style="margin-left:auto; color:rgba(0,230,118,0.5);">● The Prieto Group — Dallas, TX</span>
   </div>
 
@@ -1273,6 +1273,29 @@ body::after {
 
   <!-- ═══════════════════ VISTA EJECUTIVA ═══════════════════ -->
   <div id="vistaEjecutiva" style="display:none;">
+
+    <!-- Ticker bar — live data feed (inside Vista Ejecutiva) -->
+    <div style="margin-bottom:6px;">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--electric);text-transform:uppercase;">⬡ EN VIVO</span>
+    </div>
+    <div class="ticker-bar" style="margin-bottom:20px;">
+      <div class="ticker-scroll" id="ticker">
+        <span class="ticker-item">HonduCompras <span class="up">↑ 3 nuevas anomalías</span></span>
+        <span class="ticker-item">SIAFI <span>— Monitoreo activo</span></span>
+        <span class="ticker-item">TSC Auditores <span class="down">✓ Sin irregularidades</span></span>
+        <span class="ticker-item">RNP <span>— 2.847 entidades registradas</span></span>
+        <span class="ticker-item">Portal Único IAIP <span class="up">↑ 2,456,463 documentos indexados</span></span>
+        <span class="ticker-item">ENEE — Pérdidas L46,000M · Caso #2025-0391 <span class="up">↑ Investigación activa</span></span>
+        <span class="ticker-item">CPI 2025: Honduras 22/100 — Posición 157/182 · Pérdidas estimadas $720M–$1,000M+ anuales</span>
+        <span class="ticker-item">Score promedio proveedores: <span>62.4/100</span></span>
+        <span class="ticker-item">HonduCompras <span class="up">↑ 3 nuevas anomalías</span></span>
+        <span class="ticker-item">SIAFI <span>— Monitoreo activo</span></span>
+        <span class="ticker-item">TSC Auditores <span class="down">✓ Sin irregularidades</span></span>
+        <span class="ticker-item">RNP <span>— 2.847 entidades registradas</span></span>
+        <span class="ticker-item">Portal Único IAIP <span class="up">↑ 2,456,463 documentos indexados</span></span>
+      </div>
+    </div>
+
     <!-- Executive KPI summary — data from Supabase via renderEjecutiva() -->
     <div class="exec-header">
       <div class="exec-title">Resumen Ejecutivo</div>
@@ -1384,25 +1407,6 @@ body::after {
     </div>
   </div>
 
-    <!-- Ticker bar — live data feed -->
-  <div class="ticker-bar">
-    <div class="ticker-label">⬡ EN VIVO</div>
-    <div class="ticker-scroll" id="ticker">
-      <span class="ticker-item">HonduCompras <span class="up">↑ 3 nuevas anomalías</span></span>
-      <span class="ticker-item">SIAFI <span>— Monitoreo activo</span></span>
-      <span class="ticker-item">TSC Auditores <span class="down">✓ Sin irregularidades</span></span>
-      <span class="ticker-item">RNP <span>— 2.847 entidades registradas</span></span>
-      <span class="ticker-item">Portal Único IAIP <span class="up">↑ 2,456,463 documentos indexados</span></span>
-      <span class="ticker-item">ENEE — Pérdidas L46,000M · Caso #2025-0391 <span class="up">↑ Investigación activa</span></span>
-      <span class="ticker-item">CPI 2025: Honduras 22/100 — Posición 157/182 · Pérdidas estimadas $720M–$1,000M+ anuales</span>
-      <span class="ticker-item">Score promedio proveedores: <span>62.4/100</span></span>
-      <span class="ticker-item">HonduCompras <span class="up">↑ 3 nuevas anomalías</span></span>
-      <span class="ticker-item">SIAFI <span>— Monitoreo activo</span></span>
-      <span class="ticker-item">TSC Auditores <span class="down">✓ Sin irregularidades</span></span>
-      <span class="ticker-item">RNP <span>— 2.847 entidades registradas</span></span>
-      <span class="ticker-item">Portal Único IAIP <span class="up">↑ 2,456,463 documentos indexados</span></span>
-    </div>
-  </div>
 
   <!-- Stat cards — updated by render() using normSev() fix -->
   <div class="stats-grid">
@@ -2448,6 +2452,8 @@ async function loadAlerts() {
     setStatus('connected');
     hideError();
     render();
+    // Si viene del landing page (#ejecutiva), mostrar Vista Ejecutiva directamente
+    if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
 
   } catch (err) {
     console.error('❌ loadAlerts failed:', err.message);
@@ -3338,11 +3344,13 @@ function showEntityPanel(entityName) {
   document.querySelectorAll('.ep-drill-content').forEach(c => c.classList.remove('active'));
   document.getElementById('ep-drill-recent').classList.add('active');
 
-  // Show panel, hide main view
+  // Show panel, hide main view + ejecutiva
+  document.getElementById('vistaEjecutiva').style.display = 'none';
   document.getElementById('entityPanel').classList.add('open');
   document.querySelector('.stats-grid').style.display     = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.getElementById('mainTableContainer').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ── VENDOR PANEL — shows all alerts for a specific proveedor ─────────────────
@@ -3408,10 +3416,12 @@ function showVendorPanel(vendorName) {
         </div>`).join('')
     : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos para este proveedor.</div>`;
 
+  document.getElementById('vistaEjecutiva').style.display = 'none';
   document.getElementById('entityPanel').classList.add('open');
   document.querySelector('.stats-grid').style.display      = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.getElementById('mainTableContainer').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -4176,21 +4186,21 @@ function hideEntityPanel() {
 
 // ════════════════════════════════════════════════════════════
 // GLOBAL SOBRECOSTOS SUMMARY
+// ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
+function _closeAllFuentePanels() {
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
+  document.getElementById('vistaEjecutiva').style.display = 'none';
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+}
+
 // ════════════════════════════════════════════════════════════
 function showGlobalSobrecostos() {
-  // Close other panels + ejecutiva
-  document.getElementById('vistaEjecutiva').style.display = 'none';
-  document.getElementById('fuentePanel').classList.remove('open');
-  document.getElementById('entityPanel').classList.remove('open');
-  document.getElementById('analyticsPanel').classList.remove('open');
-  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
-
-  // Hide main dashboard
-  document.querySelector('.stats-grid').style.display     = 'none';
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.getElementById('mainTableContainer').style.display = 'none';
-
-  // Populate and show sobrecosto panel
+  _closeAllFuentePanels();
+  document.getElementById('nav-sobrecostos').classList.add('active');
   populateGlobalSobrecostos();
   document.getElementById('sobrecostoPanel').classList.add('open');
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4924,14 +4934,8 @@ function hideFuentePanel() {
 // ════════════════════════════════════════════════════════════
 
 function showPhase4Detection() {
-  // Close any other open panels first
-  document.getElementById('fuentePanel').classList.remove('open');
-  document.getElementById('entityPanel').classList.remove('open');
-  document.getElementById('auditPanel').classList.remove('open');
-  document.getElementById('analyticsPanel').classList.remove('open');
-  document.getElementById('sobrecostoPanel').classList.remove('open');
-  document.getElementById('alertDetailPanel').classList.remove('open');
-  document.getElementById('vistaEjecutiva').style.display = 'none';
+  _closeAllFuentePanels();
+  document.getElementById('nav-phase4').classList.add('active');
 
   // Show panel immediately with loading state
   document.getElementById('p4-velocity-count').textContent = '…';
@@ -4943,9 +4947,6 @@ function showPhase4Detection() {
   document.getElementById('p4-anomaly-list').innerHTML = loadingHTML;
 
   document.getElementById('phase4Panel').classList.add('open');
-  document.querySelector('.stats-grid').style.display = 'none';
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.getElementById('mainTableContainer').style.display = 'none';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   // Defer heavy computation so panel renders first
@@ -6064,15 +6065,7 @@ function hidePatternDetail() {
 }
 
 function showAnalyticsPanel() {
-  document.getElementById('vistaEjecutiva').style.display  = 'none';
-  document.getElementById('fuentePanel').classList.remove('open');
-  document.getElementById('entityPanel').classList.remove('open');
-  document.getElementById('auditPanel').classList.remove('open');
-  document.querySelector('.stats-grid').style.display      = 'none';
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.getElementById('mainTableContainer').style.display = 'none';
-
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  _closeAllFuentePanels();
   document.getElementById('nav-analytics').classList.add('active');
 
   // Reset detail panel, ensure main content visible
@@ -6094,10 +6087,8 @@ function hideAnalyticsPanel() {
 }
 
 function showVendorConcentrationPanel() {
-  // First, show the analytics panel
   showAnalyticsPanel();
-
-  // Mark this button as active
+  // Override nav active to vendor-concentration
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById('nav-vendor-concentration').classList.add('active');
 
@@ -6113,19 +6104,8 @@ function showVendorConcentrationPanel() {
 }
 
 function showAuditPanel() {
-  // Hide other panels, ejecutiva, and main view
-  document.getElementById('vistaEjecutiva').style.display  = 'none';
-  document.getElementById('fuentePanel').classList.remove('open');
-  document.getElementById('entityPanel').classList.remove('open');
-  document.querySelector('.stats-grid').style.display     = 'none';
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
-  document.getElementById('mainTableContainer').style.display = 'none';
-
-  // Update nav active state
-  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+  _closeAllFuentePanels();
   document.getElementById('nav-audit').classList.add('active');
-
-  // Load and show
   document.getElementById('auditPanel').classList.add('open');
   loadAuditLog();
 }
@@ -7375,7 +7355,7 @@ function showVistaEjecutiva() {
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = 'none');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = 'none');
-  document.querySelector('.ticker-bar')      && (document.querySelector('.ticker-bar').style.display = 'flex');
+  // ticker is now inside #vistaEjecutiva — no separate show needed
   // Update active nav
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-ejecutiva') && document.getElementById('nav-ejecutiva').classList.add('active');

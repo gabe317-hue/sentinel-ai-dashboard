@@ -7282,11 +7282,11 @@ function renderNewsCards() {
     return;
   }
 
-  // Note on filtered count — shown above the grid
+  // Subtle one-liner — filtered count, no prominent block
   const filterNote = hiddenCount > 0
-    ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);` +
-      `letter-spacing:.05em;margin-bottom:10px;padding:0 2px;">` +
-      `🌎 ${hiddenCount} artículo${hiddenCount>1?'s':''} de otros países omitido${hiddenCount>1?'s':''} · mostrando ${items.length} de Honduras</div>`
+    ? `<p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);` +
+      `opacity:.55;margin-bottom:10px;letter-spacing:.04em;">` +
+      `🌎 ${hiddenCount} de otros países omitidos</p>`
     : '';
 
   grid.innerHTML = filterNote + items.map(item => {

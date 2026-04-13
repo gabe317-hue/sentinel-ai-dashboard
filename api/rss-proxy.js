@@ -17,11 +17,11 @@
  */
 
 const SOURCES = {
-  elheraldo: 'https://www.elheraldo.hn/feed/',
-  laprensa:  'https://www.laprensa.hn/feed/',
-  proceso:   'https://proceso.hn/feed/',
-  criterio:  'https://criterio.hn/feed/',
-  icn:       'https://icndiario.com/feed/',
+  tiempo:   'https://tiempo.hn/feed/',
+  elpais:   'https://www.elpais.hn/feed/',
+  proceso:  'https://proceso.hn/feed/',
+  criterio: 'https://criterio.hn/feed/',
+  icn:      'https://icndiario.com/feed/',
 };
 
 /**

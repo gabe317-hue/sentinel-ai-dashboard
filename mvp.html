@@ -956,6 +956,84 @@ body::after {
 .sev-badge.alta    { background: var(--amber); }
 .sev-badge.media   { background: var(--electric); }
 .sev-badge.baja    { background: #4caf50; }
+
+/* ─── NEWS PANEL ─── */
+.news-filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 20px; padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.news-filter-btn {
+  padding: 5px 14px; border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--glass); color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: .06em; cursor: pointer; transition: all .2s;
+}
+.news-filter-btn.active {
+  background: var(--electric-dim); color: var(--electric);
+  border-color: rgba(0,200,255,0.3);
+}
+.news-filter-btn:hover { background: var(--glass-hover); color: var(--text); }
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px; margin-top: 4px;
+}
+.news-card {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px;
+  transition: all .2s; display: flex; flex-direction: column; gap: 8px;
+}
+.news-card:hover { background: var(--glass-hover); border-color: rgba(0,200,255,0.2); }
+.news-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.news-source-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  letter-spacing: .08em; padding: 3px 8px; border-radius: 4px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.news-date {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--text-dim); white-space: nowrap;
+}
+.news-title {
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
+  color: var(--text); line-height: 1.4;
+}
+.news-summary {
+  font-size: 11px; color: var(--text-dim); line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-link {
+  margin-top: auto; align-self: flex-start;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  letter-spacing: .06em; color: var(--electric); text-decoration: none;
+  padding: 4px 10px; border: 1px solid rgba(0,200,255,0.2);
+  border-radius: 4px; transition: all .2s;
+}
+.news-link:hover { background: var(--electric-dim); }
+.news-keyword {
+  background: rgba(255,171,0,0.2); color: var(--amber);
+  border-radius: 2px; padding: 0 2px;
+}
+.news-loading {
+  text-align: center; padding: 40px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-dim); letter-spacing: .06em;
+}
+.news-refresh-bar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-dim);
+}
+.news-refresh-btn {
+  padding: 4px 12px; border-radius: 6px;
+  border: 1px solid rgba(0,200,255,0.2); background: var(--electric-dim);
+  color: var(--electric); font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; cursor: pointer; transition: all .2s; letter-spacing: .05em;
+}
+.news-refresh-btn:hover { background: rgba(0,200,255,0.2); }
 </style>
 </head>
 <body>
@@ -1026,6 +1104,10 @@ body::after {
       </button>
       <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()">
         <span class="nav-icon">🔍</span> Phase 4 Detection
+      </button>
+      <button class="nav-item" id="nav-news" onclick="showNewsPanel()">
+        <span class="nav-icon">📰</span> Noticias
+        <span class="nav-chip" style="background:rgba(0,230,118,0.15);color:var(--green);border-color:rgba(0,230,118,0.2);">RSS</span>
       </button>
     </div>
 
@@ -1868,6 +1950,40 @@ body::after {
       <div class="fuente-recent-title">🚨 Statistical Anomalies - Deviation from Entity Averages</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Overpayments deviating >2σ from entity baseline</div>
       <div class="fuente-recent-list" id="p4-anomaly-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ NEWS PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="newsPanel">
+    <button class="fuente-back" onclick="hideNewsPanel()">← Dashboard</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>📰</span>
+        <span>Noticias — Monitoreo de Prensa</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Fuentes: El Heraldo · La Prensa · Proceso Digital · Criterio · ICN News
+      </div>
+    </div>
+
+    <div class="news-refresh-bar">
+      <span id="news-last-update">Pendiente de carga...</span>
+      <button class="news-refresh-btn" onclick="loadRSSFeeds()">↻ Actualizar</button>
+      <span style="opacity:0.5;">· Auto-actualiza cada 10 min</span>
+    </div>
+
+    <div class="news-filter-bar">
+      <button class="news-filter-btn active" data-source="all"       onclick="setNewsFilter('all',this)">TODAS</button>
+      <button class="news-filter-btn"        data-source="elheraldo" onclick="setNewsFilter('elheraldo',this)">El Heraldo</button>
+      <button class="news-filter-btn"        data-source="laprensa"  onclick="setNewsFilter('laprensa',this)">La Prensa</button>
+      <button class="news-filter-btn"        data-source="proceso"   onclick="setNewsFilter('proceso',this)">Proceso Digital</button>
+      <button class="news-filter-btn"        data-source="criterio"  onclick="setNewsFilter('criterio',this)">Criterio</button>
+      <button class="news-filter-btn"        data-source="icn"       onclick="setNewsFilter('icn',this)">ICN News</button>
+    </div>
+
+    <div class="news-grid" id="newsGrid">
+      <div class="news-loading">📰 Presiona "Actualizar" para cargar noticias...</div>
     </div>
   </div>
 
@@ -6890,6 +7006,172 @@ async function showDatabaseOptimizationStatus() {
 }
 
 init();
+
+// ═══════════════════════════════════════════════════════════════
+// NEWS PANEL — RSS Monitor  (Track B feature — Session 11)
+// Uses rss2json.com API to bypass CORS on browser-side RSS fetch
+// ═══════════════════════════════════════════════════════════════
+
+const NEWS_SOURCES = [
+  { key: 'elheraldo', name: 'El Heraldo',     color: '#00c8ff', bg: 'rgba(0,200,255,0.12)',  url: 'https://www.elheraldo.hn/feed/' },
+  { key: 'laprensa',  name: 'La Prensa',       color: '#a855f7', bg: 'rgba(168,85,247,0.12)', url: 'https://www.laprensa.hn/feed/' },
+  { key: 'proceso',   name: 'Proceso Digital', color: '#00e676', bg: 'rgba(0,230,118,0.12)',  url: 'https://proceso.hn/feed/' },
+  { key: 'criterio',  name: 'Criterio',        color: '#ffab00', bg: 'rgba(255,171,0,0.12)',  url: 'https://criterio.hn/feed/' },
+  { key: 'icn',       name: 'ICN News',        color: '#ff6b35', bg: 'rgba(255,107,53,0.12)', url: 'https://icndiario.com/feed/' },
+];
+
+const NEWS_KEYWORDS = [
+  'SEFIN','ONCAE','TSC','licitación','contrato','contratación','corrupción',
+  'sobrecosto','irregularidad','IHSS','fraude','compra directa','adjudicación',
+  'proveedor','Ministerio','Secretaría','fondos públicos','desfalco','malversación',
+  'Contraloría','UFERCO','Ministerio Público','compra pública'
+];
+
+let allNewsItems = [];
+let newsFilter   = 'all';
+let newsTimer    = null;
+let newsLoaded   = false;
+
+function showNewsPanel() {
+  // Close all other panels
+  ['fuentePanel','entityPanel','analyticsPanel','auditPanel','sobrecostoPanel','phase4Panel']
+    .forEach(id => document.getElementById(id).classList.remove('open'));
+
+  document.querySelector('.stats-grid').style.display      = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+  document.querySelector('.table-container').style.display = 'none';
+
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-news').classList.add('active');
+
+  document.getElementById('newsPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (!newsLoaded) loadRSSFeeds();
+  if (newsTimer) clearInterval(newsTimer);
+  newsTimer = setInterval(loadRSSFeeds, 10 * 60 * 1000);
+}
+
+function hideNewsPanel() {
+  document.getElementById('newsPanel').classList.remove('open');
+  document.getElementById('nav-news').classList.remove('active');
+  document.querySelector('.stats-grid').style.display      = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.querySelector('.table-container').style.display = '';
+  if (newsTimer) { clearInterval(newsTimer); newsTimer = null; }
+}
+
+async function loadRSSFeeds() {
+  const grid  = document.getElementById('newsGrid');
+  const label = document.getElementById('news-last-update');
+  grid.innerHTML    = '<div class="news-loading">⟳ Cargando noticias...</div>';
+  label.textContent = 'Actualizando...';
+
+  const results = await Promise.allSettled(
+    NEWS_SOURCES.map(src => fetchRSS(src))
+  );
+
+  allNewsItems = [];
+  results.forEach(r => {
+    if (r.status === 'fulfilled') allNewsItems.push(...r.value);
+  });
+
+  allNewsItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+  newsLoaded = true;
+  const failCount = results.filter(r =>
+    r.status === 'rejected' || (r.status === 'fulfilled' && r.value.length === 0)
+  ).length;
+  const now = new Date();
+  label.textContent =
+    `Actualizado: ${now.toLocaleTimeString('es-HN',{hour:'2-digit',minute:'2-digit'})}` +
+    `  ·  ${allNewsItems.length} artículos` +
+    (failCount > 0 ? `  ·  ⚠️ ${failCount} fuente(s) sin respuesta` : '');
+
+  renderNewsCards();
+}
+
+async function fetchRSS(source) {
+  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.url)}&count=25`;
+  try {
+    const resp = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.status !== 'ok') throw new Error('RSS parse error');
+    return (data.items || []).map(item => ({
+      key:     source.key,
+      name:    source.name,
+      color:   source.color,
+      bg:      source.bg,
+      title:   item.title   || '(sin título)',
+      summary: stripHtml(item.description || item.content || ''),
+      link:    item.link    || '#',
+      pubDate: item.pubDate || '',
+    }));
+  } catch (e) {
+    console.warn(`RSS fetch failed [${source.name}]:`, e.message);
+    return [];
+  }
+}
+
+function stripHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return (tmp.textContent || tmp.innerText || '').trim().slice(0, 280);
+}
+
+function highlightKeywords(text) {
+  if (!text) return '';
+  let result = text;
+  NEWS_KEYWORDS.forEach(kw => {
+    const re = new RegExp(`(${kw})`, 'gi');
+    result = result.replace(re, '<span class="news-keyword">$1</span>');
+  });
+  return result;
+}
+
+function setNewsFilter(source, btn) {
+  newsFilter = source;
+  document.querySelectorAll('.news-filter-btn').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+  renderNewsCards();
+}
+
+function renderNewsCards() {
+  const grid  = document.getElementById('newsGrid');
+  const items = newsFilter === 'all'
+    ? allNewsItems
+    : allNewsItems.filter(n => n.key === newsFilter);
+
+  if (items.length === 0) {
+    const srcName = NEWS_SOURCES.find(s => s.key === newsFilter)?.name || newsFilter;
+    grid.innerHTML = `<div class="news-loading">Sin noticias disponibles para <strong>${srcName}</strong>.</div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map(item => {
+    const dateStr = item.pubDate
+      ? new Date(item.pubDate).toLocaleDateString('es-HN',
+          { day: '2-digit', month: 'short', year: 'numeric' })
+      : '';
+    return `
+      <div class="news-card">
+        <div class="news-card-header">
+          <span class="news-source-badge"
+            style="background:${item.bg};color:${item.color};border:1px solid ${item.color}44;">
+            ${item.name}
+          </span>
+          <span class="news-date">${dateStr}</span>
+        </div>
+        <div class="news-title">${highlightKeywords(item.title)}</div>
+        ${item.summary ? `<div class="news-summary">${highlightKeywords(item.summary)}</div>` : ''}
+        <a class="news-link" href="${item.link}" target="_blank" rel="noopener noreferrer">
+          → Ver artículo
+        </a>
+      </div>`;
+  }).join('');
+}
+
 </script>
 
 </body>

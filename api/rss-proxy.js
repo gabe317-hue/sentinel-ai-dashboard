@@ -17,7 +17,8 @@
  */
 
 const SOURCES = {
-  contracorriente: 'https://contracorriente.hn/feed/',
+  contracorriente:  'https://contracorriente.hn/feed/',
+  confidencial:     'https://confidencialhn.com/feed/',
   elpais:   'https://www.elpais.hn/feed/',
   proceso:  'https://proceso.hn/feed/',
   criterio: 'https://criterio.hn/feed/',

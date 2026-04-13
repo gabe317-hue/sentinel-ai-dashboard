@@ -7092,21 +7092,23 @@ async function loadRSSFeeds() {
 }
 
 async function fetchRSS(source) {
-  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.url)}&count=25`;
+  // Calls Vercel server-side proxy — avoids CORS on Honduras news sites
   try {
-    const resp = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
+    const resp = await fetch(`/api/rss-proxy?source=${source.key}`, {
+      signal: AbortSignal.timeout(12000)
+    });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
-    if (data.status !== 'ok') throw new Error('RSS parse error');
+    if (data.error) throw new Error(data.error);
     return (data.items || []).map(item => ({
       key:     source.key,
       name:    source.name,
       color:   source.color,
       bg:      source.bg,
-      title:   item.title   || '(sin título)',
-      summary: stripHtml(item.description || item.content || ''),
-      link:    item.link    || '#',
-      pubDate: item.pubDate || '',
+      title:   item.title       || '(sin título)',
+      summary: item.description || '',
+      link:    item.link        || '#',
+      pubDate: item.pubDate     || '',
     }));
   } catch (e) {
     console.warn(`RSS fetch failed [${source.name}]:`, e.message);

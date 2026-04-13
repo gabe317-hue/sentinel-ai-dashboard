@@ -7131,6 +7131,21 @@ const NEWS_KEYWORDS = [
   'Contraloría','UFERCO','Ministerio Público','compra pública'
 ];
 
+// Términos que confirman relevancia para Honduras.
+// Un artículo debe mencionar al menos uno para aparecer en el panel.
+const HONDURAS_TERMS = [
+  'Honduras','hondureño','hondureña','hondureños','hondureñas',
+  'Tegucigalpa','San Pedro Sula','La Ceiba','Comayagua','Choloma',
+  'SEFIN','ONCAE','TSC','IHSS','ENEE','lempira','Lempira',
+  'Congreso Nacional','Casa Presidencial','UFERCO','SIAFI',
+  'Secretaría de Finanzas','Banco Central de Honduras'
+];
+
+function isHondurasRelevant(item) {
+  const text = (item.title || '') + ' ' + stripHtml(item.summary || '');
+  return HONDURAS_TERMS.some(t => text.toLowerCase().includes(t.toLowerCase()));
+}
+
 let allNewsItems = [];
 let newsFilter   = 'all';
 let newsTimer    = null;
@@ -7245,17 +7260,30 @@ function setNewsFilter(source, btn) {
 
 function renderNewsCards() {
   const grid  = document.getElementById('newsGrid');
-  const items = newsFilter === 'all'
+  const raw   = newsFilter === 'all'
     ? allNewsItems
     : allNewsItems.filter(n => n.key === newsFilter);
 
+  // Opción E — filtro Honduras: solo artículos que mencionan Honduras o sus instituciones
+  const items      = raw.filter(isHondurasRelevant);
+  const hiddenCount = raw.length - items.length;
+
   if (items.length === 0) {
     const srcName = NEWS_SOURCES.find(s => s.key === newsFilter)?.name || newsFilter;
-    grid.innerHTML = `<div class="news-loading">Sin noticias disponibles para <strong>${srcName}</strong>.</div>`;
+    grid.innerHTML = `<div class="news-loading">Sin noticias de Honduras disponibles` +
+      (hiddenCount > 0 ? ` · ${hiddenCount} artículos de otros países omitidos` : '') +
+      `.</div>`;
     return;
   }
 
-  grid.innerHTML = items.map(item => {
+  // Note on filtered count — shown above the grid
+  const filterNote = hiddenCount > 0
+    ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);` +
+      `letter-spacing:.05em;margin-bottom:10px;padding:0 2px;">` +
+      `🌎 ${hiddenCount} artículo${hiddenCount>1?'s':''} de otros países omitido${hiddenCount>1?'s':''} · mostrando ${items.length} de Honduras</div>`
+    : '';
+
+  grid.innerHTML = filterNote + items.map(item => {
     const dateStr = item.pubDate
       ? new Date(item.pubDate).toLocaleDateString('es-HN',
           { day: '2-digit', month: 'short', year: 'numeric' })

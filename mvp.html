@@ -7096,11 +7096,17 @@ function matchNewsToContracts(title, summary) {
 }
 
 // Renders the match bar HTML for a news card.
-// Returns empty string if no matches found.
+// Returns empty string if no matches, or if article lacks procurement context.
 function renderMatchBar(title, summary) {
   const { entities, vendors } = matchNewsToContracts(title, summary);
   const totalMatches = entities.length + vendors.length;
   if (totalMatches === 0) return '';
+
+  // Require at least one procurement keyword — avoids false positives
+  // (e.g. ENEE en noticia de cortes de luz, no de contratos)
+  const text = ((title || '') + ' ' + stripHtml(summary || '')).toLowerCase();
+  const hasProcurementContext = NEWS_KEYWORDS.some(kw => text.includes(kw.toLowerCase()));
+  if (!hasProcurementContext) return '';
 
   const label = `⚡ ${totalMatches} relacionado${totalMatches > 1 ? 's' : ''} en BD`;
 

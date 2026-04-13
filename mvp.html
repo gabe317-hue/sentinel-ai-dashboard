@@ -1963,7 +1963,7 @@ body::after {
         <span>Noticias — Monitoreo de Prensa</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Fuentes: Tiempo Digital · El País HN · Proceso Digital · Criterio · ICN News
+        Fuentes: La Tribuna · El País HN · Proceso Digital · Criterio · ICN News
       </div>
     </div>
 
@@ -1975,7 +1975,7 @@ body::after {
 
     <div class="news-filter-bar">
       <button class="news-filter-btn active" data-source="all"      onclick="setNewsFilter('all',this)">TODAS</button>
-      <button class="news-filter-btn"        data-source="tiempo"   onclick="setNewsFilter('tiempo',this)">Tiempo Digital</button>
+      <button class="news-filter-btn"        data-source="tribuna"  onclick="setNewsFilter('tribuna',this)">La Tribuna</button>
       <button class="news-filter-btn"        data-source="elpais"   onclick="setNewsFilter('elpais',this)">El País HN</button>
       <button class="news-filter-btn"        data-source="proceso"  onclick="setNewsFilter('proceso',this)">Proceso Digital</button>
       <button class="news-filter-btn"        data-source="criterio" onclick="setNewsFilter('criterio',this)">Criterio</button>
@@ -7013,7 +7013,7 @@ init();
 // ═══════════════════════════════════════════════════════════════
 
 const NEWS_SOURCES = [
-  { key: 'tiempo',   name: 'Tiempo Digital',  color: '#00c8ff', bg: 'rgba(0,200,255,0.12)',  url: 'https://tiempo.hn/feed/' },
+  { key: 'tribuna',  name: 'La Tribuna',       color: '#00c8ff', bg: 'rgba(0,200,255,0.12)',  url: 'https://www.latribuna.hn/feed/' },
   { key: 'elpais',   name: 'El País HN',       color: '#a855f7', bg: 'rgba(168,85,247,0.12)', url: 'https://www.elpais.hn/feed/' },
   { key: 'proceso',  name: 'Proceso Digital',  color: '#00e676', bg: 'rgba(0,230,118,0.12)',  url: 'https://proceso.hn/feed/' },
   { key: 'criterio', name: 'Criterio',         color: '#ffab00', bg: 'rgba(255,171,0,0.12)',  url: 'https://criterio.hn/feed/' },

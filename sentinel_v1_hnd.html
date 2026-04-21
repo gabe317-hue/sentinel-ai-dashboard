@@ -1128,6 +1128,81 @@ body::after {
   letter-spacing: 1px; text-transform: uppercase;
 }
 
+/* ── CASOS ACTIVOS PANEL ── */
+.caso-card {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 12px; padding: 22px; margin-bottom: 20px;
+}
+.caso-card.juicio   { border-top: 3px solid var(--red); }
+.caso-card.denuncia { border-top: 3px solid var(--amber); }
+
+.caso-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.caso-id {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-dim); letter-spacing: .1em; margin-bottom: 4px;
+}
+.caso-title {
+  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
+  color: var(--text); line-height: 1.3;
+}
+.caso-status {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  letter-spacing: .08em; padding: 4px 10px; border-radius: 4px;
+  white-space: nowrap; flex-shrink: 0; font-weight: 700;
+}
+.caso-status.juicio   { background: rgba(255,61,87,0.15); color: var(--red);   border: 1px solid rgba(255,61,87,0.35); }
+.caso-status.denuncia { background: rgba(255,171,0,0.15); color: var(--amber); border: 1px solid rgba(255,171,0,0.35); }
+
+.caso-data-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px; margin-bottom: 16px;
+}
+.caso-dato {
+  background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+}
+.caso-dato-lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--text-dim); letter-spacing: .06em; text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.caso-dato-val {
+  font-size: 12px; color: var(--text); font-weight: 500; line-height: 1.4;
+}
+.caso-dato-val.highlight { color: var(--amber); font-weight: 700; }
+.caso-dato-val.red       { color: var(--red);   font-weight: 700; }
+
+.caso-section-lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--text-dim); letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 8px; margin-top: 14px;
+}
+.caso-alertas {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+}
+.caso-alerta-chip {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  padding: 3px 9px; border-radius: 4px; letter-spacing: .04em;
+}
+.caso-alerta-chip.critica { background: rgba(255,61,87,0.15); color: var(--red);     border: 1px solid rgba(255,61,87,0.3); }
+.caso-alerta-chip.alta    { background: rgba(255,171,0,0.12); color: var(--amber);   border: 1px solid rgba(255,171,0,0.3); }
+.caso-alerta-chip.media   { background: rgba(0,200,255,0.1);  color: var(--electric);border: 1px solid rgba(0,200,255,0.25); }
+
+.caso-actores {
+  font-size: 12px; color: var(--text-dim); line-height: 1.6;
+  border-left: 2px solid var(--border); padding-left: 12px;
+}
+.caso-actores strong { color: var(--text); font-weight: 600; }
+
+.caso-fuentes {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--text-dim); letter-spacing: .04em; margin-top: 10px;
+  opacity: .65;
+}
+
 </style>
 </head>
 <body>
@@ -1209,6 +1284,10 @@ body::after {
       </button>
       <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()">
         <span class="nav-icon">⚡</span> Velocidad &amp; Anomalías
+      </button>
+      <button class="nav-item" id="nav-casos" onclick="showCasosPanel()" style="color:var(--red);">
+        <span class="nav-icon">⚖️</span> Casos Activos
+        <span class="nav-chip" style="background:rgba(255,61,87,0.15);color:var(--red);border-color:rgba(255,61,87,0.3);">2</span>
       </button>
     </div>
 
@@ -2201,6 +2280,171 @@ body::after {
       <div class="fuente-recent-list" id="p4-anomaly-list"></div>
     </div>
   </div>
+
+  <!-- CASOS ACTIVOS PANEL -->
+  <div class="fuente-panel" id="casosPanel">
+    <button class="fuente-back" onclick="hideCasosPanel()">← Todos los Contratos</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title">⚖️ <span>Casos Activos — Investigaciones en Curso</span></div>
+      <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
+        Datos verificados de medios. Fuentes: La Prensa HN, El Heraldo HN, Proceso Digital, Tiempo HN.
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+      <div style="background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.25);border-radius:8px;padding:10px 18px;text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.08em;margin-bottom:4px;">EN JUICIO</div>
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--red);">1</div>
+      </div>
+      <div style="background:rgba(255,171,0,0.1);border:1px solid rgba(255,171,0,0.25);border-radius:8px;padding:10px 18px;text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.08em;margin-bottom:4px;">DENUNCIA ACTIVA</div>
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--amber);">1</div>
+      </div>
+      <div style="background:rgba(255,61,87,0.06);border:1px solid var(--border);border-radius:8px;padding:10px 18px;text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.08em;margin-bottom:4px;">IMPUTADOS</div>
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--text);">12+</div>
+      </div>
+      <div style="background:rgba(255,171,0,0.06);border:1px solid var(--border);border-radius:8px;padding:10px 18px;text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.08em;margin-bottom:4px;">MONTO IRREGULAR</div>
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--amber);">L 6M+</div>
+      </div>
+    </div>
+
+    <!-- ── CASO 1: SEDESOL CHEQUESOL ── -->
+    <div class="caso-card juicio">
+      <div class="caso-header">
+        <div>
+          <div class="caso-id">SEDESOL-2024-001 · Caso "Chequesol"</div>
+          <div class="caso-title">Desvío de Fondos Sociales — SEDESOL</div>
+        </div>
+        <span class="caso-status juicio">⚖️ EN JUICIO ACTIVO</span>
+      </div>
+
+      <div class="caso-data-grid">
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Monto Irregular</div>
+          <div class="caso-dato-val red">L 6,032,654.07</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Aprox. USD</div>
+          <div class="caso-dato-val highlight">≈ USD 220,000</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Total Imputados</div>
+          <div class="caso-dato-val">12 personas</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Delitos</div>
+          <div class="caso-dato-val">67 cargos de fraude</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Beneficiarios Irregulares</div>
+          <div class="caso-dato-val">65 personas (2 nóminas)</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Período del Esquema</div>
+          <div class="caso-dato-val">Mayo 2023 – Dic 2024</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Expediente CSJ</div>
+          <div class="caso-dato-val">01-2026</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Medidas Cautelares</div>
+          <div class="caso-dato-val">Arresto domiciliario + suspensión (5 feb 2026)</div>
+        </div>
+      </div>
+
+      <div class="caso-section-lbl">Actores Principales</div>
+      <div class="caso-actores">
+        <strong>Isis Carolina Cuéllar Erazo</strong> — Diputada activa, Partido Libre (M28), Copán<br>
+        <strong>José Carlos Cardona Erazo</strong> — Ex Secretario SEDESOL (coautor)<br>
+        Juez: Luis Fernando Padilla Castellanos
+      </div>
+
+      <div class="caso-section-lbl">Alertas Sentinel</div>
+      <div class="caso-alertas">
+        <span class="caso-alerta-chip critica">Nómina Fantasma</span>
+        <span class="caso-alerta-chip critica">Desvío Fondos Públicos</span>
+        <span class="caso-alerta-chip alta">Red Política-Funcionarios</span>
+        <span class="caso-alerta-chip alta">Fraccionamiento Pagos</span>
+        <span class="caso-alerta-chip media">Beneficiarios Irregulares</span>
+      </div>
+
+      <div class="caso-fuentes">Fuentes: La Prensa HN · El Heraldo HN · Proceso Digital · Infobae Honduras</div>
+    </div>
+
+    <!-- ── CASO 2: CORTES EDUCACIÓN ── -->
+    <div class="caso-card denuncia">
+      <div class="caso-header">
+        <div>
+          <div class="caso-id">SEDUC-2026-001 · Caso "Paracaidistas SEDUC Cortés"</div>
+          <div class="caso-title">Nepotismo y Nóminas Irregulares — Educación Cortés</div>
+        </div>
+        <span class="caso-status denuncia">⚠️ DENUNCIA AL MP — Inv. Formal Pendiente</span>
+      </div>
+
+      <div class="caso-data-grid">
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Nombramientos Irregulares</div>
+          <div class="caso-dato-val red">152 detectados</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Despedidos</div>
+          <div class="caso-dato-val">39 personas</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Familiares de Diputados</div>
+          <div class="caso-dato-val highlight">20 en nómina</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Plaza Propia (Casaña)</div>
+          <div class="caso-dato-val red">L 53,454/mes — cargo inexistente</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Total Cobrado (Casaña)</div>
+          <div class="caso-dato-val highlight">≈ L 893,000 (sep 2024–ene 2026)</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Destapado</div>
+          <div class="caso-dato-val">16 Abril 2026</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Lista Engel EE.UU.</div>
+          <div class="caso-dato-val red">Casaña — confirmado</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Facilitador</div>
+          <div class="caso-dato-val">Emilio Guifarro (junta selección)</div>
+        </div>
+      </div>
+
+      <div class="caso-section-lbl">Diputados Involucrados (activos 2022–2026)</div>
+      <div class="caso-actores">
+        <strong>Scherly Arriaga</strong> — Partido Libre, Cortés<br>
+        &nbsp;&nbsp;↳ Madre (gerente adm. fantasma), prima (directora departamental) en nómina<br>
+        <strong>Edgardo Antonio Casaña</strong> — Partido Libre, Santa Bárbara · Lista Engel EE.UU.<br>
+        &nbsp;&nbsp;↳ Sobrino (médico fantasma CTHA), esposa, hermano, cuñada en nómina<br>
+        <strong>Rita Zúniga</strong> — Partido Libre, Cortés<br>
+        <strong>Ramón Barrios</strong> — Ex diputado, vinculado
+      </div>
+
+      <div class="caso-section-lbl">Alertas Sentinel</div>
+      <div class="caso-alertas">
+        <span class="caso-alerta-chip critica">Nómina Fantasma</span>
+        <span class="caso-alerta-chip critica">Cargo Inexistente</span>
+        <span class="caso-alerta-chip alta">Nepotismo-Nómina</span>
+        <span class="caso-alerta-chip alta">Red Familiar</span>
+        <span class="caso-alerta-chip alta">Doble Plaza</span>
+        <span class="caso-alerta-chip media">Actor Lista Engel</span>
+      </div>
+
+      <div class="caso-fuentes">Fuentes: El Heraldo HN · La Prensa HN · Proceso Digital · Tiempo HN · El Espectador HN — Abril 2026</div>
+    </div>
+
+  </div>
+
 
 </main>
 
@@ -4188,7 +4432,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel','casosPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -4198,6 +4442,25 @@ function _closeAllFuentePanels() {
 }
 
 // ════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════
+// CASOS ACTIVOS PANEL
+// ════════════════════════════════════════════════════════════
+function showCasosPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('nav-casos').classList.add('active');
+  document.getElementById('casosPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hideCasosPanel() {
+  document.getElementById('casosPanel').classList.remove('open');
+  document.getElementById('nav-casos').classList.remove('active');
+  document.querySelector('.stats-grid').style.display = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+}
+
 function showGlobalSobrecostos() {
   _closeAllFuentePanels();
   document.getElementById('nav-sobrecostos').classList.add('active');

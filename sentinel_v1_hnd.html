@@ -1380,6 +1380,34 @@ body::after {
   cursor: pointer; transition: color .15s;
 }
 .tl-stat-val.tl-clickable:hover { color: #fff; text-decoration: underline; }
+.tl-year-row {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.tl-year-lbl {
+  font-size: 10px; color: var(--text-dim); text-transform: uppercase;
+  letter-spacing: .07em; margin-right: 4px;
+}
+.tl-year-btn {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--text-dim); border-radius: 6px; padding: 5px 13px;
+  font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  cursor: pointer; transition: all .15s;
+}
+.tl-year-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+.tl-year-btn.active {
+  background: rgba(0,200,255,0.12); border-color: rgba(0,200,255,0.4);
+  color: var(--electric); font-weight: 700;
+}
+.tl-export-btn {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--text-dim); border-radius: 6px; padding: 5px 12px;
+  font-size: 11px; cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.tl-export-btn:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+.tl-export-btn.csv { border-color: rgba(0,230,118,0.3); color: var(--green); }
+.tl-export-btn.csv:hover { background: rgba(0,230,118,0.08); }
+.tl-export-btn.pdf { border-color: rgba(255,171,0,0.3); color: var(--amber); }
+.tl-export-btn.pdf:hover { background: rgba(255,171,0,0.08); }
 
 </style>
 </head>
@@ -2661,6 +2689,15 @@ body::after {
       </div>
     </div>
 
+    <!-- Filtro de año -->
+    <div class="tl-year-row">
+      <span class="tl-year-lbl">Año:</span>
+      <button class="tl-year-btn active" id="tl-yr-all"  onclick="setTlYear('')">Todos</button>
+      <button class="tl-year-btn" id="tl-yr-2023" onclick="setTlYear('2023')">2023</button>
+      <button class="tl-year-btn" id="tl-yr-2024" onclick="setTlYear('2024')">2024</button>
+      <button class="tl-year-btn" id="tl-yr-2025" onclick="setTlYear('2025')">2025</button>
+    </div>
+
     <!-- Controls: entity filter + count/monto toggle -->
     <div class="tl-controls">
       <select class="tl-select" id="tl-entity-select" onchange="renderTimeline()">
@@ -2711,7 +2748,11 @@ body::after {
       <div class="tl-drilldown" id="tl-drilldown">
         <div class="tl-drilldown-header">
           <div class="tl-drilldown-title" id="tl-drilldown-title">—</div>
-          <button class="tl-drilldown-close" onclick="closeTlDrilldown()">✕</button>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <button class="tl-export-btn csv" onclick="exportTlCSV()" title="Exportar a CSV">⬇ CSV</button>
+            <button class="tl-export-btn pdf" onclick="exportTlPDF()" title="Exportar a PDF">⬇ PDF</button>
+            <button class="tl-drilldown-close" onclick="closeTlDrilldown()">✕</button>
+          </div>
         </div>
         <div class="tl-drilldown-list" id="tl-drilldown-list"></div>
       </div>
@@ -4788,6 +4829,8 @@ function hideCasosPanel() {
 // ════════════════════════════════════════════════════════════
 let _timelineChart = null;
 let _tlMode = 'count'; // 'count' | 'monto'
+let _tlYear = '';      // '' | '2023' | '2024' | '2025'
+let _tlDrilldownData = []; // contratos activos en el drilldown (para exportar)
 
 function showTimelinePanel() {
   _closeAllFuentePanels();
@@ -4817,6 +4860,16 @@ function setTlMode(mode) {
   renderTimeline();
 }
 
+function setTlYear(year) {
+  _tlYear = year;
+  ['all','2023','2024','2025'].forEach(y => {
+    const btn = document.getElementById('tl-yr-' + (y === 'all' ? 'all' : y));
+    if (btn) btn.classList.toggle('active', (y === 'all' ? '' : y) === year);
+  });
+  closeTlDrilldown();
+  renderTimeline();
+}
+
 function populateTimelineEntities() {
   if (!allAlerts) return;
   const sel = document.getElementById('tl-entity-select');
@@ -4836,9 +4889,17 @@ function renderTimeline() {
   const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
 
   const entityFilter = document.getElementById('tl-entity-select').value;
-  const filtered = entityFilter
+  let filtered = entityFilter
     ? allAlerts.filter(a => a.entity_name === entityFilter)
     : allAlerts;
+
+  // Filtro de año
+  if (_tlYear) {
+    filtered = filtered.filter(a => {
+      const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
+      return raw.startsWith(_tlYear);
+    });
+  }
 
   if (filtered.length === 0) {
     document.getElementById('tl-total-count').textContent = '0';
@@ -5061,9 +5122,83 @@ function renderTimelineDrilldown(ym, sevFilter) {
     }).join('');
   }
 
+  // Guardar datos para exportar
+  _tlDrilldownData = contracts;
+
   const dd = document.getElementById('tl-drilldown');
   dd.classList.add('open');
   setTimeout(() => dd.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+}
+
+// ── Exportar drilldown ──
+function exportTlCSV() {
+  if (!_tlDrilldownData || _tlDrilldownData.length === 0) return;
+  const title = document.getElementById('tl-drilldown-title').textContent || 'Timeline';
+  const headers = ['Entidad','Proveedor','Severidad','Tipo Alerta','Monto Contrato (L)','Fecha'];
+  const rows = _tlDrilldownData.map(a => [
+    a.entity_name || '',
+    a.proveedor_nombre || '',
+    a.severity || '',
+    a.alert_type || a.data_source || '',
+    a.monto_contrato || 0,
+    (a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '').substring(0,10)
+  ]);
+  const csvContent = [headers, ...rows]
+    .map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'Sentinel_' + title.replace(/[^a-zA-Z0-9]/g,'_').substring(0,40) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportTlPDF() {
+  if (!_tlDrilldownData || _tlDrilldownData.length === 0) return;
+  const fmtL = n => n > 0 ? 'L ' + Number(n).toLocaleString('es-HN', {minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
+  const title = document.getElementById('tl-drilldown-title').textContent || 'Sentinel Timeline';
+  const sevColors = { critica:'#cc2233', alta:'#cc5500', media:'#cc8800', baja:'#227733' };
+
+  const rows = _tlDrilldownData.map(a => {
+    const norm  = (a.severity||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const color = sevColors[norm] || '#555';
+    const fecha = (a.fecha_contrato||a.fecha_adjudicacion||a.fecha_publicacion||a.created_at||'').substring(0,10);
+    return `<tr>
+      <td style="color:${color};font-weight:700;white-space:nowrap;">${(a.severity||'—').toUpperCase()}</td>
+      <td>${a.entity_name||'—'}</td>
+      <td>${a.proveedor_nombre||'—'}</td>
+      <td>${a.alert_type||a.data_source||'—'}</td>
+      <td style="text-align:right;font-family:monospace;">${fmtL(Number(a.monto_contrato||0))}</td>
+      <td style="text-align:center;">${fecha}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+  <title>${title}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 11px; color: #222; margin: 20px; }
+    h2 { font-size: 14px; margin-bottom: 4px; }
+    .meta { font-size: 10px; color: #666; margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #1a2a3a; color: #fff; padding: 7px 10px; text-align: left; font-size: 10px; text-transform: uppercase; }
+    td { padding: 6px 10px; border-bottom: 1px solid #e0e0e0; }
+    tr:nth-child(even) td { background: #f7f9fc; }
+    @media print { body { margin: 10px; } }
+  </style></head><body>
+  <h2>🛡 Sentinel-AI Honduras — ${title}</h2>
+  <div class="meta">Generado: ${new Date().toLocaleDateString('es-HN',{day:'numeric',month:'long',year:'numeric'})} · Total: ${_tlDrilldownData.length} contratos</div>
+  <table>
+    <thead><tr><th>Severidad</th><th>Entidad</th><th>Proveedor</th><th>Tipo</th><th>Monto (L)</th><th>Fecha</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <script>window.onload=()=>window.print();<\/script>
+  </body></html>`;
+
+  const win = window.open('','_blank','width=900,height=600');
+  win.document.write(html);
+  win.document.close();
 }
 
 function drilldownPeakMonth() {

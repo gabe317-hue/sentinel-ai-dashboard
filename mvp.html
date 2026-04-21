@@ -4014,13 +4014,16 @@ function parseDesc_for(key, desc) {
 
 // Tracks where the entity/vendor panel was opened from
 // so the back button returns to the right place
-let entityPanelSource = 'dashboard'; // 'dashboard' | 'analytics'
+let entityPanelSource = 'dashboard'; // 'dashboard' | 'analytics' | 'news'
 
 function hideEntityPanel() {
   document.getElementById('entityPanel').classList.remove('open');
   if (entityPanelSource === 'analytics') {
     entityPanelSource = 'dashboard';
     showAnalyticsPanel();
+  } else if (entityPanelSource === 'news') {
+    entityPanelSource = 'dashboard';
+    showNewsPanel();
   } else {
     document.querySelector('.stats-grid').style.display     = '';
     document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
@@ -4743,6 +4746,17 @@ function exportSobrecostoRealPDF() {
 }
 
 // Open entity panel from analytics — back button returns to analytics
+function showEntityFromNews(entityName) {
+  entityPanelSource = 'news';
+  showEntityPanel(entityName);
+  document.querySelector('#entityPanel .fuente-back').textContent = '← Volver a Noticias';
+}
+function showVendorFromNews(vendorName) {
+  entityPanelSource = 'news';
+  showVendorPanel(vendorName);
+  document.querySelector('#entityPanel .fuente-back').textContent = '← Volver a Noticias';
+}
+
 function showEntityPanelFromAnalytics(entityName) {
   entityPanelSource = 'analytics';
   hideAnalyticsPanel();
@@ -7193,13 +7207,13 @@ function renderMatchBar(title, summary) {
     const rLabel = `🔴 ${rTotal} actor${rTotal > 1 ? 'es' : ''} con alertas CRÍTICA/ALTA en BD`;
     const rEntBtns = rEnt.map(e => {
       const s = e.name.replace(/'/g, "\\'");
-      return `<button class="news-recent-btn" onclick="showEntityPanel('${s}')" title="Ver contratos recientes de ${e.name}">
+      return `<button class="news-recent-btn" onclick="showEntityFromNews('${s}')" title="Ver contratos de ${e.name}">
         🏛 ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
       </button>`;
     }).join('');
     const rVenBtns = rVen.map(v => {
       const s = v.name.replace(/'/g, "\\'");
-      return `<button class="news-recent-btn vendor" onclick="showVendorPanel('${s}')" title="Ver contratos recientes de ${v.name}">
+      return `<button class="news-recent-btn vendor" onclick="showVendorFromNews('${s}')" title="Ver contratos de ${v.name}">
         🏢 ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
       </button>`;
     }).join('');
@@ -7217,13 +7231,13 @@ function renderMatchBar(title, summary) {
   const label = `⚡ ${totalMatches} relacionado${totalMatches > 1 ? 's' : ''} en BD`;
   const entityBtns = entities.map(e => {
     const s = e.name.replace(/'/g, "\\'");
-    return `<button class="news-match-btn" onclick="showEntityPanel('${s}')" title="Ver contratos de ${e.name}">
+    return `<button class="news-match-btn" onclick="showEntityFromNews('${s}')" title="Ver contratos de ${e.name}">
       🏛 ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
     </button>`;
   }).join('');
   const vendorBtns = vendors.map(v => {
     const s = v.name.replace(/'/g, "\\'");
-    return `<button class="news-match-btn vendor" onclick="showVendorPanel('${s}')" title="Ver contratos de ${v.name}">
+    return `<button class="news-match-btn vendor" onclick="showVendorFromNews('${s}')" title="Ver contratos de ${v.name}">
       🏢 ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
     </button>`;
   }).join('');

@@ -4784,6 +4784,7 @@ function populateTimelineEntities() {
 
 function renderTimeline() {
   if (!allAlerts || allAlerts.length === 0) return;
+  const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
 
   const entityFilter = document.getElementById('tl-entity-select').value;
   const filtered = entityFilter

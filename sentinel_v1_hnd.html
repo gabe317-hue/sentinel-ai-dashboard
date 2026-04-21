@@ -690,6 +690,11 @@ body::after {
 .monto-contrato { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); white-space: nowrap; }
 .monto-pagado   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green); white-space: nowrap; }
 .monto-sin-dato { font-size: 10px; color: var(--text-dim); font-style: italic; opacity: 0.7; }
+/* Pay progress bar */
+.pay-bar-wrap  { margin-top: 3px; }
+.pay-bar-track { background: rgba(255,255,255,0.1); border-radius: 3px; height: 5px; overflow: hidden; min-width: 60px; }
+.pay-bar-fill  { height: 100%; border-radius: 3px; background: var(--green); }
+.pay-bar-pct   { display: block; font-size: 9px; color: var(--text-dim); margin-top: 2px; }
 .diferencia-badge {
   display: inline-block; margin-top: 2px;
   font-family: 'JetBrains Mono', monospace; font-size: 10px;
@@ -2299,7 +2304,7 @@ body::after {
         </div>
         <div class="adp-field">
           <span class="adp-field-label">Monto Pagado (Ejecución)</span>
-          <span class="adp-field-value" id="adp-monto-pagado" style="color:var(--green)">Sin datos</span><span id="adp-siafi-badge" style="display:none;background:rgba(0,168,214,0.15);color:var(--electric);border:1px solid var(--electric);border-radius:3px;padding:1px 6px;font-size:9px;margin-left:6px;font-weight:600;vertical-align:middle;">✓ Real SIAFI2</span>
+          <div class="adp-field-value" id="adp-monto-pagado" style="color:var(--green)">Sin datos</div><span id="adp-siafi-badge" style="display:none;background:rgba(0,168,214,0.15);color:var(--electric);border:1px solid var(--electric);border-radius:3px;padding:1px 6px;font-size:9px;margin-left:6px;font-weight:600;vertical-align:middle;">✓ Real SIAFI2</span>
         </div>
         <!-- Derived SOBRECOSTO alert — shown when monto_pagado > monto_contrato * 1.15 -->
         <div id="adp-sobrecosto-pagado-section" style="display:none;margin:8px 0;padding:8px 12px;background:rgba(255,61,87,0.1);border:1px solid var(--red);border-radius:6px;">
@@ -3183,7 +3188,11 @@ function render() {
         let html = '<div class="monto-stack">';
         if (mc != null) html += `<span class="monto-contrato"><span class="monto-label">Cont:</span> ${fmtL(mc)}</span>`;
         if (mp != null) {
-          html += `<span class="monto-pagado"><span class="monto-label">Pag:</span> ${fmtL(mp)}</span>`;
+          const payPct = mc != null && mc > 0 ? Math.min(100, (mp / mc) * 100) : 0;
+          const payBar = mc != null && mc > 0
+            ? `<div class="pay-bar-wrap"><div class="pay-bar-track"><div class="pay-bar-fill" style="width:${payPct.toFixed(1)}%"></div></div></div>`
+            : '';
+          html += `<span class="monto-pagado"><span class="monto-label">Pag:</span> ${fmtL(mp)}</span>${payBar}`;
           if (mc != null) {
             const dif = mp - mc;
             const pct = ((dif / mc) * 100).toFixed(1);
@@ -3896,7 +3905,15 @@ function showEntityPanel(entityName) {
   document.getElementById('ep-media').textContent   = counts.media;
   document.getElementById('ep-baja').textContent    = counts.baja;
   document.getElementById('ep-monto-contrato').textContent = fmtL(mc);
-  document.getElementById('ep-monto-pagado').textContent   = hasPagado ? fmtL(mp) : 'Sin datos';
+  if (hasPagado) {
+    const payPct = mc > 0 ? Math.min(100, (mp / mc) * 100) : 0;
+    const barHtml = mc > 0
+      ? `<div class="pay-bar-wrap"><div class="pay-bar-track"><div class="pay-bar-fill" style="width:${payPct.toFixed(1)}%"></div></div><span class="pay-bar-pct">${payPct.toFixed(0)}% pagado</span></div>`
+      : '';
+    document.getElementById('ep-monto-pagado').innerHTML = fmtL(mp) + barHtml;
+  } else {
+    document.getElementById('ep-monto-pagado').textContent = 'Sin datos';
+  }
 
   // Diferencia
   const difEl  = document.getElementById('ep-diferencia');
@@ -3907,7 +3924,7 @@ function showEntityPanel(entityName) {
     const sign = dif >= 0 ? '+' : '';
     difEl.textContent = sign + fmtL(Math.abs(dif)).replace('L ', 'L ') + ` (${sign}${pct}%)`;
     difEl.className   = 'ep-fin-val ' + (dif > 0 ? 'over' : dif < 0 ? 'under' : 'exact');
-    lblEl.textContent = dif > 0 ? 'Sobrecosto' : dif < 0 ? 'Ahorro' : 'Sin diferencia';
+    lblEl.textContent = dif > 0 ? 'Sobrecosto' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia';
   } else {
     difEl.textContent = '—';
     difEl.className   = 'ep-fin-val';
@@ -4644,7 +4661,15 @@ function openAlertDetail(alertId, event) {
   const mpago  = a.monto_pagado    != null ? Number(a.monto_pagado)    : null;
   document.getElementById('adp-monto').textContent  = monto  != null ? fmtL(monto)  : '—';
   document.getElementById('adp-budget').textContent = budget != null ? fmtL(budget) : 'Sin datos';
-  document.getElementById('adp-monto-pagado').textContent = mpago != null ? fmtL(mpago) : 'Sin datos';
+  if (mpago != null) {
+    const payPct2 = monto != null && monto > 0 ? Math.min(100, (mpago / monto) * 100) : 0;
+    const barHtml2 = monto != null && monto > 0
+      ? `<div class="pay-bar-wrap"><div class="pay-bar-track"><div class="pay-bar-fill" style="width:${payPct2.toFixed(1)}%"></div></div><span class="pay-bar-pct">${payPct2.toFixed(0)}% pagado</span></div>`
+      : '';
+    document.getElementById('adp-monto-pagado').innerHTML = fmtL(mpago) + barHtml2;
+  } else {
+    document.getElementById('adp-monto-pagado').textContent = 'Sin datos';
+  }
   const siafiBadgeEl = document.getElementById('adp-siafi-badge');
   if (siafiBadgeEl) siafiBadgeEl.style.display = isSiafiReal(a) ? 'inline-block' : 'none';
 
@@ -4962,20 +4987,20 @@ function renderTimeline() {
     {
       label: 'Alta',
       data: sortedMonths.map(ym => isMonto ? sevMonto(ym, 'alta') : monthMap[ym].alta),
-      backgroundColor: 'rgba(255,107,53,0.75)',
-      borderColor: '#ff6b35', borderWidth: 1
+      backgroundColor: 'rgba(255,140,66,0.85)',
+      borderColor: '#ff8c42', borderWidth: 1
     },
     {
       label: 'Media',
       data: sortedMonths.map(ym => isMonto ? sevMonto(ym, 'media') : monthMap[ym].media),
-      backgroundColor: 'rgba(255,171,0,0.65)',
-      borderColor: '#ffab00', borderWidth: 1
+      backgroundColor: 'rgba(77,157,224,0.85)',
+      borderColor: '#4d9de0', borderWidth: 1
     },
     {
       label: 'Baja',
       data: sortedMonths.map(ym => isMonto ? sevMonto(ym, 'baja') : monthMap[ym].baja),
-      backgroundColor: 'rgba(0,230,118,0.5)',
-      borderColor: '#00e676', borderWidth: 1
+      backgroundColor: 'rgba(6,214,160,0.75)',
+      borderColor: '#06d6a0', borderWidth: 1
     }
   ];
 

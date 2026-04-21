@@ -4966,11 +4966,11 @@ function renderTimeline() {
     const isPeak = ym === peakKey;
     const label = new Date(ym + '-02').toLocaleDateString('es-HN', { month: 'long', year: 'numeric' });
     const sevCell = (val, color, sev) => val
-      ? `<td style="text-align:center;color:${color};cursor:pointer;font-weight:600;" title="Ver ${sev} de ${label}" onclick="event.stopPropagation();renderTimelineDrilldown('${ym}','${sev}')">${val}</td>`
-      : `<td style="text-align:center;color:${color};opacity:0.35;">—</td>`;
-    return `<tr class="tl-row-clickable${isPeak ? ' tl-row-peak' : ''}" data-ym="${ym}" onclick="renderTimelineDrilldown('${ym}')"${isPeak ? ' style="background:rgba(0,200,255,0.05);"' : ''}>
+      ? `<td data-sev="${sev}" style="text-align:center;color:${color};cursor:pointer;font-weight:600;" title="Ver solo ${sev}">${val}</td>`
+      : `<td style="text-align:center;color:${color};opacity:0.3;">—</td>`;
+    return `<tr class="tl-row-clickable${isPeak ? ' tl-row-peak' : ''}" data-ym="${ym}" onclick="var s=event.target.closest('td[data-sev]');renderTimelineDrilldown('${ym}',s?s.dataset.sev:'')"${isPeak ? ' style="background:rgba(0,200,255,0.05);"' : ''}>
       <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${isPeak ? 'var(--electric)' : 'var(--text)'};">${label}${isPeak ? ' ⭐' : ''}</td>
-      <td style="text-align:right;font-weight:600;cursor:pointer;" title="Ver todos de ${label}">${d.total}</td>
+      <td style="text-align:right;font-weight:600;">${d.total}</td>
       ${sevCell(d.critica, 'var(--red)',   'critica')}
       ${sevCell(d.alta,    '#ff6b35',      'alta')}
       ${sevCell(d.media,   'var(--amber)', 'media')}

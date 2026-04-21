@@ -2294,8 +2294,8 @@ async function loadAlerts() {
 
     allAlerts = all;
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
-    buildNewsMatchIndex();       // Opción E — entity/vendor index (all records)
-    buildRecentContractsIndex(); // Opción F — entity/vendor index (últimos 30 días)
+    buildNewsMatchIndex(); // Opción E — entity/vendor index (all records)
+    buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
     setStatus('connected');
     hideError();
     render();
@@ -7115,42 +7115,42 @@ function buildNewsMatchIndex() {
   console.log(`🔗 Match index built: ${_newsMatchIndex.entities.length} entidades, ${_newsMatchIndex.vendors.length} proveedores`);
 }
 
-// ── OPCIÓN F: Contratos Recientes + Priorización por Keywords ───────────────
-let _recentContractsIndex = null;
+// ── OPCIÓN F: Contratos Alto Riesgo + Priorización por Keywords ─────────────
+// Indexes entities/vendors that have CRÍTICA or ALTA severity contracts.
+// When a news article mentions one of these actors, shows a red alert bar.
+// NOTE: Designed to upgrade to time-based filter once real-time data is available.
+let _highRiskIndex = null;
 
-function buildRecentContractsIndex() {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 30);
-
-  const recent = allAlerts.filter(a => {
-    const d = new Date(a.fecha_contrato || a.created_at || 0);
-    return d >= cutoff;
+function buildHighRiskIndex() {
+  const highRisk = allAlerts.filter(a => {
+    const sev = (a.severity || '').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return sev === 'critica' || sev === 'alta';
   });
 
   const entityMap = {};
   const vendorMap = {};
-  recent.forEach(a => {
+  highRisk.forEach(a => {
     const ent = (a.entity_name || '').trim();
     const ven = (a.proveedor_nombre || '').trim();
     if (ent.length >= 5) entityMap[ent] = (entityMap[ent] || 0) + 1;
     if (ven.length >= 5) vendorMap[ven] = (vendorMap[ven] || 0) + 1;
   });
 
-  _recentContractsIndex = {
+  _highRiskIndex = {
     entities: Object.entries(entityMap).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count),
     vendors:  Object.entries(vendorMap).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count),
-    total:    recent.length,
-    cutoff:   cutoff.toISOString().slice(0, 10)
+    total:    highRisk.length
   };
-  console.log(`🗓 Índice reciente (30 días): ${recent.length} contratos, ${_recentContractsIndex.entities.length} entidades, ${_recentContractsIndex.vendors.length} proveedores`);
+  console.log(`🚨 Índice alto riesgo (CRÍTICA/ALTA): ${highRisk.length} contratos, ${_highRiskIndex.entities.length} entidades, ${_highRiskIndex.vendors.length} proveedores`);
 }
 
-function matchRecentContracts(title, summary) {
-  if (!_recentContractsIndex) return { entities: [], vendors: [] };
+function matchHighRiskContracts(title, summary) {
+  if (!_highRiskIndex) return { entities: [], vendors: [] };
   const text = ((title || '') + ' ' + stripHtml(summary || '')).toLowerCase();
   return {
-    entities: _recentContractsIndex.entities.filter(e => text.includes(e.name.toLowerCase())).slice(0, 3),
-    vendors:  _recentContractsIndex.vendors.filter(v => text.includes(v.name.toLowerCase())).slice(0, 3),
+    entities: _highRiskIndex.entities.filter(e => text.includes(e.name.toLowerCase())).slice(0, 3),
+    vendors:  _highRiskIndex.vendors.filter(v => text.includes(v.name.toLowerCase())).slice(0, 3),
   };
 }
 
@@ -7185,12 +7185,12 @@ function renderMatchBar(title, summary) {
   const hasProcurementContext = NEWS_KEYWORDS.some(kw => text.includes(kw.toLowerCase()));
   if (!hasProcurementContext) return '';
 
-  // Opción F — Recent contracts bar (last 30 days)
-  const { entities: rEnt, vendors: rVen } = matchRecentContracts(title, summary);
+  // Opción F — High-risk contracts bar (CRÍTICA/ALTA severity)
+  const { entities: rEnt, vendors: rVen } = matchHighRiskContracts(title, summary);
   let recentBar = '';
   if (rEnt.length + rVen.length > 0) {
     const rTotal = rEnt.length + rVen.length;
-    const rLabel = `🔴 ${rTotal} contrato${rTotal > 1 ? 's' : ''} reciente${rTotal > 1 ? 's' : ''} (30 días)`;
+    const rLabel = `🔴 ${rTotal} actor${rTotal > 1 ? 'es' : ''} con alertas CRÍTICA/ALTA en BD`;
     const rEntBtns = rEnt.map(e => {
       const s = e.name.replace(/'/g, "\\'");
       return `<button class="news-recent-btn" onclick="showEntityPanel('${s}')" title="Ver contratos recientes de ${e.name}">

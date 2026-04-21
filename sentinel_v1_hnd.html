@@ -1286,6 +1286,64 @@ body::after {
   opacity: .65;
 }
 
+/* ── TIMELINE DE ALERTAS (Opción C) ── */
+.tl-controls {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.tl-select {
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; padding: 7px 12px;
+  font-size: 12px; font-family: 'Inter', sans-serif; cursor: pointer;
+  flex: 1; min-width: 200px;
+}
+.tl-select:focus { outline: none; border-color: rgba(0,200,255,0.4); }
+.tl-toggle { display: flex; gap: 4px; }
+.tl-toggle-btn {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--text-dim); border-radius: 6px; padding: 6px 12px;
+  font-size: 11px; cursor: pointer; transition: all .15s;
+}
+.tl-toggle-btn.active {
+  background: rgba(0,200,255,0.12); border-color: rgba(0,200,255,0.35);
+  color: var(--electric);
+}
+.tl-stats-row {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 12px; margin-bottom: 20px;
+}
+.tl-stat {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+}
+.tl-stat-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 18px;
+  font-weight: 700; color: var(--electric); margin-bottom: 4px;
+}
+.tl-stat-lbl {
+  font-size: 10px; color: var(--text-dim); text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.tl-table-wrap {
+  border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.tl-table {
+  width: 100%; border-collapse: collapse; font-size: 12px;
+}
+.tl-table th {
+  background: rgba(255,255,255,0.04); padding: 10px 14px;
+  text-align: left; font-size: 10px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: .07em;
+  border-bottom: 1px solid var(--border);
+}
+.tl-table td {
+  padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text);
+}
+.tl-table tr:last-child td { border-bottom: none; }
+.tl-table tr:hover td { background: rgba(255,255,255,0.03); }
+
 </style>
 </head>
 <body>
@@ -1371,6 +1429,9 @@ body::after {
       <button class="nav-item" id="nav-casos" onclick="showCasosPanel()" style="color:var(--red);">
         <span class="nav-icon">⚖️</span> Casos Activos
         <span class="nav-chip" style="background:rgba(255,61,87,0.15);color:var(--red);border-color:rgba(255,61,87,0.3);">2</span>
+      </button>
+      <button class="nav-item" id="nav-timeline" onclick="showTimelinePanel()">
+        <span class="nav-icon">📅</span> Timeline de Alertas
       </button>
     </div>
 
@@ -2528,6 +2589,86 @@ body::after {
       </div>
 
       <div class="caso-fuentes">Fuentes: El Heraldo HN · La Prensa HN · Proceso Digital · Tiempo HN · El Espectador HN — Abril 2026</div>
+    </div>
+
+  </div>
+
+  <!-- TIMELINE DE ALERTAS PANEL (Opción C) -->
+  <div class="fuente-panel" id="timelinePanel">
+    <button class="fuente-back" onclick="hideTimelinePanel()">← Todos los Contratos</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title">📅 <span>Timeline de Alertas</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Distribución cronológica de contratos monitoreados — por mes y severidad
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="tl-stats-row">
+      <div class="tl-stat">
+        <div class="tl-stat-val" id="tl-total-count">—</div>
+        <div class="tl-stat-lbl">Contratos</div>
+      </div>
+      <div class="tl-stat">
+        <div class="tl-stat-val" id="tl-total-monto" style="font-size:13px;">—</div>
+        <div class="tl-stat-lbl">Monto Total</div>
+      </div>
+      <div class="tl-stat">
+        <div class="tl-stat-val" id="tl-peak-month" style="font-size:13px;">—</div>
+        <div class="tl-stat-lbl">Mes Pico</div>
+      </div>
+      <div class="tl-stat">
+        <div class="tl-stat-val" id="tl-date-range" style="font-size:12px;">—</div>
+        <div class="tl-stat-lbl">Período</div>
+      </div>
+    </div>
+
+    <!-- Controls: entity filter + count/monto toggle -->
+    <div class="tl-controls">
+      <select class="tl-select" id="tl-entity-select" onchange="renderTimeline()">
+        <option value="">Todas las entidades</option>
+      </select>
+      <div class="tl-toggle">
+        <button class="tl-toggle-btn active" id="tl-btn-count" onclick="setTlMode('count')">N° Contratos</button>
+        <button class="tl-toggle-btn" id="tl-btn-monto" onclick="setTlMode('monto')">Monto L</button>
+      </div>
+    </div>
+
+    <!-- Stacked bar chart (Chart.js) -->
+    <div class="fuente-chart-card" style="margin-bottom:20px;">
+      <div class="fuente-recent-title" id="tl-chart-title">Contratos por mes</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;opacity:0.7;">
+        Apilado por severidad — <span style="color:var(--red);">■</span> Crítica &nbsp;
+        <span style="color:#ff6b35;">■</span> Alta &nbsp;
+        <span style="color:var(--amber);">■</span> Media &nbsp;
+        <span style="color:var(--green);">■</span> Baja
+      </div>
+      <div style="position:relative;height:280px;">
+        <canvas id="timelineChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Monthly breakdown table -->
+    <div class="fuente-chart-card">
+      <div class="fuente-recent-title">📋 Detalle Mensual</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;opacity:0.7;">Meses con al menos 1 contrato — más recientes primero · ⭐ = mes pico</div>
+      <div class="tl-table-wrap">
+        <table class="tl-table">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th style="text-align:right">Total</th>
+              <th style="text-align:center;color:var(--red);">Crítica</th>
+              <th style="text-align:center;color:#ff6b35;">Alta</th>
+              <th style="text-align:center;color:var(--amber);">Media</th>
+              <th style="text-align:center;color:var(--green);">Baja</th>
+              <th style="text-align:right">Monto (L)</th>
+            </tr>
+          </thead>
+          <tbody id="tl-table-body"></tbody>
+        </table>
+      </div>
     </div>
 
   </div>
@@ -4564,7 +4705,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel','casosPanel','newsPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel','casosPanel','timelinePanel','newsPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -4591,6 +4732,200 @@ function hideCasosPanel() {
   document.querySelector('.stats-grid').style.display = '';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+}
+
+// ════════════════════════════════════════════════════════════
+// TIMELINE DE ALERTAS — Opción C (Phase 2 visual)
+// ════════════════════════════════════════════════════════════
+let _timelineChart = null;
+let _tlMode = 'count'; // 'count' | 'monto'
+
+function showTimelinePanel() {
+  _closeAllFuentePanels();
+  document.getElementById('nav-timeline').classList.add('active');
+  document.getElementById('timelinePanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(() => {
+    if (!allAlerts || allAlerts.length === 0) return;
+    populateTimelineEntities();
+    renderTimeline();
+  }, 80);
+}
+
+function hideTimelinePanel() {
+  if (_timelineChart) { _timelineChart.destroy(); _timelineChart = null; }
+  document.getElementById('timelinePanel').classList.remove('open');
+  document.getElementById('nav-timeline').classList.remove('active');
+  document.querySelector('.stats-grid').style.display = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+}
+
+function setTlMode(mode) {
+  _tlMode = mode;
+  document.getElementById('tl-btn-count').classList.toggle('active', mode === 'count');
+  document.getElementById('tl-btn-monto').classList.toggle('active', mode === 'monto');
+  renderTimeline();
+}
+
+function populateTimelineEntities() {
+  if (!allAlerts) return;
+  const sel = document.getElementById('tl-entity-select');
+  const current = sel.value;
+  const entities = [...new Set(allAlerts.map(a => a.entity_name || '').filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todas las entidades</option>';
+  entities.forEach(ent => {
+    const opt = document.createElement('option');
+    opt.value = ent; opt.textContent = ent;
+    sel.appendChild(opt);
+  });
+  if (current) sel.value = current;
+}
+
+function renderTimeline() {
+  if (!allAlerts || allAlerts.length === 0) return;
+
+  const entityFilter = document.getElementById('tl-entity-select').value;
+  const filtered = entityFilter
+    ? allAlerts.filter(a => a.entity_name === entityFilter)
+    : allAlerts;
+
+  if (filtered.length === 0) {
+    document.getElementById('tl-total-count').textContent = '0';
+    document.getElementById('tl-total-monto').textContent = 'L 0';
+    document.getElementById('tl-peak-month').textContent  = '—';
+    document.getElementById('tl-date-range').textContent  = '—';
+    document.getElementById('tl-table-body').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:20px;">Sin contratos para esta entidad</td></tr>';
+    return;
+  }
+
+  // ── Agrupar por YYYY-MM ──
+  const monthMap = {};
+  let totalMonto = 0;
+
+  filtered.forEach(a => {
+    const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || '';
+    if (!raw || raw.length < 7) return;
+    const ym = raw.substring(0, 7); // "YYYY-MM"
+    if (!monthMap[ym]) monthMap[ym] = { total: 0, critica: 0, alta: 0, media: 0, baja: 0, monto: 0 };
+    const norm = (a.severity || 'Baja').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    monthMap[ym].total++;
+    if      (norm === 'critica') monthMap[ym].critica++;
+    else if (norm === 'alta')    monthMap[ym].alta++;
+    else if (norm === 'media')   monthMap[ym].media++;
+    else                         monthMap[ym].baja++;
+    monthMap[ym].monto += Number(a.monto_contrato || 0);
+    totalMonto += Number(a.monto_contrato || 0);
+  });
+
+  const sortedMonths = Object.keys(monthMap).sort();
+  if (sortedMonths.length === 0) return;
+
+  // ── Stats ──
+  const peakKey = sortedMonths.reduce((a, b) => monthMap[a].total >= monthMap[b].total ? a : b);
+  const fmtMon  = ym => new Date(ym + '-02').toLocaleDateString('es-HN', { month: 'short', year: 'numeric' });
+
+  document.getElementById('tl-total-count').textContent = filtered.length.toLocaleString();
+  document.getElementById('tl-total-monto').textContent = fmtL(totalMonto);
+  document.getElementById('tl-peak-month').textContent  = fmtMon(peakKey) + ' (' + monthMap[peakKey].total + ')';
+  document.getElementById('tl-date-range').textContent  = fmtMon(sortedMonths[0]) + ' – ' + fmtMon(sortedMonths[sortedMonths.length - 1]);
+
+  // ── Chart ──
+  const isMonto = _tlMode === 'monto';
+  const labels  = sortedMonths.map(ym => new Date(ym + '-02').toLocaleDateString('es-HN', { month: 'short', year: '2-digit' }));
+
+  // For monto mode: proportion each severity's share of monthly monto
+  function sevMonto(ym, sevKey) {
+    const d = monthMap[ym];
+    return d.total > 0 ? d.monto * (d[sevKey] / d.total) : 0;
+  }
+
+  const datasets = [
+    {
+      label: 'Crítica',
+      data: sortedMonths.map(ym => isMonto ? sevMonto(ym, 'critica') : monthMap[ym].critica),
+      backgroundColor: 'rgba(255,61,87,0.8)',
+      borderColor: '#ff3d57', borderWidth: 1
+    },
+    {
+      label: 'Alta',
+      data: sortedMonths.map(ym => isMonto ? sevMonto(ym, 'alta') : monthMap[ym].alta),
+      backgroundColor: 'rgba(255,107,53,0.75)',
+      borderColor: '#ff6b35', borderWidth: 1
+    },
+    {
+      label: 'Media',
+      data: sortedMonths.map(ym => isMonto ? sevMonto(ym, 'media') : monthMap[ym].media),
+      backgroundColor: 'rgba(255,171,0,0.65)',
+      borderColor: '#ffab00', borderWidth: 1
+    },
+    {
+      label: 'Baja',
+      data: sortedMonths.map(ym => isMonto ? sevMonto(ym, 'baja') : monthMap[ym].baja),
+      backgroundColor: 'rgba(0,230,118,0.5)',
+      borderColor: '#00e676', borderWidth: 1
+    }
+  ];
+
+  if (_timelineChart) { _timelineChart.destroy(); _timelineChart = null; }
+  _timelineChart = new Chart(document.getElementById('timelineChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true, position: 'top',
+          labels: { color: '#8899aa', font: { size: 11 }, boxWidth: 12, padding: 16 }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              return isMonto
+                ? ` ${ctx.dataset.label}: L ${Math.round(v).toLocaleString('es-HN')}`
+                : ` ${ctx.dataset.label}: ${Math.round(v)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          ticks: { color: '#8899aa', font: { size: 10 }, maxRotation: 50 },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        },
+        y: {
+          stacked: true, beginAtZero: true,
+          ticks: {
+            color: '#8899aa', font: { size: 10 },
+            callback: v => isMonto ? 'L ' + (v / 1000000).toFixed(1) + 'M' : v
+          },
+          grid: { color: 'rgba(255,255,255,0.06)' }
+        }
+      }
+    }
+  });
+
+  // ── Tabla de detalle mensual ──
+  document.getElementById('tl-chart-title').textContent = isMonto ? 'Monto (L) por mes' : 'Contratos por mes';
+
+  const tbody = document.getElementById('tl-table-body');
+  tbody.innerHTML = sortedMonths.slice().reverse().map(ym => {
+    const d = monthMap[ym];
+    const isPeak = ym === peakKey;
+    const label = new Date(ym + '-02').toLocaleDateString('es-HN', { month: 'long', year: 'numeric' });
+    return `<tr${isPeak ? ' style="background:rgba(0,200,255,0.05);"' : ''}>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${isPeak ? 'var(--electric)' : 'var(--text)'};">${label}${isPeak ? ' ⭐' : ''}</td>
+      <td style="text-align:right;font-weight:600;">${d.total}</td>
+      <td style="text-align:center;color:var(--red);">${d.critica || '—'}</td>
+      <td style="text-align:center;color:#ff6b35;">${d.alta || '—'}</td>
+      <td style="text-align:center;color:var(--amber);">${d.media || '—'}</td>
+      <td style="text-align:center;color:var(--green);">${d.baja || '—'}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${fmtL(d.monto)}</td>
+    </tr>`;
+  }).join('');
 }
 
 function showGlobalSobrecostos() {

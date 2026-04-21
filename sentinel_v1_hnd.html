@@ -2749,8 +2749,8 @@ body::after {
         <div class="tl-drilldown-header">
           <div class="tl-drilldown-title" id="tl-drilldown-title">—</div>
           <div style="display:flex;gap:6px;align-items:center;">
-            <button class="tl-export-btn csv" onclick="exportTlCSV()" title="Exportar a CSV">⬇ CSV</button>
-            <button class="tl-export-btn pdf" onclick="exportTlPDF()" title="Exportar a PDF">⬇ PDF</button>
+            <button class="tl-export-btn pdf" onclick="exportTlPDF()" title="Top contratos = 80% del monto total">📊 Pareto</button>
+            <button class="tl-export-btn csv" onclick="exportTlCSV()" title="Exportar todos los contratos a CSV">⬇ Todo</button>
             <button class="tl-drilldown-close" onclick="closeTlDrilldown()">✕</button>
           </div>
         </div>
@@ -5161,26 +5161,47 @@ function exportTlPDF() {
   const title = document.getElementById('tl-drilldown-title').textContent || 'Sentinel Timeline';
   const sevColors = { critica:'#cc2233', alta:'#cc5500', media:'#cc8800', baja:'#227733' };
 
-  const rows = _tlDrilldownData.map(a => {
+  // ── Pareto: ordenar por monto desc, tomar hasta 80% del monto total ──
+  const sorted = [..._tlDrilldownData].sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
+  const montoTotal = sorted.reduce((s, a) => s + Number(a.monto_contrato||0), 0);
+  const PARETO_THRESHOLD = 0.80;
+  let cumulative = 0;
+  const pareto = [];
+  for (const a of sorted) {
+    pareto.push(a);
+    cumulative += Number(a.monto_contrato||0);
+    if (montoTotal > 0 && cumulative / montoTotal >= PARETO_THRESHOLD) break;
+  }
+  const pct = montoTotal > 0 ? Math.round(cumulative / montoTotal * 100) : 100;
+
+  const rows = pareto.map((a, i) => {
     const norm  = (a.severity||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     const color = sevColors[norm] || '#555';
     const fecha = (a.fecha_contrato||a.fecha_adjudicacion||a.fecha_publicacion||a.created_at||'').substring(0,10);
+    const cumulPct = montoTotal > 0 ? Math.round(
+      pareto.slice(0, i+1).reduce((s,x) => s + Number(x.monto_contrato||0), 0) / montoTotal * 100
+    ) : '—';
     return `<tr>
       <td style="color:${color};font-weight:700;white-space:nowrap;">${(a.severity||'—').toUpperCase()}</td>
       <td>${a.entity_name||'—'}</td>
       <td>${a.proveedor_nombre||'—'}</td>
       <td>${a.alert_type||a.data_source||'—'}</td>
-      <td style="text-align:right;font-family:monospace;">${fmtL(Number(a.monto_contrato||0))}</td>
+      <td style="text-align:right;font-family:monospace;font-weight:600;">${fmtL(Number(a.monto_contrato||0))}</td>
+      <td style="text-align:center;color:#888;">${cumulPct}%</td>
       <td style="text-align:center;">${fecha}</td>
     </tr>`;
   }).join('');
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-  <title>${title}</title>
+  <title>Pareto — ${title}</title>
   <style>
     body { font-family: Arial, sans-serif; font-size: 11px; color: #222; margin: 20px; }
     h2 { font-size: 14px; margin-bottom: 4px; }
-    .meta { font-size: 10px; color: #666; margin-bottom: 14px; }
+    .meta { font-size: 10px; color: #555; margin-bottom: 6px; }
+    .pareto-box {
+      background: #f0f7ff; border-left: 4px solid #1a5fa8;
+      padding: 8px 12px; margin-bottom: 14px; font-size: 11px; color: #1a3a6a;
+    }
     table { width: 100%; border-collapse: collapse; }
     th { background: #1a2a3a; color: #fff; padding: 7px 10px; text-align: left; font-size: 10px; text-transform: uppercase; }
     td { padding: 6px 10px; border-bottom: 1px solid #e0e0e0; }
@@ -5188,15 +5209,21 @@ function exportTlPDF() {
     @media print { body { margin: 10px; } }
   </style></head><body>
   <h2>🛡 Sentinel-AI Honduras — ${title}</h2>
-  <div class="meta">Generado: ${new Date().toLocaleDateString('es-HN',{day:'numeric',month:'long',year:'numeric'})} · Total: ${_tlDrilldownData.length} contratos</div>
+  <div class="meta">Generado: ${new Date().toLocaleDateString('es-HN',{day:'numeric',month:'long',year:'numeric'})} &nbsp;·&nbsp; Total en período: ${_tlDrilldownData.length} contratos &nbsp;·&nbsp; Monto total: ${fmtL(montoTotal)}</div>
+  <div class="pareto-box">
+    📊 <strong>Análisis Pareto:</strong> Se muestran <strong>${pareto.length} de ${_tlDrilldownData.length} contratos</strong>
+    que representan el <strong>${pct}% del monto total</strong> (${fmtL(cumulative)} de ${fmtL(montoTotal)}).
+    Ordenados por monto descendente. Los ${_tlDrilldownData.length - pareto.length} contratos restantes
+    representan el ${100 - pct}% del monto y se omiten por ser de bajo valor relativo.
+  </div>
   <table>
-    <thead><tr><th>Severidad</th><th>Entidad</th><th>Proveedor</th><th>Tipo</th><th>Monto (L)</th><th>Fecha</th></tr></thead>
+    <thead><tr><th>Severidad</th><th>Entidad</th><th>Proveedor</th><th>Tipo</th><th>Monto (L)</th><th>% Acum.</th><th>Fecha</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
   <script>window.onload=()=>window.print();<\/script>
   </body></html>`;
 
-  const win = window.open('','_blank','width=900,height=600');
+  const win = window.open('','_blank','width=950,height=650');
   win.document.write(html);
   win.document.close();
 }

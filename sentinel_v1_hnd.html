@@ -5043,10 +5043,13 @@ function renderTimelineDrilldown(ym, sevFilter) {
       const proveedor = a.proveedor_nombre || '—';
       const monto     = fmtL(Number(a.monto_contrato || 0));
       const tipo      = a.alert_type || a.data_source || '—';
+      const entSafe = entidad.replace(/'/g, "\\'");
       return `<div class="tl-dd-row">
         <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:${color};font-weight:700;white-space:nowrap;">${sev}</div>
         <div>
-          <div style="font-size:12px;color:var(--text);font-weight:500;line-height:1.3;">${entidad}</div>
+          <button onclick="showEntityPanel('${entSafe}')" style="background:none;border:none;padding:0;cursor:pointer;text-align:left;" title="Ver todos los contratos de ${entidad}">
+            <div style="font-size:12px;color:var(--electric);font-weight:500;line-height:1.3;text-decoration:underline dotted;">${entidad}</div>
+          </button>
           <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">🏢 ${proveedor}</div>
         </div>
         <div style="font-size:10px;color:var(--text-dim);">📋 ${tipo}</div>

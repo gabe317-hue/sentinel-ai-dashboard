@@ -4805,7 +4805,7 @@ function renderTimeline() {
   let totalMonto = 0;
 
   filtered.forEach(a => {
-    const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || '';
+    const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
     if (!raw || raw.length < 7) return;
     const ym = raw.substring(0, 7); // "YYYY-MM"
     if (!monthMap[ym]) monthMap[ym] = { total: 0, critica: 0, alta: 0, media: 0, baja: 0, monto: 0 };

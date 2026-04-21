@@ -4965,13 +4965,16 @@ function renderTimeline() {
     const d = monthMap[ym];
     const isPeak = ym === peakKey;
     const label = new Date(ym + '-02').toLocaleDateString('es-HN', { month: 'long', year: 'numeric' });
+    const sevCell = (val, color, sev) => val
+      ? `<td style="text-align:center;color:${color};cursor:pointer;font-weight:600;" title="Ver ${sev} de ${label}" onclick="event.stopPropagation();renderTimelineDrilldown('${ym}','${sev}')">${val}</td>`
+      : `<td style="text-align:center;color:${color};opacity:0.35;">—</td>`;
     return `<tr class="tl-row-clickable${isPeak ? ' tl-row-peak' : ''}" data-ym="${ym}" onclick="renderTimelineDrilldown('${ym}')"${isPeak ? ' style="background:rgba(0,200,255,0.05);"' : ''}>
       <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${isPeak ? 'var(--electric)' : 'var(--text)'};">${label}${isPeak ? ' ⭐' : ''}</td>
-      <td style="text-align:right;font-weight:600;">${d.total}</td>
-      <td style="text-align:center;color:var(--red);">${d.critica || '—'}</td>
-      <td style="text-align:center;color:#ff6b35;">${d.alta || '—'}</td>
-      <td style="text-align:center;color:var(--amber);">${d.media || '—'}</td>
-      <td style="text-align:center;color:var(--green);">${d.baja || '—'}</td>
+      <td style="text-align:right;font-weight:600;cursor:pointer;" title="Ver todos de ${label}">${d.total}</td>
+      ${sevCell(d.critica, 'var(--red)',   'critica')}
+      ${sevCell(d.alta,    '#ff6b35',      'alta')}
+      ${sevCell(d.media,   'var(--amber)', 'media')}
+      ${sevCell(d.baja,    'var(--green)', 'baja')}
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${fmtL(d.monto)}</td>
     </tr>`;
   }).join('');
@@ -4981,18 +4984,24 @@ function renderTimeline() {
 }
 
 // ── Drilldown de mes ──
-function renderTimelineDrilldown(ym) {
+function renderTimelineDrilldown(ym, sevFilter) {
   if (!allAlerts) return;
   const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
 
   const entityFilter = (document.getElementById('tl-entity-select') || {}).value || '';
   const base = entityFilter ? allAlerts.filter(a => a.entity_name === entityFilter) : allAlerts;
 
-  // Filtrar contratos del mes seleccionado
-  const contracts = base.filter(a => {
+  // Filtrar contratos del mes — y opcionalmente por severidad
+  let contracts = base.filter(a => {
     const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
     return raw.length >= 7 && raw.substring(0, 7) === ym;
   });
+  if (sevFilter) {
+    contracts = contracts.filter(a => {
+      const norm = (a.severity || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      return norm === sevFilter;
+    });
+  }
 
   // Resaltar fila activa
   document.querySelectorAll('#tl-table-body tr').forEach(tr => tr.classList.remove('tl-row-active'));
@@ -5003,8 +5012,11 @@ function renderTimelineDrilldown(ym) {
   }
 
   const monthLabel = new Date(ym + '-02').toLocaleDateString('es-HN', { month: 'long', year: 'numeric' });
-  document.getElementById('tl-drilldown-title').textContent =
-    `📅 ${monthLabel.toUpperCase()} — ${contracts.length} CONTRATO${contracts.length !== 1 ? 'S' : ''}`;
+  const sevColors  = { critica: 'var(--red)', alta: '#ff6b35', media: 'var(--amber)', baja: 'var(--green)' };
+  const sevLabels  = { critica: 'CRÍTICA', alta: 'ALTA', media: 'MEDIA', baja: 'BAJA' };
+  const sevPrefix  = sevFilter ? `<span style="color:${sevColors[sevFilter]};margin-right:6px;">● ${sevLabels[sevFilter]}</span>` : '';
+  document.getElementById('tl-drilldown-title').innerHTML =
+    `📅 ${monthLabel.toUpperCase()} ${sevPrefix}— ${contracts.length} CONTRATO${contracts.length !== 1 ? 'S' : ''}`;
 
   const sevColor = { critica: 'var(--red)', alta: '#ff6b35', media: 'var(--amber)', baja: 'var(--green)' };
   const sevLabel = { critica: 'CRÍTICA', alta: 'ALTA', media: 'MEDIA', baja: 'BAJA' };

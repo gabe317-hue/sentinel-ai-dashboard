@@ -1293,6 +1293,10 @@ body::after {
 
     <div class="nav-section">
       <div class="nav-section-label">Sistema</div>
+      <button class="nav-item" id="nav-news" onclick="showNewsPanel()">
+        <span class="nav-icon">📰</span> Noticias
+        <span class="nav-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">RSS</span>
+      </button>
       <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
         <span class="nav-icon">📋</span> Auditoría
         <span class="nav-chip">LOG</span>
@@ -2445,6 +2449,42 @@ body::after {
 
   </div>
 
+  <!-- NEWS PANEL (migrado de mvp.html) -->
+  <div class="fuente-panel" id="newsPanel">
+    <button class="fuente-back" onclick="hideNewsPanel()">← Todos los Contratos</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>📰</span>
+        <span>Noticias — Monitoreo de Prensa</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Fuentes: Confidencial HN · El País HN · Proceso Digital · Criterio · ICN News
+      </div>
+    </div>
+
+    <div class="news-refresh-bar">
+      <span id="news-last-update">Pendiente de carga...</span>
+      <button class="news-refresh-btn" onclick="loadRSSFeeds()">↻ Actualizar</button>
+      <span style="opacity:0.5;">· Auto-actualiza cada 10 min</span>
+    </div>
+
+    <div class="news-filter-bar">
+      <button class="news-filter-btn active" onclick="setNewsFilter('all',this)">TODAS</button>
+      <button class="news-filter-btn" onclick="setNewsFilter('confidencial',this)">Confidencial HN</button>
+      <button class="news-filter-btn" onclick="setNewsFilter('elpais',this)">El País HN</button>
+      <button class="news-filter-btn" onclick="setNewsFilter('proceso',this)">Proceso Digital</button>
+      <button class="news-filter-btn" onclick="setNewsFilter('criterio',this)">Criterio</button>
+      <button class="news-filter-btn" onclick="setNewsFilter('icn',this)">ICN News</button>
+    </div>
+
+    <div class="news-grid" id="newsGrid">
+      <div class="news-loading">📰 Presiona "Actualizar" para cargar noticias...</div>
+    </div>
+  </div>
+
+
+
 
 </main>
 
@@ -2693,6 +2733,7 @@ async function loadAlerts() {
     allAlerts = all;
     window.allAlerts = allAlerts; // expose for Vista Ejecutiva
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
+    buildNewsMatchIndex(); // Cruce Noticias × Contratos — pre-builds index
     setStatus('connected');
     hideError();
     render();
@@ -3510,8 +3551,10 @@ function showEntityPanel(entityName) {
   // Reset back button text (may have been changed by fromAnalytics path)
   const backBtn = document.querySelector('#entityPanel .fuente-back');
   if (backBtn) backBtn.textContent = '← Todos los Contratos';
-  // Close fuente panel if open
+  // Close fuente panel and news panel if open
   document.getElementById('fuentePanel').classList.remove('open');
+  const np = document.getElementById('newsPanel'); if (np) np.classList.remove('open');
+  if (typeof newsTimer !== 'undefined' && newsTimer) { clearInterval(newsTimer); newsTimer = null; }
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
 
   const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
@@ -3603,6 +3646,8 @@ function showVendorPanel(vendorName) {
   const backBtn = document.querySelector('#entityPanel .fuente-back');
   if (backBtn) backBtn.textContent = '← Todos los Contratos';
   document.getElementById('fuentePanel').classList.remove('open');
+  const np = document.getElementById('newsPanel'); if (np) np.classList.remove('open');
+  if (typeof newsTimer !== 'undefined' && newsTimer) { clearInterval(newsTimer); newsTimer = null; }
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
 
   // Filter by proveedor_nombre (or fallback to entity_name for legacy alerts)
@@ -4432,7 +4477,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel','casosPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel','casosPanel','newsPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -7707,6 +7752,211 @@ setInterval(() => {
   const lc = document.getElementById('loginClock');
   if(lc) lc.textContent = new Date().toLocaleTimeString('es-HN');
 }, 1000);
+
+
+// ════════════════════════════════════════════════════════════
+// PANEL NOTICIAS — migrado de mvp.html (Sessions 11-12)
+// ════════════════════════════════════════════════════════════
+
+const NEWS_RSS_SOURCES = [
+  { key: 'confidencial', name: 'Confidencial HN',  color: '#e040fb', bg: 'rgba(224,64,251,0.12)', url: 'https://confidencialhn.com/feed/' },
+  { key: 'elpais',       name: 'El País HN',       color: '#a855f7', bg: 'rgba(168,85,247,0.12)', url: 'https://www.elpais.hn/feed/' },
+  { key: 'proceso',      name: 'Proceso Digital',  color: '#00e676', bg: 'rgba(0,230,118,0.12)',  url: 'https://proceso.hn/feed/' },
+  { key: 'criterio',     name: 'Criterio',         color: '#ffab00', bg: 'rgba(255,171,0,0.12)',  url: 'https://criterio.hn/feed/' },
+  { key: 'icn',          name: 'ICN News',         color: '#ff6b35', bg: 'rgba(255,107,53,0.12)', url: 'https://icndiario.com/feed/' },
+];
+
+const NEWS_KEYWORDS = [
+  'SEFIN','ONCAE','TSC','licitación','contrato','contratación','corrupción',
+  'sobrecosto','irregularidad','IHSS','fraude','compra directa','adjudicación',
+  'proveedor','Ministerio','Secretaría','fondos públicos','desfalco','malversación',
+  'Contraloría','UFERCO','Ministerio Público','compra pública'
+];
+
+const HONDURAS_TERMS = [
+  'Honduras','hondureño','hondureña','hondureños','hondureñas',
+  'Tegucigalpa','San Pedro Sula','La Ceiba','Comayagua','Choloma',
+  'SEFIN','ONCAE','TSC','IHSS','ENEE','lempira','Lempira',
+  'Congreso Nacional','Casa Presidencial','UFERCO','SIAFI',
+  'Secretaría de Finanzas','Banco Central de Honduras'
+];
+
+function isHondurasRelevant(item) {
+  const text = (item.title || '') + ' ' + stripNewsHtml(item.summary || '');
+  return HONDURAS_TERMS.some(t => text.toLowerCase().includes(t.toLowerCase()));
+}
+
+let allNewsItems  = [];
+let newsFilter    = 'all';
+let newsTimer     = null;
+let newsLoaded    = false;
+let _newsMatchIndex = null;
+
+function stripNewsHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return (tmp.textContent || tmp.innerText || '').trim().slice(0, 280);
+}
+
+function highlightKeywords(text) {
+  if (!text) return '';
+  let result = text;
+  NEWS_KEYWORDS.forEach(kw => {
+    const re = new RegExp(`(${kw})`, 'gi');
+    result = result.replace(re, '<span class="news-keyword">$1</span>');
+  });
+  return result;
+}
+
+// ── Cruce Noticias × Contratos (Opción E) ────────────────────────────────
+function buildNewsMatchIndex() {
+  const entityMap = {};
+  const vendorMap = {};
+  allAlerts.forEach(a => {
+    const ent = (a.entity_name || '').trim();
+    const ven = (a.proveedor_nombre || '').trim();
+    if (ent.length >= 5) entityMap[ent] = (entityMap[ent] || 0) + 1;
+    if (ven.length >= 5) vendorMap[ven] = (vendorMap[ven] || 0) + 1;
+  });
+  _newsMatchIndex = {
+    entities: Object.entries(entityMap).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count),
+    vendors:  Object.entries(vendorMap).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count)
+  };
+  console.log(`🔗 Match index built: ${_newsMatchIndex.entities.length} entidades, ${_newsMatchIndex.vendors.length} proveedores`);
+}
+
+function matchNewsToContracts(title, summary) {
+  if (!_newsMatchIndex) return { entities: [], vendors: [] };
+  const text = ((title || '') + ' ' + stripNewsHtml(summary || '')).toLowerCase();
+  return {
+    entities: _newsMatchIndex.entities.filter(e => text.includes(e.name.toLowerCase())).slice(0, 3),
+    vendors:  _newsMatchIndex.vendors.filter(v => text.includes(v.name.toLowerCase())).slice(0, 3)
+  };
+}
+
+function renderMatchBar(title, summary) {
+  const { entities, vendors } = matchNewsToContracts(title, summary);
+  if (entities.length + vendors.length === 0) return '';
+  const text = ((title || '') + ' ' + stripNewsHtml(summary || '')).toLowerCase();
+  const hasProcurementContext = NEWS_KEYWORDS.some(kw => text.includes(kw.toLowerCase()));
+  if (!hasProcurementContext) return '';
+  const total = entities.length + vendors.length;
+  const label = `⚡ ${total} relacionado${total > 1 ? 's' : ''} en BD`;
+  const eBtns = entities.map(e => {
+    const s = e.name.replace(/'/g, "\'");
+    return `<button class="news-match-btn" onclick="showEntityPanel('${s}')" title="${e.name}">
+      🏛 ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
+    </button>`;
+  }).join('');
+  const vBtns = vendors.map(v => {
+    const s = v.name.replace(/'/g, "\'");
+    return `<button class="news-match-btn vendor" onclick="showVendorPanel('${s}')" title="${v.name}">
+      🏢 ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
+    </button>`;
+  }).join('');
+  return `<div class="news-match-bar"><span class="news-match-label">${label}</span>${eBtns}${vBtns}</div>`;
+}
+
+// ── Panel show/hide ───────────────────────────────────────────────────────
+function showNewsPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('nav-news').classList.add('active');
+  document.getElementById('newsPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (!newsLoaded) loadRSSFeeds();
+  if (newsTimer) clearInterval(newsTimer);
+  newsTimer = setInterval(loadRSSFeeds, 10 * 60 * 1000);
+}
+
+function hideNewsPanel() {
+  document.getElementById('newsPanel').classList.remove('open');
+  document.getElementById('nav-news').classList.remove('active');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+  if (newsTimer) { clearInterval(newsTimer); newsTimer = null; }
+}
+
+async function loadRSSFeeds() {
+  const grid  = document.getElementById('newsGrid');
+  const label = document.getElementById('news-last-update');
+  grid.innerHTML    = '<div class="news-loading">⟳ Cargando noticias...</div>';
+  label.textContent = 'Actualizando...';
+  const results = await Promise.allSettled(NEWS_RSS_SOURCES.map(src => fetchRSS(src)));
+  allNewsItems = [];
+  results.forEach(r => { if (r.status === 'fulfilled') allNewsItems.push(...r.value); });
+  allNewsItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+  newsLoaded = true;
+  const failCount = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value.length === 0)).length;
+  const now = new Date();
+  label.textContent =
+    `Actualizado: ${now.toLocaleTimeString('es-HN',{hour:'2-digit',minute:'2-digit'})}` +
+    `  ·  ${allNewsItems.length} artículos` +
+    (failCount > 0 ? `  ·  ⚠️ ${failCount} fuente(s) sin respuesta` : '');
+  renderNewsCards();
+}
+
+async function fetchRSS(source) {
+  try {
+    const resp = await fetch(`/api/rss-proxy?source=${source.key}`, { signal: AbortSignal.timeout(12000) });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    return (data.items || []).map(item => ({
+      key: source.key, name: source.name, color: source.color, bg: source.bg,
+      title: item.title || '(sin título)', summary: item.description || '',
+      link: item.link || '#', pubDate: item.pubDate || '',
+    }));
+  } catch (e) {
+    console.warn(`RSS fetch failed [${source.name}]:`, e.message);
+    return [];
+  }
+}
+
+function setNewsFilter(source, btn) {
+  newsFilter = source;
+  document.querySelectorAll('.news-filter-btn').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+  renderNewsCards();
+}
+
+function renderNewsCards() {
+  const grid = document.getElementById('newsGrid');
+  const raw  = newsFilter === 'all' ? allNewsItems : allNewsItems.filter(n => n.key === newsFilter);
+  const items = raw.filter(isHondurasRelevant);
+  const hiddenCount = raw.length - items.length;
+
+  if (items.length === 0) {
+    const srcName = NEWS_RSS_SOURCES.find(s => s.key === newsFilter)?.name || newsFilter;
+    grid.innerHTML = `<div class="news-loading">Sin noticias de Honduras disponibles` +
+      (hiddenCount > 0 ? ` · ${hiddenCount} artículos de otros países omitidos` : '') + `.</div>`;
+    return;
+  }
+
+  const label = document.getElementById('news-last-update');
+  if (label && hiddenCount > 0) {
+    const current = label.textContent.split('·').slice(0, 2).join('·').trim();
+    label.textContent = current + `  ·  🌎 ${hiddenCount} intl. omitidos`;
+  }
+
+  grid.innerHTML = items.map(item => {
+    const dateStr = item.pubDate
+      ? new Date(item.pubDate).toLocaleDateString('es-HN', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '';
+    const matchBar = renderMatchBar(item.title, item.summary);
+    return `
+      <div class="news-card${matchBar ? ' has-matches' : ''}">
+        <div class="news-card-header">
+          <span class="news-source-badge" style="background:${item.bg};color:${item.color};border:1px solid ${item.color}44;">${item.name}</span>
+          <span class="news-date">${dateStr}</span>
+        </div>
+        <div class="news-title">${highlightKeywords(item.title)}</div>
+        ${item.summary ? `<div class="news-summary">${highlightKeywords(item.summary)}</div>` : ''}
+        ${matchBar}
+        <a class="news-link" href="${item.link}" target="_blank" rel="noopener noreferrer">→ Ver artículo</a>
+      </div>`;
+  }).join('');
+}
 
 </script>
 

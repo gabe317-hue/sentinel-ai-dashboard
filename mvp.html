@@ -1060,6 +1060,41 @@ body::after {
   background: rgba(0,200,255,0.08); color: var(--electric);
 }
 .news-match-btn.vendor:hover { background: rgba(0,200,255,0.18); }
+
+/* ── OPCIÓN F: Contratos Recientes + Priorización por Keywords ── */
+.news-recent-bar {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  padding: 8px 10px; background: rgba(255,61,87,0.08);
+  border: 1px solid rgba(255,61,87,0.3); border-radius: 6px;
+  margin-top: 2px;
+}
+.news-recent-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--red); letter-spacing: .06em; white-space: nowrap;
+  flex-shrink: 0;
+}
+.news-recent-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  padding: 3px 9px; border-radius: 4px; cursor: pointer;
+  border: 1px solid rgba(255,61,87,0.4);
+  background: rgba(255,61,87,0.12); color: var(--red);
+  transition: all .2s; letter-spacing: .04em; white-space: nowrap;
+}
+.news-recent-btn:hover { background: rgba(255,61,87,0.25); }
+.news-recent-btn.vendor {
+  border-color: rgba(255,107,53,0.4);
+  background: rgba(255,107,53,0.12); color: var(--orange);
+}
+.news-recent-btn.vendor:hover { background: rgba(255,107,53,0.25); }
+.news-risk-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 8px;
+  letter-spacing: .08em; padding: 2px 7px; border-radius: 3px;
+  background: rgba(255,61,87,0.15); color: var(--red);
+  border: 1px solid rgba(255,61,87,0.35); flex-shrink: 0;
+}
+.news-card.high-risk {
+  border-left: 2px solid rgba(255,61,87,0.55);
+}
 </style>
 </head>
 <body>
@@ -2259,7 +2294,8 @@ async function loadAlerts() {
 
     allAlerts = all;
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
-    buildNewsMatchIndex(); // Opción E — pre-builds entity/vendor index for news matching
+    buildNewsMatchIndex();       // Opción E — entity/vendor index (all records)
+    buildRecentContractsIndex(); // Opción F — entity/vendor index (últimos 30 días)
     setStatus('connected');
     hideError();
     render();
@@ -7079,6 +7115,51 @@ function buildNewsMatchIndex() {
   console.log(`🔗 Match index built: ${_newsMatchIndex.entities.length} entidades, ${_newsMatchIndex.vendors.length} proveedores`);
 }
 
+// ── OPCIÓN F: Contratos Recientes + Priorización por Keywords ───────────────
+let _recentContractsIndex = null;
+
+function buildRecentContractsIndex() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+
+  const recent = allAlerts.filter(a => {
+    const d = new Date(a.fecha_contrato || a.created_at || 0);
+    return d >= cutoff;
+  });
+
+  const entityMap = {};
+  const vendorMap = {};
+  recent.forEach(a => {
+    const ent = (a.entity_name || '').trim();
+    const ven = (a.proveedor_nombre || '').trim();
+    if (ent.length >= 5) entityMap[ent] = (entityMap[ent] || 0) + 1;
+    if (ven.length >= 5) vendorMap[ven] = (vendorMap[ven] || 0) + 1;
+  });
+
+  _recentContractsIndex = {
+    entities: Object.entries(entityMap).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count),
+    vendors:  Object.entries(vendorMap).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count),
+    total:    recent.length,
+    cutoff:   cutoff.toISOString().slice(0, 10)
+  };
+  console.log(`🗓 Índice reciente (30 días): ${recent.length} contratos, ${_recentContractsIndex.entities.length} entidades, ${_recentContractsIndex.vendors.length} proveedores`);
+}
+
+function matchRecentContracts(title, summary) {
+  if (!_recentContractsIndex) return { entities: [], vendors: [] };
+  const text = ((title || '') + ' ' + stripHtml(summary || '')).toLowerCase();
+  return {
+    entities: _recentContractsIndex.entities.filter(e => text.includes(e.name.toLowerCase())).slice(0, 3),
+    vendors:  _recentContractsIndex.vendors.filter(v => text.includes(v.name.toLowerCase())).slice(0, 3),
+  };
+}
+
+// Returns count of procurement risk keywords found in a news item.
+function calcRiskScore(title, summary) {
+  const text = ((title || '') + ' ' + stripHtml(summary || '')).toLowerCase();
+  return NEWS_KEYWORDS.filter(kw => text.includes(kw.toLowerCase())).length;
+}
+
 // Returns up to 3 matching entities and 3 matching vendors for a news item.
 function matchNewsToContracts(title, summary) {
   if (!_newsMatchIndex) return { entities: [], vendors: [] };
@@ -7095,39 +7176,63 @@ function matchNewsToContracts(title, summary) {
   return { entities, vendors };
 }
 
-// Renders the match bar HTML for a news card.
-// Returns empty string if no matches, or if article lacks procurement context.
+// Renders match bar(s) for a news card.
+// Returns empty string if no procurement context.
+// Shows: [🔴 recent bar] + [⚡ all-BD bar], each only if matches found.
 function renderMatchBar(title, summary) {
-  const { entities, vendors } = matchNewsToContracts(title, summary);
-  const totalMatches = entities.length + vendors.length;
-  if (totalMatches === 0) return '';
-
-  // Require at least one procurement keyword — avoids false positives
-  // (e.g. ENEE en noticia de cortes de luz, no de contratos)
+  // Require at least one procurement keyword before showing anything
   const text = ((title || '') + ' ' + stripHtml(summary || '')).toLowerCase();
   const hasProcurementContext = NEWS_KEYWORDS.some(kw => text.includes(kw.toLowerCase()));
   if (!hasProcurementContext) return '';
 
-  const label = `⚡ ${totalMatches} relacionado${totalMatches > 1 ? 's' : ''} en BD`;
+  // Opción F — Recent contracts bar (last 30 days)
+  const { entities: rEnt, vendors: rVen } = matchRecentContracts(title, summary);
+  let recentBar = '';
+  if (rEnt.length + rVen.length > 0) {
+    const rTotal = rEnt.length + rVen.length;
+    const rLabel = `🔴 ${rTotal} contrato${rTotal > 1 ? 's' : ''} reciente${rTotal > 1 ? 's' : ''} (30 días)`;
+    const rEntBtns = rEnt.map(e => {
+      const s = e.name.replace(/'/g, "\\'");
+      return `<button class="news-recent-btn" onclick="showEntityPanel('${s}')" title="Ver contratos recientes de ${e.name}">
+        🏛 ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
+      </button>`;
+    }).join('');
+    const rVenBtns = rVen.map(v => {
+      const s = v.name.replace(/'/g, "\\'");
+      return `<button class="news-recent-btn vendor" onclick="showVendorPanel('${s}')" title="Ver contratos recientes de ${v.name}">
+        🏢 ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
+      </button>`;
+    }).join('');
+    recentBar = `<div class="news-recent-bar">
+      <span class="news-recent-label">${rLabel}</span>
+      ${rEntBtns}${rVenBtns}
+    </div>`;
+  }
 
+  // Opción E — All-BD bar
+  const { entities, vendors } = matchNewsToContracts(title, summary);
+  const totalMatches = entities.length + vendors.length;
+  if (totalMatches === 0) return recentBar;
+
+  const label = `⚡ ${totalMatches} relacionado${totalMatches > 1 ? 's' : ''} en BD`;
   const entityBtns = entities.map(e => {
-    const safeName = e.name.replace(/'/g, "\\'");
-    return `<button class="news-match-btn" onclick="showEntityPanel('${safeName}')" title="Ver contratos de ${e.name}">
+    const s = e.name.replace(/'/g, "\\'");
+    return `<button class="news-match-btn" onclick="showEntityPanel('${s}')" title="Ver contratos de ${e.name}">
       🏛 ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
     </button>`;
   }).join('');
-
   const vendorBtns = vendors.map(v => {
-    const safeName = v.name.replace(/'/g, "\\'");
-    return `<button class="news-match-btn vendor" onclick="showVendorPanel('${safeName}')" title="Ver contratos de ${v.name}">
+    const s = v.name.replace(/'/g, "\\'");
+    return `<button class="news-match-btn vendor" onclick="showVendorPanel('${s}')" title="Ver contratos de ${v.name}">
       🏢 ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
     </button>`;
   }).join('');
-
-  return `<div class="news-match-bar">
+  const allBar = `<div class="news-match-bar">
     <span class="news-match-label">${label}</span>
     ${entityBtns}${vendorBtns}
   </div>`;
+
+  return recentBar + allBar;
 }
 
 const NEWS_KEYWORDS = [
@@ -7271,10 +7376,10 @@ function renderNewsCards() {
     : allNewsItems.filter(n => n.key === newsFilter);
 
   // Opción E — filtro Honduras: solo artículos que mencionan Honduras o sus instituciones
-  const items      = raw.filter(isHondurasRelevant);
-  const hiddenCount = raw.length - items.length;
+  const hnItems    = raw.filter(isHondurasRelevant);
+  const hiddenCount = raw.length - hnItems.length;
 
-  if (items.length === 0) {
+  if (hnItems.length === 0) {
     const srcName = NEWS_SOURCES.find(s => s.key === newsFilter)?.name || newsFilter;
     grid.innerHTML = `<div class="news-loading">Sin noticias de Honduras disponibles` +
       (hiddenCount > 0 ? ` · ${hiddenCount} artículos de otros países omitidos` : '') +
@@ -7289,20 +7394,37 @@ function renderNewsCards() {
     label.textContent = current + `  ·  🌎 ${hiddenCount} intl. omitidos`;
   }
 
-  grid.innerHTML = items.map(item => {
+  // Opción F — Risk scoring + sort: high-risk articles float to top, then by date
+  const scored = hnItems.map(item => ({
+    ...item,
+    riskScore: calcRiskScore(item.title, item.summary)
+  }));
+  scored.sort((a, b) => {
+    if (b.riskScore !== a.riskScore) return b.riskScore - a.riskScore;
+    return new Date(b.pubDate) - new Date(a.pubDate);
+  });
+
+  grid.innerHTML = scored.map(item => {
     const dateStr = item.pubDate
       ? new Date(item.pubDate).toLocaleDateString('es-HN',
           { day: '2-digit', month: 'short', year: 'numeric' })
       : '';
-    const matchBar = renderMatchBar(item.title, item.summary);
+    const matchBar  = renderMatchBar(item.title, item.summary);
+    const isHighRisk = item.riskScore >= 2;
+    const riskChip  = item.riskScore > 0
+      ? `<span class="news-risk-badge">⚠ RIESGO${isHighRisk ? ' ALTO' : ''}</span>`
+      : '';
     return `
-      <div class="news-card${matchBar ? ' has-matches' : ''}">
+      <div class="news-card${matchBar ? ' has-matches' : ''}${isHighRisk ? ' high-risk' : ''}">
         <div class="news-card-header">
           <span class="news-source-badge"
             style="background:${item.bg};color:${item.color};border:1px solid ${item.color}44;">
             ${item.name}
           </span>
-          <span class="news-date">${dateStr}</span>
+          <div style="display:flex;gap:6px;align-items:center;">
+            ${riskChip}
+            <span class="news-date">${dateStr}</span>
+          </div>
         </div>
         <div class="news-title">${highlightKeywords(item.title)}</div>
         ${item.summary ? `<div class="news-summary">${highlightKeywords(item.summary)}</div>` : ''}

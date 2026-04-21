@@ -1176,6 +1176,41 @@ body::after {
 .news-match-btn.vendor { border-color: rgba(0,200,255,0.3); background: rgba(0,200,255,0.08); color: var(--electric); }
 .news-match-btn.vendor:hover { background: rgba(0,200,255,0.18); }
 
+/* ── OPCIÓN F: Contratos Alto Riesgo + Priorización por Keywords ── */
+.news-recent-bar {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  padding: 8px 10px; background: rgba(255,61,87,0.08);
+  border: 1px solid rgba(255,61,87,0.3); border-radius: 6px;
+  margin-top: 2px;
+}
+.news-recent-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--red); letter-spacing: .06em; white-space: nowrap;
+  flex-shrink: 0;
+}
+.news-recent-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  padding: 3px 9px; border-radius: 4px; cursor: pointer;
+  border: 1px solid rgba(255,61,87,0.4);
+  background: rgba(255,61,87,0.12); color: var(--red);
+  transition: all .2s; letter-spacing: .04em; white-space: nowrap;
+}
+.news-recent-btn:hover { background: rgba(255,61,87,0.25); }
+.news-recent-btn.vendor {
+  border-color: rgba(255,107,53,0.4);
+  background: rgba(255,107,53,0.12); color: var(--orange);
+}
+.news-recent-btn.vendor:hover { background: rgba(255,107,53,0.25); }
+.news-risk-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 8px;
+  letter-spacing: .08em; padding: 2px 7px; border-radius: 3px;
+  background: rgba(255,61,87,0.15); color: var(--red);
+  border: 1px solid rgba(255,61,87,0.35); flex-shrink: 0;
+}
+.news-card.high-risk {
+  border-left: 2px solid rgba(255,61,87,0.55);
+}
+
 /* ── CASOS ACTIVOS PANEL ── */
 .caso-card {
   background: var(--glass); border: 1px solid var(--border);
@@ -2781,7 +2816,8 @@ async function loadAlerts() {
     allAlerts = all;
     window.allAlerts = allAlerts; // expose for Vista Ejecutiva
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
-    buildNewsMatchIndex(); // Cruce Noticias × Contratos — pre-builds index
+    buildNewsMatchIndex(); // Opción E — entity/vendor index (all records)
+    buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
     setStatus('connected');
     hideError();
     render();
@@ -4507,13 +4543,16 @@ function parseDesc_for(key, desc) {
 
 // Tracks where the entity/vendor panel was opened from
 // so the back button returns to the right place
-let entityPanelSource = 'dashboard'; // 'dashboard' | 'analytics'
+let entityPanelSource = 'dashboard'; // 'dashboard' | 'analytics' | 'news'
 
 function hideEntityPanel() {
   document.getElementById('entityPanel').classList.remove('open');
   if (entityPanelSource === 'analytics') {
     entityPanelSource = 'dashboard';
     showAnalyticsPanel();
+  } else if (entityPanelSource === 'news') {
+    entityPanelSource = 'dashboard';
+    showNewsPanel();
   } else {
     document.querySelector('.stats-grid').style.display     = '';
     document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
@@ -5269,6 +5308,18 @@ function showVendorPanelFromAnalytics(vendorName) {
   hideAnalyticsPanel();
   showVendorPanel(vendorName);
   document.querySelector('#entityPanel .fuente-back').textContent = '← Volver al Análisis';
+}
+
+// Open entity/vendor panel from news — back button returns to news panel
+function showEntityFromNews(entityName) {
+  entityPanelSource = 'news';
+  showEntityPanel(entityName);
+  document.querySelector('#entityPanel .fuente-back').textContent = '← Volver a Noticias';
+}
+function showVendorFromNews(vendorName) {
+  entityPanelSource = 'news';
+  showVendorPanel(vendorName);
+  document.querySelector('#entityPanel .fuente-back').textContent = '← Volver a Noticias';
 }
 
 function hideFuentePanel() {
@@ -7882,27 +7933,108 @@ function matchNewsToContracts(title, summary) {
   };
 }
 
+// ── OPCIÓN F: Contratos Alto Riesgo + Priorización por Keywords ─────────────
+// Indexes entities/vendors that have CRÍTICA or ALTA severity contracts.
+// When a news article mentions one of these actors, shows a red alert bar.
+// NOTE: Designed to upgrade to time-based filter once real-time data is available.
+let _highRiskIndex = null;
+
+function buildHighRiskIndex() {
+  const highRisk = allAlerts.filter(a => {
+    const sev = (a.severity || '').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return sev === 'critica' || sev === 'alta';
+  });
+
+  const entityMap = {};
+  const vendorMap = {};
+  highRisk.forEach(a => {
+    const ent = (a.entity_name || '').trim();
+    const ven = (a.proveedor_nombre || '').trim();
+    if (ent.length >= 5) entityMap[ent] = (entityMap[ent] || 0) + 1;
+    if (ven.length >= 5) vendorMap[ven] = (vendorMap[ven] || 0) + 1;
+  });
+
+  _highRiskIndex = {
+    entities: Object.entries(entityMap).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count),
+    vendors:  Object.entries(vendorMap).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count),
+    total:    highRisk.length
+  };
+  console.log(`🚨 Índice alto riesgo (CRÍTICA/ALTA): ${highRisk.length} contratos, ${_highRiskIndex.entities.length} entidades, ${_highRiskIndex.vendors.length} proveedores`);
+}
+
+function matchHighRiskContracts(title, summary) {
+  if (!_highRiskIndex) return { entities: [], vendors: [] };
+  const text = ((title || '') + ' ' + stripNewsHtml(summary || '')).toLowerCase();
+  return {
+    entities: _highRiskIndex.entities.filter(e => text.includes(e.name.toLowerCase())).slice(0, 3),
+    vendors:  _highRiskIndex.vendors.filter(v => text.includes(v.name.toLowerCase())).slice(0, 3),
+  };
+}
+
+// Returns count of procurement risk keywords found in a news item.
+function calcRiskScore(title, summary) {
+  const text = ((title || '') + ' ' + stripNewsHtml(summary || '')).toLowerCase();
+  return NEWS_KEYWORDS.filter(kw => text.includes(kw.toLowerCase())).length;
+}
+
+// Renders match bar(s) for a news card.
+// Returns empty string if no procurement context.
+// Shows: [🔴 red bar CRÍTICA/ALTA] + [⚡ amber bar BD general], each only if matches found.
 function renderMatchBar(title, summary) {
-  const { entities, vendors } = matchNewsToContracts(title, summary);
-  if (entities.length + vendors.length === 0) return '';
+  // Require at least one procurement keyword before showing anything
   const text = ((title || '') + ' ' + stripNewsHtml(summary || '')).toLowerCase();
   const hasProcurementContext = NEWS_KEYWORDS.some(kw => text.includes(kw.toLowerCase()));
   if (!hasProcurementContext) return '';
-  const total = entities.length + vendors.length;
-  const label = `⚡ ${total} relacionado${total > 1 ? 's' : ''} en BD`;
-  const eBtns = entities.map(e => {
-    const s = e.name.replace(/'/g, "\'");
-    return `<button class="news-match-btn" onclick="showEntityPanel('${s}')" title="${e.name}">
+
+  // Opción F — High-risk contracts bar (CRÍTICA/ALTA severity)
+  const { entities: rEnt, vendors: rVen } = matchHighRiskContracts(title, summary);
+  let recentBar = '';
+  if (rEnt.length + rVen.length > 0) {
+    const rTotal = rEnt.length + rVen.length;
+    const rLabel = `🔴 ${rTotal} actor${rTotal > 1 ? 'es' : ''} con alertas CRÍTICA/ALTA en BD`;
+    const rEntBtns = rEnt.map(e => {
+      const s = e.name.replace(/'/g, "\\'");
+      return `<button class="news-recent-btn" onclick="showEntityFromNews('${s}')" title="Ver contratos de ${e.name}">
+        🏛 ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
+      </button>`;
+    }).join('');
+    const rVenBtns = rVen.map(v => {
+      const s = v.name.replace(/'/g, "\\'");
+      return `<button class="news-recent-btn vendor" onclick="showVendorFromNews('${s}')" title="Ver contratos de ${v.name}">
+        🏢 ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
+      </button>`;
+    }).join('');
+    recentBar = `<div class="news-recent-bar">
+      <span class="news-recent-label">${rLabel}</span>
+      ${rEntBtns}${rVenBtns}
+    </div>`;
+  }
+
+  // Opción E — All-BD bar
+  const { entities, vendors } = matchNewsToContracts(title, summary);
+  const totalMatches = entities.length + vendors.length;
+  if (totalMatches === 0) return recentBar;
+
+  const label = `⚡ ${totalMatches} relacionado${totalMatches > 1 ? 's' : ''} en BD`;
+  const entityBtns = entities.map(e => {
+    const s = e.name.replace(/'/g, "\\'");
+    return `<button class="news-match-btn" onclick="showEntityFromNews('${s}')" title="Ver contratos de ${e.name}">
       🏛 ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
     </button>`;
   }).join('');
-  const vBtns = vendors.map(v => {
-    const s = v.name.replace(/'/g, "\'");
-    return `<button class="news-match-btn vendor" onclick="showVendorPanel('${s}')" title="${v.name}">
+  const vendorBtns = vendors.map(v => {
+    const s = v.name.replace(/'/g, "\\'");
+    return `<button class="news-match-btn vendor" onclick="showVendorFromNews('${s}')" title="Ver contratos de ${v.name}">
       🏢 ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
     </button>`;
   }).join('');
-  return `<div class="news-match-bar"><span class="news-match-label">${label}</span>${eBtns}${vBtns}</div>`;
+  const allBar = `<div class="news-match-bar">
+    <span class="news-match-label">${label}</span>
+    ${entityBtns}${vendorBtns}
+  </div>`;
+
+  return recentBar + allBar;
 }
 
 // ── Panel show/hide ───────────────────────────────────────────────────────
@@ -7987,16 +8119,33 @@ function renderNewsCards() {
     label.textContent = current + `  ·  🌎 ${hiddenCount} intl. omitidos`;
   }
 
-  grid.innerHTML = items.map(item => {
+  // Opción F — Risk scoring + sort: high-risk articles float to top, then by date
+  const scored = items.map(item => ({
+    ...item,
+    riskScore: calcRiskScore(item.title, item.summary)
+  }));
+  scored.sort((a, b) => {
+    if (b.riskScore !== a.riskScore) return b.riskScore - a.riskScore;
+    return new Date(b.pubDate) - new Date(a.pubDate);
+  });
+
+  grid.innerHTML = scored.map(item => {
     const dateStr = item.pubDate
       ? new Date(item.pubDate).toLocaleDateString('es-HN', { day: '2-digit', month: 'short', year: 'numeric' })
       : '';
-    const matchBar = renderMatchBar(item.title, item.summary);
+    const matchBar  = renderMatchBar(item.title, item.summary);
+    const isHighRisk = item.riskScore >= 2;
+    const riskChip  = item.riskScore > 0
+      ? `<span class="news-risk-badge">⚠ RIESGO${isHighRisk ? ' ALTO' : ''}</span>`
+      : '';
     return `
-      <div class="news-card${matchBar ? ' has-matches' : ''}">
+      <div class="news-card${matchBar ? ' has-matches' : ''}${isHighRisk ? ' high-risk' : ''}">
         <div class="news-card-header">
           <span class="news-source-badge" style="background:${item.bg};color:${item.color};border:1px solid ${item.color}44;">${item.name}</span>
-          <span class="news-date">${dateStr}</span>
+          <div style="display:flex;gap:6px;align-items:center;">
+            ${riskChip}
+            <span class="news-date">${dateStr}</span>
+          </div>
         </div>
         <div class="news-title">${highlightKeywords(item.title)}</div>
         ${item.summary ? `<div class="news-summary">${highlightKeywords(item.summary)}</div>` : ''}

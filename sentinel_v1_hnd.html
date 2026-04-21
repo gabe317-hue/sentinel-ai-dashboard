@@ -1128,6 +1128,54 @@ body::after {
   letter-spacing: 1px; text-transform: uppercase;
 }
 
+/* ── PANEL NOTICIAS ── */
+.news-filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 20px; padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.news-filter-btn {
+  padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--glass); color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: .06em; cursor: pointer; transition: all .2s;
+}
+.news-filter-btn.active { background: var(--electric-dim); color: var(--electric); border-color: rgba(0,200,255,0.3); }
+.news-filter-btn:hover  { background: var(--glass-hover); color: var(--text); }
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px; margin-top: 4px;
+}
+.news-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(0,200,255,0.22);
+  border-radius: 10px; padding: 16px;
+  transition: all .2s; display: flex; flex-direction: column; gap: 8px;
+}
+.news-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(0,200,255,0.38); }
+.news-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.news-source-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  letter-spacing: .08em; padding: 3px 8px; border-radius: 4px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.news-date { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-dim); white-space: nowrap; }
+.news-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.news-summary { font-size: 11px; color: var(--text-dim); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.news-link { margin-top: auto; align-self: flex-start; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .06em; color: var(--electric); text-decoration: none; padding: 4px 10px; border: 1px solid rgba(0,200,255,0.2); border-radius: 4px; transition: all .2s; }
+.news-link:hover { background: var(--electric-dim); }
+.news-keyword { background: rgba(255,171,0,0.2); color: var(--amber); border-radius: 2px; padding: 0 2px; }
+.news-loading { text-align: center; padding: 40px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); letter-spacing: .06em; }
+.news-refresh-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); }
+.news-refresh-btn { padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(0,200,255,0.2); background: var(--electric-dim); color: var(--electric); font-family: 'JetBrains Mono', monospace; font-size: 9px; cursor: pointer; transition: all .2s; letter-spacing: .05em; }
+.news-refresh-btn:hover { background: rgba(0,200,255,0.2); }
+.news-match-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; background: rgba(255,171,0,0.06); border: 1px solid rgba(255,171,0,0.2); border-radius: 6px; margin-top: 2px; }
+.news-match-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--amber); letter-spacing: .06em; white-space: nowrap; flex-shrink: 0; }
+.news-match-btn { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 3px 9px; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255,171,0,0.35); background: rgba(255,171,0,0.12); color: var(--amber); transition: all .2s; letter-spacing: .04em; white-space: nowrap; }
+.news-match-btn:hover { background: rgba(255,171,0,0.25); }
+.news-match-btn.vendor { border-color: rgba(0,200,255,0.3); background: rgba(0,200,255,0.08); color: var(--electric); }
+.news-match-btn.vendor:hover { background: rgba(0,200,255,0.18); }
+
 /* ── CASOS ACTIVOS PANEL ── */
 .caso-card {
   background: var(--glass); border: 1px solid var(--border);

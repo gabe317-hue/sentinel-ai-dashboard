@@ -2754,7 +2754,7 @@ body::after {
         <div class="tl-drilldown-header">
           <div class="tl-drilldown-title" id="tl-drilldown-title">—</div>
           <div style="display:flex;gap:6px;align-items:center;">
-            <button class="tl-export-btn pdf" onclick="exportTlPDF()" title="Top contratos = 80% del monto total">📊 Pareto</button>
+            <button class="tl-export-btn pdf" onclick="exportTlPDF()" title="Exportar reporte PDF polished">📄 PDF</button>
             <button class="tl-export-btn csv" onclick="exportTlCSV()" title="Exportar todos los contratos a CSV">⬇ Todo</button>
             <button class="tl-drilldown-close" onclick="closeTlDrilldown()">✕</button>
           </div>
@@ -5182,75 +5182,141 @@ function exportTlCSV() {
 
 function exportTlPDF() {
   if (!_tlDrilldownData || _tlDrilldownData.length === 0) return;
-  const fmtL = n => n > 0 ? 'L ' + Number(n).toLocaleString('es-HN', {minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
-  const title = document.getElementById('tl-drilldown-title').textContent || 'Sentinel Timeline';
-  const sevColors = { critica:'#cc2233', alta:'#cc5500', media:'#cc8800', baja:'#227733' };
+  const fmtL  = n => 'L. ' + (Number(n)||0).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
+  const esc   = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const pct   = (n, total) => total > 0 ? (n/total*100).toFixed(1)+'%' : '0%';
 
-  // ── Pareto: ordenar por monto desc, tomar hasta 80% del monto total ──
-  const sorted = [..._tlDrilldownData].sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
-  const montoTotal = sorted.reduce((s, a) => s + Number(a.monto_contrato||0), 0);
-  const PARETO_THRESHOLD = 0.80;
-  let cumulative = 0;
-  const pareto = [];
-  for (const a of sorted) {
-    pareto.push(a);
-    cumulative += Number(a.monto_contrato||0);
-    if (montoTotal > 0 && cumulative / montoTotal >= PARETO_THRESHOLD) break;
+  const now       = new Date();
+  const fechaStr  = now.toLocaleDateString('es-HN', {year:'numeric', month:'long', day:'numeric'});
+  const horaStr   = now.toLocaleTimeString('es-HN', {hour:'2-digit', minute:'2-digit'});
+  const dateTag   = now.toISOString().slice(0,10);
+  const titleEl   = document.getElementById('tl-drilldown-title');
+  const periodoStr = titleEl ? titleEl.textContent.trim() : 'Timeline';
+
+  // ── Summary counts ──
+  const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
+  let montoTotal = 0;
+  for (const a of _tlDrilldownData) {
+    const s = a.severity || 'Baja';
+    if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
+    montoTotal += Number(a.monto_contrato || 0);
   }
-  const pct = montoTotal > 0 ? Math.round(cumulative / montoTotal * 100) : 100;
 
-  const rows = pareto.map((a, i) => {
-    const norm  = (a.severity||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    const color = sevColors[norm] || '#555';
+  // ── Detail rows (all records, sorted by monto desc) ──
+  const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910', 'Baja':'#1E8449' };
+  const sorted = [..._tlDrilldownData].sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
+  const detailRows = sorted.map((a, i) => {
+    const sev   = a.severity || 'Baja';
     const fecha = (a.fecha_contrato||a.fecha_adjudicacion||a.fecha_publicacion||a.created_at||'').substring(0,10);
-    const cumulPct = montoTotal > 0 ? Math.round(
-      pareto.slice(0, i+1).reduce((s,x) => s + Number(x.monto_contrato||0), 0) / montoTotal * 100
-    ) : '—';
-    return `<tr>
-      <td style="color:${color};font-weight:700;white-space:nowrap;">${(a.severity||'—').toUpperCase()}</td>
-      <td>${a.entity_name||'—'}</td>
-      <td>${a.proveedor_nombre||'—'}</td>
-      <td>${a.alert_type||a.data_source||'—'}</td>
-      <td style="text-align:right;font-family:monospace;font-weight:600;">${fmtL(Number(a.monto_contrato||0))}</td>
-      <td style="text-align:center;color:#888;">${cumulPct}%</td>
-      <td style="text-align:center;">${fecha}</td>
+    const pats  = (a.patterns||a.alert_type||a.data_source||'').split(',').filter(Boolean).map(p => PATTERN_LABELS[p]||p).join(' + ');
+    return `<tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
+      <td style="text-align:center">${i+1}</td>
+      <td>${esc(a.proveedor_nombre)}</td>
+      <td>${esc(a.entity_name)}</td>
+      <td style="color:${sevColor[sev]||'#555'};font-weight:bold;text-align:center">${esc(sev)}</td>
+      <td style="text-align:right">${esc(fmtL(a.monto_contrato))}</td>
+      <td>${esc(pats)}</td>
+      <td style="text-align:center;white-space:nowrap">${esc(fecha)}</td>
     </tr>`;
   }).join('');
 
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-  <title>Pareto — ${title}</title>
-  <style>
-    body { font-family: Arial, sans-serif; font-size: 11px; color: #222; margin: 20px; }
-    h2 { font-size: 14px; margin-bottom: 4px; }
-    .meta { font-size: 10px; color: #555; margin-bottom: 6px; }
-    .pareto-box {
-      background: #f0f7ff; border-left: 4px solid #1a5fa8;
-      padding: 8px 12px; margin-bottom: 14px; font-size: 11px; color: #1a3a6a;
-    }
-    table { width: 100%; border-collapse: collapse; }
-    th { background: #1a2a3a; color: #fff; padding: 7px 10px; text-align: left; font-size: 10px; text-transform: uppercase; }
-    td { padding: 6px 10px; border-bottom: 1px solid #e0e0e0; }
-    tr:nth-child(even) td { background: #f7f9fc; }
-    @media print { body { margin: 10px; } }
-  </style></head><body>
-  <h2>🛡 Sentinel-AI Honduras — ${title}</h2>
-  <div class="meta">Generado: ${new Date().toLocaleDateString('es-HN',{day:'numeric',month:'long',year:'numeric'})} &nbsp;·&nbsp; Total en período: ${_tlDrilldownData.length} contratos &nbsp;·&nbsp; Monto total: ${fmtL(montoTotal)}</div>
-  <div class="pareto-box">
-    📊 <strong>Análisis Pareto:</strong> Se muestran <strong>${pareto.length} de ${_tlDrilldownData.length} contratos</strong>
-    que representan el <strong>${pct}% del monto total</strong> (${fmtL(cumulative)} de ${fmtL(montoTotal)}).
-    Ordenados por monto descendente. Los ${_tlDrilldownData.length - pareto.length} contratos restantes
-    representan el ${100 - pct}% del monto y se omiten por ser de bajo valor relativo.
-  </div>
-  <table>
-    <thead><tr><th>Severidad</th><th>Entidad</th><th>Proveedor</th><th>Tipo</th><th>Monto (L)</th><th>% Acum.</th><th>Fecha</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>
-  <script>window.onload=()=>window.print();<\/script>
-  </body></html>`;
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sentinel-AI Reporte Timeline ${dateTag}</title>
+<style>
+  @page { size: A4 landscape; margin: 1.4cm 1cm 1.8cm 1cm; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-break { page-break-before: always; }
+    .no-print { display: none !important; }
+  }
+  body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #222; margin: 0; padding: 16px; }
+  h1   { color: #0A1628; font-size: 17pt; margin-bottom: 2px; margin-top: 0; }
+  h2   { color: #1A3A6B; font-size: 11pt; font-weight: normal; margin-top: 0; margin-bottom: 10px; }
+  .meta { color: #7F8C8D; font-size: 8pt; margin-bottom: 14px; }
+  .sec  { color: #0A1628; font-size: 10pt; font-weight: bold; margin: 14px 0 5px 0;
+          border-bottom: 1.5pt solid #1A3A6B; padding-bottom: 3px; }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; margin-top: 4px; }
+  th    { background: #1A3A6B; color: #fff; padding: 4px 5px; font-size: 8pt; text-align: left; word-wrap: break-word; }
+  td    { padding: 3px 5px; border: 1px solid #D0D7E2; font-size: 8pt; vertical-align: top; word-wrap: break-word; }
+  .stbl    { width: auto; }
+  .stbl th { font-size: 7.5pt; padding: 4px 10px; }
+  .stbl td { font-size: 10.5pt; font-weight: bold; padding: 4px 10px; border: 1px solid #D0D7E2; }
+  .footer-bar { font-size: 7pt; color: #888; margin-top: 18px; border-top: 1px solid #D0D7E2;
+                padding-top: 4px; display: flex; justify-content: space-between; }
+  .print-btn { display: inline-block; margin: 0 0 16px 0; padding: 8px 18px;
+               background: #1A3A6B; color: #fff; border: none; border-radius: 6px;
+               font-size: 10pt; cursor: pointer; }
+  .print-btn:hover { background: #122c55; }
+</style>
+</head>
+<body>
 
-  const win = window.open('','_blank','width=950,height=650');
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+
+<h1>SENTINEL-AI HONDURAS</h1>
+<h2>Reporte de Alertas — Timeline: ${esc(periodoStr)}</h2>
+<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Período: ${esc(periodoStr)} &nbsp;|&nbsp; Total registros: ${_tlDrilldownData.length.toLocaleString('es-HN')}</p>
+
+<table class="stbl" style="width:auto;margin-bottom:14px">
+  <tr>
+    <th>Total Contratos</th><th>Monto Expuesto</th>
+    <th>Cr&iacute;ticas</th><th>% Total</th>
+    <th>Altas</th><th>% Total</th>
+    <th>Medias</th><th>% Total</th>
+    <th>Bajas</th><th>% Total</th>
+  </tr>
+  <tr>
+    <td>${_tlDrilldownData.length.toLocaleString('es-HN')}</td>
+    <td>${esc(fmtL(montoTotal))}</td>
+    <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
+    <td style="color:#C0392B;text-align:center;font-size:8pt">${pct(counts['Crítica'],_tlDrilldownData.length)}</td>
+    <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
+    <td style="color:#C05000;text-align:center;font-size:8pt">${pct(counts['Alta'],_tlDrilldownData.length)}</td>
+    <td style="color:#D68910;text-align:center">${counts['Media']}</td>
+    <td style="color:#D68910;text-align:center;font-size:8pt">${pct(counts['Media'],_tlDrilldownData.length)}</td>
+    <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+    <td style="color:#1E8449;text-align:center;font-size:8pt">${pct(counts['Baja'],_tlDrilldownData.length)}</td>
+  </tr>
+</table>
+
+<div class="page-break"></div>
+
+<p class="sec">Detalle de Contratos — ${_tlDrilldownData.length.toLocaleString('es-HN')} registros &mdash; ordenados por monto descendente</p>
+<table>
+  <colgroup>
+    <col style="width:4%"><col style="width:19%"><col style="width:17%">
+    <col style="width:8%"><col style="width:11%"><col style="width:33%"><col style="width:8%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th style="text-align:center">#</th>
+      <th>Proveedor</th>
+      <th>Entidad</th>
+      <th style="text-align:center">Severidad</th>
+      <th style="text-align:right">Monto</th>
+      <th>Patrones / Tipo</th>
+      <th style="text-align:center">Fecha</th>
+    </tr>
+  </thead>
+  <tbody>${detailRows}</tbody>
+</table>
+
+<div class="footer-bar">
+  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
+</div>
+
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=1100,height=800');
+  if (!win) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
   win.document.write(html);
   win.document.close();
+  win.addEventListener('load', () => win.focus());
 }
 
 function drilldownPeakMonth() {

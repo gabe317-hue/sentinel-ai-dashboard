@@ -2674,9 +2674,9 @@
           <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
             <td style="padding:12px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--red);">SEDESOL-2024-001</td>
             <td style="padding:12px;font-size:13px;">SEDESOL</td>
-            <td style="padding:12px;"><span style="background:rgba(255,61,87,0.15);color:var(--red);font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">Clientelismo político</span></td>
-            <td style="padding:12px 20px 12px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);text-align:right;">6,032,654</td>
-            <td style="padding:12px;"><span style="background:rgba(255,61,87,0.15);color:var(--red);font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">En juzgado</span></td>
+            <td style="padding:12px;"><span style="background:rgba(255,61,87,0.15);color:var(--red);font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">Nómina Fantasma · Fraude</span></td>
+            <td style="padding:12px 20px 12px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);text-align:right;">6,032,654.07</td>
+            <td style="padding:12px;"><span style="background:rgba(255,61,87,0.15);color:var(--red);font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">Juicio Activo</span></td>
           </tr>
           <tr>
             <td style="padding:12px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);">#CASO-2025-0089</td>
@@ -3819,19 +3819,19 @@ const defaultCase = { firma:'—', demandada:'—', monto:'—', score:'—', al
 // Module A cases
 caseDB['A-2025-0847'] = { id:'A-2025-0847', firma:'Proveedor no identificado', demandada:'Min. Infraestructura', monto:'L 28,400,000', score:92, alertas:['A01','A03'], tipo:'Fraccionamiento de contratos para evadir licitación', demandantes:'—', tiempoProcesal:'—', patron:'Fraccionamiento detectado', fuentes:'HonduCompras · SIAFI', hallazgo:'5 contratos emitidos en 72 horas al mismo proveedor, cada uno por L5.68M — justo debajo del umbral de licitación pública de L6M. Monto combinado: L28.4M.' };
 caseDB['A-2025-0846'] = { id:'A-2025-0846', firma:'Proveedor equipo médico', demandada:'Secretaría de Salud', monto:'L 12,800,000', score:89, alertas:['A02'], tipo:'Sobreprecio — 340% sobre valor de mercado', demandantes:'—', tiempoProcesal:'—', patron:'Precio inflado', fuentes:'SIAFI · HonduCompras', hallazgo:'Equipo médico adquirido a L12.8M vs. precio de mercado verificado de L2.9M. Proveedor registrado hace 47 días con capital social mínimo.' };
-caseDB['SEDESOL-2024-001'] = { 
-  id:'SEDESOL-2024-001', 
-  firma:'Isis Cuéllar Erazo / José Carlos Cardona Erazo (Red de 12)', 
-  demandada:'Secretaría de Desarrollo Social (SEDESOL)', 
-  monto:'L 6,032,654', 
-  score:91, 
-  alertas:['A02','A03','J01','J04','J05','J06'], 
-  tipo:'Desvío de fondos públicos + Clientelismo político + Fraude documentario', 
-  demandantes:'FETCCOP + TSC', 
-  tiempoProcesal:'8 meses (May 2024 - Feb 2026)', 
-  patron:'Fondos para desarrollo social desviados a estructuras políticas', 
-  fuentes:'SIAFI · HonduCompras · TSC · RNP · IAIP · Registros Bancarios', 
-  hallazgo:'Desvío confirmado de L6,032,654 en fondos destinados a desarrollo social. Red de 12 funcionarios coordinada por Diputada Isis Cuéllar y Secretario José Carlos Cardona. 67 delitos documentados, 86+ piezas de evidencia presentadas en juzgado.' 
+caseDB['SEDESOL-2024-001'] = {
+  id:'SEDESOL-2024-001',
+  firma:'Isis Carolina Cuéllar Erazo · Diputada Libre / Mov. M28 (Copán) / José Carlos Cardona Erazo · ExSecretario SEDESOL — Red de 12 imputados',
+  demandada:'Secretaría de Desarrollo Social (SEDESOL)',
+  monto:'L 6,032,654.07',
+  score:91,
+  alertas:['A02','A03','J01','J04','J05','J06'],
+  tipo:'Nómina Fantasma · Fraude Continuado · Clientelismo Político — EN JUICIO ACTIVO',
+  demandantes:'Ministerio Público · PGR · CSJ Expediente 01-2026',
+  tiempoProcesal:'May 2023 – Mar 2026 · Juicio activo',
+  patron:'Nóminas fantasma oct–dic 2024 · 65 beneficiarios irregulares en 2 nóminas · esquema mayo 2023 – dic 2024',
+  fuentes:'SIAFI · HonduCompras · TSC · RNP · IAIP · La Prensa HN · El Heraldo HN · Proceso Digital · Infobae HN',
+  hallazgo:'Esquema de nóminas fantasma confirmado: 65 beneficiarios irregulares en 2 nóminas (oct–dic 2024), período total mayo 2023 – diciembre 2024. Monto perjudicado: L 6,032,654.07 (≈ USD 220,000). 1 cargo de fraude continuado (67 actos delictivos). 86 medios de prueba presentados ante el juzgado. Medidas cautelares aplicadas el 5 de febrero 2026: arresto domiciliario + suspensión temporal del cargo. Procesamiento formal: 25 de marzo 2026 — CSJ Expediente 01-2026, Juez Luis Fernando Padilla Castellanos.'
 };
 
 function showMpConfirm(caseId) {

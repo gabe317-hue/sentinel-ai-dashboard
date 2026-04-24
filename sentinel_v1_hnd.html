@@ -1280,8 +1280,8 @@ body::after {
 .caso-alerta-chip.media   { background: rgba(0,200,255,0.1);  color: var(--electric);border: 1px solid rgba(0,200,255,0.25); }
 
 .caso-actores {
-  font-size: 12px; color: var(--text-dim); line-height: 1.6;
-  border-left: 2px solid var(--border); padding-left: 12px;
+  font-size: 13px; color: var(--text-dim); line-height: 1.7;
+  border-left: 2px solid var(--border); padding-left: 14px;
 }
 .caso-actores strong { color: var(--text); font-weight: 600; }
 
@@ -1293,31 +1293,29 @@ body::after {
 
 /* ── VER MÁS / EXPANDABLE CASO ── */
 .caso-ver-mas-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: 'JetBrains Mono', monospace; font-size: 9px;
-  letter-spacing: .08em; color: var(--electric); cursor: pointer;
-  background: none; border: 1px solid rgba(0,200,255,0.2);
-  border-radius: 4px; padding: 4px 10px; margin-top: 12px;
-  transition: background .2s, border-color .2s;
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+  letter-spacing: .04em; color: var(--electric); cursor: pointer;
+  background: rgba(0,200,255,0.08); border: 1px solid rgba(0,200,255,0.35);
+  border-radius: 8px; padding: 9px 18px; margin-top: 16px; width: 100%;
+  justify-content: center; transition: background .2s, border-color .2s, color .2s;
 }
-.caso-ver-mas-btn:hover { background: rgba(0,200,255,0.07); border-color: rgba(0,200,255,0.4); }
-.caso-ver-mas-btn .arrow { transition: transform .25s; display: inline-block; }
-.caso-ver-mas-btn.open .arrow { transform: rotate(180deg); }
+.caso-ver-mas-btn:hover { background: rgba(0,200,255,0.16); border-color: rgba(0,200,255,0.6); color: #fff; }
 .caso-detail { display: none; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px; }
 .caso-detail.open { display: block; }
 .caso-timeline { list-style: none; padding: 0; margin: 0 0 14px 0; }
 .caso-timeline li {
-  display: flex; gap: 12px; align-items: flex-start;
-  font-size: 11px; color: var(--text-dim); padding: 6px 0;
+  display: flex; gap: 14px; align-items: flex-start;
+  font-size: 13px; color: var(--text-dim); padding: 8px 0;
   border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .caso-timeline li:last-child { border-bottom: none; }
 .caso-tl-date {
-  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
   color: var(--electric); letter-spacing: .06em; white-space: nowrap;
-  min-width: 72px; padding-top: 1px;
+  min-width: 80px; padding-top: 2px;
 }
-.caso-tl-text { line-height: 1.5; }
+.caso-tl-text { line-height: 1.6; }
 .caso-tl-text strong { color: var(--text); }
 
 /* ── TIMELINE DE ALERTAS (Opción C) ── */

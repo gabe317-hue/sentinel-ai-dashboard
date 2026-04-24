@@ -1441,6 +1441,42 @@ body::after {
 .tl-export-btn.pdf { border-color: rgba(255,171,0,0.3); color: var(--amber); }
 .tl-export-btn.pdf:hover { background: rgba(255,171,0,0.08); }
 
+/* ── Tab switcher (Por Mes / Por Proveedor) ── */
+.tl-tab-row { display:flex; gap:0; margin-bottom:18px; border-bottom:1px solid var(--border); }
+.tl-tab-btn {
+  background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-1px;
+  color:var(--text-dim); font-family:'Syne',sans-serif; font-size:12px;
+  font-weight:700; letter-spacing:.04em; padding:8px 18px; cursor:pointer;
+  transition:color .15s,border-color .15s;
+}
+.tl-tab-btn:hover { color:var(--text); }
+.tl-tab-btn.active { color:var(--electric); border-bottom-color:var(--electric); }
+
+/* ── Auto-summary box (Opción 5) ── */
+.tl-summary-box {
+  background:rgba(0,200,255,0.05); border:1px solid rgba(0,200,255,0.18);
+  border-radius:10px; padding:12px 16px; margin-bottom:18px;
+  font-size:12px; color:var(--text-dim); line-height:1.75;
+}
+.tl-sum-title {
+  font-family:'Syne',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--electric); margin-bottom:6px;
+}
+.tl-summary-box em { color:var(--text); font-style:normal; font-weight:600; }
+
+/* ── Proveedor view (Opción 2) ── */
+.tl-prov-wrap { border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+.tl-prov-table { width:100%; border-collapse:collapse; font-size:12px; }
+.tl-prov-table th {
+  background:rgba(255,255,255,0.04); color:var(--text-dim); font-size:10px;
+  font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  padding:8px 10px; border-bottom:1px solid var(--border); text-align:left;
+}
+.tl-prov-table td { padding:9px 10px; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:middle; }
+.tl-prov-table tr:last-child td { border-bottom:none; }
+.tl-prov-table tr:hover td { background:rgba(255,255,255,0.03); }
+.tl-prov-bar { height:5px; border-radius:3px; background:linear-gradient(90deg,rgba(0,200,255,0.6),rgba(0,200,255,0.15)); }
+
 </style>
 </head>
 <body>
@@ -2765,6 +2801,12 @@ body::after {
       </div>
     </div>
 
+    <!-- Auto-summary narrative (Opción 5) -->
+    <div class="tl-summary-box" id="tl-summary-box" style="display:none;">
+      <div class="tl-sum-title">📊 Análisis Automático</div>
+      <div id="tl-summary-text">—</div>
+    </div>
+
     <!-- Filtro de año -->
     <div class="tl-year-row">
       <span class="tl-year-lbl">Año:</span>
@@ -2772,6 +2814,12 @@ body::after {
       <button class="tl-year-btn" id="tl-yr-2023" onclick="setTlYear('2023')">2023</button>
       <button class="tl-year-btn" id="tl-yr-2024" onclick="setTlYear('2024')">2024</button>
       <button class="tl-year-btn" id="tl-yr-2025" onclick="setTlYear('2025')">2025</button>
+    </div>
+
+    <!-- Vista tabs: Por Mes / Por Proveedor (Opción 2) -->
+    <div class="tl-tab-row">
+      <button class="tl-tab-btn active" id="tl-tab-mes"  onclick="setTlTab('mes')">📅 Por Mes</button>
+      <button class="tl-tab-btn"        id="tl-tab-prov" onclick="setTlTab('proveedor')">🏢 Por Proveedor</button>
     </div>
 
     <!-- Controls: entity filter + count/monto toggle -->
@@ -2785,54 +2833,85 @@ body::after {
       </div>
     </div>
 
-    <!-- Stacked bar chart (Chart.js) -->
-    <div class="fuente-chart-card" style="margin-bottom:20px;">
-      <div class="fuente-recent-title" id="tl-chart-title">Contratos por mes</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;opacity:0.7;">
-        Apilado por severidad — <span style="color:var(--red);">■</span> Crítica &nbsp;
-        <span style="color:#ff6b35;">■</span> Alta &nbsp;
-        <span style="color:var(--amber);">■</span> Media &nbsp;
-        <span style="color:var(--green);">■</span> Baja
-      </div>
-      <div style="position:relative;height:280px;">
-        <canvas id="timelineChart"></canvas>
-      </div>
-    </div>
-
-    <!-- Monthly breakdown table -->
-    <div class="fuente-chart-card">
-      <div class="fuente-recent-title">📋 Detalle Mensual</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;opacity:0.7;">Clic en cualquier fila para ver contratos de ese mes · ⭐ = mes pico</div>
-      <div class="tl-table-wrap">
-        <table class="tl-table">
-          <thead>
-            <tr>
-              <th>Mes</th>
-              <th style="text-align:right">Total</th>
-              <th style="text-align:center;color:var(--red);">Crítica</th>
-              <th style="text-align:center;color:#ff6b35;">Alta</th>
-              <th style="text-align:center;color:var(--amber);">Media</th>
-              <th style="text-align:center;color:var(--green);">Baja</th>
-              <th style="text-align:right">Monto (L)</th>
-            </tr>
-          </thead>
-          <tbody id="tl-table-body"></tbody>
-        </table>
-      </div>
-
-      <!-- Drilldown panel — aparece al hacer clic en una fila -->
-      <div class="tl-drilldown" id="tl-drilldown">
-        <div class="tl-drilldown-header">
-          <div class="tl-drilldown-title" id="tl-drilldown-title">—</div>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <button class="tl-export-btn pdf" onclick="exportTlPDF()" title="Exportar reporte PDF polished">📄 PDF</button>
-            <button class="tl-export-btn csv" onclick="exportTlCSV()" title="Exportar todos los contratos a CSV">⬇ Todo</button>
-            <button class="tl-drilldown-close" onclick="closeTlDrilldown()">✕</button>
-          </div>
+    <!-- ═══ Vista Por Mes ═══ -->
+    <div id="tl-mes-section">
+      <!-- Stacked bar chart (Chart.js) -->
+      <div class="fuente-chart-card" style="margin-bottom:20px;">
+        <div class="fuente-recent-title" id="tl-chart-title">Contratos por mes</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;opacity:0.7;">
+          Apilado por severidad — <span style="color:var(--red);">■</span> Crítica &nbsp;
+          <span style="color:#ff6b35;">■</span> Alta &nbsp;
+          <span style="color:var(--amber);">■</span> Media &nbsp;
+          <span style="color:var(--green);">■</span> Baja
         </div>
-        <div class="tl-drilldown-list" id="tl-drilldown-list"></div>
+        <div style="position:relative;height:280px;">
+          <canvas id="timelineChart"></canvas>
+        </div>
       </div>
-    </div>
+
+      <!-- Monthly breakdown table -->
+      <div class="fuente-chart-card">
+        <div class="fuente-recent-title">📋 Detalle Mensual</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;opacity:0.7;">Clic en cualquier fila para ver contratos de ese mes · ⭐ = mes pico</div>
+        <div class="tl-table-wrap">
+          <table class="tl-table">
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th style="text-align:right">Total</th>
+                <th style="text-align:center;color:var(--red);">Crítica</th>
+                <th style="text-align:center;color:#ff6b35;">Alta</th>
+                <th style="text-align:center;color:var(--amber);">Media</th>
+                <th style="text-align:center;color:var(--green);">Baja</th>
+                <th style="text-align:right">Monto (L)</th>
+              </tr>
+            </thead>
+            <tbody id="tl-table-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Drilldown panel — aparece al hacer clic en una fila -->
+        <div class="tl-drilldown" id="tl-drilldown">
+          <div class="tl-drilldown-header">
+            <div class="tl-drilldown-title" id="tl-drilldown-title">—</div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button class="tl-export-btn pdf" onclick="exportTlPDF()" title="Exportar reporte PDF polished">📄 PDF</button>
+              <button class="tl-export-btn csv" onclick="exportTlCSV()" title="Exportar todos los contratos a CSV">⬇ Todo</button>
+              <button class="tl-drilldown-close" onclick="closeTlDrilldown()">✕</button>
+            </div>
+          </div>
+          <div class="tl-drilldown-list" id="tl-drilldown-list"></div>
+        </div>
+      </div>
+    </div><!-- /tl-mes-section -->
+
+    <!-- ═══ Vista Por Proveedor (Opción 2) ═══ -->
+    <div id="tl-prov-section" style="display:none;">
+      <div class="fuente-chart-card">
+        <div class="fuente-recent-title">🏢 Top Proveedores</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;opacity:0.7;">
+          Contratos monitoreados por proveedor · ordenados por volumen · top 50
+        </div>
+        <div class="tl-prov-wrap">
+          <table class="tl-prov-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Proveedor</th>
+                <th style="text-align:right">Total</th>
+                <th style="text-align:center;color:var(--red);">Crítica</th>
+                <th style="text-align:center;color:#ff6b35;">Alta</th>
+                <th style="text-align:center;color:var(--amber);">Media</th>
+                <th style="text-align:center;color:var(--green);">Baja</th>
+                <th style="text-align:right">Monto (L)</th>
+                <th style="text-align:right">% Monto</th>
+              </tr>
+            </thead>
+            <tbody id="tl-prov-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /tl-prov-section -->
 
   </div>
 
@@ -4926,7 +5005,139 @@ function hideCasosPanel() {
 let _timelineChart = null;
 let _tlMode = 'count'; // 'count' | 'monto'
 let _tlYear = '';      // '' | '2023' | '2024' | '2025'
+let _tlTab  = 'mes';   // 'mes' | 'proveedor'
 let _tlDrilldownData = []; // contratos activos en el drilldown (para exportar)
+
+// ── Tab switcher (Opción 2) ──
+function setTlTab(tab) {
+  _tlTab = tab;
+  document.getElementById('tl-tab-mes').classList.toggle('active',  tab === 'mes');
+  document.getElementById('tl-tab-prov').classList.toggle('active', tab === 'proveedor');
+  document.getElementById('tl-mes-section').style.display  = tab === 'mes'        ? '' : 'none';
+  document.getElementById('tl-prov-section').style.display = tab === 'proveedor'  ? '' : 'none';
+  renderTimeline(); // dispatcher handles both tabs
+}
+
+// ── Auto-summary narrative (Opción 5) ──
+function renderTlSummary() {
+  const box = document.getElementById('tl-summary-box');
+  const txt = document.getElementById('tl-summary-text');
+  if (!box || !txt || !allAlerts || allAlerts.length === 0) return;
+
+  const entityFilter = (document.getElementById('tl-entity-select') || {}).value || '';
+  let filtered = entityFilter ? allAlerts.filter(a => a.entity_name === entityFilter) : allAlerts;
+  if (_tlYear) {
+    filtered = filtered.filter(a => {
+      const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
+      return raw.startsWith(_tlYear);
+    });
+  }
+  if (filtered.length === 0) { box.style.display = 'none'; return; }
+  box.style.display = '';
+
+  const monthMap = {}, entityMonto = {};
+  let totalMonto = 0, critica = 0, alta = 0, media = 0, baja = 0;
+  filtered.forEach(a => {
+    const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
+    if (raw.length >= 7) monthMap[raw.substring(0,7)] = (monthMap[raw.substring(0,7)] || 0) + 1;
+    const norm = (a.severity || 'Baja').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if      (norm === 'critica') critica++;
+    else if (norm === 'alta')    alta++;
+    else if (norm === 'media')   media++;
+    else                         baja++;
+    const m = Number(a.monto_contrato || 0);
+    totalMonto += m;
+    const ent = a.entity_name || 'Desconocida';
+    entityMonto[ent] = (entityMonto[ent] || 0) + m;
+  });
+
+  const sortedM = Object.keys(monthMap).sort();
+  const peakKey  = sortedM.length ? sortedM.reduce((a,b) => monthMap[a] >= monthMap[b] ? a : b) : null;
+  const fmtMon   = ym => new Date(ym+'-02').toLocaleDateString('es-HN',{month:'long',year:'numeric'});
+  const dateStart = sortedM.length ? new Date(sortedM[0]+'-02').toLocaleDateString('es-HN',{month:'short',year:'numeric'}) : '—';
+  const dateEnd   = sortedM.length ? new Date(sortedM[sortedM.length-1]+'-02').toLocaleDateString('es-HN',{month:'short',year:'numeric'}) : '—';
+
+  const topEntPair = Object.entries(entityMonto).sort((a,b)=>b[1]-a[1])[0];
+  const topEnt     = topEntPair ? topEntPair[0] : null;
+  const topEntPct  = topEnt && totalMonto > 0 ? (topEntPair[1]/totalMonto*100).toFixed(1) : 0;
+
+  const sevs = [{n:'Crítica',v:critica},{n:'Alta',v:alta},{n:'Media',v:media},{n:'Baja',v:baja}];
+  const dom  = sevs.reduce((a,b) => a.v >= b.v ? a : b);
+  const domPct = filtered.length > 0 ? (dom.v/filtered.length*100).toFixed(1) : 0;
+
+  const lines = [
+    `Período <em>${dateStart} – ${dateEnd}</em>, <em>${filtered.length.toLocaleString()}</em> contratos monitoreados.`,
+    peakKey ? `Mayor actividad en <em>${fmtMon(peakKey)}</em> con <em>${monthMap[peakKey]}</em> contratos.` : '',
+    (topEnt && !entityFilter) ? `<em>${topEnt}</em> concentra el <em>${topEntPct}%</em> del monto total.` : '',
+    `Severidad predominante: <em>${dom.n}</em> (<em>${dom.v}</em> contratos, <em>${domPct}%</em>).`,
+    critica > 0 ? `⚠ <em>${critica}</em> contratos Críticos requieren atención prioritaria.` : ''
+  ].filter(Boolean);
+  txt.innerHTML = lines.join(' ');
+}
+
+// ── Proveedor view (Opción 2) ──
+function renderProveedorView() {
+  if (!allAlerts || allAlerts.length === 0) return;
+  const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
+
+  const entityFilter = (document.getElementById('tl-entity-select') || {}).value || '';
+  let filtered = entityFilter ? allAlerts.filter(a => a.entity_name === entityFilter) : allAlerts;
+  if (_tlYear) {
+    filtered = filtered.filter(a => {
+      const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
+      return raw.startsWith(_tlYear);
+    });
+  }
+
+  const provMap = {};
+  let grandMonto = 0;
+  filtered.forEach(a => {
+    const prov = (a.proveedor_nombre || a.supplier_name || a.proveedor || '').trim() || 'Sin nombre';
+    if (!provMap[prov]) provMap[prov] = { total:0, critica:0, alta:0, media:0, baja:0, monto:0 };
+    const norm = (a.severity || 'Baja').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    provMap[prov].total++;
+    if      (norm === 'critica') provMap[prov].critica++;
+    else if (norm === 'alta')    provMap[prov].alta++;
+    else if (norm === 'media')   provMap[prov].media++;
+    else                         provMap[prov].baja++;
+    provMap[prov].monto += Number(a.monto_contrato || 0);
+    grandMonto += Number(a.monto_contrato || 0);
+  });
+
+  const isMonto  = _tlMode === 'monto';
+  const sorted   = Object.entries(provMap).sort((a,b) => isMonto ? b[1].monto - a[1].monto : b[1].total - a[1].total).slice(0, 50);
+  const maxTotal = sorted.length ? (isMonto ? sorted[0][1].monto : sorted[0][1].total) : 1;
+
+  const tbody = document.getElementById('tl-prov-body');
+  if (!sorted.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:20px;">Sin datos para los filtros seleccionados</td></tr>';
+    return;
+  }
+
+  const sevCell = (val, color) => val
+    ? `<td style="text-align:center;color:${color};font-weight:600;">${val}</td>`
+    : `<td style="text-align:center;color:${color};opacity:0.25;">—</td>`;
+
+  tbody.innerHTML = sorted.map(([prov, d], i) => {
+    const pct    = grandMonto > 0 ? (d.monto / grandMonto * 100).toFixed(1) : '0.0';
+    const barVal = isMonto ? d.monto : d.total;
+    const barW   = Math.round(barVal / maxTotal * 100);
+    return `<tr>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);width:28px;">${i+1}</td>
+      <td>
+        <div style="color:var(--text);font-weight:500;font-size:12px;line-height:1.3;max-width:220px;word-break:break-word;">${prov}</div>
+        <div class="tl-prov-bar" style="width:${barW}%;margin-top:5px;"></div>
+      </td>
+      <td style="text-align:right;font-weight:700;color:var(--text);">${d.total}</td>
+      ${sevCell(d.critica,'var(--red)')}
+      ${sevCell(d.alta,'#ff6b35')}
+      ${sevCell(d.media,'var(--amber)')}
+      ${sevCell(d.baja,'var(--green)')}
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${fmtL(d.monto)}</td>
+      <td style="text-align:right;font-size:11px;color:var(--electric);font-weight:600;">${pct}%</td>
+    </tr>`;
+  }).join('');
+}
 
 function showTimelinePanel() {
   _closeAllFuentePanels();
@@ -4992,6 +5203,8 @@ function populateTimelineEntities() {
 
 function renderTimeline() {
   if (!allAlerts || allAlerts.length === 0) return;
+  renderTlSummary();
+  if (_tlTab === 'proveedor') { renderProveedorView(); return; }
   const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
 
   const entityFilter = document.getElementById('tl-entity-select').value;

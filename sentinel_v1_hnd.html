@@ -1291,6 +1291,35 @@ body::after {
   opacity: .65;
 }
 
+/* ── VER MÁS / EXPANDABLE CASO ── */
+.caso-ver-mas-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  letter-spacing: .08em; color: var(--electric); cursor: pointer;
+  background: none; border: 1px solid rgba(0,200,255,0.2);
+  border-radius: 4px; padding: 4px 10px; margin-top: 12px;
+  transition: background .2s, border-color .2s;
+}
+.caso-ver-mas-btn:hover { background: rgba(0,200,255,0.07); border-color: rgba(0,200,255,0.4); }
+.caso-ver-mas-btn .arrow { transition: transform .25s; display: inline-block; }
+.caso-ver-mas-btn.open .arrow { transform: rotate(180deg); }
+.caso-detail { display: none; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px; }
+.caso-detail.open { display: block; }
+.caso-timeline { list-style: none; padding: 0; margin: 0 0 14px 0; }
+.caso-timeline li {
+  display: flex; gap: 12px; align-items: flex-start;
+  font-size: 11px; color: var(--text-dim); padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.caso-timeline li:last-child { border-bottom: none; }
+.caso-tl-date {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--electric); letter-spacing: .06em; white-space: nowrap;
+  min-width: 72px; padding-top: 1px;
+}
+.caso-tl-text { line-height: 1.5; }
+.caso-tl-text strong { color: var(--text); }
+
 /* ── TIMELINE DE ALERTAS (Opción C) ── */
 .tl-controls {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -2554,7 +2583,7 @@ body::after {
         </div>
         <div class="caso-dato">
           <div class="caso-dato-lbl">Delitos</div>
-          <div class="caso-dato-val">67 cargos de fraude</div>
+          <div class="caso-dato-val">1 cargo fraude continuado (67 actos)</div>
         </div>
         <div class="caso-dato">
           <div class="caso-dato-lbl">Beneficiarios Irregulares</div>
@@ -2570,15 +2599,19 @@ body::after {
         </div>
         <div class="caso-dato">
           <div class="caso-dato-lbl">Medidas Cautelares</div>
-          <div class="caso-dato-val">Arresto domiciliario + suspensión (5 feb 2026)</div>
+          <div class="caso-dato-val">Firma periódica · prohibición de salida · incomunicación entre imputados</div>
+        </div>
+        <div class="caso-dato">
+          <div class="caso-dato-lbl">Pruebas en Juicio</div>
+          <div class="caso-dato-val highlight">86 medios de prueba</div>
         </div>
       </div>
 
       <div class="caso-section-lbl">Actores Principales</div>
       <div class="caso-actores">
-        <strong>Isis Carolina Cuéllar Erazo</strong> — Diputada activa, Partido Libre (M28), Copán<br>
-        <strong>José Carlos Cardona Erazo</strong> — Ex Secretario SEDESOL (coautor)<br>
-        Juez: Luis Fernando Padilla Castellanos
+        <strong>Isis Carolina Cuéllar Erazo</strong> — Diputada activa, Partido Libre (M28), Copán · suspendida del CN<br>
+        <strong>José Carlos Cardona Erazo</strong> — Ex Secretario SEDESOL (coautor) · denuncia presiones de magistrados<br>
+        Juez: Luis Fernando Padilla Castellanos · Fiscalía: FETCCOP
       </div>
 
       <div class="caso-section-lbl">Alertas Sentinel</div>
@@ -2590,7 +2623,26 @@ body::after {
         <span class="caso-alerta-chip media">Beneficiarios Irregulares</span>
       </div>
 
-      <div class="caso-fuentes">Fuentes: La Prensa HN · El Heraldo HN · Proceso Digital · Infobae Honduras</div>
+      <button class="caso-ver-mas-btn" onclick="toggleCasoDetail('chequesol')">
+        VER MÁS <span class="arrow">▼</span>
+      </button>
+      <div class="caso-detail" id="detail-chequesol">
+        <div class="caso-section-lbl">Cronología del Caso</div>
+        <ul class="caso-timeline">
+          <li><span class="caso-tl-date">May–Dic 2023</span><span class="caso-tl-text">Período del esquema: fondos SEDESOL desviados a actividades proselitistas de Libre en Copán. 65 beneficiarios irregulares en 2 nóminas.</span></li>
+          <li><span class="caso-tl-date">Jun 2025</span><span class="caso-tl-text"><strong>Video filtrado:</strong> Cardona y Cuéllar discuten uso de fondos estatales para financiar estructuras partidarias ("kits de sonido").</span></li>
+          <li><span class="caso-tl-date">5 Feb 2026</span><span class="caso-tl-text">CSJ impone medidas cautelares: <strong>arresto domiciliario a Cuéllar</strong>, suspensión del cargo en CN. Audiencia inicial programada.</span></li>
+          <li><span class="caso-tl-date">6 Feb 2026</span><span class="caso-tl-text">Audiencia inicial — FETCCOP presenta 14 medios de prueba iniciales. Los 12 imputados se defienden en libertad bajo medidas.</span></li>
+          <li><span class="caso-tl-date">Mar 2026</span><span class="caso-tl-text">Reanudación de audiencia con <strong>86 medios de prueba</strong> bajo análisis. Cardona denuncia presiones de magistrados para fallo más severo.</span></li>
+          <li><span class="caso-tl-date">25 Mar 2026</span><span class="caso-tl-text"><strong>Procesamiento formal:</strong> juez ordena proceso contra los 12 imputados. Los 67 actos de fraude se unifican en 1 cargo de fraude continuado.</span></li>
+        </ul>
+        <div class="caso-section-lbl">Medidas Cautelares Detalladas</div>
+        <div class="caso-actores">
+          Firma periódica en sede judicial · Prohibición de salir del país · Sin comunicación entre imputados · Bajo custodia de abogados defensores · Isis Cuéllar: suspensión del CN + arresto domiciliario inicial (luego levantado a medidas)
+        </div>
+      </div>
+
+      <div class="caso-fuentes">Fuentes: La Prensa HN · El Heraldo HN · Proceso Digital · Infobae Honduras · La Tribuna HN — Act. Mar 2026</div>
     </div>
 
     <!-- ── CASO 2: CORTES EDUCACIÓN ── -->
@@ -2606,7 +2658,7 @@ body::after {
       <div class="caso-data-grid">
         <div class="caso-dato">
           <div class="caso-dato-lbl">Nombramientos Irregulares</div>
-          <div class="caso-dato-val red">152 detectados</div>
+          <div class="caso-dato-val red">152 de 577 totales (2024–2025)</div>
         </div>
         <div class="caso-dato">
           <div class="caso-dato-lbl">Despedidos</div>
@@ -2658,7 +2710,28 @@ body::after {
         <span class="caso-alerta-chip media">Actor Lista Engel</span>
       </div>
 
-      <div class="caso-fuentes">Fuentes: El Heraldo HN · La Prensa HN · Proceso Digital · Tiempo HN · El Espectador HN — Abril 2026</div>
+      <button class="caso-ver-mas-btn" onclick="toggleCasoDetail('seduc')">
+        VER MÁS <span class="arrow">▼</span>
+      </button>
+      <div class="caso-detail" id="detail-seduc">
+        <div class="caso-section-lbl">Cronología del Caso</div>
+        <ul class="caso-timeline">
+          <li><span class="caso-tl-date">2024–2025</span><span class="caso-tl-text">577 nombramientos civiles emitidos en SEDUC Cortés. Revisión interna detecta <strong>152 paracaidistas</strong> — empleados que nunca se presentaron pero cobraron salario.</span></li>
+          <li><span class="caso-tl-date">Sep 2024–Ene 2026</span><span class="caso-tl-text">Casaña cobra <strong>L 53,454/mes</strong> en jefatura inexistente en Santa Bárbara — total acumulado ≈ L 893,000.</span></li>
+          <li><span class="caso-tl-date">16 Abr 2026</span><span class="caso-tl-text"><strong>Destape:</strong> Director departamental Rafael Rodríguez anuncia aportará pruebas. Red de 20+ personas con cargos pero sin presentarse identificada públicamente.</span></li>
+          <li><span class="caso-tl-date">22 Abr 2026</span><span class="caso-tl-text">Ministerio de Finanzas confirma pérdidas millonarias al Estado por planillas fantasma en educación — caso citado como referencia nacional.</span></li>
+          <li><span class="caso-tl-date">Pendiente</span><span class="caso-tl-text"><strong>Denuncia formal al MP</strong> en proceso. Investigación formal aún no iniciada. 39 paracaidistas despedidos. Casaña enfrenta además sentencia previa de INPREMA.</span></li>
+        </ul>
+        <div class="caso-section-lbl">Red Familiar Documentada</div>
+        <div class="caso-actores">
+          <strong>Arriaga:</strong> madre (gerente adm. fantasma), prima (directora departamental)<br>
+          <strong>Casaña:</strong> sobrino Ricardo Castro (médico fantasma CTHA), esposa Bella Sabillón, hermano Nery Casaña, cuñada — todos en asistencias técnicas Santa Bárbara<br>
+          <strong>Facilitador:</strong> Emilio Guifarro (junta departamental de selección)<br>
+          <strong>Nota:</strong> Casaña en Lista Engel EE.UU. + sentencia previa INPREMA
+        </div>
+      </div>
+
+      <div class="caso-fuentes">Fuentes: El Heraldo HN · La Prensa HN · Proceso Digital · Tiempo HN · El Espectador HN · tunota.com — Act. Abr 2026</div>
     </div>
 
   </div>
@@ -4867,6 +4940,16 @@ function showTimelinePanel() {
     populateTimelineEntities();
     renderTimeline();
   }, 80);
+}
+
+function toggleCasoDetail(id) {
+  const detail = document.getElementById('detail-' + id);
+  const btn    = detail.previousElementSibling;
+  const isOpen = detail.classList.contains('open');
+  detail.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  btn.querySelector('.arrow').style.transform = isOpen ? '' : 'rotate(180deg)';
+  btn.innerHTML = (isOpen ? 'VER MÁS' : 'VER MENOS') + ' <span class="arrow" style="display:inline-block;transform:' + (isOpen?'':'rotate(180deg)') + '">' + (isOpen?'▼':'▲') + '</span>';
 }
 
 function hideTimelinePanel() {

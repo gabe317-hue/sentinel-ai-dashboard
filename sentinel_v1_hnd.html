@@ -2887,10 +2887,26 @@ body::after {
 
     <!-- ═══ Vista Por Proveedor (Opción 2) ═══ -->
     <div id="tl-prov-section" style="display:none;">
+
+      <!-- Horizontal bar chart — top 20 -->
+      <div class="fuente-chart-card" style="margin-bottom:20px;">
+        <div class="fuente-recent-title" id="tl-prov-chart-title">Top 20 Proveedores</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;opacity:0.7;">
+          Apilado por severidad — <span style="color:var(--red);">■</span> Crítica &nbsp;
+          <span style="color:#ff6b35;">■</span> Alta &nbsp;
+          <span style="color:var(--amber);">■</span> Media &nbsp;
+          <span style="color:var(--green);">■</span> Baja &nbsp;·&nbsp; Clic en barra para ver contratos
+        </div>
+        <div style="position:relative;" id="tl-prov-chart-wrap">
+          <canvas id="provChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Table — top 50 -->
       <div class="fuente-chart-card">
-        <div class="fuente-recent-title">🏢 Top Proveedores</div>
+        <div class="fuente-recent-title">🏢 Ranking de Proveedores</div>
         <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;opacity:0.7;">
-          Contratos monitoreados por proveedor · ordenados por volumen · top 50
+          Top 50 · ordenados por volumen · Clic en fila para ver contratos de ese proveedor
         </div>
         <div class="tl-prov-wrap">
           <table class="tl-prov-table">
@@ -2909,6 +2925,18 @@ body::after {
             </thead>
             <tbody id="tl-prov-body"></tbody>
           </table>
+        </div>
+
+        <!-- Proveedor drilldown panel -->
+        <div class="tl-drilldown" id="tl-prov-drilldown">
+          <div class="tl-drilldown-header">
+            <div class="tl-drilldown-title" id="tl-prov-drilldown-title">—</div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button class="tl-export-btn pdf" onclick="exportProvPDF()" title="Exportar reporte PDF de este proveedor">📄 PDF</button>
+              <button class="tl-drilldown-close" onclick="closeProvDrilldown()">✕</button>
+            </div>
+          </div>
+          <div class="tl-drilldown-list" id="tl-prov-drilldown-list"></div>
         </div>
       </div>
     </div><!-- /tl-prov-section -->
@@ -5003,10 +5031,13 @@ function hideCasosPanel() {
 // TIMELINE DE ALERTAS — Opción C (Phase 2 visual)
 // ════════════════════════════════════════════════════════════
 let _timelineChart = null;
+let _provChart     = null;
 let _tlMode = 'count'; // 'count' | 'monto'
 let _tlYear = '';      // '' | '2023' | '2024' | '2025'
 let _tlTab  = 'mes';   // 'mes' | 'proveedor'
-let _tlDrilldownData = []; // contratos activos en el drilldown (para exportar)
+let _tlDrilldownData  = []; // contratos activos en el drilldown mensual
+let _provDrilldownData = []; // contratos activos en el drilldown de proveedor
+let _currentProv = '';
 
 // ── Tab switcher (Opción 2) ──
 function setTlTab(tab) {
@@ -5111,6 +5142,7 @@ function renderProveedorView() {
   const tbody = document.getElementById('tl-prov-body');
   if (!sorted.length) {
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-dim);padding:20px;">Sin datos para los filtros seleccionados</td></tr>';
+    if (_provChart) { _provChart.destroy(); _provChart = null; }
     return;
   }
 
@@ -5122,7 +5154,8 @@ function renderProveedorView() {
     const pct    = grandMonto > 0 ? (d.monto / grandMonto * 100).toFixed(1) : '0.0';
     const barVal = isMonto ? d.monto : d.total;
     const barW   = Math.round(barVal / maxTotal * 100);
-    return `<tr>
+    const provSafe = prov.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<tr data-prov-idx="${i}" style="cursor:pointer;" onclick="renderProvDrilldown('${provSafe}')">
       <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);width:28px;">${i+1}</td>
       <td>
         <div style="color:var(--text);font-weight:500;font-size:12px;line-height:1.3;max-width:220px;word-break:break-word;">${prov}</div>
@@ -5137,6 +5170,259 @@ function renderProveedorView() {
       <td style="text-align:right;font-size:11px;color:var(--electric);font-weight:600;">${pct}%</td>
     </tr>`;
   }).join('');
+
+  // ── Horizontal bar chart — top 20 ──
+  const top20   = sorted.slice(0, 20);
+  const cLabels = top20.map(([p]) => p.length > 30 ? p.substring(0,30)+'…' : p);
+  const _top20Names = top20.map(([p]) => p); // keep full names for click
+
+  document.getElementById('tl-prov-chart-title').textContent =
+    `Top ${top20.length} Proveedores — ${isMonto ? 'Monto L' : 'N° Contratos'}`;
+
+  const chartH = Math.max(300, top20.length * 26);
+  document.getElementById('tl-prov-chart-wrap').style.height = chartH + 'px';
+
+  const sevMonto20 = (d, key) => d.total > 0 ? d.monto * (d[key] / d.total) : 0;
+  const cDatasets = [
+    { label:'Crítica', data: top20.map(([,d]) => isMonto ? sevMonto20(d,'critica') : d.critica), backgroundColor:'rgba(255,61,87,0.8)',  borderColor:'#ff3d57', borderWidth:1 },
+    { label:'Alta',    data: top20.map(([,d]) => isMonto ? sevMonto20(d,'alta')    : d.alta),    backgroundColor:'rgba(255,140,66,0.85)', borderColor:'#ff8c42', borderWidth:1 },
+    { label:'Media',   data: top20.map(([,d]) => isMonto ? sevMonto20(d,'media')   : d.media),   backgroundColor:'rgba(77,157,224,0.85)', borderColor:'#4d9de0', borderWidth:1 },
+    { label:'Baja',    data: top20.map(([,d]) => isMonto ? sevMonto20(d,'baja')    : d.baja),    backgroundColor:'rgba(6,214,160,0.75)',  borderColor:'#06d6a0', borderWidth:1 }
+  ];
+
+  if (_provChart) { _provChart.destroy(); _provChart = null; }
+  _provChart = new Chart(document.getElementById('provChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: cLabels, datasets: cDatasets },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      onClick: (evt, elements) => {
+        if (elements.length > 0) renderProvDrilldown(_top20Names[elements[0].index]);
+      },
+      plugins: {
+        legend: { display:true, position:'top', labels:{ color:'#8899aa', font:{size:11}, boxWidth:12, padding:16 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.x;
+              return isMonto ? ` ${ctx.dataset.label}: L ${Math.round(v).toLocaleString('es-HN')}` : ` ${ctx.dataset.label}: ${Math.round(v)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true, beginAtZero: true,
+          ticks: { color:'#8899aa', font:{size:10}, callback: v => isMonto ? 'L'+(v/1000000).toFixed(1)+'M' : v },
+          grid: { color:'rgba(255,255,255,0.06)' }
+        },
+        y: {
+          stacked: true,
+          ticks: { color:'#8899aa', font:{size:10} },
+          grid: { color:'rgba(255,255,255,0.04)' }
+        }
+      }
+    }
+  });
+
+  // Close any open drilldown when data re-renders
+  closeProvDrilldown();
+}
+
+// ── Drilldown de proveedor ──
+function renderProvDrilldown(provName) {
+  if (!allAlerts) return;
+  const fmtL = n => n > 0 ? 'L ' + n.toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0}) : 'L —';
+
+  const entityFilter = (document.getElementById('tl-entity-select')||{}).value || '';
+  let filtered = entityFilter ? allAlerts.filter(a => a.entity_name === entityFilter) : allAlerts;
+  if (_tlYear) {
+    filtered = filtered.filter(a => {
+      const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
+      return raw.startsWith(_tlYear);
+    });
+  }
+
+  const contracts = filtered.filter(a => {
+    const prov = (a.proveedor_nombre || a.supplier_name || a.proveedor || '').trim() || 'Sin nombre';
+    return prov === provName;
+  });
+
+  _provDrilldownData = contracts;
+  _currentProv = provName;
+
+  // Highlight active row
+  document.querySelectorAll('#tl-prov-body tr').forEach(tr => tr.classList.remove('tl-row-active'));
+  const allRows = document.querySelectorAll('#tl-prov-body tr');
+  allRows.forEach(tr => {
+    if (tr.querySelector('div')?.textContent === provName) tr.classList.add('tl-row-active');
+  });
+
+  const sevColor = { critica:'var(--red)', alta:'#ff6b35', media:'var(--amber)', baja:'var(--green)' };
+  const sevLabel = { critica:'CRÍTICA', alta:'ALTA', media:'MEDIA', baja:'BAJA' };
+  const sevOrder = { critica:0, alta:1, media:2, baja:3 };
+
+  document.getElementById('tl-prov-drilldown-title').innerHTML =
+    `🏢 ${provName} — ${contracts.length} CONTRATO${contracts.length !== 1 ? 'S' : ''}`;
+
+  const sorted = [...contracts].sort((a,b) => {
+    const sa = (a.severity||'baja').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const sb = (b.severity||'baja').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const so = (sevOrder[sa]??3) - (sevOrder[sb]??3);
+    return so !== 0 ? so : Number(b.monto_contrato||0) - Number(a.monto_contrato||0);
+  });
+
+  const list = document.getElementById('tl-prov-drilldown-list');
+  if (!sorted.length) {
+    list.innerHTML = '<div style="padding:16px;color:var(--text-dim);font-size:12px;">Sin contratos para este proveedor con los filtros actuales.</div>';
+  } else {
+    list.innerHTML = sorted.map(a => {
+      const norm  = (a.severity||'Baja').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      const color = sevColor[norm] || 'var(--text-dim)';
+      const sev   = sevLabel[norm] || (a.severity||'BAJA').toUpperCase();
+      const ent   = a.entity_name || '—';
+      const raw   = a.fecha_contrato||a.fecha_adjudicacion||a.fecha_publicacion||a.created_at||'';
+      const fecha = raw.substring(0,10);
+      const tipo  = a.alert_type || a.data_source || '—';
+      const entSafe = ent.replace(/'/g,"\\'");
+      return `<div class="tl-dd-row">
+        <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:${color};font-weight:700;white-space:nowrap;">${sev}</div>
+        <div>
+          <button onclick="showEntityFromTimeline('${entSafe}')" style="background:none;border:none;padding:0;cursor:pointer;text-align:left;" title="Ver todos los contratos de ${ent}">
+            <div style="font-size:12px;color:var(--electric);font-weight:500;line-height:1.3;text-decoration:underline dotted;">${ent}</div>
+          </button>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">📋 ${tipo} · ${fecha}</div>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);">📅 ${fecha}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);white-space:nowrap;">${fmtL(Number(a.monto_contrato||0))}</div>
+      </div>`;
+    }).join('');
+  }
+
+  const dd = document.getElementById('tl-prov-drilldown');
+  dd.classList.add('open');
+  setTimeout(() => dd.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
+}
+
+function closeProvDrilldown() {
+  const dd = document.getElementById('tl-prov-drilldown');
+  if (dd) dd.classList.remove('open');
+  document.querySelectorAll('#tl-prov-body tr').forEach(tr => tr.classList.remove('tl-row-active'));
+}
+
+function exportProvPDF() {
+  if (!_provDrilldownData || _provDrilldownData.length === 0) return;
+  const fmtL  = n => 'L. ' + (Number(n)||0).toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0});
+  const esc   = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const pct   = (n,total) => total > 0 ? (n/total*100).toFixed(1)+'%' : '0%';
+
+  const now      = new Date();
+  const fechaStr = now.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const horaStr  = now.toLocaleTimeString('es-HN',{hour:'2-digit',minute:'2-digit'});
+  const dateTag  = now.toISOString().slice(0,10);
+
+  const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
+  let montoTotal = 0;
+  for (const a of _provDrilldownData) {
+    const s = a.severity || 'Baja';
+    if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
+    montoTotal += Number(a.monto_contrato || 0);
+  }
+
+  const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910', 'Baja':'#1E8449' };
+  const sorted   = [..._provDrilldownData].sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
+  const detailRows = sorted.map((a,i) => {
+    const sev   = a.severity || 'Baja';
+    const fecha = (a.fecha_contrato||a.fecha_adjudicacion||a.fecha_publicacion||a.created_at||'').substring(0,10);
+    const pats  = (a.patterns||a.alert_type||a.data_source||'').split(',').filter(Boolean).map(p => PATTERN_LABELS[p]||p).join(' + ');
+    return `<tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
+      <td style="text-align:center">${i+1}</td>
+      <td>${esc(a.entity_name)}</td>
+      <td style="color:${sevColor[sev]||'#555'};font-weight:bold;text-align:center">${esc(sev)}</td>
+      <td style="text-align:right">${esc(fmtL(a.monto_contrato))}</td>
+      <td>${esc(pats)}</td>
+      <td style="text-align:center;white-space:nowrap">${esc(fecha)}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sentinel-AI — Proveedor ${dateTag}</title>
+<style>
+  @page { size: A4 landscape; margin: 1.4cm 1cm 1.8cm 1cm; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print { display: none !important; }
+  }
+  body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #222; margin: 0; padding: 16px; }
+  h1   { color: #0A1628; font-size: 17pt; margin-bottom: 2px; margin-top: 0; }
+  h2   { color: #1A3A6B; font-size: 11pt; font-weight: normal; margin-top: 0; margin-bottom: 10px; }
+  .meta { color: #7F8C8D; font-size: 8pt; margin-bottom: 14px; }
+  .sec  { color: #0A1628; font-size: 10pt; font-weight: bold; margin: 14px 0 5px 0;
+          border-bottom: 1.5pt solid #1A3A6B; padding-bottom: 3px; }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; margin-top: 4px; }
+  th    { background: #1A3A6B; color: #fff; padding: 4px 5px; font-size: 8pt; text-align: left; word-wrap: break-word; }
+  td    { padding: 3px 5px; border: 1px solid #D0D7E2; font-size: 8pt; vertical-align: top; word-wrap: break-word; }
+  .stbl td { font-size: 10.5pt; font-weight: bold; padding: 4px 10px; border: 1px solid #D0D7E2; }
+  .footer-bar { font-size: 7pt; color: #888; margin-top: 18px; border-top: 1px solid #D0D7E2;
+                padding-top: 4px; display: flex; justify-content: space-between; }
+  .print-btn { display: inline-block; margin: 0 0 16px 0; padding: 8px 18px;
+               background: #1A3A6B; color: #fff; border: none; border-radius: 6px;
+               font-size: 10pt; cursor: pointer; }
+</style>
+</head>
+<body>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+<h1>SENTINEL-AI HONDURAS</h1>
+<h2>Reporte de Proveedor — ${esc(_currentProv)}</h2>
+<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Total contratos: ${_provDrilldownData.length.toLocaleString('es-HN')} &nbsp;|&nbsp; Monto total: ${esc(fmtL(montoTotal))}</p>
+<table class="stbl" style="width:auto;margin-bottom:14px">
+  <tr>
+    <th>Total Contratos</th><th>Monto Expuesto</th>
+    <th>Críticas</th><th>%</th><th>Altas</th><th>%</th><th>Medias</th><th>%</th><th>Bajas</th><th>%</th>
+  </tr>
+  <tr>
+    <td>${_provDrilldownData.length.toLocaleString('es-HN')}</td>
+    <td>${esc(fmtL(montoTotal))}</td>
+    <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td><td style="color:#C0392B;text-align:center;font-size:8pt">${pct(counts['Crítica'],_provDrilldownData.length)}</td>
+    <td style="color:#C05000;text-align:center">${counts['Alta']}</td><td style="color:#C05000;text-align:center;font-size:8pt">${pct(counts['Alta'],_provDrilldownData.length)}</td>
+    <td style="color:#D68910;text-align:center">${counts['Media']}</td><td style="color:#D68910;text-align:center;font-size:8pt">${pct(counts['Media'],_provDrilldownData.length)}</td>
+    <td style="color:#1E8449;text-align:center">${counts['Baja']}</td><td style="color:#1E8449;text-align:center;font-size:8pt">${pct(counts['Baja'],_provDrilldownData.length)}</td>
+  </tr>
+</table>
+<p class="sec">Detalle de Contratos por Entidad — ordenados por monto descendente</p>
+<table>
+  <colgroup>
+    <col style="width:4%"><col style="width:24%"><col style="width:9%">
+    <col style="width:12%"><col style="width:35%"><col style="width:10%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th style="text-align:center">#</th>
+      <th>Entidad Contratante</th>
+      <th style="text-align:center">Severidad</th>
+      <th style="text-align:right">Monto</th>
+      <th>Patrones / Tipo</th>
+      <th style="text-align:center">Fecha</th>
+    </tr>
+  </thead>
+  <tbody>${detailRows}</tbody>
+</table>
+<div class="footer-bar">
+  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
+</div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=1100,height=800');
+  if (!win) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.addEventListener('load', () => win.focus());
 }
 
 function showTimelinePanel() {

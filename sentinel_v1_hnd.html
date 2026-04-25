@@ -468,6 +468,16 @@ body::after {
   border-color: var(--red) !important;
   color: var(--red) !important;
 }
+/* Lista Engel filter button — purple styling */
+.filter-btn-engel {
+  border-color: rgba(168,85,247,0.5) !important;
+  color: var(--purple) !important;
+}
+.filter-btn-engel:hover, .filter-btn-engel.active {
+  background: var(--purple-dim, rgba(168,85,247,0.12)) !important;
+  border-color: var(--purple) !important;
+  color: var(--purple) !important;
+}
 .filter-btn-sobrecosto {
   border-color: rgba(255,171,0,0.5) !important;
   color: var(--amber) !important;
@@ -562,6 +572,7 @@ body::after {
   letter-spacing: .03em; font-family: 'JetBrains Mono', monospace;
 }
 .adp-pattern-tag.PROVEEDOR_SANCIONADO    { background:var(--red-dim);     color:var(--red);      border:1px solid var(--red); }
+.adp-pattern-tag.PROVEEDOR_ENGEL        { background:var(--purple-dim,rgba(168,85,247,0.12)); color:var(--purple); border:1px solid var(--purple); }
 .adp-pattern-tag.SOBRECOSTO              { background:var(--amber-dim);   color:var(--amber);    border:1px solid var(--amber); }
 .adp-pattern-tag.MONTO_FRACCIONADO       { background:var(--electric-dim);color:var(--electric); border:1px solid var(--electric); }
 .adp-pattern-tag.ADJUDICACION_DIRECTA    { background:var(--orange-dim);  color:var(--orange);   border:1px solid var(--orange); }
@@ -1029,6 +1040,8 @@ body::after {
 .exec-card-amber::before { background: var(--amber); }
 .exec-card-glass  { background: var(--glass); }
 .exec-card-glass::before { background: var(--text-dim); }
+.exec-card-purple { background: var(--purple-dim, rgba(168,85,247,0.12)); }
+.exec-card-purple::before { background: var(--purple); }
 .exec-card-label {
   font-family: 'JetBrains Mono', monospace; font-size: 10px;
   text-transform: uppercase; letter-spacing: 1.5px;
@@ -1043,6 +1056,7 @@ body::after {
 .exec-card-electric .exec-card-value { color: var(--electric); }
 .exec-card-green  .exec-card-value { color: var(--green); }
 .exec-card-amber  .exec-card-value { color: var(--amber); }
+.exec-card-purple .exec-card-value { color: var(--purple); }
 .exec-card-glass  .exec-card-value { color: var(--text); }
 .exec-card-sub {
   font-family: 'JetBrains Mono', monospace; font-size: 11px;
@@ -1641,47 +1655,48 @@ body::after {
         <span class="nav-icon">📊</span> Vista Ejecutiva
       </button>
       <button class="nav-item" id="nav-contratos" onclick="hideAllPanels()">
-        <span class="nav-icon">📋</span> Contratos Monitoreados
+        <span class="nav-icon">📋</span> Contratos
       </button>
     </div>
 
     <div class="nav-section">
       <div class="nav-section-label">Análisis</div>
       <button class="nav-item" id="nav-analytics" onclick="showAnalyticsPanel()">
-        <span class="nav-icon">📈</span> Análisis Global
+        <span class="nav-icon">📈</span> Análisis
       </button>
       <button class="nav-item" id="nav-vendor-concentration" onclick="showVendorConcentrationPanel()">
-        <span class="nav-icon">🔴</span> Concentración Proveedores
+        <span class="nav-icon">🔴</span> Concentración
       </button>
       <button class="nav-item" id="nav-sobrecostos" onclick="showGlobalSobrecostos()">
-        <span class="nav-icon">📊</span> Resumen Global
-      </button>
-      <button class="nav-item" id="nav-riesgo-sobrecosto" onclick="showRiesgoSobrecostos()" style="color:var(--amber);">
-        <span class="nav-icon">⚠️</span> Riesgo Sobrecosto
+        <span class="nav-icon">💰</span> Sobrecostos
       </button>
       <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()">
-        <span class="nav-icon">⚡</span> Velocidad &amp; Anomalías
+        <span class="nav-icon">⚡</span> Anomalías
       </button>
+      <button class="nav-item" id="nav-sector" onclick="showSectorPanel()">
+        <span class="nav-icon">🏛️</span> Por Sector
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Investigación</div>
       <button class="nav-item" id="nav-casos" onclick="showCasosPanel()" style="color:var(--red);">
         <span class="nav-icon">⚖️</span> Casos Activos
         <span class="nav-chip" style="background:rgba(255,61,87,0.15);color:var(--red);border-color:rgba(255,61,87,0.3);">2</span>
       </button>
       <button class="nav-item" id="nav-timeline" onclick="showTimelinePanel()">
-        <span class="nav-icon">📅</span> Timeline de Alertas
+        <span class="nav-icon">📅</span> Timeline
       </button>
-      <button class="nav-item" id="nav-sector" onclick="showSectorPanel()">
-        <span class="nav-icon">🏛️</span> Riesgo por Sector
+      <button class="nav-item" id="nav-news" onclick="showNewsPanel()">
+        <span class="nav-icon">📰</span> Noticias
+        <span class="nav-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">RSS</span>
       </button>
     </div>
 
     <div class="nav-section">
       <div class="nav-section-label">Sistema</div>
-      <button class="nav-item" id="nav-news" onclick="showNewsPanel()">
-        <span class="nav-icon">📰</span> Noticias
-        <span class="nav-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">RSS</span>
-      </button>
       <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
-        <span class="nav-icon">📋</span> Auditoría
+        <span class="nav-icon">📝</span> Auditoría
         <span class="nav-chip">LOG</span>
       </button>
       <a class="nav-item" href="index.html">
@@ -1790,6 +1805,13 @@ body::after {
         <div class="exec-card-sub">Lista de Sanciones EE.UU.</div>
         <div class="exec-card-note">▸ Revisión inmediata</div>
       </div>
+      <!-- Engel List box -->
+      <div class="exec-card exec-card-purple">
+        <div class="exec-card-label">Lista Engel EE.UU.</div>
+        <div class="exec-card-value" id="exec-engel">—</div>
+        <div class="exec-card-sub">Actores RENACER · Honduras</div>
+        <div class="exec-card-note">▸ Alerta máxima</div>
+      </div>
       <!-- Total monitored -->
       <div class="exec-card exec-card-green">
         <div class="exec-card-label">Total Monitoreados</div>
@@ -1809,7 +1831,7 @@ body::after {
         <div class="exec-card-label">Estado del Sistema</div>
         <div class="exec-card-value" style="font-size:20px;" id="exec-status-val">—</div>
         <div class="exec-card-sub" id="exec-last-update">—</div>
-        <div class="exec-card-note">▸ Supabase · SEFIN · OFAC</div>
+        <div class="exec-card-note">▸ Supabase · SEFIN · OFAC · Engel</div>
       </div>
     </div>
     <!-- Top 5 critical contracts table -->
@@ -1846,6 +1868,11 @@ body::after {
       </div>
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
+        <div class="exec-source-name">Lista Engel (RENACER)</div>
+        <div class="exec-source-val" id="src-engel">Cargando...</div>
+      </div>
+      <div class="exec-source active">
+        <div class="exec-source-dot green"></div>
         <div class="exec-source-name">SIAFI2</div>
         <div class="exec-source-val">3,071 pagos reales</div>
       </div>
@@ -1864,11 +1891,21 @@ body::after {
         <div class="exec-source-name">RNP Proveedores</div>
         <div class="exec-source-val">En integración</div>
       </div>
+      <div class="exec-source pending">
+        <div class="exec-source-dot amber"></div>
+        <div class="exec-source-name">HonduCompras / ONCAE</div>
+        <div class="exec-source-val">API disponible · pendiente</div>
+      </div>
+      <div class="exec-source pending">
+        <div class="exec-source-dot amber"></div>
+        <div class="exec-source-name">Portal IAIP (api.iaip.gob.hn)</div>
+        <div class="exec-source-val">Endpoint activo · pendiente</div>
+      </div>
     </div>
     <!-- Go to full table button -->
     <div style="margin-top:28px; text-align:center;">
       <button class="btn-new-alert-header" onclick="hideAllPanels()" style="font-size:14px; padding:12px 28px;">
-        📋 Ver Todos los Contratos Monitoreados →
+        📋 Ver Contratos →
       </button>
     </div>
   </div>
@@ -1949,6 +1986,7 @@ body::after {
     <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')">SIN HISTORIAL</button>
     <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
     <button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" onclick="setPatternFilter('PROVEEDOR_SANCIONADO')">🚨 SANCIONADO OFAC</button>
+    <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')">🇺🇸 LISTA ENGEL</button>
   </div>
 
   <!-- Risk scoring legend -->
@@ -2005,7 +2043,7 @@ body::after {
 
   <!-- ═══ FUENTE DETAIL PANEL ═══ -->
   <div class="fuente-panel" id="fuentePanel">
-    <button class="fuente-back" onclick="hideFuentePanel()">← Todos los Contratos</button>
+    <button class="fuente-back" onclick="hideFuentePanel()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title" id="fp-title">Fuente</div>
@@ -2060,7 +2098,7 @@ body::after {
 
   <!-- ══ ENTITY PANEL ══ -->
   <div class="fuente-panel" id="entityPanel">
-    <button class="fuente-back" onclick="hideEntityPanel()">← Todos los Contratos</button>
+    <button class="fuente-back" onclick="hideEntityPanel()">← Contratos</button>
 
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:center;">
       <div class="fuente-title" id="ep-title">Entidad</div>
@@ -2180,7 +2218,7 @@ body::after {
 
   <!-- ══ AUDIT LOG PANEL ══ -->
   <div class="fuente-panel" id="auditPanel">
-    <button class="fuente-back" onclick="hideAuditPanel()">← Dashboard</button>
+    <button class="fuente-back" onclick="hideAuditPanel()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
@@ -2227,7 +2265,7 @@ body::after {
 
   <!-- ═══════════════════ ANALYTICS PANEL ═══════════════════ -->
   <div class="fuente-panel" id="analyticsPanel">
-    <button class="fuente-back" onclick="hideAnalyticsPanel()">← Dashboard</button>
+    <button class="fuente-back" onclick="hideAnalyticsPanel()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
@@ -2360,7 +2398,7 @@ body::after {
 
   <!-- ═══════════════════ VENDOR CONCENTRATION PANEL ═══════════════════ -->
   <div class="fuente-panel" id="vendorConcentrationPanel">
-    <button class="fuente-back" onclick="hideVendorConcentrationPanel()">← Dashboard</button>
+    <button class="fuente-back" onclick="hideVendorConcentrationPanel()">← Contratos</button>
 
     <div style="padding:24px 28px;">
 
@@ -2450,7 +2488,7 @@ body::after {
 
   <!-- ══ ALERT DETAIL PANEL ══ -->
   <div id="alertDetailPanel">
-    <button class="adp-back" onclick="closeAlertDetail()">← Todos los Contratos</button>
+    <button class="adp-back" onclick="closeAlertDetail()">← Contratos</button>
     <div class="adp-title" id="adp-title">Detalle de Alerta</div>
     <div class="adp-meta" id="adp-meta"></div>
 
@@ -2549,7 +2587,7 @@ body::after {
 
   <!-- ══ GLOBAL SOBRECOSTOS SUMMARY PANEL ══ -->
   <div class="fuente-panel" id="sobrecostoPanel">
-    <button class="fuente-back" onclick="hideGlobalSobrecostos()">← Todos los Contratos</button>
+    <button class="fuente-back" onclick="hideGlobalSobrecostos()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title">📊 Resumen de <span>Sobrecostos</span></div>
@@ -2648,7 +2686,7 @@ body::after {
 
   <!-- PHASE 4 DETECTION REPORT PANEL -->
   <div class="fuente-panel" id="phase4Panel">
-    <button class="fuente-back" onclick="hidePhase4Detection()">← Todos los Contratos</button>
+    <button class="fuente-back" onclick="hidePhase4Detection()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title">🔍 <span>Phase 4 Detection Report</span></div>
@@ -2694,7 +2732,7 @@ body::after {
 
   <!-- CASOS ACTIVOS PANEL -->
   <div class="fuente-panel" id="casosPanel">
-    <button class="fuente-back" onclick="hideCasosPanel()">← Todos los Contratos</button>
+    <button class="fuente-back" onclick="hideCasosPanel()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title">⚖️ <span>Casos Activos — Investigaciones en Curso</span></div>
@@ -2927,7 +2965,7 @@ body::after {
 
   <!-- ══ PANEL DE RIESGO POR SECTOR (Opción D) ══ -->
   <div class="fuente-panel" id="sectorPanel">
-    <button class="fuente-back" onclick="hideSectorPanel()">← Todos los Contratos</button>
+    <button class="fuente-back" onclick="hideSectorPanel()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title">🏛️ <span>Riesgo por Sector Institucional</span></div>
@@ -3003,7 +3041,7 @@ body::after {
 
   <!-- TIMELINE DE ALERTAS PANEL (Opción C) -->
   <div class="fuente-panel" id="timelinePanel">
-    <button class="fuente-back" onclick="hideTimelinePanel()">← Todos los Contratos</button>
+    <button class="fuente-back" onclick="hideTimelinePanel()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title">📅 <span>Timeline de Alertas</span></div>
@@ -3176,7 +3214,7 @@ body::after {
 
   <!-- NEWS PANEL (migrado de mvp.html) -->
   <div class="fuente-panel" id="newsPanel">
-    <button class="fuente-back" onclick="hideNewsPanel()">← Todos los Contratos</button>
+    <button class="fuente-back" onclick="hideNewsPanel()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
@@ -3461,6 +3499,7 @@ async function loadAlerts() {
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
     buildNewsMatchIndex(); // Opción E — entity/vendor index (all records)
     buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
+    buildEngelIndex();     // P4 — Lista Engel EE.UU. cross-reference
     setStatus('connected');
     hideError();
     render();
@@ -3527,7 +3566,11 @@ function render() {
     ? allAlerts
     : allAlerts.filter(a => normSev(a.severity) === activeFilter);
   if (activePattern !== 'all') {
-    filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
+    if (activePattern === 'ENGEL') {
+      filtered = filtered.filter(a => _engelMatchedIds.has(a.alert_id || a.id));
+    } else {
+      filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
+    }
   }
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
@@ -4316,7 +4359,7 @@ function showFuentePanel(fuente) {
 function showEntityPanel(entityName) {
   // Reset back button text (may have been changed by fromAnalytics path)
   const backBtn = document.querySelector('#entityPanel .fuente-back');
-  if (backBtn) backBtn.textContent = '← Todos los Contratos';
+  if (backBtn) backBtn.textContent = '← Contratos';
   // Close fuente panel and news panel if open
   document.getElementById('fuentePanel').classList.remove('open');
   const np = document.getElementById('newsPanel'); if (np) np.classList.remove('open');
@@ -4420,7 +4463,7 @@ function showEntityPanel(entityName) {
 function showVendorPanel(vendorName) {
   // Reset back button text (may have been changed by fromAnalytics path)
   const backBtn = document.querySelector('#entityPanel .fuente-back');
-  if (backBtn) backBtn.textContent = '← Todos los Contratos';
+  if (backBtn) backBtn.textContent = '← Contratos';
   document.getElementById('fuentePanel').classList.remove('open');
   const np = document.getElementById('newsPanel'); if (np) np.classList.remove('open');
   if (typeof newsTimer !== 'undefined' && newsTimer) { clearInterval(newsTimer); newsTimer = null; }
@@ -8437,6 +8480,19 @@ function renderAuditLog() {
 // ════════════════════════════════════════════════════════════
 const USD_RATE = 24.5; // HNL per USD (approx 2025)
 
+// ── LISTA ENGEL Honduras (Depto. de Estado EE.UU. — Ley RENACER) ──
+// Fuente: state.gov · Actualizar cuando el Depto. de Estado publique nueva lista
+const ENGEL_LIST_HND = [
+  { search: 'casana',               full: 'Edgardo Antonio Casaña Meza',          role: 'Diputado LIBRE · SEDUC Cortés' },
+  { search: 'bonilla de lobo',      full: 'Rosa Elena Bonilla de Lobo',           role: 'Ex-Primera Dama' },
+  { search: 'chimirri',             full: 'Marcelo Chimirri Osbén',               role: 'Ex-Director CONATEL' },
+  { search: 'silvestri',            full: 'Emilio Silvestri',                     role: 'Ex-Director SAR' },
+  { search: 'rosenthal',            full: 'Yani Rosenthal Hidalgo',               role: 'Ex-Ministro' },
+  { search: 'hernandez alvarado',   full: 'Juan Orlando Hernández Alvarado',      role: 'Ex-Presidente' },
+  { search: 'bonilla castellanos',  full: 'Teodora Bonilla Castellanos',          role: 'Ex-Directora INSEP' },
+  { search: 'funez izaguirre',      full: 'Luis Alonso Fúnez Izaguirre',          role: 'Ex-Comisionado CONATEL' },
+];
+
 const PATTERN_LABELS = {
   PROVEEDOR_SANCIONADO:    '🚨 Proveedor Sancionado OFAC',
   FRACCIONAMIENTO_MICRO:   'Fraccionamiento de Contratos',
@@ -8446,6 +8502,7 @@ const PATTERN_LABELS = {
   MONTO_FRACCIONADO:       'Monto Fraccionado',
   SOBRECOSTO:              '📈 Sobrecosto Presupuestario',
   URGENCIA_INJUSTIFICADA:  'Urgencia Injustificada',
+  ENGEL:                   '🇺🇸 Lista Engel EE.UU.',
 };
 
 function fmtLarge(n) {
@@ -9545,8 +9602,14 @@ function generateVendorDetailPDF(detail, timestamp, mode = 'todo') {
 
 // ════════════════════════════════════════════════════════════
 // SEFIN DATA INTEGRATION — CSV Download Strategy
-// Portal: http://contratacionesabiertas.gob.hn/api/v1/descargas/
+// Portal: https://contratacionesabiertas.gob.hn/api/v1/descargas/
+// REST API (OCDS/EDCA): https://contratacionesabiertas.gob.hn/servicio/
+// API Manual: https://contratacionesabiertas.gob.hn/manual_api/
+// ONCAE datos abiertos: https://oncae.gob.hn/datos-abiertos/
+// IAIP API: https://api.iaip.gob.hn/
+// HonduCompras: https://honducompras.gob.hn/
 // Strategy: Download monthly CSV files (more reliable, no CORS issues)
+// NOTE: Verify endpoint availability before pipeline work (Apr 2026: portales activos)
 // ════════════════════════════════════════════════════════════
 
 async function downloadSEFINCSV(url) {
@@ -10111,6 +10174,7 @@ function renderEjecutiva() {
   document.getElementById('exec-altos').textContent          = altos.length.toLocaleString();
   document.getElementById('exec-altos-monto').textContent    = fmtL(sumMonto(altos));
   document.getElementById('exec-ofac').textContent           = ofac.length.toLocaleString();
+  document.getElementById('exec-engel').textContent          = _engelMatchedIds.size.toLocaleString();
   document.getElementById('exec-total').textContent          = alerts.length.toLocaleString();
   document.getElementById('exec-total-monto').textContent    = fmtL(sumMonto(alerts));
   document.getElementById('exec-sobrecosto').textContent     = sobrecosto.length.toLocaleString();
@@ -10240,6 +10304,7 @@ function matchNewsToContracts(title, summary) {
 // When a news article mentions one of these actors, shows a red alert bar.
 // NOTE: Designed to upgrade to time-based filter once real-time data is available.
 let _highRiskIndex = null;
+let _engelMatchedIds = new Set(); // P4 — Lista Engel cross-reference
 
 function buildHighRiskIndex() {
   const highRisk = allAlerts.filter(a => {
@@ -10263,6 +10328,29 @@ function buildHighRiskIndex() {
     total:    highRisk.length
   };
   console.log(`🚨 Índice alto riesgo (CRÍTICA/ALTA): ${highRisk.length} contratos, ${_highRiskIndex.entities.length} entidades, ${_highRiskIndex.vendors.length} proveedores`);
+}
+
+// ── P4: LISTA ENGEL — Cross-reference contra allAlerts ─────────────────────────
+// Busca coincidencias de apellidos normalizados de la Lista Engel contra
+// proveedor_nombre, entity_name y descripción de cada contrato.
+function buildEngelIndex() {
+  if (!window.allAlerts || !window.allAlerts.length) return;
+  const norm = s => (s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+  _engelMatchedIds = new Set();
+  window.allAlerts.forEach(a => {
+    const haystack = norm([
+      a.proveedor_nombre, a.supplier_name, a.proveedor,
+      a.entity_name, a.entidad_nombre,
+      a.descripcion, a.object_contract
+    ].join(' '));
+    if (ENGEL_LIST_HND.some(e => haystack.includes(e.search))) {
+      _engelMatchedIds.add(a.alert_id || a.id);
+    }
+  });
+  const srcEl = document.getElementById('src-engel');
+  if (srcEl) srcEl.textContent = `${_engelMatchedIds.size} coincidencia${_engelMatchedIds.size !== 1 ? 's' : ''}`;
+  console.log(`🇺🇸 Engel index built: ${_engelMatchedIds.size} contratos con coincidencia`);
 }
 
 function matchHighRiskContracts(title, summary) {

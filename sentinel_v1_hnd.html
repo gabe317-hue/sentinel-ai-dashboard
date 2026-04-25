@@ -2971,7 +2971,8 @@ body::after {
       <div class="tl-drilldown-header">
         <div class="tl-drilldown-title" id="sector-drilldown-title">—</div>
         <div style="display:flex;gap:6px;align-items:center;">
-          <button class="tl-export-btn pdf" onclick="exportSectorPDF()" title="Exportar reporte PDF">📄 PDF</button>
+          <button class="tl-export-btn pdf" onclick="exportSectorPDF('pareto')" title="PDF top contratos (80% del monto)">📄 Pareto</button>
+          <button class="tl-export-btn pdf" onclick="exportSectorPDF('todo')" title="PDF con todos los contratos" style="background:rgba(255,255,255,0.06);">⬇ Todo</button>
           <button class="tl-export-btn csv" onclick="exportSectorCSV()" title="Exportar contratos a CSV">⬇ CSV</button>
           <button class="tl-drilldown-close" onclick="closeSectorDrilldown()">✕</button>
         </div>
@@ -4374,6 +4375,8 @@ function showVendorPanel(vendorName) {
     const p = a.proveedor_nombre || parseDesc_for('Proveedor', a.description) || a.entity_name || '';
     return p === vendorName;
   });
+  _epCurrentEntity = vendorName;
+  _epData = data;
 
   const counts = { critica: 0, alta: 0, media: 0, baja: 0 };
   data.forEach(a => {
@@ -5424,8 +5427,8 @@ function exportSectorCSV() {
   URL.revokeObjectURL(url);
 }
 
-function exportSectorPDF() {
-  if (!_sectorDrilldownData || _sectorDrilldownData.length === 0) return;
+function exportSectorPDF(mode = 'pareto') {
+  if (!_sectorDrilldownData || _sectorDrilldownData.length === 0) { alert('Sin datos para exportar. Haz clic en un sector primero.'); return; }
   const fmtL  = n => 'L. ' + (Number(n)||0).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
   const esc   = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const pctOf = (n, total) => total > 0 ? (n/total*100).toFixed(1)+'%' : '0%';
@@ -5435,7 +5438,21 @@ function exportSectorPDF() {
   const horaStr  = now.toLocaleTimeString('es-HN', {hour:'2-digit', minute:'2-digit'});
   const dateTag  = now.toISOString().slice(0,10);
 
-  // Counts & financials
+  // Pareto: already sorted by severity→monto in renderSectorDrilldown; re-sort by monto desc for pareto
+  const sortedByMonto = [..._sectorDrilldownData].sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
+  const montoTotal = sortedByMonto.reduce((s, a) => s + Number(a.monto_contrato||0), 0);
+  let cumulative = 0, pareto80idx = sortedByMonto.length;
+  for (let i = 0; i < sortedByMonto.length; i++) {
+    cumulative += Number(sortedByMonto[i].monto_contrato || 0);
+    if (cumulative >= montoTotal * 0.8 && pareto80idx === sortedByMonto.length) { pareto80idx = i + 1; break; }
+  }
+  const subset    = mode === 'pareto' ? sortedByMonto.slice(0, pareto80idx) : sortedByMonto;
+  const paretoPct = sortedByMonto.length > 0 ? ((pareto80idx / sortedByMonto.length) * 100).toFixed(1) : '0';
+  const modeLabel = mode === 'pareto'
+    ? `Pareto 80% — top ${pareto80idx} de ${sortedByMonto.length} contratos (${paretoPct}% representan el 80% del monto)`
+    : `Reporte completo — ${sortedByMonto.length} contratos`;
+
+  // Counts & financials (full dataset for summary)
   const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
   let mc = 0, mp = 0, hasPagado = false;
   for (const a of _sectorDrilldownData) {
@@ -5448,9 +5465,9 @@ function exportSectorPDF() {
   const pctHigh = _sectorDrilldownData.length > 0
     ? ((counts['Crítica'] + counts['Alta']) / _sectorDrilldownData.length * 100).toFixed(1) : '0.0';
 
-  // Pattern counts
+  // Pattern counts (from subset)
   const patCount = {};
-  for (const a of _sectorDrilldownData) {
+  for (const a of subset) {
     const raw = (a.patterns || a.alert_type || a.data_source || '').split(',');
     for (const p of raw) {
       const lbl = (PATTERN_LABELS && PATTERN_LABELS[p.trim()]) || p.trim();
@@ -5458,12 +5475,12 @@ function exportSectorPDF() {
     }
   }
   const patRows = Object.entries(patCount).sort((a,b) => b[1]-a[1]).map(([lbl, cnt]) =>
-    `<tr><td>${esc(lbl)}</td><td style="text-align:center;font-weight:bold">${cnt}</td><td style="text-align:center">${pctOf(cnt, _sectorDrilldownData.length)}</td></tr>`
+    `<tr><td>${esc(lbl)}</td><td style="text-align:center;font-weight:bold">${cnt}</td><td style="text-align:center">${pctOf(cnt, subset.length)}</td></tr>`
   ).join('');
 
-  // Detail rows
+  // Detail rows from subset
   const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910', 'Baja':'#1E8449' };
-  const detailRows = _sectorDrilldownData.map((a, i) => {
+  const detailRows = subset.map((a, i) => {
     const sev   = a.severity || 'Baja';
     const fecha = (a.fecha_contrato||a.fecha_adjudicacion||a.fecha_publicacion||a.created_at||'').substring(0,10);
     const pats  = (a.patterns||a.alert_type||a.data_source||'').split(',').filter(Boolean)
@@ -5483,7 +5500,7 @@ function exportSectorPDF() {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sentinel-AI — Sector ${_sectorDrilldownLabel} — ${dateTag}</title>
+<title>Sentinel-AI — Sector ${_sectorDrilldownLabel} — ${mode === 'pareto' ? 'Pareto' : 'Todo'} — ${dateTag}</title>
 <style>
   @page { size: A4 landscape; margin: 1.4cm 1cm 1.8cm 1cm; }
   @media print {
@@ -5516,7 +5533,7 @@ function exportSectorPDF() {
 
 <h1>SENTINEL-AI HONDURAS</h1>
 <h2>Reporte por Sector — ${esc(_sectorDrilldownLabel)}</h2>
-<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Total contratos en sector: ${_sectorDrilldownData.length.toLocaleString('es-HN')}</p>
+<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; ${esc(modeLabel)}</p>
 
 <p class="sec">Resumen de Severidad y Riesgo</p>
 <table class="stbl" style="width:auto;margin-bottom:14px">
@@ -5551,7 +5568,7 @@ function exportSectorPDF() {
 
 <div class="page-break"></div>
 
-<p class="sec">Detalle de Contratos — ${_sectorDrilldownData.length.toLocaleString('es-HN')} registros &mdash; ordenados por severidad y monto</p>
+<p class="sec">Detalle de Contratos — ${subset.length.toLocaleString('es-HN')} registros &mdash; ordenados por monto descendente${mode === 'pareto' ? ' (Pareto 80%)' : ''}</p>
 <table>
   <colgroup>
     <col style="width:3%"><col style="width:17%"><col style="width:17%">
@@ -6583,7 +6600,7 @@ function exportTlPDF() {
 }
 
 function exportEntityPDF(mode = 'pareto') {
-  if (!_epData || _epData.length === 0) return;
+  if (!_epData || _epData.length === 0) { alert('Sin datos para exportar. Abre una entidad o proveedor primero.'); return; }
   const fmtL  = n => 'L. ' + (Number(n)||0).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
   const esc   = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const pctOf = (n, total) => total > 0 ? (n/total*100).toFixed(1)+'%' : '0%';

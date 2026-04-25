@@ -2288,101 +2288,7 @@ body::after {
         </table>
       </div>
 
-      <!-- ═══ VENDOR CONCENTRATION ANALYSIS ═══ -->
-      <div id="vendor-concentration-container" style="margin-top:40px;padding-top:28px;border-top:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-          <div class="fuente-title" style="font-size:12px;color:var(--text);letter-spacing:.08em;">📊 ANÁLISIS DE CONCENTRACIÓN DE PROVEEDORES</div>
-          <div style="display:flex;gap:8px;">
-            <button onclick="exportVendorConcentration('csv')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a CSV">📥 CSV</button>
-            <button onclick="exportVendorConcentration('pareto-pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF top proveedores (80% del monto)">📄 Pareto</button>
-            <button onclick="exportVendorConcentration('pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF con todos los proveedores">⬇ Todo</button>
-          </div>
-        </div>
-
-        <!-- Metric Cards -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
-          <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Total Proveedores</div>
-            <div id="vc-total-vendors" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--electric);">—</div>
-          </div>
-          <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Índice HHI</div>
-            <div id="vc-hhi-index" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--amber);">—</div>
-            <div id="vc-hhi-label" style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text-dim);margin-top:4px;">—</div>
-          </div>
-          <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Top 3 Market Share</div>
-            <div id="vc-top3-share" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--orange);">—</div>
-          </div>
-          <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Nivel de Riesgo</div>
-            <div id="vc-risk-level" style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-top:4px;">—</div>
-          </div>
-        </div>
-
-        <!-- Vendor Concentration List -->
-        <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">DISTRIBUCIÓN DE PROVEEDORES</div>
-          <div id="vc-vendor-list" style="display:flex;flex-direction:column;gap:10px;"></div>
-        </div>
-
-        <!-- HHI Interpretation -->
-        <div style="margin-top:20px;padding:14px;background:rgba(0,200,255,0.06);border:1px solid rgba(0,200,255,0.12);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.6;">
-          <span style="color:var(--text);">ℹ️ HHI (Herfindahl-Hirschman Index):</span> Mide concentración de mercado. <br/>
-          • <strong>&gt;2500:</strong> Altamente concentrado (riesgo crítico) <br/>
-          • <strong>&gt;1500:</strong> Moderadamente concentrado (riesgo medio) <br/>
-          • <strong>&gt;1000:</strong> Moderado (monitor) <br/>
-          • <strong>≤1000:</strong> Competitivo (bajo riesgo)
-        </div>
-      </div>
-
     </div><!-- end #analyticsMainContent -->
-
-    <!-- ═══ VENDOR CONCENTRATION DETAIL PANEL ═══ -->
-    <!-- VENDOR DETAIL MODAL OVERLAY -->
-    <div id="vcModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,22,40,0.7);backdrop-filter:blur(4px);z-index:9999;animation:fadeIn .2s ease-out;">
-      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:700px;background:var(--navy-mid);border:1px solid var(--electric);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:slideUp .3s ease-out;overflow:hidden;display:flex;flex-direction:column;max-height:80vh;">
-
-        <!-- MODAL HEADER -->
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px;border-bottom:1px solid var(--border);background:rgba(0,200,255,0.05);">
-          <h2 id="vcModalTitle" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin:0;">Proveedor</h2>
-          <button onclick="closeVendorConcentrationDetail()" style="background:none;border:none;color:var(--text-dim);font-size:24px;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .2s;" onmouseover="this.style.background='rgba(255,61,87,0.2)';this.style.color='var(--red)'" onmouseout="this.style.background='';this.style.color='var(--text-dim)'">✕</button>
-        </div>
-
-        <!-- MODAL BODY (scrollable) -->
-        <div style="flex:1;overflow-y:auto;padding:20px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">📋 Contratos — ordenados por monto</div>
-          <div id="vcDetailEntityList" style="overflow-x:auto;"></div>
-
-          <!-- PAGINATION -->
-          <div id="vcPaginationContainer" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
-            <button id="vcPrevBtn" onclick="vcPrevPage()" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">← Anterior</button>
-            <span id="vcPageInfo" style="font-size:10px;color:var(--text-dim);min-width:60px;text-align:center;"></span>
-            <button id="vcNextBtn" onclick="vcNextPage()" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">Siguiente →</button>
-          </div>
-        </div>
-
-        <!-- MODAL FOOTER -->
-        <div style="display:flex;gap:10px;padding:16px;border-top:1px solid var(--border);background:rgba(0,200,255,0.03);justify-content:flex-end;">
-          <button onclick="exportVendorConcentrationDetail('csv')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="Exportar a CSV">📥 CSV</button>
-          <button onclick="exportVendorConcentrationDetail('pareto-pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="PDF top contratos (80% del monto)">📄 Pareto</button>
-          <button onclick="exportVendorConcentrationDetail('pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="PDF con todos los contratos">⬇ Todo</button>
-          <button onclick="closeVendorConcentrationDetail()" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">Cerrar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ANIMATIONS -->
-    <style>
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      @keyframes slideUp {
-        from { transform: translate(-50%, -40%); opacity: 0; }
-        to { transform: translate(-50%, -50%); opacity: 1; }
-      }
-    </style>
 
     <!-- ═══ PATTERN DETAIL PANEL ═══ -->
     <div id="patternDetailPanel" style="display:none;">
@@ -2429,6 +2335,96 @@ body::after {
     </div><!-- end #patternDetailPanel -->
 
   </div><!-- end analyticsPanel -->
+
+  <!-- ═══════════════════ VENDOR CONCENTRATION PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="vendorConcentrationPanel">
+    <button class="fuente-back" onclick="hideVendorConcentrationPanel()">← Dashboard</button>
+
+    <div style="padding:24px 28px;">
+
+      <!-- Panel Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+        <div class="fuente-title" style="font-size:12px;color:var(--text);letter-spacing:.08em;">📊 ANÁLISIS DE CONCENTRACIÓN DE PROVEEDORES</div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="exportVendorConcentration('csv')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a CSV">📥 CSV</button>
+          <button onclick="exportVendorConcentration('pareto-pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF top proveedores (80% del monto)">📄 Pareto</button>
+          <button onclick="exportVendorConcentration('pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF con todos los proveedores">⬇ Todo</button>
+        </div>
+      </div>
+
+      <!-- Metric Cards -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
+        <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Total Proveedores</div>
+          <div id="vc-total-vendors" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--electric);">—</div>
+        </div>
+        <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Índice HHI</div>
+          <div id="vc-hhi-index" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--amber);">—</div>
+          <div id="vc-hhi-label" style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text-dim);margin-top:4px;">—</div>
+        </div>
+        <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Top 3 Market Share</div>
+          <div id="vc-top3-share" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--orange);">—</div>
+        </div>
+        <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Nivel de Riesgo</div>
+          <div id="vc-risk-level" style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-top:4px;">—</div>
+        </div>
+      </div>
+
+      <!-- Vendor List -->
+      <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">DISTRIBUCIÓN DE PROVEEDORES</div>
+        <div id="vc-vendor-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+      <!-- HHI Interpretation -->
+      <div style="margin-top:20px;padding:14px;background:rgba(0,200,255,0.06);border:1px solid rgba(0,200,255,0.12);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.6;">
+        <span style="color:var(--text);">ℹ️ HHI (Herfindahl-Hirschman Index):</span> Mide concentración de mercado. <br/>
+        • <strong>&gt;2500:</strong> Altamente concentrado (riesgo crítico) <br/>
+        • <strong>&gt;1500:</strong> Moderadamente concentrado (riesgo medio) <br/>
+        • <strong>&gt;1000:</strong> Moderado (monitor) <br/>
+        • <strong>≤1000:</strong> Competitivo (bajo riesgo)
+      </div>
+
+    </div><!-- end padding wrapper -->
+
+    <!-- VENDOR DETAIL MODAL OVERLAY -->
+    <div id="vcModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,22,40,0.7);backdrop-filter:blur(4px);z-index:9999;animation:fadeIn .2s ease-out;">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:700px;background:var(--navy-mid);border:1px solid var(--electric);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:slideUp .3s ease-out;overflow:hidden;display:flex;flex-direction:column;max-height:80vh;">
+        <!-- MODAL HEADER -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px;border-bottom:1px solid var(--border);background:rgba(0,200,255,0.05);">
+          <h2 id="vcModalTitle" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin:0;">Proveedor</h2>
+          <button onclick="closeVendorConcentrationDetail()" style="background:none;border:none;color:var(--text-dim);font-size:24px;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .2s;" onmouseover="this.style.background='rgba(255,61,87,0.2)';this.style.color='var(--red)'" onmouseout="this.style.background='';this.style.color='var(--text-dim)'">✕</button>
+        </div>
+        <!-- MODAL BODY -->
+        <div style="flex:1;overflow-y:auto;padding:20px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">📋 Contratos — ordenados por monto</div>
+          <div id="vcDetailEntityList" style="overflow-x:auto;"></div>
+          <!-- PAGINATION -->
+          <div id="vcPaginationContainer" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+            <button id="vcPrevBtn" onclick="vcPrevPage()" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">← Anterior</button>
+            <span id="vcPageInfo" style="font-size:10px;color:var(--text-dim);min-width:60px;text-align:center;"></span>
+            <button id="vcNextBtn" onclick="vcNextPage()" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">Siguiente →</button>
+          </div>
+        </div>
+        <!-- MODAL FOOTER -->
+        <div style="display:flex;gap:10px;padding:16px;border-top:1px solid var(--border);background:rgba(0,200,255,0.03);justify-content:flex-end;">
+          <button onclick="exportVendorConcentrationDetail('csv')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="Exportar a CSV">📥 CSV</button>
+          <button onclick="exportVendorConcentrationDetail('pareto-pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="PDF top contratos (80% del monto)">📄 Pareto</button>
+          <button onclick="exportVendorConcentrationDetail('pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="PDF con todos los contratos">⬇ Todo</button>
+          <button onclick="closeVendorConcentrationDetail()" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+      @keyframes slideUp { from { transform:translate(-50%,-40%);opacity:0; } to { transform:translate(-50%,-50%);opacity:1; } }
+    </style>
+
+  </div><!-- end vendorConcentrationPanel -->
 
   <!-- ══ ALERT DETAIL PANEL ══ -->
   <div id="alertDetailPanel">
@@ -5218,7 +5214,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -8708,20 +8704,26 @@ function hideAnalyticsPanel() {
 }
 
 function showVendorConcentrationPanel() {
-  showAnalyticsPanel();
-  // Override nav active to vendor-concentration
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  _closeAllFuentePanels();
   document.getElementById('nav-vendor-concentration').classList.add('active');
+  document.getElementById('vendorConcentrationPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  renderVendorConcentration();
+}
 
-  // Scroll to vendor concentration section — use offsetTop for reliable positioning
-  // 600ms delay gives the browser time to render all vendor cards before scrolling
-  setTimeout(() => {
-    const container = document.getElementById('vendor-concentration-container');
-    if (container) {
-      const top = container.getBoundingClientRect().top + window.pageYOffset - 80;
-      window.scrollTo({ top: top, behavior: 'smooth' });
-    }
-  }, 600);
+function renderVendorConcentration() {
+  const alerts = (typeof allAlerts !== 'undefined' && allAlerts.length) ? allAlerts : [];
+  window.globalAlerts = alerts;
+  calculateAndDisplayVendorConcentration(alerts);
+}
+
+function hideVendorConcentrationPanel() {
+  document.getElementById('vendorConcentrationPanel').classList.remove('open');
+  document.getElementById('nav-vendor-concentration').classList.remove('active');
+  document.querySelector('.stats-grid').style.display = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 function showAuditPanel() {
@@ -9196,14 +9198,15 @@ function exportVendorConcentrationDetail(format) {
 
 function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
   try {
-    // ── Pareto 80/20 Analysis ──
+    // ── Pareto 80/20 Analysis — sorted by monto desc ──
+    const sortedVendors = [...data.vendors].sort((a, b) => b.monto - a.monto);
     const targetValue = data.totalMonto * 0.80;
     let cumulativeValue = 0;
     let vendorsIn80 = [];
     let vendorsIn20 = [];
     let cumulativeIn80 = 0;
 
-    data.vendors.forEach(v => {
+    sortedVendors.forEach(v => {
       if (cumulativeValue < targetValue) {
         vendorsIn80.push(v);
         cumulativeIn80 += v.monto;
@@ -9254,7 +9257,7 @@ function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
   <div class="metric-item"><strong>Índice HHI:</strong> ${data.hhi.toFixed(0)} (${data.hhhiLabel})</div>
   <div class="metric-item"><strong>Top 3 Market Share:</strong> ${data.top3Share.toFixed(1)}%</div>
   <div class="metric-item"><strong>Nivel de Riesgo:</strong> ${data.riskLevel}</div>
-  <div class="metric-item"><strong>Total Proveedores (todos):</strong> ${data.vendors.length}</div>
+  <div class="metric-item"><strong>Total Proveedores (todos):</strong> ${sortedVendors.length}</div>
 </div>
 
 <h2>Análisis Pareto 80/20</h2>
@@ -9276,7 +9279,7 @@ function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
     </tr>
   </thead>
   <tbody>
-    ${vendorsIn80.map((v, idx) => {
+    ${vendorsIn80.map((v) => {
       const share = (v.monto / data.totalMonto * 100);
       return `<tr>
         <td>${v.name}</td>
@@ -9298,7 +9301,7 @@ function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
 </p>
 
 <h2 style="margin-top:24px;page-break-before:always;">Contratos por Proveedor${mode === 'pareto' ? ' — Top Pareto (80% del Valor)' : ''}</h2>
-${(mode === 'pareto' ? vendorsIn80 : data.vendors).map(v => {
+${(mode === 'pareto' ? vendorsIn80 : sortedVendors).map(v => {
   const vendorContracts = (window.globalAlerts || []).filter(a => {
     const vendor = a.proveedor_nombre || a.proveedor || 'Desconocido';
     return vendor === v.name;

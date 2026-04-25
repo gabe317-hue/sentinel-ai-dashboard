@@ -3594,6 +3594,7 @@ function render() {
     filtered = filtered.filter(a =>
       (a.proveedor_nombre || a.proveedor || '').toLowerCase().includes(q) ||
       (a.entity_name || a.entidad || '').toLowerCase().includes(q) ||
+      (a.description || '').toLowerCase().includes(q) ||
       (a.alert_id || a.id || '').toString().toLowerCase().includes(q)
     );
   }

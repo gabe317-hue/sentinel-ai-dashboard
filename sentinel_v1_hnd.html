@@ -9256,7 +9256,8 @@ function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
 <div style="background:#fff3cd;border-left:4px solid #e6a817;padding:10px 14px;margin:10px 0 16px 0;font-size:9pt;color:#555;border-radius:0 4px 4px 0;">
   <strong>Metodología:</strong> De los ${sortedVendors.length} proveedores totales, se seleccionan los <strong>Top 100 por monto contratado</strong>.
   Sobre ese grupo se aplica el principio <strong>Pareto 80/20</strong>: se identifican los proveedores que en conjunto
-  representan el 80% del monto de los Top 100. Estos son los de mayor concentración y prioridad de vigilancia.
+  representan el 80% del monto de los Top 100. En el detalle de contratos se incluyen únicamente
+  <strong>contratos ≥ L. 100,000</strong> para eliminar transacciones de bajo valor y enfocar el análisis.
 </div>
 
 <h2>Métricas Principales</h2>
@@ -9307,11 +9308,13 @@ function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
   (L. ${cumulativeIn80.toLocaleString()}). Estos son los sujetos de mayor prioridad para vigilancia y cumplimiento.
 </p>
 
-<h2 style="margin-top:24px;page-break-before:always;">Contratos por Proveedor${mode === 'pareto' ? ' — Top Pareto (80% del Valor)' : ''}</h2>
+<h2 style="margin-top:24px;page-break-before:always;">Contratos por Proveedor${mode === 'pareto' ? ' — Top Pareto (80% del Valor) · Solo contratos ≥ L. 100,000' : ''}</h2>
 ${(mode === 'pareto' ? vendorsIn80 : sortedVendors).map(v => {
+  const MONTO_MIN = mode === 'pareto' ? 100000 : 0;
   const vendorContracts = (window.globalAlerts || []).filter(a => {
     const vendor = a.proveedor_nombre || a.proveedor || 'Desconocido';
-    return vendor === v.name;
+    const monto = Number(a.monto_contrato || a.monto_contratado || 0);
+    return vendor === v.name && monto >= MONTO_MIN;
   }).sort((a, b) => (Number(b.monto_contrato || b.monto_contratado || 0)) - (Number(a.monto_contrato || a.monto_contratado || 0)));
   const share = (v.monto / data.totalMonto * 100);
   const montoTotal = vendorContracts.reduce((s, a) => s + (Number(a.monto_contrato || a.monto_contratado || 0)), 0);

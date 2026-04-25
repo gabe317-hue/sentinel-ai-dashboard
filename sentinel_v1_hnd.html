@@ -2267,10 +2267,14 @@ body::after {
   <div class="fuente-panel" id="analyticsPanel">
     <button class="fuente-back" onclick="hideAnalyticsPanel()">← Contratos</button>
 
-    <div class="fuente-header">
+    <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
         <span>📈</span>
-        <span>Análisis de Contratos — 2025</span>
+        <span>Análisis de Contratos — 2023–2025</span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="exportAnalyticsPDF('pareto')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">📄 Pareto</button>
+        <button onclick="exportAnalyticsPDF('todo')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">⬇ Todo</button>
       </div>
     </div>
 
@@ -2589,8 +2593,12 @@ body::after {
   <div class="fuente-panel" id="sobrecostoPanel">
     <button class="fuente-back" onclick="hideGlobalSobrecostos()">← Contratos</button>
 
-    <div class="fuente-header">
+    <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div class="fuente-title">📊 Resumen de <span>Sobrecostos</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="document.getElementById('sp-riesgo-section').scrollIntoView({behavior:'smooth',block:'start'})" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(255,165,0,0.5);background:rgba(255,165,0,0.08);color:var(--amber);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(255,165,0,0.16)'" onmouseout="this.style.background='rgba(255,165,0,0.08)'">⚠️ Ver Riesgo</button>
+        <button onclick="exportSobrecostoRealPDF()" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.10);color:var(--electric);font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(0,168,214,0.2)'" onmouseout="this.style.background='rgba(0,168,214,0.10)'">📄 PDF</button>
+      </div>
     </div>
 
     <!-- Summary stats row -->
@@ -2617,9 +2625,8 @@ body::after {
 
     <!-- All sobrecostos list -->
     <div class="fuente-chart-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <div class="fuente-recent-title" id="sp-sobrecosto-list-title" style="margin-bottom:0;">Detalle de Sobrecostos</div>
-        <button onclick="exportSobrecostoRealPDF()" style="padding:5px 13px;border-radius:5px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.10);color:var(--electric);font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.03em;">📥 Exportar PDF</button>
+      <div style="margin-bottom:6px;">
+        <div class="fuente-recent-title" id="sp-sobrecosto-list-title">Detalle de Sobrecostos</div>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;" id="sp-sobrecosto-list-sub">Ordenados por monto de exceso — mayor primero</div>
       <div class="fuente-recent-list" id="sp-sobrecosto-list"></div>
@@ -2684,48 +2691,52 @@ body::after {
 
   </div>
 
-  <!-- PHASE 4 DETECTION REPORT PANEL -->
+  <!-- DETECCIÓN DE ANOMALÍAS ESTADÍSTICAS PANEL -->
   <div class="fuente-panel" id="phase4Panel">
     <button class="fuente-back" onclick="hidePhase4Detection()">← Contratos</button>
 
-    <div class="fuente-header">
-      <div class="fuente-title">🔍 <span>Phase 4 Detection Report</span></div>
+    <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div class="fuente-title">⚡ <span>Detección de Anomalías Estadísticas</span></div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Velocidad de pago, patrones anómalos y score de riesgo por proveedor · SEFIN 2023–2025</div>
+      </div>
+      <button onclick="exportPhase4PDF()" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">📄 PDF</button>
     </div>
 
     <!-- Summary stats row -->
     <div class="fuente-stats-row" style="margin-bottom:16px;">
       <div class="fuente-stat">
         <div class="fuente-stat-val" id="p4-velocity-count">0</div>
-        <div class="fuente-stat-lbl">Velocity Threats</div>
+        <div class="fuente-stat-lbl">Amenazas Velocidad</div>
       </div>
       <div class="fuente-stat">
         <div class="fuente-stat-val" id="p4-anomaly-count">0</div>
-        <div class="fuente-stat-lbl">Anomalies Detected</div>
+        <div class="fuente-stat-lbl">Anomalías Detectadas</div>
       </div>
       <div class="fuente-stat">
         <div class="fuente-stat-val" id="p4-risk-critical">0</div>
-        <div class="fuente-stat-lbl">Critical Suppliers</div>
+        <div class="fuente-stat-lbl">Proveedores Críticos</div>
       </div>
     </div>
 
-    <!-- Velocity Threats Section -->
+    <!-- Amenazas de Velocidad -->
     <div class="fuente-chart-card" style="margin-bottom:20px;">
-      <div class="fuente-recent-title">⚡ Velocity Threats - Vendors with Multiple Overpayments</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Vendors appearing in 3+ overpayment incidents</div>
+      <div class="fuente-recent-title">⚡ Amenazas de Velocidad — Proveedores con Múltiples Sobrecostos</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Proveedores con 3 o más incidentes de sobrepago registrados</div>
       <div class="fuente-recent-list" id="p4-velocity-list"></div>
     </div>
 
-    <!-- Risk Scores Section -->
+    <!-- Score de Riesgo -->
     <div class="fuente-chart-card" style="margin-bottom:20px;">
-      <div class="fuente-recent-title">📊 Supplier Risk Scores - Top 10 High Risk</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Multi-factor behavioral risk analysis (0-100 scale)</div>
+      <div class="fuente-recent-title">📊 Score de Riesgo por Proveedor — Top 10</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Análisis conductual multifactor (escala 0–100)</div>
       <div class="fuente-recent-list" id="p4-risk-list"></div>
     </div>
 
-    <!-- Anomalies Section -->
+    <!-- Anomalías Estadísticas -->
     <div class="fuente-chart-card">
-      <div class="fuente-recent-title">🚨 Statistical Anomalies - Deviation from Entity Averages</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Overpayments deviating >2σ from entity baseline</div>
+      <div class="fuente-recent-title">🚨 Anomalías Estadísticas — Desviación del Promedio por Entidad</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Contratos con pagos que se desvían más de 2σ del promedio de su entidad</div>
       <div class="fuente-recent-list" id="p4-anomaly-list"></div>
     </div>
   </div>
@@ -2967,11 +2978,14 @@ body::after {
   <div class="fuente-panel" id="sectorPanel">
     <button class="fuente-back" onclick="hideSectorPanel()">← Contratos</button>
 
-    <div class="fuente-header">
-      <div class="fuente-title">🏛️ <span>Riesgo por Sector Institucional</span></div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Concentración de riesgo por sector de gobierno — basado en los 40,175 contratos monitoreados
+    <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div class="fuente-title">🏛️ <span>Riesgo por Sector Institucional</span></div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+          Concentración de riesgo por sector de gobierno — basado en los 40,175 contratos monitoreados
+        </div>
       </div>
+      <button onclick="exportSectorSummaryPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;">📄 PDF</button>
     </div>
 
     <!-- Summary stat cards -->
@@ -3043,11 +3057,14 @@ body::after {
   <div class="fuente-panel" id="timelinePanel">
     <button class="fuente-back" onclick="hideTimelinePanel()">← Contratos</button>
 
-    <div class="fuente-header">
-      <div class="fuente-title">📅 <span>Timeline de Alertas</span></div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Distribución cronológica de contratos monitoreados — por mes y severidad
+    <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div class="fuente-title">📅 <span>Timeline de Alertas</span></div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+          Distribución cronológica de contratos monitoreados — por mes y severidad
+        </div>
       </div>
+      <button onclick="exportTimelineSummaryPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;">📄 PDF</button>
     </div>
 
     <!-- Stats row -->
@@ -5701,6 +5718,121 @@ function exportSectorPDF(mode = 'pareto') {
   win.addEventListener('load', () => win.focus());
 }
 
+function exportSectorSummaryPDF() {
+  if (!_sectorData || _sectorData.length === 0) { alert('Sin datos de sector. Abre el panel Sector primero.'); return; }
+  const fmtL  = n => 'L. ' + (Number(n)||0).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
+  const esc   = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const pct   = (n, total) => total > 0 ? (n/total*100).toFixed(1)+'%' : '0%';
+
+  const now       = new Date();
+  const fechaStr  = now.toLocaleDateString('es-HN', {year:'numeric', month:'long', day:'numeric'});
+  const horaStr   = now.toLocaleTimeString('es-HN', {hour:'2-digit', minute:'2-digit'});
+  const dateTag   = now.toISOString().slice(0,10);
+
+  const totContratos = _sectorData.reduce((s,x) => s+x.contratos, 0);
+  const totMonto     = _sectorData.reduce((s,x) => s+x.monto, 0);
+  const totCritica   = _sectorData.reduce((s,x) => s+x.critica, 0);
+  const totAlta      = _sectorData.reduce((s,x) => s+x.alta, 0);
+
+  // Sort by monto desc for PDF (same as default)
+  const sorted = [..._sectorData].sort((a,b) => b.monto - a.monto);
+
+  const sectorRows = sorted.map((s, i) => {
+    const pctHigh = s.contratos > 0 ? ((s.critica + s.alta) / s.contratos * 100) : 0;
+    const riskCol = pctHigh >= 60 ? '#C0392B' : pctHigh >= 30 ? '#D68910' : '#1E8449';
+    return `<tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
+      <td>${esc(s.icon)} ${esc(s.label)}</td>
+      <td style="text-align:right">${s.contratos.toLocaleString('es-HN')}</td>
+      <td style="text-align:right;font-size:7.5pt;color:#555">${pct(s.contratos, totContratos)}</td>
+      <td style="text-align:center;color:#C0392B;font-weight:600;">${s.critica||'—'}</td>
+      <td style="text-align:center;color:#C05000;">${s.alta||'—'}</td>
+      <td style="text-align:center;color:#D68910;">${s.media||'—'}</td>
+      <td style="text-align:center;color:#1E8449;">${s.baja||'—'}</td>
+      <td style="text-align:right;">${fmtL(s.monto)}</td>
+      <td style="text-align:right;font-weight:bold;color:${riskCol};">${pctHigh.toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sentinel-AI Sector Institucional ${dateTag}</title>
+<style>
+  @page { size: A4 landscape; margin: 1.4cm 1cm 1.8cm 1cm; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print { display: none !important; }
+  }
+  body { font-family: Arial, sans-serif; font-size: 9pt; color: #222; margin: 0; padding: 16px; }
+  h1   { color: #0A1628; font-size: 17pt; margin-bottom: 2px; margin-top: 0; }
+  h2   { color: #1A3A6B; font-size: 11pt; font-weight: normal; margin-top: 0; margin-bottom: 10px; }
+  .meta { color: #7F8C8D; font-size: 8pt; margin-bottom: 14px; }
+  .sec  { color: #0A1628; font-size: 10pt; font-weight: bold; margin: 14px 0 5px 0;
+          border-bottom: 1.5pt solid #1A3A6B; padding-bottom: 3px; }
+  .stats-row { display: flex; gap: 12px; margin: 12px 0 16px 0; flex-wrap: wrap; }
+  .stat-box  { border: 1px solid #D0D7E2; border-radius: 6px; padding: 8px 14px; flex: 1; min-width: 110px; }
+  .stat-box .lbl { font-size: 7.5pt; color: #888; margin-bottom: 3px; }
+  .stat-box .val { font-size: 13pt; font-weight: bold; color: #0A1628; }
+  table { border-collapse: collapse; width: 100%; margin-top: 4px; }
+  th    { background: #1A3A6B; color: #fff; padding: 5px 6px; font-size: 8pt; text-align: left; }
+  td    { padding: 4px 6px; border: 1px solid #D0D7E2; font-size: 8.5pt; }
+  .footer-bar { font-size: 7pt; color: #888; margin-top: 18px; border-top: 1px solid #D0D7E2;
+                padding-top: 4px; display: flex; justify-content: space-between; }
+  .print-btn { display: inline-block; margin: 0 0 16px 0; padding: 8px 18px;
+               background: #1A3A6B; color: #fff; border: none; border-radius: 6px;
+               font-size: 10pt; cursor: pointer; }
+  .print-btn:hover { background: #122c55; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+
+<h1>SENTINEL-AI HONDURAS</h1>
+<h2>Riesgo por Sector Institucional — Resumen Comparativo</h2>
+<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Fuente: SEFIN OCDS 2023–2025 &nbsp;|&nbsp; ${totContratos.toLocaleString('es-HN')} contratos · ${sorted.length} sectores</p>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="lbl">Total Contratos</div><div class="val">${totContratos.toLocaleString('es-HN')}</div></div>
+  <div class="stat-box"><div class="lbl">Monto Total</div><div class="val" style="font-size:10pt">${fmtL(totMonto)}</div></div>
+  <div class="stat-box"><div class="lbl">Sectores Analizados</div><div class="val">${sorted.length}</div></div>
+  <div class="stat-box"><div class="lbl" style="color:#C0392B">Crítica (total)</div><div class="val" style="color:#C0392B">${totCritica.toLocaleString('es-HN')}</div></div>
+  <div class="stat-box"><div class="lbl" style="color:#C05000">Alta (total)</div><div class="val" style="color:#C05000">${totAlta.toLocaleString('es-HN')}</div></div>
+</div>
+
+<p class="sec">Concentración de Riesgo por Sector — ordenado por Monto Total</p>
+<table>
+  <thead>
+    <tr>
+      <th>Sector</th>
+      <th style="text-align:right">Contratos</th>
+      <th style="text-align:right">% Total</th>
+      <th style="text-align:center;color:#ff9999">Crítica</th>
+      <th style="text-align:center;color:#ffb380">Alta</th>
+      <th style="text-align:center;color:#ffe066">Media</th>
+      <th style="text-align:center;color:#99e699">Baja</th>
+      <th style="text-align:right">Monto (L)</th>
+      <th style="text-align:right">% Alto Riesgo</th>
+    </tr>
+  </thead>
+  <tbody>${sectorRows}</tbody>
+</table>
+
+<div class="footer-bar">
+  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
+</div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=1100,height=800');
+  if (!win) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+}
+
 function sortSectorTable(key, btn) {
   document.querySelectorAll('.sector-sort-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -6447,6 +6579,12 @@ function renderTimeline() {
     </tr>`;
   }).join('');
 
+  // Guardar datos globalmente para exportTimelineSummaryPDF
+  window._tlMonthMap      = monthMap;
+  window._tlSortedMonths  = sortedMonths;
+  window._tlTotalMonto    = totalMonto;
+  window._tlEntityFilter  = entityFilter;
+
   // Cerrar drilldown anterior al re-renderizar
   closeTlDrilldown();
 }
@@ -6696,6 +6834,133 @@ function exportTlPDF() {
   win.document.write(html);
   win.document.close();
   win.addEventListener('load', () => win.focus());
+}
+
+function exportTimelineSummaryPDF() {
+  const mm = window._tlMonthMap;
+  const sm = window._tlSortedMonths;
+  if (!mm || !sm || sm.length === 0) { alert('Sin datos de timeline. Abre el panel Timeline primero.'); return; }
+
+  const fmtL  = n => 'L. ' + (Number(n)||0).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
+  const esc   = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const pct   = (n, total) => total > 0 ? (n/total*100).toFixed(1)+'%' : '0%';
+
+  const now       = new Date();
+  const fechaStr  = now.toLocaleDateString('es-HN', {year:'numeric', month:'long', day:'numeric'});
+  const horaStr   = now.toLocaleTimeString('es-HN', {hour:'2-digit', minute:'2-digit'});
+  const dateTag   = now.toISOString().slice(0,10);
+
+  const totalMonto  = window._tlTotalMonto || 0;
+  const entityFilter = window._tlEntityFilter || '';
+  const fmtMon = ym => new Date(ym + '-02').toLocaleDateString('es-HN', { month: 'long', year: 'numeric' });
+
+  // Totals
+  let totContratos = 0, totCritica = 0, totAlta = 0, totMedia = 0, totBaja = 0;
+  sm.forEach(ym => {
+    const d = mm[ym];
+    totContratos += d.total; totCritica += d.critica; totAlta += d.alta; totMedia += d.media; totBaja += d.baja;
+  });
+
+  // Peak month
+  const peakKey = sm.reduce((a, b) => mm[a].total >= mm[b].total ? a : b);
+
+  // Monthly rows (newest → oldest)
+  const monthRows = sm.slice().reverse().map((ym, i) => {
+    const d = mm[ym];
+    const isPeak = ym === peakKey;
+    return `<tr style="background:${isPeak ? '#fffbea' : i%2===0?'#fff':'#f4f8ff'}">
+      <td style="${isPeak?'font-weight:bold;color:#8B6914;':''}">${esc(fmtMon(ym))}${isPeak?' ⭐':''}</td>
+      <td style="text-align:right;font-weight:600;">${d.total.toLocaleString('es-HN')}</td>
+      <td style="text-align:center;color:#C0392B;font-weight:600;">${d.critica||'—'}</td>
+      <td style="text-align:center;color:#C05000;">${d.alta||'—'}</td>
+      <td style="text-align:center;color:#D68910;">${d.media||'—'}</td>
+      <td style="text-align:center;color:#1E8449;">${d.baja||'—'}</td>
+      <td style="text-align:right;font-family:monospace;font-size:8pt;">${fmtL(d.monto)}</td>
+      <td style="text-align:right;font-size:7.5pt;color:#555;">${pct(d.total, totContratos)}</td>
+    </tr>`;
+  }).join('');
+
+  const subtitleStr = entityFilter ? `Entidad: ${entityFilter}` : 'Todas las entidades';
+  const periodStr   = fmtMon(sm[0]) + ' – ' + fmtMon(sm[sm.length - 1]);
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sentinel-AI Timeline Resumen ${dateTag}</title>
+<style>
+  @page { size: A4 portrait; margin: 1.4cm 1.2cm 1.8cm 1.2cm; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print { display: none !important; }
+  }
+  body { font-family: Arial, sans-serif; font-size: 9pt; color: #222; margin: 0; padding: 16px; }
+  h1   { color: #0A1628; font-size: 17pt; margin-bottom: 2px; margin-top: 0; }
+  h2   { color: #1A3A6B; font-size: 11pt; font-weight: normal; margin-top: 0; margin-bottom: 10px; }
+  .meta { color: #7F8C8D; font-size: 8pt; margin-bottom: 14px; }
+  .sec  { color: #0A1628; font-size: 10pt; font-weight: bold; margin: 14px 0 5px 0;
+          border-bottom: 1.5pt solid #1A3A6B; padding-bottom: 3px; }
+  .stats-row { display: flex; gap: 12px; margin: 12px 0 16px 0; flex-wrap: wrap; }
+  .stat-box  { border: 1px solid #D0D7E2; border-radius: 6px; padding: 8px 14px; flex: 1; min-width: 100px; }
+  .stat-box .lbl { font-size: 7.5pt; color: #888; margin-bottom: 3px; }
+  .stat-box .val { font-size: 13pt; font-weight: bold; color: #0A1628; }
+  table { border-collapse: collapse; width: 100%; margin-top: 4px; }
+  th    { background: #1A3A6B; color: #fff; padding: 5px 6px; font-size: 8pt; text-align: left; }
+  td    { padding: 4px 6px; border: 1px solid #D0D7E2; font-size: 8.5pt; }
+  .footer-bar { font-size: 7pt; color: #888; margin-top: 18px; border-top: 1px solid #D0D7E2;
+                padding-top: 4px; display: flex; justify-content: space-between; }
+  .print-btn { display: inline-block; margin: 0 0 16px 0; padding: 8px 18px;
+               background: #1A3A6B; color: #fff; border: none; border-radius: 6px;
+               font-size: 10pt; cursor: pointer; }
+  .print-btn:hover { background: #122c55; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+
+<h1>SENTINEL-AI HONDURAS</h1>
+<h2>Timeline de Alertas — Resumen Mensual</h2>
+<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Período: ${esc(periodStr)} &nbsp;|&nbsp; Filtro: ${esc(subtitleStr)}</p>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="lbl">Total Contratos</div><div class="val">${totContratos.toLocaleString('es-HN')}</div></div>
+  <div class="stat-box"><div class="lbl">Monto Total</div><div class="val" style="font-size:11pt">${fmtL(totalMonto)}</div></div>
+  <div class="stat-box"><div class="lbl" style="color:#C0392B">Crítica</div><div class="val" style="color:#C0392B">${totCritica.toLocaleString('es-HN')}</div></div>
+  <div class="stat-box"><div class="lbl" style="color:#C05000">Alta</div><div class="val" style="color:#C05000">${totAlta.toLocaleString('es-HN')}</div></div>
+  <div class="stat-box"><div class="lbl">Mes Pico ⭐</div><div class="val" style="font-size:10pt">${esc(fmtMon(peakKey))}</div></div>
+</div>
+
+<p class="sec">Distribución Mensual — ${sm.length} meses · ordenado por fecha descendente</p>
+<table>
+  <thead>
+    <tr>
+      <th>Mes</th>
+      <th style="text-align:right">Total</th>
+      <th style="text-align:center;color:#ff9999">Crítica</th>
+      <th style="text-align:center;color:#ffb380">Alta</th>
+      <th style="text-align:center;color:#ffe066">Media</th>
+      <th style="text-align:center;color:#99e699">Baja</th>
+      <th style="text-align:right">Monto (L)</th>
+      <th style="text-align:right">% del total</th>
+    </tr>
+  </thead>
+  <tbody>${monthRows}</tbody>
+</table>
+
+<div class="footer-bar">
+  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
+</div>
+
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=800');
+  if (!win) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
 }
 
 function exportEntityPDF(mode = 'pareto') {
@@ -7615,6 +7880,103 @@ function showVendorPanelFromAnalytics(vendorName) {
   document.querySelector('#entityPanel .fuente-back').textContent = '← Volver al Análisis';
 }
 
+// ── Analytics PDF Export ────────────────────────────────────────────────────
+function exportAnalyticsPDF(mode) {
+  const fmtL = n => n > 0 ? 'L. ' + Number(n).toLocaleString('es-HN', {maximumFractionDigits:0}) : 'L. —';
+  const ts = new Date().toLocaleDateString('es-HN');
+  const fuenteSel = document.getElementById('analyticsFuenteSelect');
+  const fuenteLabel = fuenteSel ? fuenteSel.options[fuenteSel.selectedIndex].text : 'Todas las fuentes';
+  const alerts = window.allAlerts || [];
+
+  // Headline numbers
+  const totalMonto = alerts.reduce((s,a) => s + (parseFloat(a.monto_contrato)||0), 0);
+  const criticos = alerts.filter(a => (a.severity||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'') === 'critica');
+
+  // Pattern breakdown
+  const patMap = new Map();
+  alerts.forEach(a => {
+    const pats = (a.patterns||'').split(',').map(p => p.trim()).filter(Boolean);
+    pats.forEach(p => {
+      if (!patMap.has(p)) patMap.set(p, {count:0, monto:0});
+      const e = patMap.get(p);
+      e.count++;
+      e.monto += parseFloat(a.monto_contrato)||0;
+    });
+  });
+  const sortedPats = [...patMap.entries()].sort((a,b) => b[1].monto - a[1].monto);
+  const totalPatMonto = sortedPats.reduce((s,[,d]) => s + d.monto, 0);
+  let cumMonto = 0;
+  const paretoRows = [];
+  for (const [p, d] of sortedPats) {
+    cumMonto += d.monto;
+    paretoRows.push([p, d, cumMonto / totalPatMonto]);
+    if (mode === 'pareto' && cumMonto / totalPatMonto >= 0.80) break;
+  }
+
+  // Entity ranking
+  const entMap = new Map();
+  alerts.forEach(a => {
+    const k = a.entity_name || 'Desconocido';
+    if (!entMap.has(k)) entMap.set(k, {count:0, monto:0});
+    const e = entMap.get(k);
+    e.count++;
+    e.monto += parseFloat(a.monto_contrato)||0;
+  });
+  const topEntities = [...entMap.entries()].sort((a,b) => b[1].monto - a[1].monto).slice(0, mode==='pareto' ? 10 : 20);
+
+  const patRows = paretoRows.map(([p, d, cum]) => `
+    <tr>
+      <td>${PATTERN_LABELS[p] || p}</td>
+      <td style="text-align:right;">${d.count.toLocaleString()}</td>
+      <td style="text-align:right;">${(d.count/alerts.length*100).toFixed(1)}%</td>
+      <td style="text-align:right;">${fmtL(d.monto)}</td>
+      <td style="text-align:right;color:#888;">${(cum*100).toFixed(1)}%</td>
+    </tr>`).join('');
+
+  const entRows = topEntities.map(([name, d], i) => `
+    <tr>
+      <td>${i+1}. ${name}</td>
+      <td style="text-align:right;">${d.count.toLocaleString()}</td>
+      <td style="text-align:right;">${fmtL(d.monto)}</td>
+    </tr>`).join('');
+
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Análisis de Contratos — SENTINEL-AI</title>
+  <style>
+    body{font-family:Arial,sans-serif;font-size:12px;margin:32px;color:#1a1a2e;}
+    h1{font-size:18px;border-bottom:2px solid #1a1a2e;padding-bottom:8px;margin-bottom:6px;}
+    h2{font-size:13px;margin:22px 0 8px;color:#2c3e50;border-left:4px solid #2980b9;padding-left:8px;}
+    .meta{font-size:11px;color:#555;margin-bottom:20px;}
+    .stats{display:flex;gap:24px;margin:16px 0;}
+    .stat-box{background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:12px 20px;text-align:center;}
+    .stat-val{font-size:22px;font-weight:700;color:#2980b9;}
+    .stat-lbl{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.5px;}
+    table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:11px;}
+    th{background:#2c3e50;color:white;padding:6px 8px;text-align:left;font-size:10px;letter-spacing:.5px;}
+    td{padding:5px 8px;border-bottom:1px solid #eee;}
+    tr:nth-child(even){background:#f9f9f9;}
+    .footer{margin-top:28px;font-size:10px;color:#888;border-top:1px solid #ccc;padding-top:8px;}
+    @media print{body{margin:16px;}}
+  </style></head><body>
+  <h1>📈 Análisis de Contratos${mode==='pareto'?' — Pareto (80%)':', Todo'} — SENTINEL-AI</h1>
+  <div class="meta">Generado: ${ts} · Fuente: ${fuenteLabel} · ${alerts.length.toLocaleString()} contratos · The Prieto Group</div>
+  <div class="stats">
+    <div class="stat-box"><div class="stat-val">${alerts.length.toLocaleString()}</div><div class="stat-lbl">Total Contratos</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:#c0392b;">${criticos.length.toLocaleString()}</div><div class="stat-lbl">Críticos</div></div>
+    <div class="stat-box"><div class="stat-val">${fmtL(totalMonto)}</div><div class="stat-lbl">Monto Total</div></div>
+  </div>
+  <h2>Exposición por Patrón de Fraude${mode==='pareto'?' (top 80% del monto)':''}</h2>
+  <table><thead><tr><th>Patrón</th><th style="text-align:right;">Contratos</th><th style="text-align:right;">% del Total</th><th style="text-align:right;">Monto (L.)</th><th style="text-align:right;">Acumulado</th></tr></thead>
+  <tbody>${patRows}</tbody></table>
+  <h2>Top Entidades Compradoras${mode==='pareto'?' — Top 10':' — Top 20'}</h2>
+  <table><thead><tr><th>Entidad</th><th style="text-align:right;">Contratos</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
+  <tbody>${entRows}</tbody></table>
+  <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · Honduras · The Prieto Group — Dallas, TX · Datos: SEFIN/EDCA Fiscal 2023–2025</div>
+  </body></html>`);
+  w.document.close();
+  setTimeout(() => w.print(), 400);
+}
+
 // Open entity/vendor panel from news — back button returns to news panel
 function showEntityFromTimeline(entityName) {
   entityPanelSource = 'timeline';
@@ -7705,43 +8067,121 @@ function populatePhase4Detection() {
     <div class="fuente-list-item" style="border-left: 4px solid ${threat.severity === 'critical' ? '#e63946' : threat.severity === 'high' ? '#f77f00' : '#fcbf49'};">
       <div style="font-weight:600;color:#00c8ff;">${threat.vendor}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        🔴 Incidents: ${threat.count} | Risk Score: ${threat.risk_score.toFixed(0)}/100 | Severity: <strong>${threat.severity.toUpperCase()}</strong>
+        🔴 Incidentes: ${threat.count} | Score de Riesgo: ${threat.risk_score.toFixed(0)}/100 | Severidad: <strong>${threat.severity === 'critical' ? 'CRÍTICA' : threat.severity === 'high' ? 'ALTA' : threat.severity.toUpperCase()}</strong>
       </div>
       <div style="font-size:12px;color:var(--red);margin-top:4px;">
-        Total Excess: L ${(threat.totalExcess || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})}
+        Exceso Total: L ${(threat.totalExcess || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})}
       </div>
     </div>
   `).join('');
-  document.getElementById('p4-velocity-list').innerHTML = velocityHTML || '<div style="padding:12px;color:var(--text-dim);">No velocity threats detected</div>';
+  document.getElementById('p4-velocity-list').innerHTML = velocityHTML || '<div style="padding:12px;color:var(--text-dim);">Sin amenazas de velocidad detectadas</div>';
 
   // Populate Risk Scores (top 10)
   const riskHTML = riskScores.slice(0, 10).map(supplier => `
     <div class="fuente-list-item" style="border-left: 4px solid ${supplier.severity === 'critical' ? '#e63946' : supplier.severity === 'high' ? '#f77f00' : '#fcbf49'};">
       <div style="font-weight:600;color:#00c8ff;">${supplier.vendor}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        📊 Risk Score: <strong>${supplier.risk_score.toFixed(0)}/100</strong> | Severity: ${supplier.severity.toUpperCase()} | Contracts: ${supplier.total_contracts}
+        📊 Score de Riesgo: <strong>${supplier.risk_score.toFixed(0)}/100</strong> | Severidad: ${supplier.severity === 'critical' ? 'CRÍTICA' : supplier.severity === 'high' ? 'ALTA' : supplier.severity.toUpperCase()} | Contratos: ${supplier.total_contracts}
       </div>
       <div style="font-size:11px;color:#aaa;margin-top:4px;">
-        Overpayments: ${supplier.overpay_count} | Excess: L ${(supplier.overpay_total || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})} | Entities: ${supplier.entities_count}
+        Sobrepagos: ${supplier.overpay_count} | Exceso: L ${(supplier.overpay_total || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})} | Entidades: ${supplier.entities_count}
       </div>
-      ${supplier.risk_factors.length > 0 ? `<div style="font-size:11px;color:#fcbf49;margin-top:4px;">⚠️ Risk Factors: ${supplier.risk_factors.join(', ')}</div>` : ''}
+      ${supplier.risk_factors.length > 0 ? `<div style="font-size:11px;color:#fcbf49;margin-top:4px;">⚠️ Factores de Riesgo: ${supplier.risk_factors.join(', ')}</div>` : ''}
     </div>
   `).join('');
-  document.getElementById('p4-risk-list').innerHTML = riskHTML || '<div style="padding:12px;color:var(--text-dim);">No suppliers with risk factors</div>';
+  document.getElementById('p4-risk-list').innerHTML = riskHTML || '<div style="padding:12px;color:var(--text-dim);">Sin proveedores con factores de riesgo</div>';
 
   // Populate Anomalies (top 5)
   const anomalyHTML = anomalies.slice(0, 5).map(anom => `
     <div class="fuente-list-item" style="border-left: 4px solid #e63946;">
       <div style="font-weight:600;color:#00c8ff;">Alert ID: ${anom.alert_id} | ${anom.vendor}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        📍 Entity: ${anom.entity} | Deviation: <strong>${anom.deviation_score.toFixed(1)}σ</strong> | Severity: ${anom.severity}
+        📍 Entidad: ${anom.entity} | Desviación: <strong>${anom.deviation_score.toFixed(1)}σ</strong> | Severidad: ${anom.severity === 'critical' ? 'CRÍTICA' : anom.severity === 'high' ? 'ALTA' : anom.severity.toUpperCase()}
       </div>
       <div style="font-size:12px;color:var(--red);margin-top:4px;">
-        Overpayment: ${anom.actual_overpay.toFixed(1)}% (Entity avg: ${anom.entity_avg.toFixed(1)}%)
+        Sobrepago: ${anom.actual_overpay.toFixed(1)}% (Promedio entidad: ${anom.entity_avg.toFixed(1)}%)
       </div>
     </div>
   `).join('');
-  document.getElementById('p4-anomaly-list').innerHTML = anomalyHTML || '<div style="padding:12px;color:var(--text-dim);">No statistical anomalies detected</div>';
+  document.getElementById('p4-anomaly-list').innerHTML = anomalyHTML || '<div style="padding:12px;color:var(--text-dim);">Sin anomalías estadísticas detectadas</div>';
+}
+
+function exportPhase4PDF() {
+  const ts = new Date().toLocaleDateString('es-HN');
+  const velocityThreats = detectVelocityThreats(allAlerts);
+  const anomalies = detectAnomalies(allAlerts);
+  const riskScores = calculateSupplierRiskScores(allAlerts);
+  const criticalCount = riskScores.filter(r => r.severity === 'critical').length;
+  const fmtL = n => n > 0 ? 'L. ' + Number(n).toLocaleString('es-HN', {maximumFractionDigits:0}) : 'L. —';
+
+  const velocityRows = velocityThreats.slice(0, 15).map((t, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${t.vendor}</td>
+      <td style="text-align:center;">${t.count}</td>
+      <td style="text-align:center;">${t.risk_score.toFixed(0)}/100</td>
+      <td style="color:${t.severity==='critical'?'#c0392b':t.severity==='high'?'#e67e22':'#f39c12'};font-weight:600;">${t.severity==='critical'?'CRÍTICA':t.severity==='high'?'ALTA':t.severity.toUpperCase()}</td>
+      <td style="text-align:right;">${fmtL(t.totalExcess||0)}</td>
+    </tr>`).join('');
+
+  const riskRows = riskScores.slice(0, 15).map((s, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${s.vendor}</td>
+      <td style="text-align:center;">${s.risk_score.toFixed(0)}/100</td>
+      <td style="color:${s.severity==='critical'?'#c0392b':s.severity==='high'?'#e67e22':'#f39c12'};font-weight:600;">${s.severity==='critical'?'CRÍTICA':s.severity==='high'?'ALTA':s.severity.toUpperCase()}</td>
+      <td style="text-align:center;">${s.total_contracts}</td>
+      <td style="text-align:right;">${fmtL(s.overpay_total||0)}</td>
+    </tr>`).join('');
+
+  const anomalyRows = anomalies.slice(0, 10).map((a, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td style="font-family:monospace;font-size:10px;">${a.alert_id}</td>
+      <td>${a.vendor}</td>
+      <td>${a.entity}</td>
+      <td style="text-align:center;">${a.deviation_score.toFixed(1)}σ</td>
+      <td style="text-align:center;color:#c0392b;">${a.actual_overpay.toFixed(1)}%</td>
+    </tr>`).join('');
+
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reporte — Anomalías Estadísticas</title>
+  <style>
+    body{font-family:Arial,sans-serif;font-size:12px;margin:32px;color:#1a1a2e;}
+    h1{font-size:18px;border-bottom:2px solid #1a1a2e;padding-bottom:8px;margin-bottom:6px;}
+    h2{font-size:13px;margin:22px 0 8px;color:#2c3e50;border-left:4px solid #e74c3c;padding-left:8px;}
+    .meta{font-size:11px;color:#555;margin-bottom:20px;}
+    .stats{display:flex;gap:24px;margin:16px 0;}
+    .stat-box{background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:12px 20px;text-align:center;}
+    .stat-val{font-size:22px;font-weight:700;color:#c0392b;}
+    .stat-lbl{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.5px;}
+    table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:11px;}
+    th{background:#2c3e50;color:white;padding:6px 8px;text-align:left;font-size:10px;letter-spacing:.5px;}
+    td{padding:5px 8px;border-bottom:1px solid #eee;}
+    tr:nth-child(even){background:#f9f9f9;}
+    .footer{margin-top:28px;font-size:10px;color:#888;border-top:1px solid #ccc;padding-top:8px;}
+    @media print{body{margin:16px;}}
+  </style></head><body>
+  <h1>⚡ Detección de Anomalías Estadísticas — SENTINEL-AI</h1>
+  <div class="meta">Generado: ${ts} · SEFIN Fiscal 2023–2025 · ${allAlerts.length.toLocaleString()} contratos analizados · The Prieto Group</div>
+  <div class="stats">
+    <div class="stat-box"><div class="stat-val">${velocityThreats.length}</div><div class="stat-lbl">Amenazas Velocidad</div></div>
+    <div class="stat-box"><div class="stat-val">${anomalies.length}</div><div class="stat-lbl">Anomalías Detectadas</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:#e67e22;">${criticalCount}</div><div class="stat-lbl">Proveedores Críticos</div></div>
+  </div>
+  <h2>⚡ Amenazas de Velocidad — Proveedores con Múltiples Sobrecostos</h2>
+  <table><thead><tr><th>#</th><th>Proveedor</th><th style="text-align:center;">Incidentes</th><th style="text-align:center;">Score/100</th><th>Severidad</th><th style="text-align:right;">Exceso Total</th></tr></thead>
+  <tbody>${velocityRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin amenazas detectadas</td></tr>'}</tbody></table>
+  <h2>📊 Score de Riesgo por Proveedor — Top 15</h2>
+  <table><thead><tr><th>#</th><th>Proveedor</th><th style="text-align:center;">Score/100</th><th>Severidad</th><th style="text-align:center;">Contratos</th><th style="text-align:right;">Exceso Total</th></tr></thead>
+  <tbody>${riskRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin datos</td></tr>'}</tbody></table>
+  <h2>🚨 Anomalías Estadísticas — Desviación del Promedio por Entidad (Top 10)</h2>
+  <table><thead><tr><th>#</th><th>ID Contrato</th><th>Proveedor</th><th>Entidad</th><th style="text-align:center;">Desviación</th><th style="text-align:center;">Sobrepago</th></tr></thead>
+  <tbody>${anomalyRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin anomalías detectadas</td></tr>'}</tbody></table>
+  <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · Honduras · The Prieto Group — Dallas, TX · Datos: SEFIN/EDCA · Este reporte es referencial — para uso interno de investigación.</div>
+  </body></html>`);
+  w.document.close();
+  setTimeout(() => w.print(), 400);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -8687,14 +9127,18 @@ function showPatternDetail(patternCode) {
 
   document.getElementById('patternDetailEntityBody').innerHTML = topEnt.map(([name, d]) =>
     `<tr>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">${name}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">
+        <button class="cell-entity-link" onclick="showEntityPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${name}</button>
+      </td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
     </tr>`).join('') || '<tr><td colspan="3" style="color:var(--text-dim);text-align:center;padding:12px;">Sin datos</td></tr>';
 
   document.getElementById('patternDetailVendorBody').innerHTML = topVen.map(([name, d]) =>
     `<tr>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">${name}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">
+        <button class="cell-entity-link" onclick="showVendorPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${name}</button>
+      </td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
     </tr>`).join('') || '<tr><td colspan="3" style="color:var(--text-dim);text-align:center;padding:12px;">Sin datos</td></tr>';

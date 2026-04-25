@@ -2294,7 +2294,8 @@ body::after {
           <div class="fuente-title" style="font-size:12px;color:var(--text);letter-spacing:.08em;">📊 ANÁLISIS DE CONCENTRACIÓN DE PROVEEDORES</div>
           <div style="display:flex;gap:8px;">
             <button onclick="exportVendorConcentration('csv')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a CSV">📥 CSV</button>
-            <button onclick="exportVendorConcentration('pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a PDF">📥 PDF</button>
+            <button onclick="exportVendorConcentration('pareto-pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF top proveedores (80% del monto)">📄 Pareto</button>
+            <button onclick="exportVendorConcentration('pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF con todos los proveedores">⬇ Todo</button>
           </div>
         </div>
 
@@ -2364,7 +2365,8 @@ body::after {
         <!-- MODAL FOOTER -->
         <div style="display:flex;gap:10px;padding:16px;border-top:1px solid var(--border);background:rgba(0,200,255,0.03);justify-content:flex-end;">
           <button onclick="exportVendorConcentrationDetail('csv')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="Exportar a CSV">📥 CSV</button>
-          <button onclick="exportVendorConcentrationDetail('pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="Exportar a PDF">📥 PDF</button>
+          <button onclick="exportVendorConcentrationDetail('pareto-pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="PDF top contratos (80% del monto)">📄 Pareto</button>
+          <button onclick="exportVendorConcentrationDetail('pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="PDF con todos los contratos">⬇ Todo</button>
           <button onclick="closeVendorConcentrationDetail()" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">Cerrar</button>
         </div>
       </div>
@@ -9152,8 +9154,10 @@ function exportVendorConcentration(format) {
     });
 
     downloadFile(csv, `vendor-concentration-${timestamp}.csv`, 'text/csv');
+  } else if (format === 'pareto-pdf') {
+    generateVendorConcentrationPDF(data, timestamp, 'pareto');
   } else if (format === 'pdf') {
-    generateVendorConcentrationPDF(data, timestamp);
+    generateVendorConcentrationPDF(data, timestamp, 'todo');
   }
 }
 
@@ -9183,12 +9187,14 @@ function exportVendorConcentrationDetail(format) {
 
     const safeName = detail.vendorName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').substring(0, 30);
     downloadFile(csv, `contratos-${safeName}-${timestamp}.csv`, 'text/csv');
+  } else if (format === 'pareto-pdf') {
+    generateVendorDetailPDF(detail, timestamp, 'pareto');
   } else if (format === 'pdf') {
-    generateVendorDetailPDF(detail, timestamp);
+    generateVendorDetailPDF(detail, timestamp, 'todo');
   }
 }
 
-function generateVendorConcentrationPDF(data, timestamp) {
+function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
   try {
     // ── Pareto 80/20 Analysis ──
     const targetValue = data.totalMonto * 0.80;
@@ -9291,8 +9297,8 @@ function generateVendorConcentrationPDF(data, timestamp) {
   para efectos de vigilancia y cumplimiento.
 </p>
 
-<h2 style="margin-top:24px;page-break-before:always;">Contratos por Proveedor</h2>
-${data.vendors.map(v => {
+<h2 style="margin-top:24px;page-break-before:always;">Contratos por Proveedor${mode === 'pareto' ? ' — Top Pareto (80% del Valor)' : ''}</h2>
+${(mode === 'pareto' ? vendorsIn80 : data.vendors).map(v => {
   const vendorContracts = (window.globalAlerts || []).filter(a => {
     const vendor = a.proveedor_nombre || a.proveedor || 'Desconocido';
     return vendor === v.name;
@@ -9357,9 +9363,22 @@ ${data.vendors.map(v => {
   }
 }
 
-function generateVendorDetailPDF(detail, timestamp) {
+function generateVendorDetailPDF(detail, timestamp, mode = 'todo') {
   try {
-    const contracts = detail.contracts || [];
+    const allContracts = (detail.contracts || []).slice().sort((a, b) =>
+      Number(b.monto_contrato || b.monto_contratado || 0) - Number(a.monto_contrato || a.monto_contratado || 0)
+    );
+    let contracts = allContracts;
+    if (mode === 'pareto') {
+      const totalMonto = allContracts.reduce((s, a) => s + Number(a.monto_contrato || a.monto_contratado || 0), 0);
+      let cumulative = 0;
+      let cutIdx = allContracts.length;
+      for (let i = 0; i < allContracts.length; i++) {
+        cumulative += Number(allContracts[i].monto_contrato || allContracts[i].monto_contratado || 0);
+        if (cumulative >= totalMonto * 0.8) { cutIdx = i + 1; break; }
+      }
+      contracts = allContracts.slice(0, cutIdx);
+    }
     const montoTotal = contracts.reduce((s, a) => s + (Number(a.monto_contrato || a.monto_contratado || 0)), 0);
     const sevColors = { critica:'#ff3d57', alta:'#e65100', media:'#0277bd', baja:'#2e7d32' };
 
@@ -9414,7 +9433,7 @@ function generateVendorDetailPDF(detail, timestamp) {
 <p class="meta">Reporte de contratos — ${timestamp}</p>
 
 <div class="summary-bar">
-  <strong>Total contratos:</strong> ${contracts.length} &nbsp;|&nbsp;
+  <strong>Total contratos:</strong> ${contracts.length}${mode === 'pareto' ? ' (Pareto 80%)' : ''} &nbsp;|&nbsp;
   <strong>Monto total:</strong> L. ${montoTotal.toLocaleString()} &nbsp;|&nbsp;
   <strong>Ordenado por:</strong> Monto descendente
 </div>

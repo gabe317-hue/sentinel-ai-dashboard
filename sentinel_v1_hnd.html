@@ -5831,7 +5831,7 @@ function exportSectorSummaryPDF() {
   if (!win) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
   win.document.write(html);
   win.document.close();
-  setTimeout(() => win.print(), 400);
+  win.addEventListener('load', () => win.focus());
 }
 
 function sortSectorTable(key, btn) {
@@ -6961,7 +6961,7 @@ function exportTimelineSummaryPDF() {
   if (!win) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
   win.document.write(html);
   win.document.close();
-  setTimeout(() => win.print(), 400);
+  win.addEventListener('load', () => win.focus());
 }
 
 function exportEntityPDF(mode = 'pareto') {
@@ -7957,8 +7957,10 @@ function exportAnalyticsPDF(mode) {
     td{padding:5px 8px;border-bottom:1px solid #eee;}
     tr:nth-child(even){background:#f9f9f9;}
     .footer{margin-top:28px;font-size:10px;color:#888;border-top:1px solid #ccc;padding-top:8px;}
-    @media print{body{margin:16px;}}
+    .print-btn{display:inline-block;margin:0 0 16px 0;padding:8px 18px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:10pt;cursor:pointer;}
+    @media print{body{margin:16px;} .no-print{display:none!important;}}
   </style></head><body>
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
   <h1>📈 Análisis de Contratos${mode==='pareto'?' — Pareto (80%)':', Todo'} — SENTINEL-AI</h1>
   <div class="meta">Generado: ${ts} · Fuente: ${fuenteLabel} · ${alerts.length.toLocaleString()} contratos · The Prieto Group</div>
   <div class="stats">
@@ -7975,7 +7977,7 @@ function exportAnalyticsPDF(mode) {
   <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · Honduras · The Prieto Group — Dallas, TX · Datos: SEFIN/EDCA Fiscal 2023–2025</div>
   </body></html>`);
   w.document.close();
-  setTimeout(() => w.print(), 400);
+  w.addEventListener('load', () => w.focus());
 }
 
 // Open entity/vendor panel from news — back button returns to news panel
@@ -8161,8 +8163,10 @@ function exportPhase4PDF() {
     td{padding:5px 8px;border-bottom:1px solid #eee;}
     tr:nth-child(even){background:#f9f9f9;}
     .footer{margin-top:28px;font-size:10px;color:#888;border-top:1px solid #ccc;padding-top:8px;}
-    @media print{body{margin:16px;}}
+    .print-btn{display:inline-block;margin:0 0 16px 0;padding:8px 18px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:10pt;cursor:pointer;}
+    @media print{body{margin:16px;} .no-print{display:none!important;}}
   </style></head><body>
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
   <h1>⚡ Detección de Anomalías Estadísticas — SENTINEL-AI</h1>
   <div class="meta">Generado: ${ts} · SEFIN Fiscal 2023–2025 · ${allAlerts.length.toLocaleString()} contratos analizados · The Prieto Group</div>
   <div class="stats">
@@ -8182,7 +8186,7 @@ function exportPhase4PDF() {
   <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · Honduras · The Prieto Group — Dallas, TX · Datos: SEFIN/EDCA · Este reporte es referencial — para uso interno de investigación.</div>
   </body></html>`);
   w.document.close();
-  setTimeout(() => w.print(), 400);
+  w.addEventListener('load', () => w.focus());
 }
 
 // ════════════════════════════════════════════════════════════

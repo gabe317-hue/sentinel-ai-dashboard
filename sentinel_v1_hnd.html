@@ -1911,6 +1911,25 @@ body::after {
     </div>
   </div>
 
+  <!-- Search bar — Opción F -->
+  <div class="controls-bar" style="margin-bottom:6px;gap:8px;">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.06em;white-space:nowrap;align-self:center;">🔍 BUSCAR:</span>
+    <input id="global-search" type="text" placeholder="Proveedor, entidad, o ID de contrato..."
+      oninput="setSearch(this.value)"
+      style="flex:1;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;
+             padding:7px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;
+             outline:none;transition:border-color .2s;min-width:0;"
+      onfocus="this.style.borderColor='var(--electric)'"
+      onblur="this.style.borderColor=''"
+    />
+    <button onclick="clearSearch()" title="Limpiar búsqueda"
+      style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--glass);
+             color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;
+             white-space:nowrap;transition:all .2s;"
+      onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'"
+      onmouseout="this.style.borderColor='';this.style.color=''">✕ Limpiar</button>
+  </div>
+
   <!-- Severity filter bar -->
   <div class="controls-bar">
     <button class="filter-btn active" data-f="all"     onclick="setFilter('all')">TODAS</button>
@@ -3370,6 +3389,7 @@ try {
 let allAlerts      = [];    // Full dataset from Supabase
 let activeFilter   = 'all'; // Active severity filter
 let activePattern  = 'all'; // Active pattern filter
+let searchQuery    = '';    // Global search — proveedor, entidad, ID
 let selectedSev    = null;  // Severity selected in modal form
 let currentPage    = 0;     // Current pagination page (0-indexed)
 const ALERTS_PER_PAGE = 50; // Rows per page
@@ -3509,6 +3529,14 @@ function render() {
   if (activePattern !== 'all') {
     filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
   }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(a =>
+      (a.proveedor_nombre || a.proveedor || '').toLowerCase().includes(q) ||
+      (a.entity_name || a.entidad || '').toLowerCase().includes(q) ||
+      (a.alert_id || a.id || '').toString().toLowerCase().includes(q)
+    );
+  }
 
   // ── Sort by most recent first ──
   filtered = filtered.sort((a, b) => {
@@ -3615,6 +3643,23 @@ function render() {
       </td>
     </tr>`;
   }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// SEARCH — Opción F
+// ════════════════════════════════════════════════════════════
+function setSearch(val) {
+  searchQuery = (val || '').trim();
+  currentPage = 0;
+  render();
+}
+
+function clearSearch() {
+  searchQuery = '';
+  currentPage = 0;
+  const el = document.getElementById('global-search');
+  if (el) el.value = '';
+  render();
 }
 
 // ════════════════════════════════════════════════════════════

@@ -1318,6 +1318,109 @@ body::after {
 .caso-tl-text { line-height: 1.6; }
 .caso-tl-text strong { color: var(--text); }
 
+/* ── PANEL DE RIESGO POR SECTOR ── */
+.sector-controls {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.sector-sort-btn {
+  padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--glass); color: var(--text-dim); font-size: 11px; cursor: pointer;
+  transition: all .2s; font-family: 'JetBrains Mono', monospace;
+}
+.sector-sort-btn.active, .sector-sort-btn:hover {
+  background: rgba(0,200,255,0.12); border-color: var(--electric); color: var(--electric);
+}
+.sector-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.sector-table th {
+  background: rgba(255,255,255,0.04); border-bottom: 1px solid var(--border);
+  padding: 9px 12px; font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  letter-spacing: .06em; color: var(--text-dim); text-align: left; white-space: nowrap;
+}
+.sector-table th.num { text-align: right; }
+.sector-table td {
+  padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px; color: var(--text); vertical-align: middle;
+}
+.sector-table td.num { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.sector-table tr { cursor: pointer; transition: background .15s; }
+.sector-table tr:hover { background: rgba(255,255,255,0.04); }
+.sector-table tr.sector-expanded { background: rgba(0,200,255,0.05); }
+.sector-icon { font-size: 16px; margin-right: 8px; }
+.sector-name { font-weight: 600; font-size: 13px; }
+.sector-risk-bar {
+  display: inline-block; height: 6px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--red) 0%, var(--amber) 60%);
+  vertical-align: middle; margin-right: 6px;
+}
+.sector-pct { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.sector-pct.high { color: var(--red); }
+.sector-pct.mid  { color: var(--amber); }
+.sector-pct.low  { color: #4caf50; }
+.sector-detail-row { display: none; }
+.sector-detail-row.open { display: table-row; }
+.sector-detail-inner {
+  padding: 0 12px 12px 40px;
+  background: rgba(0,200,255,0.03);
+}
+.sector-entity-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.sector-entity-item {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; padding: 6px 10px;
+  background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid var(--border);
+}
+.sector-entity-name { color: var(--text); flex: 1; }
+.sector-entity-link {
+  background: none; border: none; color: var(--electric); font-size: 11px;
+  cursor: pointer; font-family: 'JetBrains Mono', monospace; padding: 0; margin-left: 10px;
+  text-decoration: underline;
+}
+.sector-entity-link:hover { color: #fff; }
+.sector-chip {
+  display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px;
+  font-family: 'JetBrains Mono', monospace; margin-left: 6px;
+}
+.sector-chip.c { background: rgba(255,61,87,0.18); color: var(--red); }
+.sector-chip.a { background: rgba(255,171,0,0.18); color: var(--amber); }
+.sector-chip.m { background: rgba(0,200,255,0.14); color: var(--electric); }
+.sector-chip.b { background: rgba(76,175,80,0.14); color: #4caf50; }
+
+/* ── MONITOR DE NOTICIAS — CASOS ACTIVOS ── */
+.caso-monitor-wrap { margin-top: 28px; border-top: 1px solid var(--border); padding-top: 20px; }
+.caso-monitor-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+}
+.caso-monitor-title {
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+  color: var(--text); letter-spacing: .02em;
+}
+.caso-monitor-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-dim); }
+.caso-monitor-refresh {
+  padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border);
+  background: var(--glass); color: var(--text-dim); font-size: 11px; cursor: pointer; transition: all .2s;
+}
+.caso-monitor-refresh:hover { color: var(--text); border-color: var(--electric); }
+.caso-monitor-case { margin-bottom: 16px; }
+.caso-monitor-case-lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .08em;
+  color: var(--electric); margin-bottom: 8px; text-transform: uppercase;
+}
+.caso-monitor-items { display: flex; flex-direction: column; gap: 6px; }
+.caso-monitor-item {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 7px; padding: 10px 14px;
+}
+.caso-monitor-item-title {
+  font-size: 12.5px; color: var(--text); line-height: 1.4; margin-bottom: 4px;
+}
+.caso-monitor-item-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-dim);
+  display: flex; gap: 10px;
+}
+.caso-monitor-item a { color: var(--electric); text-decoration: none; }
+.caso-monitor-item a:hover { text-decoration: underline; }
+.caso-monitor-empty { font-size: 12px; color: var(--text-dim); padding: 8px 0; }
+.caso-monitor-loading { font-size: 12px; color: var(--text-dim); padding: 8px 0; animation: pulse 1.2s infinite; }
+
 /* ── TIMELINE DE ALERTAS (Opción C) ── */
 .tl-controls {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -1565,6 +1668,9 @@ body::after {
       </button>
       <button class="nav-item" id="nav-timeline" onclick="showTimelinePanel()">
         <span class="nav-icon">📅</span> Timeline de Alertas
+      </button>
+      <button class="nav-item" id="nav-sector" onclick="showSectorPanel()">
+        <span class="nav-icon">🏛️</span> Riesgo por Sector
       </button>
     </div>
 
@@ -1934,8 +2040,9 @@ body::after {
   <div class="fuente-panel" id="entityPanel">
     <button class="fuente-back" onclick="hideEntityPanel()">← Todos los Contratos</button>
 
-    <div class="fuente-header">
+    <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:center;">
       <div class="fuente-title" id="ep-title">Entidad</div>
+      <button onclick="exportEntityPDF()" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="Exportar entidad a PDF">📄 PDF</button>
     </div>
 
     <!-- Count stats row -->
@@ -2768,6 +2875,106 @@ body::after {
       <div class="caso-fuentes">Fuentes: El Heraldo HN · La Prensa HN · Proceso Digital · Tiempo HN · El Espectador HN · tunota.com — Act. Abr 2026</div>
     </div>
 
+    <!-- ── MONITOR DE NOTICIAS ── -->
+    <div class="caso-monitor-wrap">
+      <div class="caso-monitor-header">
+        <div>
+          <div class="caso-monitor-title">📡 Monitor de Noticias — Casos Activos</div>
+          <div class="caso-monitor-meta" id="caso-monitor-meta">Escanea fuentes RSS en tiempo real para actualizaciones de cada caso</div>
+        </div>
+        <button class="caso-monitor-refresh" onclick="loadCasosMonitor(true)">↺ Actualizar</button>
+      </div>
+
+      <div class="caso-monitor-case">
+        <div class="caso-monitor-case-lbl">⚖️ SEDESOL-2024-001 — "Chequesol"</div>
+        <div class="caso-monitor-items" id="caso-monitor-chequesol">
+          <div class="caso-monitor-loading">⟳ Cargando...</div>
+        </div>
+      </div>
+
+      <div class="caso-monitor-case">
+        <div class="caso-monitor-case-lbl">⚠️ SEDUC-2026-001 — "Paracaidistas SEDUC Cortés"</div>
+        <div class="caso-monitor-items" id="caso-monitor-seduc">
+          <div class="caso-monitor-loading">⟳ Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ PANEL DE RIESGO POR SECTOR (Opción D) ══ -->
+  <div class="fuente-panel" id="sectorPanel">
+    <button class="fuente-back" onclick="hideSectorPanel()">← Todos los Contratos</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title">🏛️ <span>Riesgo por Sector Institucional</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Concentración de riesgo por sector de gobierno — basado en los 40,175 contratos monitoreados
+      </div>
+    </div>
+
+    <!-- Summary stat cards -->
+    <div class="fuente-stats-row" style="margin-bottom:20px;">
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="sec-total-sectores">—</div>
+        <div class="fuente-stat-lbl">Sectores</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val" id="sec-total-contratos">—</div>
+        <div class="fuente-stat-lbl">Contratos</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val c" id="sec-total-critica">—</div>
+        <div class="fuente-stat-lbl">Críticas</div>
+      </div>
+      <div class="fuente-stat">
+        <div class="fuente-stat-val a" id="sec-total-alta">—</div>
+        <div class="fuente-stat-lbl">Altas</div>
+      </div>
+    </div>
+
+    <!-- Sort controls -->
+    <div class="sector-controls">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.06em;">ORDENAR POR:</span>
+      <button class="sector-sort-btn active" id="sec-sort-monto" onclick="sortSectorTable('monto',this)">Monto L</button>
+      <button class="sector-sort-btn" id="sec-sort-riesgo" onclick="sortSectorTable('riesgo',this)">% Alto Riesgo</button>
+      <button class="sector-sort-btn" id="sec-sort-contratos" onclick="sortSectorTable('contratos',this)">Contratos</button>
+      <button class="sector-sort-btn" id="sec-sort-critica" onclick="sortSectorTable('critica',this)">Críticas</button>
+    </div>
+
+    <!-- Sector table -->
+    <div style="overflow-x:auto;">
+      <table class="sector-table" id="sector-main-table">
+        <thead>
+          <tr>
+            <th>Sector</th>
+            <th class="num">Contratos</th>
+            <th class="num">Crítica</th>
+            <th class="num">Alta</th>
+            <th class="num">Media</th>
+            <th class="num">Baja</th>
+            <th class="num">Monto L</th>
+            <th>% Alto Riesgo</th>
+          </tr>
+        </thead>
+        <tbody id="sector-table-body">
+          <tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:20px;">Cargando sectores...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Sector drilldown (same pattern as tl-drilldown) -->
+    <div class="tl-drilldown" id="sector-drilldown">
+      <div class="tl-drilldown-header">
+        <div class="tl-drilldown-title" id="sector-drilldown-title">—</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="tl-export-btn pdf" onclick="exportSectorPDF()" title="Exportar reporte PDF">📄 PDF</button>
+          <button class="tl-export-btn csv" onclick="exportSectorCSV()" title="Exportar contratos a CSV">⬇ CSV</button>
+          <button class="tl-drilldown-close" onclick="closeSectorDrilldown()">✕</button>
+        </div>
+      </div>
+      <div class="tl-drilldown-list" id="sector-drilldown-list"></div>
+    </div>
   </div>
 
   <!-- TIMELINE DE ALERTAS PANEL (Opción C) -->
@@ -4057,6 +4264,8 @@ function showEntityPanel(entityName) {
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
 
   const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+  _epCurrentEntity = entityName;
+  _epData = data;
 
   // Severity counts
   const counts = { critica: 0, alta: 0, media: 0, baja: 0 };
@@ -4974,7 +5183,7 @@ function parseDesc_for(key, desc) {
 
 // Tracks where the entity/vendor panel was opened from
 // so the back button returns to the right place
-let entityPanelSource = 'dashboard'; // 'dashboard' | 'analytics' | 'news' | 'timeline'
+let entityPanelSource = 'dashboard'; // 'dashboard' | 'analytics' | 'news' | 'timeline' | 'sector'
 
 function hideEntityPanel() {
   document.getElementById('entityPanel').classList.remove('open');
@@ -4987,6 +5196,9 @@ function hideEntityPanel() {
   } else if (entityPanelSource === 'timeline') {
     entityPanelSource = 'dashboard';
     showTimelinePanel();
+  } else if (entityPanelSource === 'sector') {
+    entityPanelSource = 'dashboard';
+    showSectorPanel();
   } else {
     document.querySelector('.stats-grid').style.display     = '';
     document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
@@ -4998,7 +5210,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel','casosPanel','timelinePanel','newsPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -5017,6 +5229,7 @@ function showCasosPanel() {
   document.getElementById('nav-casos').classList.add('active');
   document.getElementById('casosPanel').classList.add('open');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  loadCasosMonitor();
 }
 
 function hideCasosPanel() {
@@ -5025,6 +5238,471 @@ function hideCasosPanel() {
   document.querySelector('.stats-grid').style.display = '';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+}
+
+// ════════════════════════════════════════════════════════════
+// PANEL DE RIESGO POR SECTOR (Opción D)
+// ════════════════════════════════════════════════════════════
+
+const SECTOR_MAP = [
+  { id: 'salud',        icon: '🏥', label: 'Salud',                    keys: ['salud','ihss','hondureño de seguridad social','hospital','sanitaria'] },
+  { id: 'seguridad',    icon: '🛡️', label: 'Seguridad & Defensa',      keys: ['seguridad','defensa','policía','policial','fuerzas armadas','interpol','penitenciario'] },
+  { id: 'energia',      icon: '⚡', label: 'Energía & Infraestructura', keys: ['energía eléctrica','enee','infraestructura','transporte','portuaria','telecomunicaciones','agua','saneamiento'] },
+  { id: 'educacion',    icon: '📚', label: 'Educación & Cultura',       keys: ['educación','universidad','ciencias','tecnológica','pedagógica','culturas','artes','patrimonio','infractores','infancia','menores'] },
+  { id: 'finanzas',     icon: '💰', label: 'Finanzas & Economía',       keys: ['finanzas','sefin','banco','inversión','suplidora','oncae','propiedad','mercadeo','comercio','economía','presupuesto'] },
+  { id: 'social',       icon: '🤝', label: 'Desarrollo Social',         keys: ['desarrollo social','sedesol','red solidaria','ciudad mujer','niñez','adolescencia','familia','discapacidad','adulto mayor','género','mujer'] },
+  { id: 'agricultura',  icon: '🌿', label: 'Agricultura & Ambiente',    keys: ['agricultura','ganadería','sag','forestal','ambiente','natural','recurso natural','hídrico','hidrológico','senasa','caficultura'] },
+  { id: 'gobernacion',  icon: '🏛️', label: 'Gobernación & Presidencia', keys: ['presidencia','gobernación','justicia','descentralización','registro nacional','migración','cancillería','relaciones exteriores','cooperación','turismo','antropología','historia'] },
+  { id: 'planificacion',icon: '📊', label: 'Planificación & Estadística',keys: ['planificación','estadística','censos','seplan','siafi','congreso','electoral','tribunal'] },
+  { id: 'municipal',    icon: '🏙️', label: 'Municipal',                 keys: ['municipal','alcaldía','municipio','distrito central'] },
+];
+const SECTOR_OTROS = { id: 'otros', icon: '📁', label: 'Otros / No clasificado', keys: [] };
+
+let _sectorSortKey = 'monto';
+let _sectorData    = [];
+
+function classifyEntity(name) {
+  const n = (name || '').toLowerCase();
+  for (const s of SECTOR_MAP) {
+    if (s.keys.some(k => n.includes(k))) return s.id;
+  }
+  return 'otros';
+}
+
+function buildSectorData() {
+  const map = {};
+  const allSectors = [...SECTOR_MAP, SECTOR_OTROS];
+  for (const s of allSectors) map[s.id] = { ...s, contratos:0, critica:0, alta:0, media:0, baja:0, monto:0, entities:{} };
+
+  for (const a of allAlerts) {
+    const sid = classifyEntity(a.entity_name);
+    const s   = map[sid];
+    s.contratos++;
+    s.monto += Number(a.monto_contrato || 0);
+    const sev = (a.severity || 'Baja').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if (sev.includes('critica'))    s.critica++;
+    else if (sev.includes('alta'))  s.alta++;
+    else if (sev.includes('media')) s.media++;
+    else                            s.baja++;
+    // entity breakdown
+    const ename = a.entity_name || '—';
+    if (!s.entities[ename]) s.entities[ename] = { contratos:0, critica:0, alta:0, monto:0 };
+    s.entities[ename].contratos++;
+    s.entities[ename].monto += Number(a.monto_contrato || 0);
+    if (sev.includes('critica')) s.entities[ename].critica++;
+    else if (sev.includes('alta')) s.entities[ename].alta++;
+  }
+  // Remove empty sectors
+  _sectorData = Object.values(map).filter(s => s.contratos > 0);
+}
+
+function sortSectorData(key) {
+  _sectorSortKey = key;
+  if (key === 'monto')      _sectorData.sort((a,b) => b.monto - a.monto);
+  else if (key === 'riesgo') _sectorData.sort((a,b) => {
+    const ra = (a.critica + a.alta) / (a.contratos||1);
+    const rb = (b.critica + b.alta) / (b.contratos||1);
+    return rb - ra;
+  });
+  else if (key === 'contratos') _sectorData.sort((a,b) => b.contratos - a.contratos);
+  else if (key === 'critica')   _sectorData.sort((a,b) => b.critica - a.critica);
+}
+
+function renderSectorTable() {
+  const fmtL   = n => 'L ' + Number(n).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
+  const fmtNum = n => Number(n).toLocaleString('es-HN');
+  const tbody  = document.getElementById('sector-table-body');
+  if (!tbody) return;
+
+  let html = '';
+  for (const s of _sectorData) {
+    const pctHigh  = s.contratos > 0 ? ((s.critica + s.alta) / s.contratos * 100) : 0;
+    const pctClass = pctHigh >= 60 ? 'high' : pctHigh >= 30 ? 'mid' : 'low';
+    const barW     = Math.round(pctHigh);
+
+    html += `
+    <tr onclick="renderSectorDrilldown('${s.id}')">
+      <td><span class="sector-icon">${s.icon}</span><span class="sector-name">${s.label}</span></td>
+      <td class="num">${fmtNum(s.contratos)}</td>
+      <td class="num" style="color:var(--red)">${fmtNum(s.critica)}</td>
+      <td class="num" style="color:var(--amber)">${fmtNum(s.alta)}</td>
+      <td class="num" style="color:var(--electric)">${fmtNum(s.media)}</td>
+      <td class="num" style="color:#4caf50">${fmtNum(s.baja)}</td>
+      <td class="num">${fmtL(s.monto)}</td>
+      <td>
+        <span class="sector-risk-bar" style="width:${barW}px;max-width:80px;display:inline-block;"></span>
+        <span class="sector-pct ${pctClass}">${pctHigh.toFixed(1)}%</span>
+      </td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+let _sectorDrilldownData = []; // contratos activos del sector seleccionado
+let _sectorDrilldownLabel = '';
+
+function renderSectorDrilldown(sectorId) {
+  const s = _sectorData.find(x => x.id === sectorId);
+  if (!s) return;
+
+  const fmtL      = n => 'L ' + (Number(n)||0).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
+  const sevColor  = { critica: 'var(--red)', alta: '#ff6b35', media: 'var(--amber)', baja: '#4caf50' };
+  const sevLabel  = { critica: 'CRÍTICA', alta: 'ALTA', media: 'MEDIA', baja: 'BAJA' };
+  const sevOrder  = { critica: 0, alta: 1, media: 2, baja: 3 };
+  const normSev_  = v => (v||'baja').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+
+  // Get all contracts for this sector
+  const contracts = allAlerts.filter(a => classifyEntity(a.entity_name) === sectorId);
+  contracts.sort((a, b) => {
+    const sa = normSev_(a.severity), sb = normSev_(b.severity);
+    const so = (sevOrder[sa] ?? 3) - (sevOrder[sb] ?? 3);
+    return so !== 0 ? so : Number(b.monto_contrato||0) - Number(a.monto_contrato||0);
+  });
+
+  _sectorDrilldownData  = contracts;
+  _sectorDrilldownLabel = s.icon + ' ' + s.label;
+
+  document.getElementById('sector-drilldown-title').innerHTML =
+    `${s.icon} ${s.label.toUpperCase()} — ${contracts.length.toLocaleString('es-HN')} CONTRATO${contracts.length !== 1 ? 'S' : ''}`;
+
+  document.getElementById('sector-drilldown-list').innerHTML = contracts.length === 0
+    ? '<div style="padding:16px;color:var(--text-dim);font-size:12px;">Sin contratos para este sector.</div>'
+    : contracts.map(a => {
+        const norm  = normSev_(a.severity);
+        const color = sevColor[norm] || 'var(--text-dim)';
+        const sev   = sevLabel[norm] || (a.severity||'BAJA').toUpperCase();
+        const ent   = a.entity_name || '—';
+        const prov  = a.proveedor_nombre || '—';
+        const monto = fmtL(Number(a.monto_contrato||0));
+        const tipo  = a.alert_type || a.data_source || '—';
+        const entSafe = ent.replace(/'/g, "\\'");
+        return `<div class="tl-dd-row">
+          <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:${color};font-weight:700;white-space:nowrap;">${sev}</div>
+          <div>
+            <button onclick="showEntityPanelFromSector('${entSafe}')" style="background:none;border:none;padding:0;cursor:pointer;text-align:left;">
+              <div style="font-size:12px;color:var(--electric);font-weight:500;line-height:1.3;text-decoration:underline dotted;">${ent}</div>
+            </button>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">🏢 ${prov}</div>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);">📋 ${tipo}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);white-space:nowrap;">${monto}</div>
+        </div>`;
+      }).join('');
+
+  const dd = document.getElementById('sector-drilldown');
+  dd.classList.add('open');
+  setTimeout(() => dd.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+}
+
+function closeSectorDrilldown() {
+  document.getElementById('sector-drilldown').classList.remove('open');
+}
+
+function exportSectorCSV() {
+  if (!_sectorDrilldownData || _sectorDrilldownData.length === 0) return;
+  const header = ['#','Entidad','Proveedor','Severidad','Monto Contrato','Monto Pagado','Tipo/Patrón','Fecha'];
+  const rows   = _sectorDrilldownData.map((a, i) => [
+    i + 1,
+    a.entity_name || '—',
+    a.proveedor_nombre || '—',
+    a.severity || '—',
+    Number(a.monto_contrato || 0).toFixed(2),
+    Number(a.monto_pagado   || 0).toFixed(2),
+    (a.patterns || a.alert_type || a.data_source || '—').replace(/,/g,' ·'),
+    (a.fecha_contrato||a.fecha_adjudicacion||a.fecha_publicacion||a.created_at||'').substring(0,10)
+  ]);
+  const csv  = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `sentinel_sector_${_sectorDrilldownLabel.replace(/[^a-zA-Z0-9]/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportSectorPDF() {
+  if (!_sectorDrilldownData || _sectorDrilldownData.length === 0) return;
+  const fmtL  = n => 'L. ' + (Number(n)||0).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
+  const esc   = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const pctOf = (n, total) => total > 0 ? (n/total*100).toFixed(1)+'%' : '0%';
+
+  const now      = new Date();
+  const fechaStr = now.toLocaleDateString('es-HN', {year:'numeric', month:'long', day:'numeric'});
+  const horaStr  = now.toLocaleTimeString('es-HN', {hour:'2-digit', minute:'2-digit'});
+  const dateTag  = now.toISOString().slice(0,10);
+
+  // Counts & financials
+  const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
+  let mc = 0, mp = 0, hasPagado = false;
+  for (const a of _sectorDrilldownData) {
+    const s = a.severity || 'Baja';
+    if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
+    mc += Number(a.monto_contrato || 0);
+    mp += Number(a.monto_pagado   || 0);
+    if (a.monto_pagado != null) hasPagado = true;
+  }
+  const pctHigh = _sectorDrilldownData.length > 0
+    ? ((counts['Crítica'] + counts['Alta']) / _sectorDrilldownData.length * 100).toFixed(1) : '0.0';
+
+  // Pattern counts
+  const patCount = {};
+  for (const a of _sectorDrilldownData) {
+    const raw = (a.patterns || a.alert_type || a.data_source || '').split(',');
+    for (const p of raw) {
+      const lbl = (PATTERN_LABELS && PATTERN_LABELS[p.trim()]) || p.trim();
+      if (lbl) patCount[lbl] = (patCount[lbl] || 0) + 1;
+    }
+  }
+  const patRows = Object.entries(patCount).sort((a,b) => b[1]-a[1]).map(([lbl, cnt]) =>
+    `<tr><td>${esc(lbl)}</td><td style="text-align:center;font-weight:bold">${cnt}</td><td style="text-align:center">${pctOf(cnt, _sectorDrilldownData.length)}</td></tr>`
+  ).join('');
+
+  // Detail rows
+  const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910', 'Baja':'#1E8449' };
+  const detailRows = _sectorDrilldownData.map((a, i) => {
+    const sev   = a.severity || 'Baja';
+    const fecha = (a.fecha_contrato||a.fecha_adjudicacion||a.fecha_publicacion||a.created_at||'').substring(0,10);
+    const pats  = (a.patterns||a.alert_type||a.data_source||'').split(',').filter(Boolean)
+                   .map(p => (PATTERN_LABELS&&PATTERN_LABELS[p.trim()])||p.trim()).join(' + ');
+    return `<tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
+      <td style="text-align:center">${i+1}</td>
+      <td>${esc(a.entity_name)}</td>
+      <td>${esc(a.proveedor_nombre)}</td>
+      <td style="color:${sevColor[sev]||'#555'};font-weight:bold;text-align:center">${esc(sev)}</td>
+      <td style="text-align:right">${esc(fmtL(a.monto_contrato))}</td>
+      <td>${esc(pats)}</td>
+      <td style="text-align:center;white-space:nowrap">${esc(fecha)}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sentinel-AI — Sector ${_sectorDrilldownLabel} — ${dateTag}</title>
+<style>
+  @page { size: A4 landscape; margin: 1.4cm 1cm 1.8cm 1cm; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-break { page-break-before: always; }
+    .no-print { display: none !important; }
+  }
+  body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #222; margin: 0; padding: 16px; }
+  h1   { color: #0A1628; font-size: 17pt; margin-bottom: 2px; margin-top: 0; }
+  h2   { color: #1A3A6B; font-size: 11pt; font-weight: normal; margin-top: 0; margin-bottom: 10px; }
+  .meta { color: #7F8C8D; font-size: 8pt; margin-bottom: 14px; }
+  .sec  { color: #0A1628; font-size: 10pt; font-weight: bold; margin: 14px 0 5px 0;
+          border-bottom: 1.5pt solid #1A3A6B; padding-bottom: 3px; }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; margin-top: 4px; }
+  th    { background: #1A3A6B; color: #fff; padding: 4px 5px; font-size: 8pt; text-align: left; word-wrap: break-word; }
+  td    { padding: 3px 5px; border: 1px solid #D0D7E2; font-size: 8pt; vertical-align: top; word-wrap: break-word; }
+  .stbl    { width: auto; }
+  .stbl th { font-size: 7.5pt; padding: 4px 10px; }
+  .stbl td { font-size: 10.5pt; font-weight: bold; padding: 4px 10px; border: 1px solid #D0D7E2; }
+  .ptbl    { width: 40%; }
+  .footer-bar { font-size: 7pt; color: #888; margin-top: 18px; border-top: 1px solid #D0D7E2;
+                padding-top: 4px; display: flex; justify-content: space-between; }
+  .print-btn { display: inline-block; margin: 0 0 16px 0; padding: 8px 18px;
+               background: #1A3A6B; color: #fff; border: none; border-radius: 6px;
+               font-size: 10pt; cursor: pointer; }
+</style>
+</head>
+<body>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+
+<h1>SENTINEL-AI HONDURAS</h1>
+<h2>Reporte por Sector — ${esc(_sectorDrilldownLabel)}</h2>
+<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Total contratos en sector: ${_sectorDrilldownData.length.toLocaleString('es-HN')}</p>
+
+<p class="sec">Resumen de Severidad y Riesgo</p>
+<table class="stbl" style="width:auto;margin-bottom:14px">
+  <tr>
+    <th>Total Contratos</th><th>Monto Total</th>
+    <th>Cr&iacute;ticas</th><th>% Total</th>
+    <th>Altas</th><th>% Total</th>
+    <th>Medias</th><th>% Total</th>
+    <th>Bajas</th><th>% Total</th>
+    <th>% Alto Riesgo</th>
+  </tr>
+  <tr>
+    <td>${_sectorDrilldownData.length.toLocaleString('es-HN')}</td>
+    <td>${esc(fmtL(mc))}</td>
+    <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
+    <td style="color:#C0392B;text-align:center">${pctOf(counts['Crítica'],_sectorDrilldownData.length)}</td>
+    <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
+    <td style="color:#C05000;text-align:center">${pctOf(counts['Alta'],_sectorDrilldownData.length)}</td>
+    <td style="color:#D68910;text-align:center">${counts['Media']}</td>
+    <td style="color:#D68910;text-align:center">${pctOf(counts['Media'],_sectorDrilldownData.length)}</td>
+    <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+    <td style="color:#1E8449;text-align:center">${pctOf(counts['Baja'],_sectorDrilldownData.length)}</td>
+    <td style="color:#C0392B;font-weight:bold;text-align:center">${pctHigh}%</td>
+  </tr>
+</table>
+
+<p class="sec">Patrones de Riesgo Detectados</p>
+<table class="ptbl" style="width:40%;margin-bottom:14px">
+  <tr><th>Patrón</th><th style="text-align:center">Contratos</th><th style="text-align:center">% Total</th></tr>
+  ${patRows || '<tr><td colspan="3" style="color:#888">Sin datos de patrones</td></tr>'}
+</table>
+
+<div class="page-break"></div>
+
+<p class="sec">Detalle de Contratos — ${_sectorDrilldownData.length.toLocaleString('es-HN')} registros &mdash; ordenados por severidad y monto</p>
+<table>
+  <colgroup>
+    <col style="width:3%"><col style="width:17%"><col style="width:17%">
+    <col style="width:8%"><col style="width:10%"><col style="width:37%"><col style="width:8%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th style="text-align:center">#</th>
+      <th>Entidad</th>
+      <th>Proveedor</th>
+      <th style="text-align:center">Severidad</th>
+      <th style="text-align:right">Monto</th>
+      <th>Patrones / Tipo</th>
+      <th style="text-align:center">Fecha</th>
+    </tr>
+  </thead>
+  <tbody>${detailRows}</tbody>
+</table>
+
+<div class="footer-bar">
+  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
+</div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=1100,height=800');
+  if (!win) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.addEventListener('load', () => win.focus());
+}
+
+function sortSectorTable(key, btn) {
+  document.querySelectorAll('.sector-sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  sortSectorData(key);
+  renderSectorTable();
+}
+
+function showSectorPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('nav-sector').classList.add('active');
+  document.getElementById('sectorPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (allAlerts && allAlerts.length > 0) {
+    buildSectorData();
+    sortSectorData(_sectorSortKey);
+
+    // Summary cards
+    const totalC = _sectorData.reduce((s,x) => s + x.critica, 0);
+    const totalA = _sectorData.reduce((s,x) => s + x.alta, 0);
+    document.getElementById('sec-total-sectores').textContent  = _sectorData.length;
+    document.getElementById('sec-total-contratos').textContent = allAlerts.length.toLocaleString('es-HN');
+    document.getElementById('sec-total-critica').textContent   = totalC.toLocaleString('es-HN');
+    document.getElementById('sec-total-alta').textContent      = totalA.toLocaleString('es-HN');
+
+    renderSectorTable();
+  }
+}
+
+function hideSectorPanel() {
+  document.getElementById('sectorPanel').classList.remove('open');
+  document.getElementById('nav-sector').classList.remove('active');
+  document.querySelector('.stats-grid').style.display = '';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+}
+
+function showEntityPanelFromSector(entityName) {
+  entityPanelSource = 'sector';
+  showEntityPanel(entityName);
+  document.querySelector('#entityPanel .fuente-back').textContent = '← Volver a Sector';
+}
+
+// ── Monitor de Noticias — Casos Activos ──────────────────────────────────────
+const CASO_KEYWORDS = {
+  chequesol: [
+    'Chequesol','Cuéllar Erazo','Cuellar Erazo','SEDESOL','Cardona Erazo',
+    'nómina fantasma SEDESOL','fraude SEDESOL','CSJ 01-2026','Isis Carolina',
+    'fondos SEDESOL','secretaría de desarrollo social','chequesol'
+  ],
+  seduc: [
+    'paracaidistas','SEDUC Cortés','Scherly Arriaga','Casaña','Rita Zúniga',
+    'educación Cortés','nombramiento irregular','nepotismo educación',
+    'Edgardo Casaña','familión educación','nómina educación Cortés'
+  ]
+};
+
+let _casoMonitorLoaded = false;
+
+async function loadCasosMonitor(force = false) {
+  const elChq  = document.getElementById('caso-monitor-chequesol');
+  const elSed  = document.getElementById('caso-monitor-seduc');
+  const elMeta = document.getElementById('caso-monitor-meta');
+  if (!elChq || !elSed) return;
+
+  // Use cached allNewsItems if already loaded and not forcing refresh
+  if (!force && _casoMonitorLoaded && allNewsItems && allNewsItems.length > 0) {
+    renderCasoMonitorItems(elChq, elSed, elMeta);
+    return;
+  }
+
+  elChq.innerHTML = '<div class="caso-monitor-loading">⟳ Escaneando noticias...</div>';
+  elSed.innerHTML = '<div class="caso-monitor-loading">⟳ Escaneando noticias...</div>';
+  if (elMeta) elMeta.textContent = 'Actualizando feeds RSS...';
+
+  try {
+    // Fetch RSS if news panel hasn't loaded them yet
+    if (!allNewsItems || allNewsItems.length === 0 || force) {
+      const results = await Promise.allSettled(NEWS_RSS_SOURCES.map(src => fetchRSS(src)));
+      allNewsItems = [];
+      results.forEach(r => { if (r.status === 'fulfilled') allNewsItems.push(...r.value); });
+      allNewsItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    }
+    _casoMonitorLoaded = true;
+    renderCasoMonitorItems(elChq, elSed, elMeta);
+  } catch (e) {
+    elChq.innerHTML = '<div class="caso-monitor-empty">Error al cargar noticias.</div>';
+    elSed.innerHTML = '<div class="caso-monitor-empty">Error al cargar noticias.</div>';
+  }
+}
+
+function renderCasoMonitorItems(elChq, elSed, elMeta) {
+  const now = new Date();
+  if (elMeta) elMeta.textContent =
+    `Última actualización: ${now.toLocaleTimeString('es-HN',{hour:'2-digit',minute:'2-digit'})} · ${allNewsItems.length} artículos escaneados`;
+
+  const matchCase = (items, keys) => items.filter(item => {
+    const text = ((item.title || '') + ' ' + stripNewsHtml(item.summary || '')).toLowerCase();
+    return keys.some(k => text.includes(k.toLowerCase()));
+  }).slice(0, 5);
+
+  const renderItems = (matches, el) => {
+    if (!matches.length) {
+      el.innerHTML = '<div class="caso-monitor-empty">Sin menciones recientes en los feeds RSS activos.</div>';
+      return;
+    }
+    el.innerHTML = matches.map(item => {
+      const fecha = item.pubDate ? new Date(item.pubDate).toLocaleDateString('es-HN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+      return `<div class="caso-monitor-item">
+        <div class="caso-monitor-item-title">${item.title || '(sin título)'}</div>
+        <div class="caso-monitor-item-meta">
+          <span style="color:${item.color||'var(--electric)'}">${item.name||'—'}</span>
+          <span>${fecha}</span>
+          <a href="${item.link||'#'}" target="_blank" rel="noopener">→ Ver artículo</a>
+        </div>
+      </div>`;
+    }).join('');
+  };
+
+  renderItems(matchCase(allNewsItems, CASO_KEYWORDS.chequesol), elChq);
+  renderItems(matchCase(allNewsItems, CASO_KEYWORDS.seduc), elSed);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -5038,6 +5716,8 @@ let _tlTab  = 'mes';   // 'mes' | 'proveedor'
 let _tlDrilldownData  = []; // contratos activos en el drilldown mensual
 let _provDrilldownData = []; // contratos activos en el drilldown de proveedor
 let _currentProv = '';
+let _epCurrentEntity = ''; // entidad activa en entity panel
+let _epData = [];           // contratos de la entidad activa
 
 // ── Tab switcher (Opción 2) ──
 function setTlTab(tab) {
@@ -5877,6 +6557,179 @@ function exportTlPDF() {
       <th>Entidad</th>
       <th style="text-align:center">Severidad</th>
       <th style="text-align:right">Monto</th>
+      <th>Patrones / Tipo</th>
+      <th style="text-align:center">Fecha</th>
+    </tr>
+  </thead>
+  <tbody>${detailRows}</tbody>
+</table>
+
+<div class="footer-bar">
+  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
+</div>
+
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=1100,height=800');
+  if (!win) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.addEventListener('load', () => win.focus());
+}
+
+function exportEntityPDF() {
+  if (!_epData || _epData.length === 0) return;
+  const fmtL  = n => 'L. ' + (Number(n)||0).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
+  const esc   = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const pctOf = (n, total) => total > 0 ? (n/total*100).toFixed(1)+'%' : '0%';
+
+  const now      = new Date();
+  const fechaStr = now.toLocaleDateString('es-HN', {year:'numeric', month:'long', day:'numeric'});
+  const horaStr  = now.toLocaleTimeString('es-HN', {hour:'2-digit', minute:'2-digit'});
+  const dateTag  = now.toISOString().slice(0,10);
+
+  // Counts & financials
+  const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
+  let mc = 0, mp = 0, hasPagado = false;
+  for (const a of _epData) {
+    const s = a.severity || 'Baja';
+    if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
+    mc += Number(a.monto_contrato || 0);
+    mp += Number(a.monto_pagado   || 0);
+    if (a.monto_pagado != null) hasPagado = true;
+  }
+  const dif = hasPagado ? (mp - mc) : null;
+  const difStr = dif !== null
+    ? (dif >= 0 ? '+' : '') + fmtL(Math.abs(dif)) + ` (${dif >= 0 ? '+' : ''}${mc > 0 ? ((dif/mc)*100).toFixed(1) : '0'}%)`
+    : '—';
+  const difLabel = dif !== null ? (dif > 0 ? 'Sobrecosto' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia') : 'Diferencia';
+  const difColor = dif !== null ? (dif > 0 ? '#C0392B' : dif < 0 ? '#1A3A6B' : '#555') : '#555';
+
+  // Pattern counts
+  const patCount = {};
+  for (const a of _epData) {
+    const raw = (a.patterns || a.alert_type || a.data_source || '').split(',');
+    for (const p of raw) {
+      const lbl = (PATTERN_LABELS && PATTERN_LABELS[p.trim()]) || p.trim();
+      if (lbl) patCount[lbl] = (patCount[lbl] || 0) + 1;
+    }
+  }
+  const patRows = Object.entries(patCount)
+    .sort((a,b) => b[1]-a[1])
+    .map(([lbl, cnt]) => `<tr>
+      <td>${esc(lbl)}</td>
+      <td style="text-align:center;font-weight:bold">${cnt}</td>
+      <td style="text-align:center">${pctOf(cnt, _epData.length)}</td>
+    </tr>`).join('');
+
+  // Detail rows sorted by monto desc
+  const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910', 'Baja':'#1E8449' };
+  const sorted   = [..._epData].sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
+  const detailRows = sorted.map((a, i) => {
+    const sev   = a.severity || 'Baja';
+    const fecha = (a.fecha_contrato||a.fecha_adjudicacion||a.fecha_publicacion||a.created_at||'').substring(0,10);
+    const pats  = (a.patterns||a.alert_type||a.data_source||'').split(',').filter(Boolean)
+                   .map(p => (PATTERN_LABELS&&PATTERN_LABELS[p.trim()])||p.trim()).join(' + ');
+    return `<tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
+      <td style="text-align:center">${i+1}</td>
+      <td>${esc(a.proveedor_nombre)}</td>
+      <td style="color:${sevColor[sev]||'#555'};font-weight:bold;text-align:center">${esc(sev)}</td>
+      <td style="text-align:right">${esc(fmtL(a.monto_contrato))}</td>
+      <td style="text-align:right">${hasPagado ? esc(fmtL(a.monto_pagado)) : '—'}</td>
+      <td>${esc(pats)}</td>
+      <td style="text-align:center;white-space:nowrap">${esc(fecha)}</td>
+    </tr>`;
+  }).join('');
+
+  const payPct = mc > 0 && hasPagado ? Math.min(100, (mp/mc*100)).toFixed(1) : null;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sentinel-AI — ${_epCurrentEntity} — ${dateTag}</title>
+<style>
+  @page { size: A4 landscape; margin: 1.4cm 1cm 1.8cm 1cm; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-break { page-break-before: always; }
+    .no-print { display: none !important; }
+  }
+  body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #222; margin: 0; padding: 16px; }
+  h1   { color: #0A1628; font-size: 17pt; margin-bottom: 2px; margin-top: 0; }
+  h2   { color: #1A3A6B; font-size: 11pt; font-weight: normal; margin-top: 0; margin-bottom: 10px; }
+  .meta { color: #7F8C8D; font-size: 8pt; margin-bottom: 14px; }
+  .sec  { color: #0A1628; font-size: 10pt; font-weight: bold; margin: 14px 0 5px 0;
+          border-bottom: 1.5pt solid #1A3A6B; padding-bottom: 3px; }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; margin-top: 4px; }
+  th    { background: #1A3A6B; color: #fff; padding: 4px 5px; font-size: 8pt; text-align: left; word-wrap: break-word; }
+  td    { padding: 3px 5px; border: 1px solid #D0D7E2; font-size: 8pt; vertical-align: top; word-wrap: break-word; }
+  .stbl    { width: auto; }
+  .stbl th { font-size: 7.5pt; padding: 4px 10px; }
+  .stbl td { font-size: 10.5pt; font-weight: bold; padding: 4px 10px; border: 1px solid #D0D7E2; }
+  .ptbl    { width: 40%; }
+  .footer-bar { font-size: 7pt; color: #888; margin-top: 18px; border-top: 1px solid #D0D7E2;
+                padding-top: 4px; display: flex; justify-content: space-between; }
+  .print-btn { display: inline-block; margin: 0 0 16px 0; padding: 8px 18px;
+               background: #1A3A6B; color: #fff; border: none; border-radius: 6px;
+               font-size: 10pt; cursor: pointer; }
+  .print-btn:hover { background: #122c55; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+
+<h1>SENTINEL-AI HONDURAS</h1>
+<h2>Reporte por Entidad — ${esc(_epCurrentEntity)}</h2>
+<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Total contratos monitoreados: ${_epData.length.toLocaleString('es-HN')}</p>
+
+<p class="sec">Resumen Financiero y de Severidad</p>
+<table class="stbl" style="width:auto;margin-bottom:14px">
+  <tr>
+    <th>Total Contratos</th><th>Monto Contratado</th><th>Monto Pagado</th><th>% Pagado</th><th>${esc(difLabel)}</th>
+    <th>Cr&iacute;ticas</th><th>% Total</th><th>Altas</th><th>% Total</th><th>Medias</th><th>% Total</th><th>Bajas</th><th>% Total</th>
+  </tr>
+  <tr>
+    <td>${_epData.length.toLocaleString('es-HN')}</td>
+    <td>${esc(fmtL(mc))}</td>
+    <td>${hasPagado ? esc(fmtL(mp)) : '—'}</td>
+    <td>${payPct !== null ? payPct + '%' : '—'}</td>
+    <td style="color:${difColor};font-weight:bold">${esc(difStr)}</td>
+    <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
+    <td style="color:#C0392B;text-align:center;font-size:8pt">${pctOf(counts['Crítica'],_epData.length)}</td>
+    <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
+    <td style="color:#C05000;text-align:center;font-size:8pt">${pctOf(counts['Alta'],_epData.length)}</td>
+    <td style="color:#D68910;text-align:center">${counts['Media']}</td>
+    <td style="color:#D68910;text-align:center;font-size:8pt">${pctOf(counts['Media'],_epData.length)}</td>
+    <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+    <td style="color:#1E8449;text-align:center;font-size:8pt">${pctOf(counts['Baja'],_epData.length)}</td>
+  </tr>
+</table>
+
+<p class="sec">Patrones de Riesgo Detectados</p>
+<table class="ptbl" style="width:40%;margin-bottom:14px">
+  <tr><th>Patrón</th><th style="text-align:center">Contratos</th><th style="text-align:center">% Total</th></tr>
+  ${patRows || '<tr><td colspan="3" style="color:#888">Sin datos de patrones</td></tr>'}
+</table>
+
+<div class="page-break"></div>
+
+<p class="sec">Detalle de Contratos — ${_epData.length.toLocaleString('es-HN')} registros &mdash; ordenados por monto descendente</p>
+<table>
+  <colgroup>
+    <col style="width:4%"><col style="width:22%"><col style="width:8%">
+    <col style="width:10%"><col style="width:10%"><col style="width:38%"><col style="width:8%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th style="text-align:center">#</th>
+      <th>Proveedor</th>
+      <th style="text-align:center">Severidad</th>
+      <th style="text-align:right">Monto Contrato</th>
+      <th style="text-align:right">Monto Pagado</th>
       <th>Patrones / Tipo</th>
       <th style="text-align:center">Fecha</th>
     </tr>

@@ -2042,7 +2042,10 @@ body::after {
 
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:center;">
       <div class="fuente-title" id="ep-title">Entidad</div>
-      <button onclick="exportEntityPDF()" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="Exportar entidad a PDF">📄 PDF</button>
+      <div style="display:flex;gap:6px;">
+        <button onclick="exportEntityPDF('pareto')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="PDF top contratos (80% del monto)">📄 Pareto</button>
+        <button onclick="exportEntityPDF('todo')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="PDF con todos los contratos">⬇ Todo</button>
+      </div>
     </div>
 
     <!-- Count stats row -->
@@ -6579,7 +6582,7 @@ function exportTlPDF() {
   win.addEventListener('load', () => win.focus());
 }
 
-function exportEntityPDF() {
+function exportEntityPDF(mode = 'pareto') {
   if (!_epData || _epData.length === 0) return;
   const fmtL  = n => 'L. ' + (Number(n)||0).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0});
   const esc   = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -6590,7 +6593,26 @@ function exportEntityPDF() {
   const horaStr  = now.toLocaleTimeString('es-HN', {hour:'2-digit', minute:'2-digit'});
   const dateTag  = now.toISOString().slice(0,10);
 
-  // Counts & financials
+  // Sort all by monto desc — used for pareto calc and detail rows
+  const sorted = [..._epData].sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
+
+  // Pareto: find contracts that cover 80% of total monto
+  const montoTotal = sorted.reduce((s, a) => s + Number(a.monto_contrato||0), 0);
+  let cumulative = 0, pareto80idx = sorted.length;
+  for (let i = 0; i < sorted.length; i++) {
+    cumulative += Number(sorted[i].monto_contrato || 0);
+    if (cumulative >= montoTotal * 0.8 && pareto80idx === sorted.length) {
+      pareto80idx = i + 1;
+      break;
+    }
+  }
+  const subset     = mode === 'pareto' ? sorted.slice(0, pareto80idx) : sorted;
+  const paretoPct  = sorted.length > 0 ? ((pareto80idx / sorted.length) * 100).toFixed(1) : '0';
+  const modeLabel  = mode === 'pareto'
+    ? `Pareto 80% — top ${pareto80idx} de ${sorted.length} contratos (${paretoPct}% representan el 80% del monto)`
+    : `Reporte completo — ${sorted.length} contratos`;
+
+  // Counts & financials (from full dataset for summary accuracy)
   const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
   let mc = 0, mp = 0, hasPagado = false;
   for (const a of _epData) {
@@ -6607,9 +6629,9 @@ function exportEntityPDF() {
   const difLabel = dif !== null ? (dif > 0 ? 'Sobrecosto' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia') : 'Diferencia';
   const difColor = dif !== null ? (dif > 0 ? '#C0392B' : dif < 0 ? '#1A3A6B' : '#555') : '#555';
 
-  // Pattern counts
+  // Pattern counts (from subset)
   const patCount = {};
-  for (const a of _epData) {
+  for (const a of subset) {
     const raw = (a.patterns || a.alert_type || a.data_source || '').split(',');
     for (const p of raw) {
       const lbl = (PATTERN_LABELS && PATTERN_LABELS[p.trim()]) || p.trim();
@@ -6621,13 +6643,12 @@ function exportEntityPDF() {
     .map(([lbl, cnt]) => `<tr>
       <td>${esc(lbl)}</td>
       <td style="text-align:center;font-weight:bold">${cnt}</td>
-      <td style="text-align:center">${pctOf(cnt, _epData.length)}</td>
+      <td style="text-align:center">${pctOf(cnt, subset.length)}</td>
     </tr>`).join('');
 
-  // Detail rows sorted by monto desc
+  // Detail rows from subset
   const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910', 'Baja':'#1E8449' };
-  const sorted   = [..._epData].sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
-  const detailRows = sorted.map((a, i) => {
+  const detailRows = subset.map((a, i) => {
     const sev   = a.severity || 'Baja';
     const fecha = (a.fecha_contrato||a.fecha_adjudicacion||a.fecha_publicacion||a.created_at||'').substring(0,10);
     const pats  = (a.patterns||a.alert_type||a.data_source||'').split(',').filter(Boolean)
@@ -6649,7 +6670,7 @@ function exportEntityPDF() {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sentinel-AI — ${_epCurrentEntity} — ${dateTag}</title>
+<title>Sentinel-AI — ${_epCurrentEntity} — ${mode === 'pareto' ? 'Pareto' : 'Todo'} — ${dateTag}</title>
 <style>
   @page { size: A4 landscape; margin: 1.4cm 1cm 1.8cm 1cm; }
   @media print {
@@ -6684,7 +6705,7 @@ function exportEntityPDF() {
 
 <h1>SENTINEL-AI HONDURAS</h1>
 <h2>Reporte por Entidad — ${esc(_epCurrentEntity)}</h2>
-<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Total contratos monitoreados: ${_epData.length.toLocaleString('es-HN')}</p>
+<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; ${esc(modeLabel)}</p>
 
 <p class="sec">Resumen Financiero y de Severidad</p>
 <table class="stbl" style="width:auto;margin-bottom:14px">
@@ -6717,7 +6738,7 @@ function exportEntityPDF() {
 
 <div class="page-break"></div>
 
-<p class="sec">Detalle de Contratos — ${_epData.length.toLocaleString('es-HN')} registros &mdash; ordenados por monto descendente</p>
+<p class="sec">Detalle de Contratos — ${subset.length.toLocaleString('es-HN')} registros &mdash; ordenados por monto descendente${mode === 'pareto' ? ' (Pareto 80%)' : ''}</p>
 <table>
   <colgroup>
     <col style="width:4%"><col style="width:22%"><col style="width:8%">

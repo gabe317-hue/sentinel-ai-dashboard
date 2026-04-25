@@ -1945,7 +1945,10 @@ body::after {
   <div class="table-container" id="mainTableContainer">
     <div class="table-header-row">
       <span class="table-title">Registro de Contratos</span>
-      <span class="table-count" id="tableCount">Cargando...</span>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span id="data-freshness" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.04em;opacity:0.7;" title="Fecha del contrato más reciente en la base de datos">🕒 Datos al: <span id="freshness-date">—</span></span>
+        <span class="table-count" id="tableCount">Cargando...</span>
+      </div>
     </div>
     <div style="overflow-x: auto;">
       <table class="alert-table">
@@ -3488,6 +3491,16 @@ function render() {
   document.getElementById('cnt-pct-media').textContent     = fmtPct(m.media, totalMonto);
   document.getElementById('cnt-monto-baja').textContent    = fmtL(m.baja);
   document.getElementById('cnt-pct-baja').textContent      = fmtPct(m.baja, totalMonto);
+
+  // ── Freshness indicator ──
+  if (allAlerts.length > 0) {
+    const maxFecha = allAlerts.reduce((max, a) => {
+      const d = a.fecha_contrato || a.created_at || '';
+      return d > max ? d : max;
+    }, '');
+    const freshnessEl = document.getElementById('freshness-date');
+    if (freshnessEl) freshnessEl.textContent = maxFecha ? maxFecha.substring(0, 10) : '—';
+  }
 
   // ── Filter for table display ──
   let filtered = activeFilter === 'all'

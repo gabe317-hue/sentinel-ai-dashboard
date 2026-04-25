@@ -9198,15 +9198,17 @@ function exportVendorConcentrationDetail(format) {
 
 function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
   try {
-    // ── Pareto 80/20 Analysis — sorted by monto desc ──
+    // ── Pareto 80/20 — Top 100 por monto → Pareto dentro de esos 100 ──
     const sortedVendors = [...data.vendors].sort((a, b) => b.monto - a.monto);
-    const targetValue = data.totalMonto * 0.80;
+    const top100 = sortedVendors.slice(0, 100);
+    const top100Monto = top100.reduce((s, v) => s + v.monto, 0);
+    const targetValue = top100Monto * 0.80;
     let cumulativeValue = 0;
     let vendorsIn80 = [];
     let vendorsIn20 = [];
     let cumulativeIn80 = 0;
 
-    sortedVendors.forEach(v => {
+    top100.forEach(v => {
       if (cumulativeValue < targetValue) {
         vendorsIn80.push(v);
         cumulativeIn80 += v.monto;
@@ -9215,8 +9217,7 @@ function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
         vendorsIn20.push(v);
       }
     });
-
-    const montoIn20 = data.totalMonto - cumulativeIn80;
+    const montoIn20 = top100Monto - cumulativeIn80;
 
     const html = `<!DOCTYPE html>
 <html>
@@ -9250,21 +9251,28 @@ function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
 <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>Análisis de Concentración de Proveedores</h1>
-<p class="meta">Reporte: ${timestamp}</p>
+<p class="meta">Reporte Pareto — ${timestamp}</p>
+
+<div style="background:#fff3cd;border-left:4px solid #e6a817;padding:10px 14px;margin:10px 0 16px 0;font-size:9pt;color:#555;border-radius:0 4px 4px 0;">
+  <strong>Metodología:</strong> De los ${sortedVendors.length} proveedores totales, se seleccionan los <strong>Top 100 por monto contratado</strong>.
+  Sobre ese grupo se aplica el principio <strong>Pareto 80/20</strong>: se identifican los proveedores que en conjunto
+  representan el 80% del monto de los Top 100. Estos son los de mayor concentración y prioridad de vigilancia.
+</div>
 
 <h2>Métricas Principales</h2>
 <div class="metrics">
   <div class="metric-item"><strong>Índice HHI:</strong> ${data.hhi.toFixed(0)} (${data.hhhiLabel})</div>
   <div class="metric-item"><strong>Top 3 Market Share:</strong> ${data.top3Share.toFixed(1)}%</div>
   <div class="metric-item"><strong>Nivel de Riesgo:</strong> ${data.riskLevel}</div>
-  <div class="metric-item"><strong>Total Proveedores (todos):</strong> ${sortedVendors.length}</div>
+  <div class="metric-item"><strong>Total Proveedores (universo completo):</strong> ${sortedVendors.length}</div>
+  <div class="metric-item"><strong>Monto Top 100:</strong> L. ${top100Monto.toLocaleString()} (${(top100Monto/data.totalMonto*100).toFixed(1)}% del total)</div>
 </div>
 
-<h2>Análisis Pareto 80/20</h2>
+<h2>Resultado Pareto — Top 100</h2>
 <div class="summary-box">
-  <strong>⭐ Top ${vendorsIn80.length} Proveedores = 80% del Valor</strong><br>
-  Monto: L. ${cumulativeIn80.toLocaleString()}<br><br>
-  <strong>📊 Proveedores Restantes (${vendorsIn20.length}) = 20% del Valor</strong><br>
+  <strong>⭐ ${vendorsIn80.length} proveedores = 80% del valor (Top 100)</strong><br>
+  Monto acumulado: L. ${cumulativeIn80.toLocaleString()}<br><br>
+  <strong>📊 ${vendorsIn20.length} proveedores restantes = 20% del valor (Top 100)</strong><br>
   Monto: L. ${montoIn20.toLocaleString()}
 </div>
 
@@ -9293,11 +9301,10 @@ function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
 
 <h2>Conclusión</h2>
 <p style="font-size: 9pt; line-height: 1.5;">
-  El análisis de concentración identifica que el <strong>${vendorsIn80.length} proveedores principales</strong>
-  representan el <strong>80% del valor total</strong> (L. ${cumulativeIn80.toLocaleString()}),
-  mientras que los <strong>${vendorsIn20.length} proveedores restantes</strong> representan el <strong>20% restante</strong>
-  (L. ${montoIn20.toLocaleString()}). Este enfoque Pareto permite enfocarse en los proveedores de mayor riesgo
-  para efectos de vigilancia y cumplimiento.
+  Del universo de <strong>${sortedVendors.length} proveedores</strong>, el análisis se enfoca en los <strong>Top 100 por monto contratado</strong>
+  (L. ${top100Monto.toLocaleString()} — ${(top100Monto/data.totalMonto*100).toFixed(1)}% del total).
+  Aplicando Pareto 80/20 sobre ese grupo, <strong>${vendorsIn80.length} proveedores</strong> concentran el 80% del valor
+  (L. ${cumulativeIn80.toLocaleString()}). Estos son los sujetos de mayor prioridad para vigilancia y cumplimiento.
 </p>
 
 <h2 style="margin-top:24px;page-break-before:always;">Contratos por Proveedor${mode === 'pareto' ? ' — Top Pareto (80% del Valor)' : ''}</h2>

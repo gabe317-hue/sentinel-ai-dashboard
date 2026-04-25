@@ -346,6 +346,70 @@ body::after {
   margin-top: 6px; opacity: 0.75; letter-spacing: 0.3px;
 }
 
+/* Risk Band — P1 */
+.risk-band {
+  background: linear-gradient(135deg, rgba(255,61,87,0.10) 0%, rgba(255,140,66,0.06) 100%);
+  border: 1px solid rgba(255,61,87,0.28);
+  border-left: 4px solid var(--red);
+  border-radius: 12px;
+  padding: 22px 28px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.risk-band-main { flex: 1; min-width: 0; }
+.risk-band-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--red);
+  margin-bottom: 8px; opacity: 0.85;
+}
+.risk-band-amount {
+  font-family: 'Syne', sans-serif;
+  font-size: 44px; font-weight: 800;
+  color: var(--red); line-height: 1;
+  margin-bottom: 5px;
+  text-shadow: 0 0 40px rgba(255,61,87,0.25);
+}
+.risk-band-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 0.3px; margin-bottom: 4px;
+}
+.risk-band-budget {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-dim);
+  opacity: 0.6; margin-top: 4px;
+}
+.risk-band-breakdown { display: flex; gap: 12px; flex-shrink: 0; }
+.risk-band-item {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  text-align: center;
+  min-width: 148px;
+}
+.risk-band-item-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-dim);
+  margin-bottom: 6px;
+}
+.risk-band-item-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 19px; font-weight: 700;
+}
+.risk-band-item-cnt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-dim);
+  margin-top: 4px; opacity: 0.65;
+}
+.risk-band-item.rb-critica .risk-band-item-val { color: var(--red); }
+.risk-band-item.rb-alta    .risk-band-item-val { color: var(--orange); }
+
 /* Controls bar */
 .controls-bar {
   display: flex; align-items: center; gap: 12px;
@@ -1305,6 +1369,39 @@ body::after {
   opacity: .65;
 }
 
+/* ── SENTINEL DETECTION BADGE (P5) ── */
+.sentinel-detected {
+  background: linear-gradient(135deg, rgba(0,200,255,0.07) 0%, rgba(139,92,246,0.07) 100%);
+  border: 1px solid rgba(0,200,255,0.22);
+  border-left: 3px solid var(--electric);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 14px 0 10px 0;
+}
+.sentinel-detected-header {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--electric);
+  margin-bottom: 7px; display: flex; align-items: center; gap: 6px;
+}
+.sentinel-detected-stats {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 6px;
+}
+.sentinel-det-stat {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 5px; padding: 5px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text);
+}
+.sentinel-det-stat span { color: var(--electric); font-weight: 700; }
+.sentinel-detected-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-dim);
+  opacity: 0.7; letter-spacing: 0.03em;
+}
+.sentinel-detected-note strong { color: var(--amber); }
+
 /* ── VER MÁS / EXPANDABLE CASO ── */
 .caso-ver-mas-btn {
   display: flex; align-items: center; gap: 8px;
@@ -1902,6 +1999,55 @@ body::after {
         <div class="exec-source-val">Endpoint activo · pendiente</div>
       </div>
     </div>
+    <!-- P2 — Top Entidades + Top Proveedores side-by-side -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">
+      <!-- Top 5 Entidades -->
+      <div>
+        <div class="exec-section-title">Top 5 Entidades por Riesgo</div>
+        <table class="alert-table" style="font-size:12px;">
+          <thead><tr><th>#</th><th>Entidad</th><th>Crítica</th><th>Alta</th><th>Monto Riesgo</th></tr></thead>
+          <tbody id="execTopEntidades">
+            <tr class="state-row"><td colspan="5"><span class="spinner"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Top 3 Proveedores Concentrados -->
+      <div>
+        <div class="exec-section-title">Top 5 Proveedores Concentrados</div>
+        <table class="alert-table" style="font-size:12px;">
+          <thead><tr><th>#</th><th>Proveedor</th><th>Contratos</th><th>Monto</th></tr></thead>
+          <tbody id="execTopProveedores">
+            <tr class="state-row"><td colspan="4"><span class="spinner"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- P2 — Casos Activos Summary -->
+    <div class="exec-section-title">Casos Activos — Estado Legal</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.25);border-left:3px solid var(--red);border-radius:8px;padding:16px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--red);text-transform:uppercase;margin-bottom:8px;">⚖️ EN JUICIO ACTIVO</div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">SEDESOL-2024-001 · "Chequesol"</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:8px;">Desvío de Fondos Sociales — Copán</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">L 6,032,654 desviados</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">12 imputados · 67 delitos</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">CSJ Exp. 01-2026</span>
+        </div>
+      </div>
+      <div style="background:rgba(255,171,0,0.08);border:1px solid rgba(255,171,0,0.25);border-left:3px solid var(--amber);border-radius:8px;padding:16px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--amber);text-transform:uppercase;margin-bottom:8px;">⚠️ DENUNCIA AL MP — INV. FORMAL PENDIENTE</div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">SEDUC-2026-001 · "Paracaidistas Cortés"</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:8px;">Nepotismo y Nóminas Irregulares — Educación</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">152 nombramientos irregulares</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">20 familiares en nómina</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:4px;padding:3px 8px;color:#a855f7;">Casaña · Lista Engel</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Go to full table button -->
     <div style="margin-top:28px; text-align:center;">
       <button class="btn-new-alert-header" onclick="hideAllPanels()" style="font-size:14px; padding:12px 28px;">
@@ -1910,6 +2056,28 @@ body::after {
     </div>
   </div>
 
+
+  <!-- P1 — Risk Band: monto total en contratos de alto riesgo -->
+  <div class="risk-band" id="risk-band">
+    <div class="risk-band-main">
+      <div class="risk-band-label">⚠ ALERTA SISTEMA SENTINEL — CONTRATOS DE ALTO RIESGO DETECTADOS</div>
+      <div class="risk-band-amount" id="risk-band-total">L —</div>
+      <div class="risk-band-sub">Monto acumulado en contratos con señales de irregularidad (Críticos + Altos)</div>
+      <div class="risk-band-budget" id="risk-band-budget"></div>
+    </div>
+    <div class="risk-band-breakdown">
+      <div class="risk-band-item rb-critica">
+        <div class="risk-band-item-label">⬤ Críticos</div>
+        <div class="risk-band-item-val" id="risk-band-critica">L —</div>
+        <div class="risk-band-item-cnt" id="risk-band-critica-cnt">— contratos</div>
+      </div>
+      <div class="risk-band-item rb-alta">
+        <div class="risk-band-item-label">⬤ Altos</div>
+        <div class="risk-band-item-val" id="risk-band-alta">L —</div>
+        <div class="risk-band-item-cnt" id="risk-band-alta-cnt">— contratos</div>
+      </div>
+    </div>
+  </div>
 
   <!-- Stat cards — updated by render() using normSev() fix -->
   <div class="stats-grid">
@@ -2836,6 +3004,20 @@ body::after {
         <span class="caso-alerta-chip media">Beneficiarios Irregulares</span>
       </div>
 
+      <!-- P5 — Sentinel Detection Badge: SEDESOL -->
+      <div class="sentinel-detected">
+        <div class="sentinel-detected-header">⚡ Institución en base de datos Sentinel — monitoreada antes del escándalo</div>
+        <div class="sentinel-detected-stats">
+          <div class="sentinel-det-stat">Contratos monitoreados: <span>118</span></div>
+          <div class="sentinel-det-stat">Desde: <span>12 Mar 2024</span></div>
+          <div class="sentinel-det-stat">Señales: <span>Fraccionamiento · Sin Historial</span></div>
+        </div>
+        <div class="sentinel-detected-note">
+          ▸ Datos EDCA-SEFIN (compras públicas). El esquema de nómina requiere integración SIAFI —
+          <strong>próximo paso con acceso PGR/TSC</strong>.
+        </div>
+      </div>
+
       <button class="caso-ver-mas-btn" onclick="toggleCasoDetail('chequesol')">
         VER MÁS <span class="arrow">▼</span>
       </button>
@@ -2921,6 +3103,21 @@ body::after {
         <span class="caso-alerta-chip alta">Red Familiar</span>
         <span class="caso-alerta-chip alta">Doble Plaza</span>
         <span class="caso-alerta-chip media">Actor Lista Engel</span>
+      </div>
+
+      <!-- P5 — Sentinel Detection Badge: SEDUC -->
+      <div class="sentinel-detected">
+        <div class="sentinel-detected-header">⚡ Institución en base de datos Sentinel — monitoreada antes del escándalo</div>
+        <div class="sentinel-detected-stats">
+          <div class="sentinel-det-stat">Contratos monitoreados: <span>1,933</span></div>
+          <div class="sentinel-det-stat">Desde: <span>13 Feb 2023</span></div>
+          <div class="sentinel-det-stat">Riesgo: <span>3 Alta · 189 Media</span></div>
+          <div class="sentinel-det-stat">Señales: <span>Fraccionamiento · Adjudicación Directa</span></div>
+        </div>
+        <div class="sentinel-detected-note">
+          ▸ Secretaría de Educación en radar Sentinel <strong>desde 2023</strong> — 3 años antes del escándalo mediático (Apr 2026).
+          Datos EDCA-SEFIN (compras públicas). Integración SIAFI necesaria para cruzar con nóminas.
+        </div>
       </div>
 
       <button class="caso-ver-mas-btn" onclick="toggleCasoDetail('seduc')">
@@ -3568,6 +3765,20 @@ function render() {
   document.getElementById('cnt-pct-media').textContent     = fmtPct(m.media, totalMonto);
   document.getElementById('cnt-monto-baja').textContent    = fmtL(m.baja);
   document.getElementById('cnt-pct-baja').textContent      = fmtPct(m.baja, totalMonto);
+
+  // ── Risk Band (P1) — monto alto riesgo ──
+  const PRESUPUESTO_HND = 309_000_000_000; // L 309B — Presupuesto General aprobado Honduras 2024
+  const riskMonto = m.critica + m.alta;
+  const riskPct   = riskMonto > 0 ? (riskMonto / PRESUPUESTO_HND * 100).toFixed(2) : null;
+  const _rb = id => document.getElementById(id);
+  if (_rb('risk-band-total'))       _rb('risk-band-total').textContent       = riskMonto > 0 ? fmtL(riskMonto) : 'L —';
+  if (_rb('risk-band-critica'))     _rb('risk-band-critica').textContent     = fmtL(m.critica);
+  if (_rb('risk-band-alta'))        _rb('risk-band-alta').textContent        = fmtL(m.alta);
+  if (_rb('risk-band-critica-cnt')) _rb('risk-band-critica-cnt').textContent = c.critica.toLocaleString() + ' contratos';
+  if (_rb('risk-band-alta-cnt'))    _rb('risk-band-alta-cnt').textContent    = c.alta.toLocaleString() + ' contratos';
+  if (_rb('risk-band-budget') && riskPct) {
+    _rb('risk-band-budget').textContent = `≈ ${riskPct}% del Presupuesto General de la República (L 309B aprobado 2024)`;
+  }
 
   // ── Freshness indicator ──
   if (allAlerts.length > 0) {
@@ -10575,6 +10786,7 @@ function showVistaEjecutiva() {
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = 'none');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = 'none');
+  document.getElementById('risk-band')       && (document.getElementById('risk-band').style.display = 'none');
   // ticker is now inside #vistaEjecutiva — no separate show needed
   // Update active nav
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -10594,6 +10806,7 @@ function hideAllPanels() {
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = '');
+  document.getElementById('risk-band')       && (document.getElementById('risk-band').style.display = '');
   // Update active nav
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
@@ -10631,8 +10844,61 @@ function renderEjecutiva() {
   document.getElementById('exec-last-update').textContent    = 'Actualizado: ' + new Date().toLocaleTimeString('es-HN');
   document.getElementById('execSubtitle').textContent        = `${alerts.length.toLocaleString()} contratos monitoreados · Fiscal 2023–2025 · ${new Date().toLocaleDateString('es-HN')}`;
 
+  // ── P2: Top 5 Entidades por riesgo ──
+  const entMap = {};
+  alerts.forEach(a => {
+    const k = a.entity_name || '—';
+    if (!entMap[k]) entMap[k] = { critica: 0, alta: 0, monto: 0 };
+    const sv = normSevLocal(a.severity);
+    if (sv === 'critica') entMap[k].critica++;
+    if (sv === 'alta')    entMap[k].alta++;
+    if (sv === 'critica' || sv === 'alta') entMap[k].monto += parseFloat(a.monto_contrato)||0;
+  });
+  const topEnt = Object.entries(entMap)
+    .map(([name, d]) => ({ name, ...d }))
+    .filter(e => e.critica + e.alta > 0)
+    .sort((a, b) => (b.critica * 3 + b.alta) - (a.critica * 3 + a.alta))
+    .slice(0, 5);
+  const tbEnt = document.getElementById('execTopEntidades');
+  if (tbEnt) tbEnt.innerHTML = topEnt.length
+    ? topEnt.map((e, i) => `<tr>
+        <td style="color:var(--text-dim);width:28px;">${i+1}</td>
+        <td style="font-size:11px;max-width:200px;">${e.name.substring(0,45)}</td>
+        <td style="text-align:center;"><span style="color:var(--red);font-weight:700;">${e.critica}</span></td>
+        <td style="text-align:center;"><span style="color:var(--orange);font-weight:700;">${e.alta}</span></td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--electric);">
+          ${e.monto > 0 ? 'L '+e.monto.toLocaleString('es-HN',{maximumFractionDigits:0}) : '—'}
+        </td>
+      </tr>`).join('')
+    : '<tr class="state-row"><td colspan="5">Sin datos de riesgo</td></tr>';
+
+  // ── P2: Top 5 Proveedores por contratos ──
+  const provMap = {};
+  criticos.concat(altos).forEach(a => {
+    const k = a.proveedor_nombre || a.vendor_name || '—';
+    if (k === '—') return;
+    if (!provMap[k]) provMap[k] = { count: 0, monto: 0 };
+    provMap[k].count++;
+    provMap[k].monto += parseFloat(a.monto_contrato)||0;
+  });
+  const topProv = Object.entries(provMap)
+    .map(([name, d]) => ({ name, ...d }))
+    .sort((a, b) => b.monto - a.monto)
+    .slice(0, 5);
+  const tbProv = document.getElementById('execTopProveedores');
+  if (tbProv) tbProv.innerHTML = topProv.length
+    ? topProv.map((p, i) => `<tr>
+        <td style="color:var(--text-dim);width:28px;">${i+1}</td>
+        <td style="font-size:11px;max-width:200px;">${p.name.substring(0,40)}</td>
+        <td style="text-align:center;font-weight:700;">${p.count}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--electric);">
+          ${p.monto > 0 ? 'L '+p.monto.toLocaleString('es-HN',{maximumFractionDigits:0}) : '—'}
+        </td>
+      </tr>`).join('')
+    : '<tr class="state-row"><td colspan="4">Sin datos</td></tr>';
+
   // Top 5 critical contracts table
-  const top5 = criticos.sort((a,b) => (parseFloat(b.monto_contrato)||0) - (parseFloat(a.monto_contrato)||0)).slice(0,5);
+  const top5 = [...criticos].sort((a,b) => (parseFloat(b.monto_contrato)||0) - (parseFloat(a.monto_contrato)||0)).slice(0,5);
   const tbody = document.getElementById('execCriticalBody');
   if (top5.length === 0) {
     tbody.innerHTML = '<tr class="state-row"><td colspan="6">No hay contratos críticos actualmente</td></tr>';

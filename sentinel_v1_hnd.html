@@ -1953,62 +1953,64 @@ body::after {
         <div class="exec-card-note">▸ Supabase · SEFIN · OFAC · Engel</div>
       </div>
     </div>
-    <!-- P5 — "Sentinel lo Vio Primero" — justo después de KPI cards -->
-    <div class="exec-section-title">⚡ Sentinel lo Vio Primero — Instituciones en Base de Datos Antes del Escándalo</div>
+    <!-- P5 — Señales detectadas antes del escándalo + drilldown -->
+    <div class="exec-section-title">⚡ Señales Detectadas Antes del Escándalo — Contratos de Compras en BD</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
 
       <!-- SEDESOL -->
-      <div style="background:linear-gradient(135deg,rgba(0,200,255,0.07),rgba(139,92,246,0.05));border:1px solid rgba(0,200,255,0.2);border-left:4px solid var(--electric);border-radius:10px;padding:18px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--electric);text-transform:uppercase;margin-bottom:10px;">
-          ⚡ En Base de Datos Sentinel
+      <div style="background:linear-gradient(135deg,rgba(0,200,255,0.07),rgba(139,92,246,0.05));border:1px solid rgba(0,200,255,0.2);border-left:4px solid var(--electric);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--electric);text-transform:uppercase;">
+          ⚡ Contratos de Compras en Sentinel (EDCA-SEFIN)
         </div>
-        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);margin-bottom:3px;">
-          Secretaría de Desarrollo Social
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);margin-bottom:2px;">Secretaría de Desarrollo Social</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">Caso "Chequesol" · Escándalo en medios: Feb 2026</div>
         </div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:12px;">
-          Caso "Chequesol" — Escándalo mediático: Feb 2026
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--glass);border:1px solid var(--border);border-radius:5px;padding:5px 10px;"><span style="color:var(--electric);font-weight:700;">118</span> contratos en BD</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--glass);border:1px solid var(--border);border-radius:5px;padding:5px 10px;">Primer registro: <span style="color:var(--electric);font-weight:700;">12 Mar 2024</span></span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--glass);border:1px solid var(--border);border-radius:5px;padding:5px 10px;">Fraccionamiento · Sin Historial</span>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--glass);border:1px solid var(--border);border-radius:5px;padding:5px 10px;">
-            <span style="color:var(--electric);font-weight:700;">118</span> contratos
-          </span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--glass);border:1px solid var(--border);border-radius:5px;padding:5px 10px;">
-            Desde <span style="color:var(--electric);font-weight:700;">12 Mar 2024</span>
-          </span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--glass);border:1px solid var(--border);border-radius:5px;padding:5px 10px;">
-            Fraccionamiento · Sin Historial
-          </span>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);background:rgba(255,171,0,0.08);border-radius:5px;padding:6px 10px;line-height:1.5;">
+          Sentinel registraba señales de riesgo en compras <strong style="color:var(--amber);">2 años antes</strong> del destape.
+          Fraude de nómina requiere integración SIAFI — pendiente acceso PGR/TSC.
         </div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);background:rgba(255,171,0,0.08);border-radius:5px;padding:6px 10px;">
-          Sentinel tenía esta institución monitoreada <strong style="color:var(--amber);">2 años</strong> antes del escándalo
-        </div>
+        <button onclick="drilldownEntity('Secretaría de Desarrollo Social')"
+          style="margin-top:4px;padding:8px 14px;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);
+                 border-radius:6px;color:var(--electric);font-family:'JetBrains Mono',monospace;font-size:11px;
+                 cursor:pointer;text-align:left;transition:all .2s;letter-spacing:.03em;"
+          onmouseover="this.style.background='rgba(0,200,255,0.2)'"
+          onmouseout="this.style.background='rgba(0,200,255,0.1)'">
+          🔍 Ver los 118 contratos en base de datos →
+        </button>
       </div>
 
       <!-- SEDUC Cortés -->
-      <div style="background:linear-gradient(135deg,rgba(0,200,255,0.07),rgba(139,92,246,0.05));border:1px solid rgba(0,200,255,0.2);border-left:4px solid var(--electric);border-radius:10px;padding:18px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--electric);text-transform:uppercase;margin-bottom:10px;">
-          ⚡ En Base de Datos Sentinel
+      <div style="background:linear-gradient(135deg,rgba(0,200,255,0.07),rgba(139,92,246,0.05));border:1px solid rgba(0,200,255,0.2);border-left:4px solid var(--electric);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--electric);text-transform:uppercase;">
+          ⚡ Contratos de Compras en Sentinel (EDCA-SEFIN)
         </div>
-        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);margin-bottom:3px;">
-          Secretaría de Educación
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);margin-bottom:2px;">Secretaría de Educación</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">Caso "Paracaidistas Cortés" · Destape: 16 Abr 2026</div>
         </div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:12px;">
-          Caso "Paracaidistas SEDUC Cortés" — Destape: 16 Abr 2026
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--glass);border:1px solid var(--border);border-radius:5px;padding:5px 10px;"><span style="color:var(--electric);font-weight:700;">1,933</span> contratos en BD</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--glass);border:1px solid var(--border);border-radius:5px;padding:5px 10px;">Primer registro: <span style="color:var(--electric);font-weight:700;">13 Feb 2023</span></span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,140,66,0.1);border:1px solid rgba(255,140,66,0.3);border-radius:5px;padding:5px 10px;color:var(--orange);">3 Alta · 189 Media</span>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--glass);border:1px solid var(--border);border-radius:5px;padding:5px 10px;">
-            <span style="color:var(--electric);font-weight:700;">1,933</span> contratos
-          </span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--glass);border:1px solid var(--border);border-radius:5px;padding:5px 10px;">
-            Desde <span style="color:var(--electric);font-weight:700;">13 Feb 2023</span>
-          </span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,140,66,0.1);border:1px solid rgba(255,140,66,0.3);border-radius:5px;padding:5px 10px;color:var(--orange);">
-            3 Alta · 189 Media
-          </span>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);background:rgba(255,171,0,0.08);border-radius:5px;padding:6px 10px;line-height:1.5;">
+          Sentinel registraba señales de riesgo en compras <strong style="color:var(--amber);">3 años antes</strong> del destape.
+          Fraude de nómina requiere integración SIAFI — pendiente acceso PGR/TSC.
         </div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);background:rgba(255,171,0,0.08);border-radius:5px;padding:6px 10px;">
-          Sentinel tenía esta institución monitoreada <strong style="color:var(--amber);">3 años</strong> antes del escándalo
-        </div>
+        <button onclick="drilldownEntity('Secretaría de Educación')"
+          style="margin-top:4px;padding:8px 14px;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);
+                 border-radius:6px;color:var(--electric);font-family:'JetBrains Mono',monospace;font-size:11px;
+                 cursor:pointer;text-align:left;transition:all .2s;letter-spacing:.03em;"
+          onmouseover="this.style.background='rgba(0,200,255,0.2)'"
+          onmouseout="this.style.background='rgba(0,200,255,0.1)'">
+          🔍 Ver los 1,933 contratos en base de datos →
+        </button>
       </div>
 
     </div>
@@ -10876,6 +10878,18 @@ function showVistaEjecutiva() {
   document.getElementById('nav-ejecutiva') && document.getElementById('nav-ejecutiva').classList.add('active');
   // Populate executive data from already-loaded alerts
   renderEjecutiva();
+}
+
+// ── P5 Drilldown — desde Vista Ejecutiva a contratos filtrados por entidad ──
+function drilldownEntity(entityName) {
+  hideAllPanels();                                   // regresa a vista Contratos
+  const input = document.getElementById('global-search');
+  if (input) input.value = entityName;
+  setSearch(entityName);                             // aplica filtro en render()
+  setTimeout(() => {
+    const el = document.getElementById('global-search');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 150);
 }
 
 function hideAllPanels() {

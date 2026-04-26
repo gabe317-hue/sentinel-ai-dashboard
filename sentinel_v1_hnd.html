@@ -6462,43 +6462,56 @@ function generarEjecutivaPDF() {
   const statusTxt    = g('exec-status-text') || 'ACTIVO';
   const execSubtitle = g('execSubtitle');
 
-  // Top 5 entities — scrape exec-top-entities list
-  const entList = document.getElementById('exec-top-entities');
-  let entRows = '';
-  if (entList) {
-    const items = entList.querySelectorAll('.exec-top-item');
-    items.forEach((item, i) => {
-      const name  = item.querySelector('.exec-top-name')  ? item.querySelector('.exec-top-name').textContent.trim()  : '—';
-      const cnt   = item.querySelector('.exec-top-cnt')   ? item.querySelector('.exec-top-cnt').textContent.trim()   : '—';
-      const monto = item.querySelector('.exec-top-monto') ? item.querySelector('.exec-top-monto').textContent.trim() : '—';
-      entRows += `<tr${i%2===1?' style="background:rgba(0,0,0,0.03)"':''}>
+  // Top 5 entities — compute directly from allAlerts (no DOM dependency)
+  const _normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'');
+  const _alerts  = window.allAlerts || [];
+  const _entMap  = {};
+  _alerts.forEach(a => {
+    const k = a.entity_name || '—';
+    if (!_entMap[k]) _entMap[k] = { critica:0, alta:0, monto:0 };
+    const sv = _normSev(a.severity);
+    if (sv === 'critica') _entMap[k].critica++;
+    if (sv === 'alta')    _entMap[k].alta++;
+    if (sv === 'critica' || sv === 'alta') _entMap[k].monto += parseFloat(a.monto_contrato)||0;
+  });
+  const _topEnt = Object.entries(_entMap)
+    .map(([name, d]) => ({ name, ...d }))
+    .filter(e => e.critica + e.alta > 0)
+    .sort((a, b) => (b.critica*3 + b.alta) - (a.critica*3 + a.alta))
+    .slice(0, 5);
+  const fmtLP = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {maximumFractionDigits:0}) : '—';
+  let entRows = _topEnt.length
+    ? _topEnt.map((e, i) => `<tr${i%2===1?' style="background:rgba(0,0,0,0.03)"':''}>
         <td style="padding:6px 10px;font-size:11px;font-weight:700;color:#2563eb;">${i+1}</td>
-        <td style="padding:6px 10px;font-size:11px;">${esc(name)}</td>
-        <td style="padding:6px 10px;font-size:11px;text-align:right;">${esc(cnt)}</td>
-        <td style="padding:6px 10px;font-size:11px;text-align:right;color:#ff3d57;font-weight:600;">${esc(monto)}</td>
-      </tr>`;
-    });
-  }
-  if (!entRows) entRows = '<tr><td colspan="4" style="padding:10px;color:#888;font-style:italic;">Datos no disponibles — abrir Vista Ejecutiva primero.</td></tr>';
+        <td style="padding:6px 10px;font-size:11px;">${esc(e.name.substring(0,50))}</td>
+        <td style="padding:6px 10px;font-size:11px;text-align:center;"><span style="color:#ff3d57;font-weight:700;">${e.critica}</span> / <span style="color:#f97316;">${e.alta}</span></td>
+        <td style="padding:6px 10px;font-size:11px;text-align:right;color:#ff3d57;font-weight:600;">${esc(fmtLP(e.monto))}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" style="padding:10px;color:#888;font-style:italic;">Sin datos de riesgo disponibles.</td></tr>';
 
-  // Top 5 vendors — scrape exec-top-providers list
-  const provList = document.getElementById('exec-top-providers');
-  let provRows = '';
-  if (provList) {
-    const items = provList.querySelectorAll('.exec-top-item');
-    items.forEach((item, i) => {
-      const name  = item.querySelector('.exec-top-name')  ? item.querySelector('.exec-top-name').textContent.trim()  : '—';
-      const cnt   = item.querySelector('.exec-top-cnt')   ? item.querySelector('.exec-top-cnt').textContent.trim()   : '—';
-      const monto = item.querySelector('.exec-top-monto') ? item.querySelector('.exec-top-monto').textContent.trim() : '—';
-      provRows += `<tr${i%2===1?' style="background:rgba(0,0,0,0.03)"':''}>
+  // Top 5 vendors — compute directly from allAlerts
+  const _provMap = {};
+  _alerts.forEach(a => {
+    const sv = _normSev(a.severity);
+    if (sv !== 'critica' && sv !== 'alta') return;
+    const k = a.proveedor_nombre || a.vendor_name || '—';
+    if (k === '—') return;
+    if (!_provMap[k]) _provMap[k] = { count:0, monto:0 };
+    _provMap[k].count++;
+    _provMap[k].monto += parseFloat(a.monto_contrato)||0;
+  });
+  const _topProv = Object.entries(_provMap)
+    .map(([name, d]) => ({ name, ...d }))
+    .sort((a, b) => b.monto - a.monto)
+    .slice(0, 5);
+  let provRows = _topProv.length
+    ? _topProv.map((p, i) => `<tr${i%2===1?' style="background:rgba(0,0,0,0.03)"':''}>
         <td style="padding:6px 10px;font-size:11px;font-weight:700;color:#ff3d57;">${i+1}</td>
-        <td style="padding:6px 10px;font-size:11px;">${esc(name)}</td>
-        <td style="padding:6px 10px;font-size:11px;text-align:right;">${esc(cnt)}</td>
-        <td style="padding:6px 10px;font-size:11px;text-align:right;color:#ff3d57;font-weight:600;">${esc(monto)}</td>
-      </tr>`;
-    });
-  }
-  if (!provRows) provRows = '<tr><td colspan="4" style="padding:10px;color:#888;font-style:italic;">Datos no disponibles — abrir Vista Ejecutiva primero.</td></tr>';
+        <td style="padding:6px 10px;font-size:11px;">${esc(p.name.substring(0,45))}</td>
+        <td style="padding:6px 10px;font-size:11px;text-align:center;">${p.count}</td>
+        <td style="padding:6px 10px;font-size:11px;text-align:right;color:#ff3d57;font-weight:600;">${esc(fmtLP(p.monto))}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" style="padding:10px;color:#888;font-style:italic;">Sin datos de proveedores disponibles.</td></tr>';
 
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <title>Sentinel-AI — Briefing Ejecutivo — ${fechaStr}</title>

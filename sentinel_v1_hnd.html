@@ -1134,6 +1134,38 @@ body::after {
   text-transform: uppercase; letter-spacing: 2px;
   color: var(--text-dim); margin-bottom: 14px; margin-top: 8px;
 }
+
+/* Casos Activos exec-card */
+.exec-card-casos { background: rgba(255,61,87,0.06); cursor: pointer; }
+.exec-card-casos::before { background: linear-gradient(90deg, var(--red), var(--amber)); }
+.exec-card-casos:hover { border-color: rgba(255,61,87,0.35); background: rgba(255,61,87,0.10); }
+.exec-casos-list {
+  max-height: 160px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.exec-caso-item {
+  border-left: 2px solid var(--border); padding-left: 10px;
+  transition: border-color .2s;
+}
+.exec-caso-item:hover { border-color: var(--red); }
+.exec-caso-item.juicio { border-left-color: var(--red); }
+.exec-caso-item.denuncia { border-left-color: var(--amber); }
+.exec-caso-chip {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 2px 6px; border-radius: 3px; display: inline-block; margin-bottom: 4px;
+}
+.exec-caso-chip.juicio  { background: rgba(255,61,87,0.15); color: var(--red); }
+.exec-caso-chip.denuncia{ background: rgba(255,171,0,0.15); color: var(--amber); }
+.exec-caso-name {
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+  color: var(--text); margin-bottom: 2px;
+}
+.exec-caso-desc {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-dim); line-height: 1.4;
+}
 .exec-sources-grid {
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 12px; margin-bottom: 8px;
@@ -1897,9 +1929,12 @@ body::after {
     </div>
 
     <!-- Executive KPI summary — data from Supabase via renderEjecutiva() -->
-    <div class="exec-header">
-      <div class="exec-title">Resumen Ejecutivo</div>
-      <div class="exec-subtitle" id="execSubtitle">Cargando datos...</div>
+    <div class="exec-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div>
+        <div class="exec-title">Resumen Ejecutivo</div>
+        <div class="exec-subtitle" id="execSubtitle">Cargando datos...</div>
+      </div>
+      <button onclick="generarEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;margin-top:4px;">📄 Exportar Briefing</button>
     </div>
     <!-- 3-column grid: Critical alerts, Top risk entities, System status -->
     <div class="exec-grid">
@@ -1951,6 +1986,28 @@ body::after {
         <div class="exec-card-value" style="font-size:20px;" id="exec-status-val">—</div>
         <div class="exec-card-sub" id="exec-last-update">—</div>
         <div class="exec-card-note">▸ Supabase · SEFIN · OFAC · Engel</div>
+      </div>
+      <!-- Casos Activos card — clickeable → casosPanel -->
+      <div class="exec-card exec-card-casos" onclick="showCasosPanel()" title="Ver detalle completo de casos activos">
+        <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Casos Activos</span>
+          <span style="background:var(--red);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;" id="exec-casos-count">2</span>
+        </div>
+        <div class="exec-casos-list" id="exec-casos-list">
+          <!-- CASO 1 -->
+          <div class="exec-caso-item juicio">
+            <span class="exec-caso-chip juicio">⚖️ Juicio Activo</span>
+            <div class="exec-caso-name">Sec. de Desarrollo Social</div>
+            <div class="exec-caso-desc">Desvío de Fondos — "Chequesol"<br>L 6,032,654 · 12 imputados · CSJ Exp. 01-2026</div>
+          </div>
+          <!-- CASO 2 -->
+          <div class="exec-caso-item denuncia">
+            <span class="exec-caso-chip denuncia">⚠️ Denuncia MP</span>
+            <div class="exec-caso-name">Sec. de Educación — Cortés</div>
+            <div class="exec-caso-desc">Nóminas Irregulares — "Paracaidistas"<br>152 nombramientos · 20 familiares en nómina</div>
+          </div>
+        </div>
+        <div class="exec-card-note" style="margin-top:10px;">▸ Clic para ver detalle completo →</div>
       </div>
     </div>
     <!-- P5 — Señales detectadas antes del escándalo + drilldown -->
@@ -2105,31 +2162,6 @@ body::after {
             <tr class="state-row"><td colspan="4"><span class="spinner"></span></td></tr>
           </tbody>
         </table>
-      </div>
-    </div>
-
-    <!-- P2 — Casos Activos Summary -->
-    <div class="exec-section-title">Casos Activos — Estado Legal</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
-      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.25);border-left:3px solid var(--red);border-radius:8px;padding:16px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--red);text-transform:uppercase;margin-bottom:8px;">⚖️ EN JUICIO ACTIVO</div>
-        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">SEDESOL-2024-001 · "Chequesol"</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:8px;">Desvío de Fondos Sociales — Copán</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">L 6,032,654 desviados</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">12 imputados · 67 delitos</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">CSJ Exp. 01-2026</span>
-        </div>
-      </div>
-      <div style="background:rgba(255,171,0,0.08);border:1px solid rgba(255,171,0,0.25);border-left:3px solid var(--amber);border-radius:8px;padding:16px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--amber);text-transform:uppercase;margin-bottom:8px;">⚠️ DENUNCIA AL MP — INV. FORMAL PENDIENTE</div>
-        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">SEDUC-2026-001 · "Paracaidistas Cortés"</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:8px;">Nepotismo y Nóminas Irregulares — Educación</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">152 nombramientos irregulares</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:3px 8px;">20 familiares en nómina</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:4px;padding:3px 8px;color:#a855f7;">Casaña · Lista Engel</span>
-        </div>
       </div>
     </div>
 
@@ -2998,11 +3030,14 @@ body::after {
   <div class="fuente-panel" id="casosPanel">
     <button class="fuente-back" onclick="hideCasosPanel()">← Contratos</button>
 
-    <div class="fuente-header">
-      <div class="fuente-title">⚖️ <span>Casos Activos — Investigaciones en Curso</span></div>
-      <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
-        Datos verificados de medios. Fuentes: La Prensa HN, El Heraldo HN, Proceso Digital, Tiempo HN.
+    <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div>
+        <div class="fuente-title">⚖️ <span>Casos Activos — Investigaciones en Curso</span></div>
+        <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
+          Datos verificados de medios. Fuentes: La Prensa HN, El Heraldo HN, Proceso Digital, Tiempo HN.
+        </div>
       </div>
+      <button onclick="generarCasosPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;">📄 PDF Casos</button>
     </div>
 
     <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
@@ -6127,6 +6162,422 @@ function exportSectorSummaryPDF() {
 </html>`;
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
+  pw.document.write(html);
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ════════════════════════════════════════════════════════════
+// PDF #1 — CASOS ACTIVOS: Investigation report
+// ════════════════════════════════════════════════════════════
+function generarCasosPDF() {
+  const esc = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const now = new Date();
+  const fechaStr = now.toLocaleDateString('es-HN', {year:'numeric', month:'long', day:'numeric'});
+  const horaStr  = now.toLocaleTimeString('es-HN', {hour:'2-digit', minute:'2-digit'});
+  const folio    = 'SEN-CASOS-' + now.toISOString().slice(0,10).replace(/-/g,'') + '-001';
+
+  const casos = [
+    {
+      id: 'SEDESOL-2024-001',
+      titulo: 'Caso "Chequesol" — Desvío de Fondos Sociales',
+      entidad: 'Secretaría de Desarrollo Social (SEDESOL)',
+      estado: 'EN JUICIO ACTIVO',
+      estadoColor: '#ff3d57',
+      estadoBg: 'rgba(255,61,87,0.12)',
+      periodo: 'Mayo 2023 – Diciembre 2024',
+      monto: 'L 6,032,654.07 (≈ USD 220,000)',
+      imputados: '12 personas',
+      expediente: 'CSJ Exp. 01-2026',
+      juez: 'Luis Fernando Padilla Castellanos',
+      fiscalia: 'FETCCOP',
+      medidas: 'Firma periódica · Prohibición de salida · Sin comunicación entre imputados',
+      pruebas: '86 medios de prueba en juicio',
+      actores: [
+        'Isis Carolina Cuéllar Erazo — Diputada activa, Partido Libre (M28), Copán · suspendida del CN',
+        'José Carlos Cardona Erazo — Ex Secretario SEDESOL (coautor)',
+      ],
+      alertas: ['Nómina Fantasma','Desvío Fondos Públicos','Red Política-Funcionarios','Fraccionamiento Pagos','Beneficiarios Irregulares'],
+      sentinel: { contratos: '118 contratos', desde: '12 Mar 2024', senales: 'Fraccionamiento · Sin Historial', nota: 'Institución en Sentinel 2 años antes del escándalo mediático.' },
+      fuentes: 'La Prensa HN · El Heraldo HN · Proceso Digital · Infobae HN · La Tribuna HN — Act. Mar 2026',
+    },
+    {
+      id: 'SEDUC-2026-001',
+      titulo: 'Caso "Paracaidistas SEDUC Cortés" — Nóminas Irregulares',
+      entidad: 'Secretaría de Educación — Cortés',
+      estado: 'DENUNCIA MP — Inv. Formal Pendiente',
+      estadoColor: '#ffab00',
+      estadoBg: 'rgba(255,171,0,0.12)',
+      periodo: '2024 – Abril 2026',
+      monto: '152 nombramientos irregulares (≈ L 893,000 solo caso Casaña)',
+      imputados: 'Red de 20+ familiares de diputados',
+      expediente: 'Denuncia en proceso — MP Honduras',
+      juez: 'Pendiente asignación',
+      fiscalia: 'Ministerio Público',
+      medidas: '39 paracaidistas despedidos · Investigación abierta',
+      pruebas: 'Declaración director departamental · Registros nómina · Lista Engel',
+      actores: [
+        'Scherly Arriaga — Partido Libre, Cortés (madre + prima en nómina)',
+        'Edgardo Casaña — Partido Libre, Santa Bárbara · Lista Engel EE.UU. (sobrino + esposa + hermano en nómina)',
+        'Emilio Guifarro — Facilitador (junta departamental de selección)',
+      ],
+      alertas: ['Nómina Fantasma','Cargo Inexistente','Nepotismo-Nómina','Red Familiar','Doble Plaza','Actor Lista Engel'],
+      sentinel: { contratos: '1,933 contratos', desde: '13 Feb 2023', senales: 'Fraccionamiento · Adjudicación Directa', nota: 'Institución en Sentinel 3 años antes del escándalo mediático (Abr 2026).' },
+      fuentes: 'El Heraldo HN · La Prensa HN · Proceso Digital · Tiempo HN · El Espectador HN — Act. Abr 2026',
+    },
+  ];
+
+  const casoHTML = casos.map((c, i) => `
+<div class="caso-bloque" style="border:1px solid ${c.estadoColor};border-left:4px solid ${c.estadoColor};border-radius:8px;padding:20px;margin-bottom:28px;background:${c.estadoBg};">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <div>
+      <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:2px;color:${c.estadoColor};text-transform:uppercase;margin-bottom:4px;">${esc(c.id)}</div>
+      <div style="font-size:16px;font-weight:700;color:#1a2035;margin-bottom:2px;">${esc(c.titulo)}</div>
+      <div style="font-size:12px;color:#555;">${esc(c.entidad)}</div>
+    </div>
+    <span style="background:${c.estadoBg};color:${c.estadoColor};border:1px solid ${c.estadoColor};padding:5px 12px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;">${esc(c.estado)}</span>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:14px;">
+    <tr>
+      <td style="padding:6px 8px;font-size:10px;color:#888;font-weight:700;width:160px;vertical-align:top;">PERÍODO</td>
+      <td style="padding:6px 8px;font-size:11px;color:#1a2035;">${esc(c.periodo)}</td>
+      <td style="padding:6px 8px;font-size:10px;color:#888;font-weight:700;width:140px;vertical-align:top;">MONTO IRREGULAR</td>
+      <td style="padding:6px 8px;font-size:11px;color:${c.estadoColor};font-weight:700;">${esc(c.monto)}</td>
+    </tr>
+    <tr style="background:rgba(0,0,0,0.03);">
+      <td style="padding:6px 8px;font-size:10px;color:#888;font-weight:700;vertical-align:top;">IMPUTADOS / RED</td>
+      <td style="padding:6px 8px;font-size:11px;color:#1a2035;">${esc(c.imputados)}</td>
+      <td style="padding:6px 8px;font-size:10px;color:#888;font-weight:700;vertical-align:top;">EXPEDIENTE</td>
+      <td style="padding:6px 8px;font-size:11px;color:#1a2035;">${esc(c.expediente)}</td>
+    </tr>
+    <tr>
+      <td style="padding:6px 8px;font-size:10px;color:#888;font-weight:700;vertical-align:top;">JUEZ / TRIBUNAL</td>
+      <td style="padding:6px 8px;font-size:11px;color:#1a2035;">${esc(c.juez)}</td>
+      <td style="padding:6px 8px;font-size:10px;color:#888;font-weight:700;vertical-align:top;">FISCALÍA</td>
+      <td style="padding:6px 8px;font-size:11px;color:#1a2035;">${esc(c.fiscalia)}</td>
+    </tr>
+    <tr style="background:rgba(0,0,0,0.03);">
+      <td style="padding:6px 8px;font-size:10px;color:#888;font-weight:700;vertical-align:top;">MEDIDAS / ESTADO</td>
+      <td colspan="3" style="padding:6px 8px;font-size:11px;color:#1a2035;">${esc(c.medidas)}</td>
+    </tr>
+    <tr>
+      <td style="padding:6px 8px;font-size:10px;color:#888;font-weight:700;vertical-align:top;">PRUEBAS</td>
+      <td colspan="3" style="padding:6px 8px;font-size:11px;color:#1a2035;font-weight:600;">${esc(c.pruebas)}</td>
+    </tr>
+  </table>
+
+  <div style="margin-bottom:12px;">
+    <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">ACTORES PRINCIPALES</div>
+    ${c.actores.map(a => `<div style="font-size:11px;color:#1a2035;padding:3px 0;border-bottom:1px solid rgba(0,0,0,0.06);">${esc(a)}</div>`).join('')}
+  </div>
+
+  <div style="margin-bottom:12px;">
+    <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">SEÑALES DE RIESGO SENTINEL</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      ${c.alertas.map(a => `<span style="background:${c.estadoBg};border:1px solid ${c.estadoColor};color:${c.estadoColor};padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;">${esc(a)}</span>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:rgba(0,80,200,0.06);border:1px solid rgba(0,80,200,0.2);border-left:3px solid #2563eb;border-radius:6px;padding:12px;margin-bottom:10px;">
+    <div style="font-size:10px;font-weight:700;color:#2563eb;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">⚡ DETECCIÓN SENTINEL (DATOS SEFIN/EDCA)</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:10px;color:#1a2035;margin-bottom:6px;">
+      <span><strong>Contratos monitoreados:</strong> ${esc(c.sentinel.contratos)}</span>
+      <span><strong>Desde:</strong> ${esc(c.sentinel.desde)}</span>
+      <span><strong>Señales:</strong> ${esc(c.sentinel.senales)}</span>
+    </div>
+    <div style="font-size:10px;color:#555;font-style:italic;">${esc(c.sentinel.nota)} Datos EDCA-SEFIN (compras). Integración SIAFI requerida para nóminas.</div>
+  </div>
+
+  <div style="font-size:9px;color:#aaa;font-style:italic;">Fuentes: ${esc(c.fuentes)}</div>
+</div>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Sentinel-AI — Casos Activos — ${fechaStr}</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family: Arial, Helvetica, sans-serif; background:#f7f8fa; color:#1a2035; padding:32px; }
+  @media print { body { background:#fff; padding:0; } @page { margin:2cm; } }
+  .header-bar { background:#1a2035; color:#fff; padding:24px 28px; border-radius:10px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; }
+  .header-title { font-size:20px; font-weight:700; letter-spacing:-0.5px; }
+  .header-sub { font-size:11px; opacity:.7; margin-top:3px; }
+  .header-meta { text-align:right; font-size:10px; opacity:.6; }
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .kpi { background:#fff; border:1px solid #e2e6ef; border-radius:8px; padding:14px; text-align:center; }
+  .kpi-val { font-size:22px; font-weight:800; color:#1a2035; }
+  .kpi-lbl { font-size:9px; color:#888; letter-spacing:1px; text-transform:uppercase; margin-top:4px; }
+  .section-title { font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#888; margin-bottom:16px; padding-bottom:6px; border-bottom:2px solid #e2e6ef; }
+  .footer-bar { margin-top:32px; padding:12px 0; border-top:1px solid #e2e6ef; display:flex; justify-content:space-between; font-size:9px; color:#aaa; }
+  .confidential { background:#fff3cd; border:1px solid #ffb300; border-radius:4px; padding:8px 14px; font-size:10px; color:#7a5c00; margin-bottom:20px; font-weight:700; }
+</style>
+</head><body>
+<div class="header-bar">
+  <div>
+    <div class="header-title">⚖️ Sentinel-AI — Reporte de Casos Activos</div>
+    <div class="header-sub">Sistema de Monitoreo de Contratación Pública — Honduras</div>
+  </div>
+  <div class="header-meta">
+    <div>${esc(folio)}</div>
+    <div>${esc(fechaStr)} · ${esc(horaStr)}</div>
+    <div>CONFIDENCIAL</div>
+  </div>
+</div>
+
+<div class="confidential">⚠ DOCUMENTO CONFIDENCIAL — Uso exclusivo Procuraduría General de la República / TSC. No distribuir sin autorización.</div>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-val" style="color:#ff3d57;">1</div><div class="kpi-lbl">En Juicio Activo</div></div>
+  <div class="kpi"><div class="kpi-val" style="color:#ffab00;">1</div><div class="kpi-lbl">Denuncia Activa</div></div>
+  <div class="kpi"><div class="kpi-val">12+</div><div class="kpi-lbl">Imputados</div></div>
+  <div class="kpi"><div class="kpi-val" style="color:#ff3d57;">L 6M+</div><div class="kpi-lbl">Monto Irregular</div></div>
+</div>
+
+<div class="section-title">Detalle por Caso — Pareto de Impacto</div>
+${casoHTML}
+
+<div class="footer-bar">
+  <span>Reporte Confidencial — The Prieto Group © 2026</span>
+  <span>Sentinel-AI Honduras · ${esc(folio)} · ${esc(fechaStr)}</span>
+</div>
+</body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=860');
+  if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
+  pw.document.write(html);
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ════════════════════════════════════════════════════════════
+// PDF #2 — VISTA EJECUTIVA: Full executive briefing
+// ════════════════════════════════════════════════════════════
+function generarEjecutivaPDF() {
+  const esc = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const now = new Date();
+  const fechaStr = now.toLocaleDateString('es-HN', {year:'numeric', month:'long', day:'numeric'});
+  const horaStr  = now.toLocaleTimeString('es-HN', {hour:'2-digit', minute:'2-digit'});
+  const folio    = 'SEN-EXEC-' + now.toISOString().slice(0,10).replace(/-/g,'') + '-001';
+
+  // Read live values from DOM (populated by renderEjecutiva())
+  const g = id => { const el = document.getElementById(id); return el ? el.textContent.trim() : '—'; };
+
+  const riskTotal    = g('exec-risk-total');
+  const riskCritica  = g('exec-risk-critica');
+  const riskAlta     = g('exec-risk-alta');
+  const riskCritCnt  = g('exec-risk-critica-cnt');
+  const riskAltCnt   = g('exec-risk-alta-cnt');
+  const riskBudget   = g('exec-risk-budget');
+
+  const nCriticos    = g('exec-criticos');
+  const mCriticos    = g('exec-criticos-monto');
+  const nAltos       = g('exec-altos');
+  const mAltos       = g('exec-altos-monto');
+  const nTotal       = g('exec-total');
+  const statusTxt    = g('exec-status-text') || 'ACTIVO';
+  const execSubtitle = g('execSubtitle');
+
+  // Top 5 entities — scrape exec-top-entities list
+  const entList = document.getElementById('exec-top-entities');
+  let entRows = '';
+  if (entList) {
+    const items = entList.querySelectorAll('.exec-top-item');
+    items.forEach((item, i) => {
+      const name  = item.querySelector('.exec-top-name')  ? item.querySelector('.exec-top-name').textContent.trim()  : '—';
+      const cnt   = item.querySelector('.exec-top-cnt')   ? item.querySelector('.exec-top-cnt').textContent.trim()   : '—';
+      const monto = item.querySelector('.exec-top-monto') ? item.querySelector('.exec-top-monto').textContent.trim() : '—';
+      entRows += `<tr${i%2===1?' style="background:rgba(0,0,0,0.03)"':''}>
+        <td style="padding:6px 10px;font-size:11px;font-weight:700;color:#2563eb;">${i+1}</td>
+        <td style="padding:6px 10px;font-size:11px;">${esc(name)}</td>
+        <td style="padding:6px 10px;font-size:11px;text-align:right;">${esc(cnt)}</td>
+        <td style="padding:6px 10px;font-size:11px;text-align:right;color:#ff3d57;font-weight:600;">${esc(monto)}</td>
+      </tr>`;
+    });
+  }
+  if (!entRows) entRows = '<tr><td colspan="4" style="padding:10px;color:#888;font-style:italic;">Datos no disponibles — abrir Vista Ejecutiva primero.</td></tr>';
+
+  // Top 5 vendors — scrape exec-top-providers list
+  const provList = document.getElementById('exec-top-providers');
+  let provRows = '';
+  if (provList) {
+    const items = provList.querySelectorAll('.exec-top-item');
+    items.forEach((item, i) => {
+      const name  = item.querySelector('.exec-top-name')  ? item.querySelector('.exec-top-name').textContent.trim()  : '—';
+      const cnt   = item.querySelector('.exec-top-cnt')   ? item.querySelector('.exec-top-cnt').textContent.trim()   : '—';
+      const monto = item.querySelector('.exec-top-monto') ? item.querySelector('.exec-top-monto').textContent.trim() : '—';
+      provRows += `<tr${i%2===1?' style="background:rgba(0,0,0,0.03)"':''}>
+        <td style="padding:6px 10px;font-size:11px;font-weight:700;color:#ff3d57;">${i+1}</td>
+        <td style="padding:6px 10px;font-size:11px;">${esc(name)}</td>
+        <td style="padding:6px 10px;font-size:11px;text-align:right;">${esc(cnt)}</td>
+        <td style="padding:6px 10px;font-size:11px;text-align:right;color:#ff3d57;font-weight:600;">${esc(monto)}</td>
+      </tr>`;
+    });
+  }
+  if (!provRows) provRows = '<tr><td colspan="4" style="padding:10px;color:#888;font-style:italic;">Datos no disponibles — abrir Vista Ejecutiva primero.</td></tr>';
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Sentinel-AI — Briefing Ejecutivo — ${fechaStr}</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family: Arial, Helvetica, sans-serif; background:#f7f8fa; color:#1a2035; padding:32px; }
+  @media print { body { background:#fff; padding:0; } @page { margin:2cm; } }
+  .header-bar { background:#1a2035; color:#fff; padding:24px 28px; border-radius:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
+  .header-title { font-size:20px; font-weight:700; letter-spacing:-0.5px; }
+  .header-sub { font-size:11px; opacity:.7; margin-top:3px; }
+  .header-meta { text-align:right; font-size:10px; opacity:.65; line-height:1.6; }
+  .risk-alert { background:rgba(255,61,87,0.08); border:1px solid rgba(255,61,87,0.3); border-left:5px solid #ff3d57; border-radius:8px; padding:20px 24px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+  .risk-monto { font-size:36px; font-weight:900; color:#ff3d57; line-height:1; }
+  .risk-lbl { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#ff3d57; margin-bottom:4px; }
+  .risk-sub { font-size:11px; color:#555; margin-top:4px; }
+  .risk-budget { font-size:10px; color:#888; font-style:italic; margin-top:3px; }
+  .risk-breakdown { display:flex; gap:24px; }
+  .risk-bk-item { text-align:center; }
+  .risk-bk-val { font-size:15px; font-weight:800; }
+  .risk-bk-cnt { font-size:10px; color:#888; }
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+  .kpi { background:#fff; border:1px solid #e2e6ef; border-radius:8px; padding:14px; text-align:center; }
+  .kpi-val { font-size:22px; font-weight:800; }
+  .kpi-sub { font-size:11px; color:#777; margin-top:3px; }
+  .kpi-lbl { font-size:9px; color:#aaa; letter-spacing:1px; text-transform:uppercase; margin-top:4px; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+  .panel { background:#fff; border:1px solid #e2e6ef; border-radius:8px; padding:16px; }
+  .panel-title { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid #e2e6ef; }
+  table { width:100%; border-collapse:collapse; }
+  th { font-size:9px; color:#aaa; letter-spacing:.08em; text-transform:uppercase; padding:5px 10px; border-bottom:2px solid #e2e6ef; text-align:left; }
+  th:last-child { text-align:right; }
+  .sentinel-box { background:rgba(37,99,235,0.06); border:1px solid rgba(37,99,235,0.2); border-left:4px solid #2563eb; border-radius:8px; padding:16px 18px; margin-bottom:20px; }
+  .sentinel-box-title { font-size:10px; font-weight:700; letter-spacing:1.5px; color:#2563eb; text-transform:uppercase; margin-bottom:10px; }
+  .s-item { padding:10px 0; border-bottom:1px solid rgba(37,99,235,0.1); }
+  .s-item:last-child { border-bottom:none; }
+  .s-item-name { font-size:13px; font-weight:700; color:#1a2035; }
+  .s-item-sub { font-size:10px; color:#555; margin-top:3px; }
+  .casos-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .caso-mini { border-radius:6px; padding:12px 14px; }
+  .footer-bar { margin-top:24px; padding:12px 0; border-top:1px solid #e2e6ef; display:flex; justify-content:space-between; font-size:9px; color:#aaa; }
+  .confidential { background:#fff3cd; border:1px solid #ffb300; border-radius:4px; padding:7px 14px; font-size:10px; color:#7a5c00; margin-bottom:18px; font-weight:700; }
+  .recom { background:#f0f9ff; border:1px solid #0ea5e9; border-radius:6px; padding:14px 16px; margin-bottom:20px; }
+  .recom-title { font-size:10px; font-weight:700; letter-spacing:1px; color:#0369a1; text-transform:uppercase; margin-bottom:8px; }
+  .recom-item { font-size:11px; color:#1a2035; padding:4px 0; padding-left:12px; border-left:2px solid #0ea5e9; margin-bottom:4px; }
+</style>
+</head><body>
+<div class="header-bar">
+  <div>
+    <div class="header-title">🛡️ Sentinel-AI — Briefing Ejecutivo</div>
+    <div class="header-sub">Monitoreo de Contratación Pública — Honduras · SEFIN/EDCA 2023–2025</div>
+  </div>
+  <div class="header-meta">
+    <div style="font-weight:700;">${esc(folio)}</div>
+    <div>${esc(fechaStr)} · ${esc(horaStr)}</div>
+    <div>CONFIDENCIAL — PGR / TSC</div>
+  </div>
+</div>
+
+<div class="confidential">⚠ DOCUMENTO CONFIDENCIAL — Uso exclusivo Procuraduría General de la República / Tribunal Superior de Cuentas. No distribuir.</div>
+
+<!-- Risk Alert Band -->
+<div class="risk-alert">
+  <div>
+    <div class="risk-lbl">⚠ Alerta Sistema Sentinel — Contratos de Alto Riesgo</div>
+    <div class="risk-monto">${esc(riskTotal)}</div>
+    <div class="risk-sub">Monto acumulado en contratos con señales de irregularidad (Críticos + Altos)</div>
+    <div class="risk-budget">${esc(riskBudget)}</div>
+  </div>
+  <div class="risk-breakdown">
+    <div class="risk-bk-item">
+      <div class="risk-bk-val" style="color:#ff3d57;">${esc(riskCritica)}</div>
+      <div style="font-size:9px;color:#ff3d57;font-weight:700;margin-top:2px;">⬤ Críticos</div>
+      <div class="risk-bk-cnt">${esc(riskCritCnt)}</div>
+    </div>
+    <div class="risk-bk-item">
+      <div class="risk-bk-val" style="color:#ffab00;">${esc(riskAlta)}</div>
+      <div style="font-size:9px;color:#ffab00;font-weight:700;margin-top:2px;">⬤ Altos</div>
+      <div class="risk-bk-cnt">${esc(riskAltCnt)}</div>
+    </div>
+  </div>
+</div>
+
+<!-- KPI Row -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-val" style="color:#ff3d57;">${esc(nCriticos)}</div>
+    <div class="kpi-sub" style="color:#ff3d57;">${esc(mCriticos)}</div>
+    <div class="kpi-lbl">Contratos Críticos</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val" style="color:#ffab00;">${esc(nAltos)}</div>
+    <div class="kpi-sub" style="color:#ffab00;">${esc(mAltos)}</div>
+    <div class="kpi-lbl">Riesgo Alto</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val">${esc(nTotal)}</div>
+    <div class="kpi-sub">Contratos monitoreados</div>
+    <div class="kpi-lbl">Total en Base de Datos</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val" style="color:#00e5a0;font-size:16px;">● ${esc(statusTxt)}</div>
+    <div class="kpi-sub">Datos SEFIN/EDCA</div>
+    <div class="kpi-lbl">Estado Sistema</div>
+  </div>
+</div>
+
+<!-- Top 5 Entities + Vendors -->
+<div class="two-col">
+  <div class="panel">
+    <div class="panel-title">Top 5 Entidades — Mayor Riesgo Acumulado</div>
+    <table><thead><tr><th>#</th><th>Entidad</th><th>Contratos</th><th style="text-align:right">Monto</th></tr></thead>
+    <tbody>${entRows}</tbody></table>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Top 5 Proveedores — Mayor Exposición</div>
+    <table><thead><tr><th>#</th><th>Proveedor</th><th>Contratos</th><th style="text-align:right">Monto</th></tr></thead>
+    <tbody>${provRows}</tbody></table>
+  </div>
+</div>
+
+<!-- Sentinel lo vio primero -->
+<div class="sentinel-box">
+  <div class="sentinel-box-title">⚡ Sentinel lo Vio Primero — Instituciones en Radar Antes del Escándalo</div>
+  <div class="s-item">
+    <div class="s-item-name">Secretaría de Desarrollo Social (SEDESOL) — Caso "Chequesol"</div>
+    <div class="s-item-sub">118 contratos monitoreados desde 12 Mar 2024 · Señales: Fraccionamiento · Sin Historial · <strong>2 años antes del escándalo mediático</strong></div>
+  </div>
+  <div class="s-item">
+    <div class="s-item-name">Secretaría de Educación — Caso "Paracaidistas Cortés"</div>
+    <div class="s-item-sub">1,933 contratos monitoreados desde 13 Feb 2023 · Señales: Fraccionamiento · Adjudicación Directa · <strong>3 años antes del escándalo mediático (Abr 2026)</strong></div>
+  </div>
+  <div style="font-size:10px;color:#888;margin-top:10px;font-style:italic;">Datos EDCA-SEFIN (compras públicas). Integración SIAFI necesaria para cruzar con nóminas — próximo paso con acceso PGR/TSC.</div>
+</div>
+
+<!-- Casos Activos summary -->
+<div class="casos-row">
+  <div class="caso-mini" style="background:rgba(255,61,87,0.07);border:1px solid rgba(255,61,87,0.25);border-left:4px solid #ff3d57;">
+    <div style="font-size:9px;font-weight:700;color:#ff3d57;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">⚖️ EN JUICIO ACTIVO</div>
+    <div style="font-size:13px;font-weight:700;color:#1a2035;">SEDESOL-2024-001 · "Chequesol"</div>
+    <div style="font-size:10px;color:#555;margin-top:3px;">Desvío de Fondos — Copán · L 6,032,654 · 12 imputados · CSJ Exp. 01-2026</div>
+  </div>
+  <div class="caso-mini" style="background:rgba(255,171,0,0.07);border:1px solid rgba(255,171,0,0.25);border-left:4px solid #ffab00;">
+    <div style="font-size:9px;font-weight:700;color:#ffab00;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">⚠️ DENUNCIA MP — INV. FORMAL PENDIENTE</div>
+    <div style="font-size:13px;font-weight:700;color:#1a2035;">SEDUC-2026-001 · "Paracaidistas Cortés"</div>
+    <div style="font-size:10px;color:#555;margin-top:3px;">Nóminas Irregulares — Educación · 152 nombramientos · 20 familiares en nómina</div>
+  </div>
+</div>
+
+<!-- Recommendations -->
+<div class="recom">
+  <div class="recom-title">📋 Recomendaciones para la PGR</div>
+  <div class="recom-item">Solicitar acceso SIAFI para cruzar contratos de compra con planillas de nómina en SEDESOL y SEDUC.</div>
+  <div class="recom-item">Profundizar investigación en las Top 5 entidades con mayor monto de riesgo acumulado.</div>
+  <div class="recom-item">Evaluar referir contratos Críticos (${esc(nCriticos)}) a investigación formal de la PGR.</div>
+  <div class="recom-item">Integrar feed Sentinel al flujo de inteligencia de la Unidad Anticorrupción de la PGR.</div>
+</div>
+
+<div class="footer-bar">
+  <span>Reporte Confidencial — The Prieto Group © 2026 · ${esc(execSubtitle)}</span>
+  <span>Sentinel-AI Honduras · ${esc(folio)} · ${esc(fechaStr)}</span>
+</div>
+</body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1200,height=900');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
   pw.document.write(html);
   pw.document.close();

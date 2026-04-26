@@ -1762,6 +1762,22 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 .tl-prov-table tr:hover td { background:rgba(255,255,255,0.03); }
 .tl-prov-bar { height:5px; border-radius:3px; background:linear-gradient(90deg,rgba(0,200,255,0.6),rgba(0,200,255,0.15)); }
 
+/* ── REFERIR MODAL — P3 ── */
+.refer-modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s; }
+.refer-modal-overlay.open { opacity:1;pointer-events:all; }
+.refer-modal-box { background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px 32px;width:520px;max-width:94vw;max-height:90vh;overflow-y:auto; }
+.refer-modal-title { font-size:15px;font-weight:700;color:var(--text);margin-bottom:18px;letter-spacing:0.02em; }
+.refer-info-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-bottom:20px;padding:14px;background:var(--glass);border-radius:8px;border:1px solid var(--border); }
+.refer-info-item { display:flex;flex-direction:column;gap:2px; }
+.refer-info-item.full { grid-column:1/-1; }
+.refer-info-key { font-size:9.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em; }
+.refer-info-val { font-size:11.5px;color:var(--text);font-weight:500; }
+.refer-dest-label { font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;display:block; }
+.refer-select { width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 12px;font-size:13px;cursor:pointer; }
+.refer-modal-actions { display:flex;gap:8px;margin-top:20px;justify-content:flex-end; }
+.btn-refer { background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.3);color:#818cf8; }
+.btn-refer:hover { background:rgba(99,102,241,0.22);border-color:#818cf8; }
+
 </style>
 </head>
 <body>
@@ -2462,6 +2478,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div style="display:flex;gap:6px;">
         <button onclick="exportEntityPDF('pareto')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="PDF top contratos (80% del monto)">📄 Pareto</button>
         <button onclick="exportEntityPDF('todo')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="PDF con todos los contratos">⬇ Todo</button>
+        <button onclick="openReferModalEntity()" style="padding:5px 12px;border-radius:5px;border:1px solid rgba(99,102,241,0.35);background:rgba(99,102,241,0.12);color:#818cf8;font-size:11px;cursor:pointer;transition:all .2s;" title="Generar memorándum de referencia para esta entidad">📋 Referir</button>
       </div>
     </div>
 
@@ -3798,6 +3815,33 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
   </div>
 </div>
 
+<!-- ═══════════════════ REFERIR MODAL — P3 ═══════════════════ -->
+<div class="refer-modal-overlay" id="referModalOverlay" onclick="if(event.target===this)closeReferModal()">
+  <div class="refer-modal-box">
+    <div class="refer-modal-title">📋 Memorándum de Referencia Sentinel</div>
+    <div class="refer-info-grid">
+      <div class="refer-info-item"><span class="refer-info-key">ID Contrato</span><span class="refer-info-val" id="rm-id">—</span></div>
+      <div class="refer-info-item"><span class="refer-info-key">Severidad</span><span class="refer-info-val" id="rm-sev">—</span></div>
+      <div class="refer-info-item full"><span class="refer-info-key">Entidad Contratante</span><span class="refer-info-val" id="rm-entity">—</span></div>
+      <div class="refer-info-item full"><span class="refer-info-key">Proveedor / Contratista</span><span class="refer-info-val" id="rm-vendor">—</span></div>
+      <div class="refer-info-item"><span class="refer-info-key">Monto Contrato</span><span class="refer-info-val" id="rm-monto">—</span></div>
+      <div class="refer-info-item"><span class="refer-info-key">Fecha Contrato</span><span class="refer-info-val" id="rm-fecha">—</span></div>
+      <div class="refer-info-item full"><span class="refer-info-key">Patrones Detectados</span><span class="refer-info-val" id="rm-patrones">—</span></div>
+    </div>
+    <span class="refer-dest-label">Seleccionar entidad destino</span>
+    <select class="refer-select" id="rm-dest">
+      <option value="PGR">PGR — Procuraduría General de la República</option>
+      <option value="TSC">TSC — Tribunal Superior de Cuentas</option>
+      <option value="MP">MP-UFECIC — Ministerio Público / UFECIC</option>
+      <option value="ONCAE">ONCAE — Oficina Normativa de Contratación</option>
+    </select>
+    <div class="refer-modal-actions">
+      <button class="btn-cancel" onclick="closeReferModal()">Cancelar</button>
+      <button class="btn-save" onclick="generarMemorandum()">📄 Generar Memorándum</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
 
@@ -4102,6 +4146,7 @@ function render() {
       <td><span class="status-badge ${stc}">${a.status || 'Pendiente'}</span></td>
       <td>
         <div class="action-group" onclick="event.stopPropagation()">
+          ${(sc === 'critica' || sc === 'alta') ? `<button class="btn-action btn-refer" onclick="openReferModal(${a.id})" title="Generar memorándum de referencia">📋 Referir</button>` : ''}
           <button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta">📤 Enviar</button>
           <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Borrar">🗑️</button>
         </div>
@@ -6249,6 +6294,234 @@ function exportSectorSummaryPDF() {
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
   pw.document.write(html);
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ════════════════════════════════════════════════════════════
+// P3 — REFERIR MODAL + MEMORÁNDUM PDF
+// ════════════════════════════════════════════════════════════
+
+let _referModalData = null;
+
+function _parseDescFieldR(desc, key) {
+  const m = (desc || '').match(new RegExp(key + ':\\s*([^\\n]+)'));
+  return m ? m[1].trim() : null;
+}
+
+function openReferModal(id) {
+  const a = (window.allAlerts || []).find(x => x.id === id);
+  if (!a) return;
+  const desc = a.description || '';
+  const proveedor = _parseDescFieldR(desc, 'Proveedor') || a.proveedor_nombre || '—';
+  const entidad   = _parseDescFieldR(desc, 'Entidad compradora') || a.entity_name || '—';
+  const patrones  = _parseDescFieldR(desc, 'Patrones') || _parseDescFieldR(desc, 'Patrón') || '—';
+  const fmtL = n => n != null ? 'L ' + Number(n).toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
+  _referModalData = {
+    alertId:  a.alert_id || ('#' + a.id),
+    entity:   entidad,
+    vendor:   proveedor,
+    severity: a.severity || '—',
+    monto:    fmtL(a.monto_contrato),
+    fecha:    a.fecha_contrato ? a.fecha_contrato.substring(0,10) : (a.created_at ? a.created_at.substring(0,10) : '—'),
+    patrones: patrones,
+    description: desc
+  };
+  _populateReferModal();
+  document.getElementById('referModalOverlay').classList.add('open');
+}
+
+function openReferModalEntity() {
+  const entity = window._epCurrentEntity;
+  const data   = window._epData;
+  if (!entity || !data) { alert('Cargue el panel de entidad primero.'); return; }
+  const fmtL = n => n != null ? 'L ' + Number(n).toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
+  const topAlert = (data.alerts || [])
+    .filter(a => { const s = normSev(a.severity); return s === 'critica' || s === 'alta'; })
+    .sort((a,b) => (Number(b.monto_contrato)||0) - (Number(a.monto_contrato)||0))[0];
+  const totalMonto = (data.alerts || []).reduce((s,a) => s + (Number(a.monto_contrato)||0), 0);
+  const critica = (data.alerts || []).filter(a => normSev(a.severity) === 'critica').length;
+  const alta    = (data.alerts || []).filter(a => normSev(a.severity) === 'alta').length;
+  const patSet  = new Set();
+  (data.alerts || []).forEach(a => {
+    const p = _parseDescFieldR(a.description||'','Patrones') || _parseDescFieldR(a.description||'','Patrón');
+    if (p) p.split(',').forEach(x => patSet.add(x.trim()));
+  });
+  const patrones = patSet.size > 0 ? [...patSet].slice(0,5).join(', ') : '—';
+  _referModalData = {
+    alertId:  topAlert ? (topAlert.alert_id || ('#' + topAlert.id)) : '—',
+    entity:   entity,
+    vendor:   topAlert ? (_parseDescFieldR(topAlert.description||'','Proveedor') || topAlert.proveedor_nombre || '—') : '— (múltiples)',
+    severity: `${critica} Crítica(s), ${alta} Alta(s) de ${(data.alerts||[]).length} contratos`,
+    monto:    fmtL(totalMonto),
+    fecha:    new Date().toISOString().substring(0,10),
+    patrones: patrones,
+    description: '',
+    isEntity: true,
+    entityTotal: (data.alerts||[]).length,
+    critica, alta
+  };
+  _populateReferModal();
+  document.getElementById('referModalOverlay').classList.add('open');
+}
+
+function _populateReferModal() {
+  const d = _referModalData;
+  if (!d) return;
+  document.getElementById('rm-id').textContent      = d.alertId;
+  document.getElementById('rm-sev').textContent     = d.severity;
+  document.getElementById('rm-entity').textContent  = d.entity;
+  document.getElementById('rm-vendor').textContent  = d.vendor;
+  document.getElementById('rm-monto').textContent   = d.monto;
+  document.getElementById('rm-fecha').textContent   = d.fecha;
+  document.getElementById('rm-patrones').textContent = d.patrones;
+}
+
+function closeReferModal() {
+  document.getElementById('referModalOverlay').classList.remove('open');
+}
+
+function generarMemorandum() {
+  const destino = document.getElementById('rm-dest').value;
+  const d = _referModalData;
+  if (!d) return;
+  closeReferModal();
+
+  const today     = new Date();
+  const yyyymmdd  = today.toISOString().substring(0,10).replace(/-/g,'');
+  const fechaLarga = today.toLocaleDateString('es-HN', {year:'numeric',month:'long',day:'numeric'});
+
+  const ENTIDADES = {
+    PGR:   { nombre:'PROCURADURÍA GENERAL DE LA REPÚBLICA', unidad:'Unidad de Integridad y Transparencia Pública', director:'Procurador(a) General de la República', abrev:'PGR', color:'#1a3a6b' },
+    TSC:   { nombre:'TRIBUNAL SUPERIOR DE CUENTAS', unidad:'Dirección de Auditoría Gubernamental', director:'Magistrado Presidente del TSC', abrev:'TSC', color:'#1a5c3a' },
+    MP:    { nombre:'MINISTERIO PÚBLICO', unidad:'Unidad Fiscal Especial Contra la Impunidad de la Corrupción (UFECIC-MP)', director:'Fiscal General de la República', abrev:'MP', color:'#6b1a1a' },
+    ONCAE: { nombre:'OFICINA NORMATIVA DE CONTRATACIÓN Y ADQUISICIONES DEL ESTADO', unidad:'Dirección de Fiscalización y Control de Compras Públicas', director:'Director(a) General de ONCAE', abrev:'ONCAE', color:'#4a1a6b' }
+  };
+  const ent = ENTIDADES[destino] || ENTIDADES.PGR;
+  const folio = `SEN-${ent.abrev}-${yyyymmdd}-001`;
+
+  const sevLow = (d.severity || '').toLowerCase();
+  const sevColor = sevLow.includes('cr') ? '#c0392b' : sevLow.includes('alt') ? '#d35400' : '#e67e22';
+
+  const patronTags = d.patrones !== '—'
+    ? d.patrones.split(',').map(p => `<span style="display:inline-block;background:${ent.color}18;border:1px solid ${ent.color}40;color:${ent.color};padding:2px 9px;border-radius:3px;font-size:8.5pt;margin:2px;">${p.trim()}</span>`).join('')
+    : '<span style="color:#888;font-size:10pt;">Sin patrones específicos registrados</span>';
+
+  const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Memorándum ${folio}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Arial,sans-serif;font-size:11pt;color:#1a1a2e;background:#fff;padding:40px 52px}
+  .hdr{border-bottom:3px solid ${ent.color};padding-bottom:16px;margin-bottom:22px}
+  .esc{font-size:28px;text-align:center;margin-bottom:4px}
+  .rep{text-align:center;font-size:8pt;letter-spacing:.15em;color:#666;text-transform:uppercase;margin-bottom:2px}
+  .inst{text-align:center;font-size:13pt;font-weight:bold;color:${ent.color};text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+  .uni{text-align:center;font-size:8.5pt;color:#777;margin-bottom:12px}
+  .folio-row{display:flex;justify-content:space-between;align-items:flex-start;margin-top:10px}
+  .doc-type{font-size:14pt;font-weight:bold;color:${ent.color};text-transform:uppercase;letter-spacing:.08em}
+  .badge-sys{display:inline-block;background:${ent.color};color:#fff;font-size:7.5pt;padding:2px 9px;border-radius:3px;margin-top:5px}
+  .meta{text-align:right;font-size:9pt;color:#555;line-height:1.7}
+  .meta-folio{font-weight:bold;color:${ent.color};font-size:10pt}
+  .sec{margin-bottom:22px}
+  .sec-t{font-size:10pt;font-weight:bold;color:${ent.color};text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid ${ent.color}30;padding-bottom:4px;margin-bottom:12px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px 26px}
+  .fld{display:flex;flex-direction:column;gap:2px}
+  .fld.full{grid-column:1/-1}
+  .fk{font-size:7.5pt;color:#999;text-transform:uppercase;letter-spacing:.06em}
+  .fv{font-size:10.5pt;color:#1a1a2e;font-weight:500}
+  .sev{display:inline-block;padding:2px 11px;border-radius:3px;font-size:9pt;font-weight:bold;color:#fff;background:${sevColor}}
+  .hlist{list-style:none;padding:0}
+  .hlist li{padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:10pt;display:flex;align-items:flex-start;gap:9px}
+  .hlist li:last-child{border-bottom:none}
+  .hi{color:${ent.color};font-weight:bold;flex-shrink:0}
+  .recom{background:#f8f9fa;border-left:4px solid ${ent.color};padding:14px 18px;border-radius:0 6px 6px 0}
+  .recom p{font-size:10.5pt;color:#1a1a2e;line-height:1.65}
+  .firmas{margin-top:44px;display:flex;justify-content:space-between;align-items:flex-end}
+  .firma{text-align:center;width:220px}
+  .flinea{border-top:1px solid #444;padding-top:6px;font-size:9pt;font-weight:bold}
+  .fcargo{font-size:8pt;color:#777;margin-top:2px}
+  .footer{margin-top:28px;border-top:2px solid ${ent.color};padding-top:8px;display:flex;justify-content:space-between}
+  .ftxt{font-size:7.5pt;color:#aaa}
+  .fconf{font-size:7.5pt;color:${ent.color};font-weight:bold}
+  @media print{body{padding:20px 30px}.noprint{display:none}}
+</style>
+</head>
+<body>
+<button class="noprint" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:${ent.color};color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;z-index:100;">🖨️ Imprimir / PDF</button>
+
+<div class="hdr">
+  <div class="esc">🇭🇳</div>
+  <div class="rep">República de Honduras</div>
+  <div class="inst">${ent.nombre}</div>
+  <div class="uni">${ent.unidad}</div>
+  <div class="folio-row">
+    <div>
+      <div class="doc-type">Memorándum de Referencia</div>
+      <div><span class="badge-sys">SISTEMA SENTINEL · ANÁLISIS AUTOMATIZADO</span></div>
+    </div>
+    <div class="meta">
+      <div class="meta-folio">${folio}</div>
+      <div>Fecha: ${fechaLarga}</div>
+      <div>Clasificación: <strong>RESERVADO</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-t">I. Datos del Contrato Monitoreado</div>
+  <div class="grid">
+    <div class="fld"><span class="fk">ID / Folio Contrato</span><span class="fv">${d.alertId}</span></div>
+    <div class="fld"><span class="fk">Nivel de Riesgo</span><span class="fv"><span class="sev">${d.severity}</span></span></div>
+    <div class="fld full"><span class="fk">Entidad Contratante</span><span class="fv">${d.entity}</span></div>
+    <div class="fld full"><span class="fk">Proveedor / Contratista</span><span class="fv">${d.vendor}</span></div>
+    <div class="fld"><span class="fk">Monto Contratado</span><span class="fv">${d.monto}</span></div>
+    <div class="fld"><span class="fk">Fecha de Contrato</span><span class="fv">${d.fecha}</span></div>
+    <div class="fld full"><span class="fk">Fuente de Datos</span><span class="fv">SEFIN — Sistema de Administración Financiera (EDCA / SIAFI)</span></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-t">II. Hallazgos del Sistema Sentinel</div>
+  <div style="margin-bottom:12px"><strong>Patrones de riesgo detectados:</strong><div style="margin-top:6px">${patronTags}</div></div>
+  <ul class="hlist">
+    <li><span class="hi">►</span><span>El contrato ha sido señalado con nivel de riesgo <strong>${d.severity}</strong> por el algoritmo de análisis del Sistema Sentinel, basado en criterios de severidad, monto y patrones de comportamiento irregular en contratación pública.</span></li>
+    <li><span class="hi">►</span><span>Los datos provienen del sistema SEFIN/EDCA. El universo de monitoreo comprende 40,175 registros de contratos públicos. El análisis es automatizado y debe complementarse con investigación documental.</span></li>
+    <li><span class="hi">►</span><span>Sentinel detectó patrones estadísticamente anómalos en esta contratación que justifican revisión formal por parte de la autoridad competente.</span></li>
+  </ul>
+</div>
+
+<div class="sec">
+  <div class="sec-t">III. Recomendación</div>
+  <div class="recom">
+    <p>El Sistema <strong>SENTINEL</strong> recomienda a la <strong>${ent.nombre}</strong> iniciar revisión formal del contrato identificado bajo el folio <strong>${d.alertId}</strong>, suscrito entre la entidad <strong>${d.entity}</strong> y el proveedor <strong>${d.vendor}</strong>, en virtud de los patrones de riesgo detectados por análisis automatizado de datos de contratación pública de Honduras.<br><br>
+    Se sugiere solicitar la documentación contractual completa, verificar el cumplimiento de los procedimientos de licitación aplicables conforme a la <em>Ley de Contratación del Estado</em> y evaluar la trazabilidad del gasto ejecutado, con especial atención a los patrones identificados por el sistema.</p>
+  </div>
+</div>
+
+<div class="firmas">
+  <div class="firma">
+    <div class="flinea">Sistema Sentinel-AI</div>
+    <div class="fcargo">Análisis Automatizado de Contratación Pública</div>
+  </div>
+  <div class="firma">
+    <div class="flinea">Analista de Integridad</div>
+    <div class="fcargo">The Praxis Group · Honduras</div>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="ftxt">Generado: ${new Date().toLocaleString('es-HN')} · Folio: ${folio} · Sentinel-AI Honduras</span>
+  <span class="fconf">DOCUMENTO RESERVADO — USO OFICIAL</span>
+</div>
+</body>
+</html>`;
+
+  const pw = window.open('', '_blank', 'width=1020,height=870');
+  if (!pw) { alert('Por favor permita ventanas emergentes para generar el memorándum.'); return; }
+  pw.document.write(htmlContent);
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }

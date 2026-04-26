@@ -1835,7 +1835,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
   <div class="nav">
     <div class="nav-section">
-      <div class="nav-section-label">Monitor</div>
+      <div class="nav-section-label">Monitoreo</div>
       <button class="nav-item" id="nav-ejecutiva" onclick="showVistaEjecutiva()">
         <span class="nav-icon">📊</span> Vista Ejecutiva
       </button>
@@ -1870,7 +1870,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-chip" style="background:rgba(255,61,87,0.15);color:var(--red);border-color:rgba(255,61,87,0.3);">2</span>
       </button>
       <button class="nav-item" id="nav-timeline" onclick="showTimelinePanel()">
-        <span class="nav-icon">📅</span> Timeline
+        <span class="nav-icon">📅</span> Cronología
       </button>
       <button class="nav-item" id="nav-news" onclick="showNewsPanel()">
         <span class="nav-icon">📰</span> Noticias
@@ -1963,7 +1963,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="ticker-item">Portal Único IAIP <span class="up">↑ 2,456,463 documentos indexados</span></span>
         <span class="ticker-item">ENEE — Pérdidas L46,000M · Caso #2025-0391 <span class="up">↑ Investigación activa</span></span>
         <span class="ticker-item">CPI 2025: Honduras 22/100 — Posición 157/182 · Pérdidas estimadas $720M–$1,000M+ anuales</span>
-        <span class="ticker-item">Score promedio proveedores: <span>62.4/100</span></span>
+        <span class="ticker-item">Puntaje promedio proveedores: <span>62.4/100</span></span>
         <span class="ticker-item">HonduCompras <span class="up">↑ 3 nuevas anomalías</span></span>
         <span class="ticker-item">SIAFI <span>— Monitoreo activo</span></span>
         <span class="ticker-item">TSC Auditores <span class="down">✓ Sin irregularidades</span></span>
@@ -2079,14 +2079,14 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
     </div>
     <!-- P4 — Score de Riesgo Institucional (moved above P5 for visibility) -->
-    <div class="exec-section-title">🏛️ Score de Riesgo Institucional — Top 10 Entidades</div>
+    <div class="exec-section-title">🏛️ Puntaje de Riesgo Institucional — Top 10 Entidades</div>
     <div class="table-container" style="margin-bottom:24px;">
       <table class="alert-table" id="execRiskScoreTable">
         <thead>
           <tr>
             <th style="width:32px;">#</th>
             <th>Entidad</th>
-            <th style="width:160px;">Score de Riesgo</th>
+            <th style="width:160px;">Puntaje de Riesgo</th>
             <th style="text-align:center;width:60px;">Críticos</th>
             <th style="text-align:center;width:60px;">Altos</th>
             <th style="text-align:center;width:70px;">Patrones</th>
@@ -2100,7 +2100,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     </div>
 
     <!-- P5 — Señales detectadas antes del escándalo + drilldown -->
-    <div class="exec-section-title">⚡ Señales Detectadas Antes del Escándalo — Contratos de Compras en BD</div>
+    <div class="exec-section-title" style="color:var(--electric);font-weight:900;font-size:12px;text-shadow:0 0 14px rgba(0,200,255,0.5);letter-spacing:2.2px;">⚡ Señales Detectadas Antes del Escándalo — Contratos de Compras en BD</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
 
       <!-- SEDESOL -->
@@ -3103,7 +3103,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
     <!-- Score de Riesgo -->
     <div class="fuente-chart-card" style="margin-bottom:20px;">
-      <div class="fuente-recent-title">📊 Score de Riesgo por Proveedor — Top 10</div>
+      <div class="fuente-recent-title">📊 Puntaje de Riesgo por Proveedor — Top 10</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Análisis conductual multifactor (escala 0–100)</div>
       <div class="fuente-recent-list" id="p4-risk-list"></div>
     </div>
@@ -3466,7 +3466,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div>
-        <div class="fuente-title">📅 <span>Timeline de Alertas</span></div>
+        <div class="fuente-title">📅 <span>Cronología de Alertas</span></div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
           Distribución cronológica de contratos monitoreados — por mes y severidad
         </div>
@@ -6695,6 +6695,55 @@ function generarCasosPDF() {
   <div style="font-size:9px;color:#aaa;font-style:italic;">Fuentes: ${esc(c.fuentes)}</div>
 </div>`).join('');
 
+
+  // ── P4: Puntaje de Riesgo Institucional ──
+  const _normSevP4 = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'');
+  const _p4Map = {};
+  _alerts.forEach(a => {
+    const k = a.entity_name || '—';
+    if (!_p4Map[k]) _p4Map[k] = { critica:0, alta:0, media:0, baja:0, monto:0, patterns:new Set(), total:0 };
+    const sv = _normSevP4(a.severity);
+    if (_p4Map[k][sv] !== undefined) _p4Map[k][sv]++;
+    _p4Map[k].total++;
+    _p4Map[k].monto += parseFloat(a.monto_contrato)||0;
+    const pats = Array.isArray(a.patterns) ? a.patterns : (a.patterns ? [a.patterns] : []);
+    pats.forEach(p => _p4Map[k].patterns.add(String(p)));
+  });
+  const _p4Arr = Object.entries(_p4Map).map(([name, d]) => {
+    const sevRaw = (d.critica * 3 + d.alta * 2 + d.media * 0.5) / (d.total || 1);
+    return { name, ...d, patCount: d.patterns.size, sevRaw };
+  }).filter(e => e.critica + e.alta > 0);
+  const _p4MaxSev   = Math.max(..._p4Arr.map(e => e.sevRaw), 1);
+  const _p4MaxMonto = Math.max(..._p4Arr.map(e => e.monto), 1);
+  const _p4MaxPat   = Math.max(..._p4Arr.map(e => e.patCount), 1);
+  _p4Arr.forEach(e => {
+    e.score = Math.round((e.sevRaw/_p4MaxSev)*50 + (e.monto/_p4MaxMonto)*30 + (e.patCount/_p4MaxPat)*20);
+  });
+  const _p4Top10 = _p4Arr.sort((a,b) => b.score - a.score).slice(0,10);
+  const _p4ScoreColor = s => s >= 70 ? '#ff3d57' : s >= 40 ? '#ffab00' : '#2563eb';
+  const p4Rows = _p4Top10.length
+    ? _p4Top10.map((e, i) => {
+        const barW = e.score + '%';
+        const barC = _p4ScoreColor(e.score);
+        return `<tr${i%2===1?' style="background:rgba(0,0,0,0.03)"':''}>
+          <td style="padding:5px 8px;font-size:10px;color:#888;font-weight:700;">${i+1}</td>
+          <td style="padding:5px 8px;font-size:10.5px;">${esc(e.name.substring(0,45))}</td>
+          <td style="padding:5px 8px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="flex:1;height:7px;background:#e2e6ef;border-radius:4px;overflow:hidden;">
+                <div style="width:${barW};height:100%;background:${barC};border-radius:4px;"></div>
+              </div>
+              <span style="font-size:10px;font-weight:700;color:${barC};width:28px;text-align:right;">${e.score}</span>
+            </div>
+          </td>
+          <td style="padding:5px 8px;text-align:center;color:#ff3d57;font-weight:700;font-size:11px;">${e.critica}</td>
+          <td style="padding:5px 8px;text-align:center;color:#ffab00;font-weight:700;font-size:11px;">${e.alta}</td>
+          <td style="padding:5px 8px;text-align:center;font-size:10px;color:#555;">${e.patCount}</td>
+          <td style="padding:5px 8px;text-align:right;font-size:10px;color:#ff3d57;font-weight:600;">${esc(fmtLP(e.monto))}</td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="7" style="padding:10px;color:#888;font-style:italic;">Sin datos suficientes.</td></tr>';
+
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <title>Sentinel-AI — Casos Activos — ${fechaStr}</title>
 <style>
@@ -6948,6 +6997,26 @@ function generarEjecutivaPDF() {
     <tbody>${provRows}</tbody></table>
   </div>
 </div>
+
+<!-- P4 — Puntaje de Riesgo Institucional -->
+<div class="panel" style="margin-bottom:20px;">
+  <div class="panel-title">🏛️ Puntaje de Riesgo Institucional — Top 10 Entidades</div>
+  <table>
+    <colgroup>
+      <col style="width:5%"><col style="width:38%"><col style="width:18%">
+      <col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:15%">
+    </colgroup>
+    <thead><tr>
+      <th>#</th><th>Entidad</th><th>Puntaje</th>
+      <th style="text-align:center;">Críticos</th>
+      <th style="text-align:center;">Altos</th>
+      <th style="text-align:center;">Patrones</th>
+      <th style="text-align:right;">Monto Expuesto</th>
+    </tr></thead>
+    <tbody>${p4Rows}</tbody>
+  </table>
+</div>
+
 
 <!-- Sentinel lo vio primero -->
 <div class="sentinel-box">
@@ -7841,7 +7910,7 @@ function renderTimelineDrilldown(ym, sevFilter) {
 // ── Exportar drilldown ──
 function exportTlCSV() {
   if (!_tlDrilldownData || _tlDrilldownData.length === 0) return;
-  const title = document.getElementById('tl-drilldown-title').textContent || 'Timeline';
+  const title = document.getElementById('tl-drilldown-title').textContent || 'Cronología';
   const headers = ['Entidad','Proveedor','Severidad','Tipo Alerta','Monto Contrato (L)','Fecha'];
   const rows = _tlDrilldownData.map(a => [
     a.entity_name || '',
@@ -7907,7 +7976,7 @@ function exportTlPDF() {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sentinel-AI Reporte Timeline ${dateTag}</title>
+<title>Sentinel-AI Reporte Cronológico ${dateTag}</title>
 <style>
   @page { size: A4 landscape; margin: 1.4cm 1cm 1.8cm 1cm; }
   @media print {
@@ -7940,7 +8009,7 @@ function exportTlPDF() {
 <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>SENTINEL-AI HONDURAS</h1>
-<h2>Reporte de Alertas — Timeline: ${esc(periodoStr)}</h2>
+<h2>Reporte de Alertas — Cronología: ${esc(periodoStr)}</h2>
 <p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Período: ${esc(periodoStr)} &nbsp;|&nbsp; Total registros: ${_tlDrilldownData.length.toLocaleString('es-HN')}</p>
 
 <table class="stbl" style="width:auto;margin-bottom:14px">
@@ -8053,7 +8122,7 @@ function exportTimelineSummaryPDF() {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sentinel-AI Timeline Resumen ${dateTag}</title>
+<title>Sentinel-AI Cronología Resumen ${dateTag}</title>
 <style>
   @page { size: A4 portrait; margin: 1.4cm 1.2cm 1.8cm 1.2cm; }
   @media print {
@@ -8086,7 +8155,7 @@ function exportTimelineSummaryPDF() {
 <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>SENTINEL-AI HONDURAS</h1>
-<h2>Timeline de Alertas — Resumen Mensual</h2>
+<h2>Cronología de Alertas — Resumen Mensual</h2>
 <p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Período: ${esc(periodStr)} &nbsp;|&nbsp; Filtro: ${esc(subtitleStr)}</p>
 
 <div class="stats-row">
@@ -9149,7 +9218,7 @@ function exportAnalyticsPDF(mode) {
 // Open entity/vendor panel from news — back button returns to news panel
 function showEntityFromTimeline(entityName) {
   entityPanelSource = 'timeline';
-  document.querySelector('#entityPanel .fuente-back').textContent = '← Volver a Timeline';
+  document.querySelector('#entityPanel .fuente-back').textContent = '← Volver a Cronología';
   showEntityPanel(entityName);
 }
 
@@ -9236,7 +9305,7 @@ function populatePhase4Detection() {
     <div class="fuente-list-item" style="border-left: 4px solid ${threat.severity === 'critical' ? '#e63946' : threat.severity === 'high' ? '#f77f00' : '#fcbf49'};">
       <div style="font-weight:600;color:#00c8ff;">${threat.vendor}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        🔴 Incidentes: ${threat.count} | Score de Riesgo: ${threat.risk_score.toFixed(0)}/100 | Severidad: <strong>${threat.severity === 'critical' ? 'CRÍTICA' : threat.severity === 'high' ? 'ALTA' : threat.severity.toUpperCase()}</strong>
+        🔴 Incidentes: ${threat.count} | Puntaje de Riesgo: ${threat.risk_score.toFixed(0)}/100 | Severidad: <strong>${threat.severity === 'critical' ? 'CRÍTICA' : threat.severity === 'high' ? 'ALTA' : threat.severity.toUpperCase()}</strong>
       </div>
       <div style="font-size:12px;color:var(--red);margin-top:4px;">
         Exceso Total: L ${(threat.totalExcess || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})}
@@ -9250,7 +9319,7 @@ function populatePhase4Detection() {
     <div class="fuente-list-item" style="border-left: 4px solid ${supplier.severity === 'critical' ? '#e63946' : supplier.severity === 'high' ? '#f77f00' : '#fcbf49'};">
       <div style="font-weight:600;color:#00c8ff;">${supplier.vendor}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        📊 Score de Riesgo: <strong>${supplier.risk_score.toFixed(0)}/100</strong> | Severidad: ${supplier.severity === 'critical' ? 'CRÍTICA' : supplier.severity === 'high' ? 'ALTA' : supplier.severity.toUpperCase()} | Contratos: ${supplier.total_contracts}
+        📊 Puntaje de Riesgo: <strong>${supplier.risk_score.toFixed(0)}/100</strong> | Severidad: ${supplier.severity === 'critical' ? 'CRÍTICA' : supplier.severity === 'high' ? 'ALTA' : supplier.severity.toUpperCase()} | Contratos: ${supplier.total_contracts}
       </div>
       <div style="font-size:11px;color:#aaa;margin-top:4px;">
         Sobrepagos: ${supplier.overpay_count} | Exceso: L ${(supplier.overpay_total || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})} | Entidades: ${supplier.entities_count}
@@ -9342,10 +9411,10 @@ function exportPhase4PDF() {
     <div class="stat-box"><div class="stat-val" style="color:#e67e22;">${criticalCount}</div><div class="stat-lbl">Proveedores Críticos</div></div>
   </div>
   <h2>⚡ Amenazas de Velocidad — Proveedores con Múltiples Sobrecostos</h2>
-  <table><thead><tr><th>#</th><th>Proveedor</th><th style="text-align:center;">Incidentes</th><th style="text-align:center;">Score/100</th><th>Severidad</th><th style="text-align:right;">Exceso Total</th></tr></thead>
+  <table><thead><tr><th>#</th><th>Proveedor</th><th style="text-align:center;">Incidentes</th><th style="text-align:center;">Puntaje/100</th><th>Severidad</th><th style="text-align:right;">Exceso Total</th></tr></thead>
   <tbody>${velocityRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin amenazas detectadas</td></tr>'}</tbody></table>
   <h2>📊 Score de Riesgo por Proveedor — Top 15</h2>
-  <table><thead><tr><th>#</th><th>Proveedor</th><th style="text-align:center;">Score/100</th><th>Severidad</th><th style="text-align:center;">Contratos</th><th style="text-align:right;">Exceso Total</th></tr></thead>
+  <table><thead><tr><th>#</th><th>Proveedor</th><th style="text-align:center;">Puntaje/100</th><th>Severidad</th><th style="text-align:center;">Contratos</th><th style="text-align:right;">Exceso Total</th></tr></thead>
   <tbody>${riskRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin datos</td></tr>'}</tbody></table>
   <h2>🚨 Anomalías Estadísticas — Desviación del Promedio por Entidad (Top 10)</h2>
   <table><thead><tr><th>#</th><th>ID Contrato</th><th>Proveedor</th><th>Entidad</th><th style="text-align:center;">Desviación</th><th style="text-align:center;">Sobrepago</th></tr></thead>
@@ -11905,7 +11974,7 @@ function renderEjecutiva() {
       </tr>`).join('')
     : '<tr class="state-row"><td colspan="4">Sin datos</td></tr>';
 
-  // ── P4: Score de Riesgo Institucional ──
+  // ── P4: Puntaje de Riesgo Institucional ──
   // Score = severidad ponderada (50%) + monto relativo (30%) + diversidad de patrones (20%)
   const entScoreMap = {};
   alerts.forEach(a => {

@@ -1988,7 +1988,7 @@ body::after {
         <div class="exec-card-note">▸ Supabase · SEFIN · OFAC · Engel</div>
       </div>
       <!-- Casos Activos card — clickeable → casosPanel -->
-      <div class="exec-card exec-card-casos" onclick="showCasosPanel()" title="Ver detalle completo de casos activos">
+      <div class="exec-card exec-card-casos" onclick="showCasosPanel('ejecutiva')" title="Ver detalle completo de casos activos">
         <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
           <span>Casos Activos</span>
           <span style="background:var(--red);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;" id="exec-casos-count">2</span>
@@ -3028,7 +3028,7 @@ body::after {
 
   <!-- CASOS ACTIVOS PANEL -->
   <div class="fuente-panel" id="casosPanel">
-    <button class="fuente-back" onclick="hideCasosPanel()">← Contratos</button>
+    <button class="fuente-back" id="casos-back-btn" onclick="hideCasosPanel()">← Contratos</button>
 
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
       <div>
@@ -5680,11 +5680,20 @@ function _closeAllFuentePanels() {
 
 // ════════════════════════════════════════════════════════════
 // CASOS ACTIVOS PANEL
+// source: 'contratos' (default) | 'ejecutiva'
 // ════════════════════════════════════════════════════════════
-function showCasosPanel() {
+let _casosPanelSource = 'contratos';
+
+function showCasosPanel(source) {
+  _casosPanelSource = source || 'contratos';
   _closeAllFuentePanels();
   document.getElementById('nav-casos').classList.add('active');
   document.getElementById('casosPanel').classList.add('open');
+  // Update back button label based on origin
+  const backBtn = document.getElementById('casos-back-btn');
+  if (backBtn) {
+    backBtn.textContent = _casosPanelSource === 'ejecutiva' ? '← Vista Ejecutiva' : '← Contratos';
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
   loadCasosMonitor();
 }
@@ -5692,9 +5701,13 @@ function showCasosPanel() {
 function hideCasosPanel() {
   document.getElementById('casosPanel').classList.remove('open');
   document.getElementById('nav-casos').classList.remove('active');
-  document.querySelector('.stats-grid').style.display = '';
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+  if (_casosPanelSource === 'ejecutiva') {
+    showVistaEjecutiva();
+  } else {
+    document.querySelector('.stats-grid').style.display = '';
+    document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+    document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+  }
 }
 
 // ════════════════════════════════════════════════════════════

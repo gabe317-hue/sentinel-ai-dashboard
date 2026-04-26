@@ -1451,9 +1451,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 }
 .sentinel-detected-header {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; text-transform: uppercase;
-  letter-spacing: 1.5px; color: var(--electric);
-  margin-bottom: 7px; display: flex; align-items: center; gap: 6px;
+  font-size: 12px; text-transform: uppercase; font-weight: 800;
+  letter-spacing: 1.8px; color: var(--electric);
+  margin-bottom: 9px; display: flex; align-items: center; gap: 6px;
+  text-shadow: 0 0 12px rgba(0,200,255,0.4);
 }
 .sentinel-detected-stats {
   display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 6px;
@@ -1468,10 +1469,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 .sentinel-det-stat span { color: var(--electric); font-weight: 700; }
 .sentinel-detected-note {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; color: var(--text-dim);
-  opacity: 0.7; letter-spacing: 0.03em;
+  font-size: 10.5px; color: var(--text);
+  opacity: 0.9; letter-spacing: 0.03em; line-height: 1.5;
 }
-.sentinel-detected-note strong { color: var(--amber); }
+.sentinel-detected-note strong { color: var(--amber); font-size: 12px; }
 
 /* ── VER MÁS / EXPANDABLE CASO ── */
 .caso-ver-mas-btn {
@@ -1939,7 +1940,8 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span id="liveClock">--:--:--</span>
         <span class="clock-tz">TGU</span>
       </div>
-      <button class="btn-report-header" id="btnReport" onclick="generateReport()">📄 Generar Reporte PDF</button>
+      <button class="btn-report-header" id="btnReportPareto" onclick="generateReport('pareto')" title="Top entidades que representan el 80% de contratos de riesgo">📄 Pareto</button>
+      <button class="btn-report-header" id="btnReportTodo" onclick="generateReport('todo')" title="Reporte completo — todos los contratos filtrados" style="margin-left:4px;">📄 Todo</button>
       <button class="btn-new-alert-header" onclick="openModal()">➕ Nueva Alerta</button>
       <button class="btn-new-alert-header" onclick="toggleModoDemo()" style="background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.4);color:#a855f7;" title="Vista presentación fullscreen">▶ Presentar</button>
     </div>
@@ -1999,7 +2001,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="exec-subtitle" id="execSubtitle">Cargando datos...</div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;margin-top:4px;">
-        <button id="exec-print-btn" onclick="imprimirVistaEjecutiva()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;">🖨️ Imprimir</button>
         <button onclick="generarEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;">📄 Exportar PDF</button>
       </div>
     </div>
@@ -2077,6 +2078,27 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="exec-card-note" style="margin-top:10px;">▸ Clic para ver detalle completo →</div>
       </div>
     </div>
+    <!-- P4 — Score de Riesgo Institucional (moved above P5 for visibility) -->
+    <div class="exec-section-title">🏛️ Score de Riesgo Institucional — Top 10 Entidades</div>
+    <div class="table-container" style="margin-bottom:24px;">
+      <table class="alert-table" id="execRiskScoreTable">
+        <thead>
+          <tr>
+            <th style="width:32px;">#</th>
+            <th>Entidad</th>
+            <th style="width:160px;">Score de Riesgo</th>
+            <th style="text-align:center;width:60px;">Críticos</th>
+            <th style="text-align:center;width:60px;">Altos</th>
+            <th style="text-align:center;width:70px;">Patrones</th>
+            <th style="text-align:right;width:130px;">Monto en Riesgo</th>
+          </tr>
+        </thead>
+        <tbody id="exec-risk-score-body">
+          <tr class="state-row"><td colspan="7">Cargando scores...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <!-- P5 — Señales detectadas antes del escándalo + drilldown -->
     <div class="exec-section-title">⚡ Señales Detectadas Antes del Escándalo — Contratos de Compras en BD</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
@@ -2137,27 +2159,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         </button>
       </div>
 
-    </div>
-
-    <!-- P4 — Score de Riesgo Institucional -->
-    <div class="exec-section-title">🏛️ Score de Riesgo Institucional — Top 10 Entidades</div>
-    <div class="table-container" style="margin-bottom:24px;">
-      <table class="alert-table" id="execRiskScoreTable">
-        <thead>
-          <tr>
-            <th style="width:32px;">#</th>
-            <th>Entidad</th>
-            <th style="width:160px;">Score de Riesgo</th>
-            <th style="text-align:center;width:60px;">Críticos</th>
-            <th style="text-align:center;width:60px;">Altos</th>
-            <th style="text-align:center;width:70px;">Patrones</th>
-            <th style="text-align:right;width:130px;">Monto en Riesgo</th>
-          </tr>
-        </thead>
-        <tbody id="exec-risk-score-body">
-          <tr class="state-row"><td colspan="7">Cargando scores...</td></tr>
-        </tbody>
-      </table>
     </div>
 
     <!-- Top 5 critical contracts table -->
@@ -4203,18 +4204,34 @@ function setPage(n) {
 // ════════════════════════════════════════════════════════════
 // GENERAR REPORTE — PDF print window of current filtered alerts
 // ════════════════════════════════════════════════════════════
-async function generateReport() {
-  const btn = document.getElementById('btnReport');
-  btn.disabled = true;
-  btn.textContent = '⏳ Generando...';
+async function generateReport(mode = 'todo') {
+  const btnP = document.getElementById('btnReportPareto');
+  const btnT = document.getElementById('btnReportTodo');
+  if (btnP) { btnP.disabled = true; btnP.textContent = '⏳...'; }
+  if (btnT) { btnT.disabled = true; btnT.textContent = '⏳...'; }
 
   try {
-    // ── 1. Collect currently-filtered alerts (all pages) ──
-    let filtered = activeFilter === 'all'
-      ? [...allAlerts]
-      : allAlerts.filter(a => normSev(a.severity) === activeFilter);
+    // ── Helpers: parse description field ──
+    const parseD = (desc, key) => {
+      const m = (desc || '').match(new RegExp(key + ':\\s*([^\\n]+)'));
+      return m ? m[1].trim() : null;
+    };
+    const getProveedor = a => parseD(a.description, 'Proveedor') || a.proveedor_nombre || '—';
+    const getEntidad   = a => parseD(a.description, 'Entidad compradora') || a.entity_name || '—';
+
+    // ── 1. Collect alerts from window.allAlerts (always fresh) ──
+    let filtered = (window.allAlerts || []);
+    if (activeFilter !== 'all') {
+      filtered = filtered.filter(a => normSev(a.severity) === activeFilter);
+    }
     if (activePattern !== 'all') {
       filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
+    }
+    if (searchQuery && searchQuery.length > 1) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(a =>
+        (getProveedor(a) + getEntidad(a) + (a.ocid||'')).toLowerCase().includes(q)
+      );
     }
 
     const now      = new Date();
@@ -4226,7 +4243,7 @@ async function generateReport() {
       return `${sev} · ${pat}`;
     })();
 
-    // ── 2. Counts + totals (ALL filtered alerts, including Baja — for summary row) ──
+    // ── 2. Counts + totals ──
     const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
     let totalMonto = 0;
     for (const a of filtered) {
@@ -4239,20 +4256,40 @@ async function generateReport() {
     const pct   = (n, total) => total > 0 ? (n/total*100).toFixed(1)+'%' : '0%';
     const dateTag = now.toISOString().slice(0,10);
 
-    // ── 3. Reportable alerts = Crítica + Alta + Media only (Baja excluded from detail) ──
+    // ── 3. Reportable = Crítica + Alta + Media ──
     const reportable = filtered.filter(a => ['Crítica','Alta','Media'].includes(a.severity));
 
-    // ── 4. Entity summary (rolled up from reportable, sorted by monto desc) ──
+    // ── 4. Entity map (by count, for Pareto) ──
     const entityMap = {};
     for (const a of reportable) {
-      const ent = a.entity_name || 'Sin Entidad';
+      const ent = getEntidad(a);
       if (!entityMap[ent]) entityMap[ent] = { count:0, monto:0, critica:0, alta:0, media:0 };
       entityMap[ent].count++;
       entityMap[ent].monto += parseFloat(a.monto_contrato || 0);
-      const sl = (a.severity || 'Media').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      const sl = normSev(a.severity || 'Media');
       if (entityMap[ent][sl] !== undefined) entityMap[ent][sl]++;
     }
-    const entityList = Object.entries(entityMap).sort((a,b) => b[1].monto - a[1].monto);
+
+    // Sort by count descending (Pareto logic)
+    let entityList = Object.entries(entityMap).sort((a, b) => b[1].count - a[1].count);
+
+    // ── 5. Pareto filter: keep entities that account for ≥80% of reportable count ──
+    let paretoEntities = null;
+    let modeLabel = 'Todo';
+    if (mode === 'pareto') {
+      modeLabel = 'Pareto 80/20';
+      const total80 = reportable.length;
+      let acc = 0;
+      const paretoSet = new Set();
+      for (const [ent, d] of entityList) {
+        paretoSet.add(ent);
+        acc += d.count;
+        if (acc / total80 >= 0.8) break;
+      }
+      paretoEntities = paretoSet;
+      entityList = entityList.filter(([ent]) => paretoEntities.has(ent));
+    }
+
     const entityRowsHtml = entityList.map(([ent, d], i) => `
       <tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
         <td>${esc(ent)}</td>
@@ -4263,17 +4300,21 @@ async function generateReport() {
         <td style="text-align:center;color:#D68910">${d.media||''}</td>
       </tr>`).join('');
 
-    // ── 5. Alert detail rows — Crítica/Alta/Media only, capped at 5000 ──
+    // ── 6. Detail rows — filtered by Pareto if applicable ──
     const CAP = 5000;
     const sevColor = { 'Crítica':'#C0392B', 'Alta':'#C05000', 'Media':'#D68910' };
-    const alertRowsHtml = reportable.slice(0, CAP).map((a, i) => {
+    const detailAlerts = paretoEntities
+      ? reportable.filter(a => paretoEntities.has(getEntidad(a)))
+      : reportable;
+
+    const alertRowsHtml = detailAlerts.slice(0, CAP).map((a, i) => {
       const sev   = a.severity || 'Media';
       const pats  = (a.patterns||'').split(',').filter(Boolean).map(p => PATTERN_LABELS[p]||p).join(' + ');
       const fecha = a.fecha_contrato ? new Date(a.fecha_contrato).toLocaleDateString('es-HN') : '—';
       return `<tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
         <td style="text-align:center">${i+1}</td>
-        <td>${esc(a.proveedor_nombre)}</td>
-        <td>${esc(a.entity_name)}</td>
+        <td>${esc(getProveedor(a))}</td>
+        <td>${esc(getEntidad(a))}</td>
         <td style="color:${sevColor[sev]||'#555'};font-weight:bold;text-align:center">${esc(sev)}</td>
         <td style="text-align:right">${esc(fmtL(a.monto_contrato))}</td>
         <td>${esc(pats)}</td>
@@ -4281,16 +4322,20 @@ async function generateReport() {
       </tr>`;
     }).join('');
 
-    const capNote = reportable.length > CAP
-      ? `<p style="color:#C0392B;font-size:8pt;font-style:italic">&#9888; Reporte limitado a los primeros ${CAP.toLocaleString()} de ${reportable.length.toLocaleString()} registros.</p>`
+    const capNote = detailAlerts.length > CAP
+      ? `<p style="color:#C0392B;font-size:8pt;font-style:italic">&#9888; Reporte limitado a los primeros ${CAP.toLocaleString()} de ${detailAlerts.length.toLocaleString()} registros.</p>`
       : '';
 
-    // ── 5. Assemble HTML for PDF print window ──
+    const paretoNote = mode === 'pareto'
+      ? `<p style="color:#1A3A6B;font-size:8pt;font-style:italic;margin-bottom:6px">&#9679; Análisis Pareto: ${entityList.length} entidades representan ≥80% de ${reportable.length.toLocaleString('es-HN')} alertas reportables.</p>`
+      : '';
+
+    // ── 7. Assemble HTML ──
     const html = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sentinel-AI Reporte ${dateTag}</title>
+<title>Sentinel-AI Reporte ${modeLabel} ${dateTag}</title>
 <style>
   @page { size: A4 landscape; margin: 1.4cm 1cm 1.8cm 1cm; }
   @media print {
@@ -4322,10 +4367,9 @@ async function generateReport() {
 
 <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
-<!-- Page 1: Cover + global summary + entity summary -->
 <h1>SENTINEL-AI HONDURAS</h1>
-<h2>Informe de Alertas de Fraude en Contrataci&oacute;n P&uacute;blica</h2>
-<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Filtro: ${esc(filterLabel)}</p>
+<h2>Informe de Alertas &mdash; ${modeLabel} &nbsp;|&nbsp; Contrataci&oacute;n P&uacute;blica</h2>
+<p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Filtro: ${esc(filterLabel)} &nbsp;|&nbsp; Total base: ${(window.allAlerts||[]).length.toLocaleString('es-HN')} contratos</p>
 
 <table class="stbl" style="width:auto;margin-bottom:14px">
   <tr>
@@ -4349,6 +4393,7 @@ async function generateReport() {
   </tr>
 </table>
 
+${paretoNote}
 <p class="sec">Resumen por Entidad Gubernamental <span style="font-weight:normal;font-size:8pt;color:#7F8C8D">(alertas Cr&iacute;ticas, Altas y Medias)</span></p>
 <table>
   <colgroup>
@@ -4368,11 +4413,9 @@ async function generateReport() {
   <tbody>${entityRowsHtml}</tbody>
 </table>
 
-<!-- Page break before detail table -->
 <div class="page-break"></div>
 
-<!-- Page 2+: Alert detail -->
-<p class="sec">Detalle de Alertas (Cr&iacute;ticas, Altas y Medias) &mdash; ${reportable.length.toLocaleString('es-HN')} registros</p>
+<p class="sec">Detalle de Alertas (Cr&iacute;ticas, Altas y Medias) &mdash; ${detailAlerts.length.toLocaleString('es-HN')} registros</p>
 ${capNote}
 <table>
   <colgroup>
@@ -4401,7 +4444,7 @@ ${capNote}
 </body>
 </html>`;
 
-    // ── 6. Open print window ──
+    // ── 8. Open print window ──
     const pw = window.open('', '_blank', 'width=1100,height=800');
     if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
     pw.document.write(html);
@@ -4412,10 +4455,11 @@ ${capNote}
     console.error('generateReport error:', err);
     alert('Error generando el reporte: ' + err.message);
   } finally {
-    btn.disabled = false;
-    btn.textContent = '📄 Generar Reporte PDF';
+    if (btnP) { btnP.disabled = false; btnP.textContent = '📄 Pareto'; }
+    if (btnT) { btnT.disabled = false; btnT.textContent = '📄 Todo'; }
   }
 }
+
 
 // ════════════════════════════════════════════════════════════
 // MODAL

@@ -244,6 +244,39 @@ body::after {
   position: relative; z-index: 1;
 }
 
+/* ─── MODO PRESENTACIÓN ─── */
+body.modo-demo .sidebar            { display: none !important; }
+body.modo-demo .main               { margin-left: 0 !important; padding: 28px 48px !important; }
+body.modo-demo .page-header        { display: none !important; }
+body.modo-demo .inst-collab-bar    { display: none !important; }
+body.modo-demo .stats-grid         { display: none !important; }
+body.modo-demo .controls-bar       { display: none !important; }
+body.modo-demo #mainTableContainer { display: none !important; }
+body.modo-demo .risk-band          { display: none !important; }
+body.modo-demo #demo-exit-bar      { display: flex !important; }
+/* Widen exec-grid in demo mode for more breathing room */
+body.modo-demo .exec-grid          { grid-template-columns: repeat(4, 1fr) !important; }
+body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
+
+/* ─── PRINT / SAVE AS PDF ─── */
+@media print {
+  .sidebar, .page-header, .inst-collab-bar,
+  .stats-grid, .controls-bar, #mainTableContainer,
+  .risk-band, #demo-exit-bar, .fuente-panel,
+  #entityPanel, #fuentePanel, #casosPanel,
+  #sectorPanel, #analyticsPanel, #timelinePanel,
+  #newsPanel, #sobrecostoPanel, #anomalyPanel,
+  #vendorConcentrationPanel, .ticker-bar,
+  .btn-report-header, .btn-new-alert-header,
+  #exec-print-btn, .exec-header button          { display: none !important; }
+  .main                                          { margin-left: 0 !important; padding: 16px 24px !important; }
+  #vistaEjecutiva                                { display: block !important; }
+  .exec-grid                                     { grid-template-columns: repeat(4, 1fr) !important; }
+  .exec-top-table                                { page-break-inside: avoid; }
+  body                                           { background: #fff !important; color: #1a2035 !important; }
+  @page                                          { margin: 1.5cm; size: landscape; }
+}
+
 /* Error banner */
 .error-banner {
   display: none;
@@ -1135,6 +1168,12 @@ body::after {
   color: var(--text-dim); margin-bottom: 14px; margin-top: 8px;
 }
 
+/* P4 — Score de Riesgo Institucional */
+.risk-score-bar-wrap { display:flex; align-items:center; gap:8px; }
+.risk-score-bar-bg   { flex:1; height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden; }
+.risk-score-bar-fill { height:100%; border-radius:4px; transition:width .4s ease; }
+.risk-score-val      { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; width:34px; text-align:right; }
+
 /* Casos Activos exec-card */
 .exec-card-casos { background: rgba(255,61,87,0.06); cursor: pointer; }
 .exec-card-casos::before { background: linear-gradient(90deg, var(--red), var(--amber)); }
@@ -1857,6 +1896,14 @@ body::after {
     <span id="errorMsg">Error de conexión con Supabase</span>
   </div>
 
+  <!-- Modo Demo exit bar — only visible in modo-demo -->
+  <div id="demo-exit-bar" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9999;align-items:center;gap:12px;">
+    <div style="background:rgba(10,22,40,0.92);border:1px solid rgba(139,92,246,0.5);border-radius:10px;padding:10px 18px;display:flex;align-items:center;gap:14px;backdrop-filter:blur(12px);">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#a855f7;letter-spacing:1px;">🎯 MODO PRESENTACIÓN</span>
+      <button onclick="toggleModoDemo()" style="background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.5);color:#a855f7;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;">✕ Salir</button>
+    </div>
+  </div>
+
   <!-- Institutional collaboration bar -->
   <div class="inst-collab-bar">
     <span>🇭🇳</span>
@@ -1878,6 +1925,7 @@ body::after {
       </div>
       <button class="btn-report-header" id="btnReport" onclick="generateReport()">📄 Generar Reporte PDF</button>
       <button class="btn-new-alert-header" onclick="openModal()">➕ Nueva Alerta</button>
+      <button class="btn-new-alert-header" onclick="toggleModoDemo()" style="background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.4);color:#a855f7;" title="Modo presentación fullscreen">🎯 Modo Demo</button>
     </div>
   </div>
 
@@ -1934,7 +1982,10 @@ body::after {
         <div class="exec-title">Resumen Ejecutivo</div>
         <div class="exec-subtitle" id="execSubtitle">Cargando datos...</div>
       </div>
-      <button onclick="generarEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;margin-top:4px;">📄 Exportar Briefing</button>
+      <div style="display:flex;gap:8px;flex-shrink:0;margin-top:4px;">
+        <button id="exec-print-btn" onclick="imprimirVistaEjecutiva()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;">🖨️ Imprimir</button>
+        <button onclick="generarEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;">📄 Exportar PDF</button>
+      </div>
     </div>
     <!-- 3-column grid: Critical alerts, Top risk entities, System status -->
     <div class="exec-grid">
@@ -2070,6 +2121,27 @@ body::after {
         </button>
       </div>
 
+    </div>
+
+    <!-- P4 — Score de Riesgo Institucional -->
+    <div class="exec-section-title">🏛️ Score de Riesgo Institucional — Top 10 Entidades</div>
+    <div class="table-container" style="margin-bottom:24px;">
+      <table class="alert-table" id="execRiskScoreTable">
+        <thead>
+          <tr>
+            <th style="width:32px;">#</th>
+            <th>Entidad</th>
+            <th style="width:160px;">Score de Riesgo</th>
+            <th style="text-align:center;width:60px;">Críticos</th>
+            <th style="text-align:center;width:60px;">Altos</th>
+            <th style="text-align:center;width:70px;">Patrones</th>
+            <th style="text-align:right;width:130px;">Monto en Riesgo</th>
+          </tr>
+        </thead>
+        <tbody id="exec-risk-score-body">
+          <tr class="state-row"><td colspan="7">Cargando scores...</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Top 5 critical contracts table -->
@@ -11321,6 +11393,37 @@ async function showDatabaseOptimizationStatus() {
 init();
 
 
+// ─── MODO PRESENTACIÓN ───
+function toggleModoDemo() {
+  const isDemo = document.body.classList.toggle('modo-demo');
+  if (isDemo) {
+    showVistaEjecutiva();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  } else {
+    hideAllPanels();
+  }
+}
+
+function imprimirVistaEjecutiva() {
+  const wasDemo = document.body.classList.contains('modo-demo');
+  // Enter demo mode so @media print sees the right layout
+  if (!wasDemo) {
+    document.body.classList.add('modo-demo');
+    showVistaEjecutiva();
+  }
+  setTimeout(() => {
+    window.print();
+    // Restore after print dialog closes
+    window.addEventListener('afterprint', function restore() {
+      if (!wasDemo) {
+        document.body.classList.remove('modo-demo');
+        hideAllPanels();
+      }
+      window.removeEventListener('afterprint', restore);
+    });
+  }, 150);
+}
+
 // ─── VISTA EJECUTIVA ───
 function showVistaEjecutiva() {
   // Hide all fuente panels
@@ -11471,6 +11574,68 @@ function renderEjecutiva() {
         </td>
       </tr>`).join('')
     : '<tr class="state-row"><td colspan="4">Sin datos</td></tr>';
+
+  // ── P4: Score de Riesgo Institucional ──
+  // Score = severidad ponderada (50%) + monto relativo (30%) + diversidad de patrones (20%)
+  const entScoreMap = {};
+  alerts.forEach(a => {
+    const k = a.entity_name || '—';
+    if (!entScoreMap[k]) entScoreMap[k] = { critica:0, alta:0, media:0, baja:0, monto:0, patterns:new Set(), total:0 };
+    const sv = normSevLocal(a.severity);
+    entScoreMap[k][sv] = (entScoreMap[k][sv] || 0) + 1;
+    entScoreMap[k].total++;
+    entScoreMap[k].monto += parseFloat(a.monto_contrato)||0;
+    const pats = Array.isArray(a.patterns) ? a.patterns : (a.patterns ? [a.patterns] : []);
+    pats.forEach(p => entScoreMap[k].patterns.add(String(p)));
+  });
+  const entScoreArr = Object.entries(entScoreMap).map(([name, d]) => {
+    const sevRaw = (d.critica * 3 + d.alta * 2 + d.media * 0.5) / (d.total || 1);
+    return { name, ...d, patCount: d.patterns.size, sevRaw };
+  }).filter(e => e.critica + e.alta > 0);
+  const maxSev   = Math.max(...entScoreArr.map(e => e.sevRaw), 1);
+  const maxMonto = Math.max(...entScoreArr.map(e => e.monto), 1);
+  const maxPat   = Math.max(...entScoreArr.map(e => e.patCount), 1);
+  entScoreArr.forEach(e => {
+    e.score = Math.round(
+      (e.sevRaw / maxSev)    * 50 +
+      (e.monto  / maxMonto)  * 30 +
+      (e.patCount / maxPat)  * 20
+    );
+  });
+  const top10score = entScoreArr.sort((a,b) => b.score - a.score).slice(0,10);
+  const scoreColor = s => s >= 70 ? 'var(--red)' : s >= 40 ? 'var(--amber)' : 'var(--electric)';
+  const scoreGrad  = s => s >= 70
+    ? 'linear-gradient(90deg,#ff3d57,#ff6b6b)'
+    : s >= 40
+    ? 'linear-gradient(90deg,#ffab00,#ffd166)'
+    : 'linear-gradient(90deg,#00e5a0,#00b4d8)';
+  const tbScore = document.getElementById('exec-risk-score-body');
+  if (tbScore) tbScore.innerHTML = top10score.length
+    ? top10score.map((e, i) => {
+        const eName = e.name.substring(0, 48);
+        const eNameEsc = e.name.replace(/'/g,"\\'");
+        return `<tr style="cursor:pointer;" onclick="drilldownEntity('${eNameEsc}')">
+          <td style="color:var(--text-dim);font-weight:700;">${i+1}</td>
+          <td style="font-size:11px;" title="${e.name}">
+            <button class="cell-entity-link" onclick="event.stopPropagation();showEntityPanel('${eNameEsc}')">${eName}</button>
+          </td>
+          <td>
+            <div class="risk-score-bar-wrap">
+              <div class="risk-score-bar-bg">
+                <div class="risk-score-bar-fill" style="width:${e.score}%;background:${scoreGrad(e.score)};"></div>
+              </div>
+              <span class="risk-score-val" style="color:${scoreColor(e.score)};">${e.score}</span>
+            </div>
+          </td>
+          <td style="text-align:center;"><span style="color:var(--red);font-weight:700;">${e.critica}</span></td>
+          <td style="text-align:center;"><span style="color:var(--orange);font-weight:700;">${e.alta}</span></td>
+          <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;">${e.patCount}</td>
+          <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--electric);">
+            ${e.monto > 0 ? 'L '+e.monto.toLocaleString('es-HN',{maximumFractionDigits:0}) : '—'}
+          </td>
+        </tr>`;
+      }).join('')
+    : '<tr class="state-row"><td colspan="7">Sin datos suficientes</td></tr>';
 
   // Top 5 critical contracts table
   const top5 = [...criticos].sort((a,b) => (parseFloat(b.monto_contrato)||0) - (parseFloat(a.monto_contrato)||0)).slice(0,5);

@@ -2759,15 +2759,18 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div id="patternDetailPanel" style="display:none;">
 
       <!-- Header row -->
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap;">
         <button onclick="hidePatternDetail()"
           style="background:none;border:1px solid var(--border);color:var(--text-dim);
                  padding:7px 14px;border-radius:6px;cursor:pointer;
                  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;
                  transition:all .2s;"
           onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'"
-          onmouseout="this.style.borderColor='';this.style.color=''">← Volver al Análisis</button>
-        <div id="patternDetailTitle" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);"></div>
+          onmouseout="this.style.borderColor='';this.style.color=''">← Análisis</button>
+        <div id="patternDetailTitle" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);flex:1;"></div>
+        <button onclick="exportPatternDetailPDF()"
+          class="tl-export-btn pdf"
+          style="margin-left:auto;">📄 PDF</button>
       </div>
 
       <!-- Stat cards -->
@@ -10759,6 +10762,7 @@ function renderAnalytics() {
 // ANALYTICS — FUENTE DROPDOWN + PATTERN DETAIL
 // ════════════════════════════════════════════════════════════
 let patternDetailChart = null;
+let _patternDetailSnapshot = null; // stores data for PDF export
 
 function populateFuenteDropdown() {
   const sel = document.getElementById('analyticsFuenteSelect');
@@ -10774,6 +10778,90 @@ function getAnalyticsAlerts() {
   const fuente = sel ? sel.value : 'all';
   if (fuente === 'all') return allAlerts;
   return allAlerts.filter(a => (a.source || '') === fuente);
+}
+
+function exportPatternDetailPDF() {
+  const d = _patternDetailSnapshot;
+  if (!d) { alert('Seleccione un patrón primero.'); return; }
+  const esc = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const fmtL = n => n > 0 ? 'L. ' + Number(n).toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
+  const timestamp = new Date().toISOString().slice(0,10);
+
+  const entRows = d.topEnt.map(([name, e]) =>
+    `<tr><td>${esc(name)}</td><td style="text-align:right;">${e.count.toLocaleString()}</td><td style="text-align:right;">${fmtL(e.monto)}</td></tr>`
+  ).join('') || '<tr><td colspan="3" style="color:#999;text-align:center;">Sin datos</td></tr>';
+
+  const venRows = d.topVen.map(([name, e]) =>
+    `<tr><td>${esc(name)}</td><td style="text-align:right;">${e.count.toLocaleString()}</td><td style="text-align:right;">${fmtL(e.monto)}</td></tr>`
+  ).join('') || '<tr><td colspan="3" style="color:#999;text-align:center;">Sin datos</td></tr>';
+
+  // Top 50 contracts sorted by monto
+  const topContracts = [...d.alerts]
+    .sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0))
+    .slice(0, 50);
+  const contractRows = topContracts.map(a => {
+    const sev = (a.severity||'—');
+    const sevColor = {critica:'#c0392b',alta:'#d35400',media:'#e67e22',baja:'#27ae60'}[(sev||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')] || '#555';
+    return `<tr>
+      <td style="font-family:monospace;font-size:8pt;">${esc(a.alert_id||('#'+a.id))}</td>
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;">${esc((a.entity_name||'—').substring(0,45))}</td>
+      <td>${esc((a.proveedor_nombre||'—').substring(0,35))}</td>
+      <td style="text-align:center;">${(a.fecha_contrato||a.fecha_publicacion||'—').substring(0,10)}</td>
+      <td style="text-align:right;">${fmtL(Number(a.monto_contrato||0))}</td>
+      <td style="text-align:center;color:${sevColor};font-weight:700;text-transform:uppercase;font-size:8pt;">${esc(sev)}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+  @page{size:A4 landscape;margin:1.2cm 1cm 1.8cm 1cm}
+  body{font-family:Arial,sans-serif;font-size:9.5pt;color:#222;margin:0;padding:16px}
+  h1{color:#0A1628;font-size:17pt;margin:0 0 4px 0}
+  h2{color:#1A3A6B;font-size:11pt;margin:18px 0 8px 0}
+  .meta{color:#7F8C8D;font-size:9pt;margin-bottom:16px}
+  .stats{display:flex;gap:16px;margin-bottom:20px}
+  .stat-box{border:1px solid #D0D7E2;border-left:4px solid #1A3A6B;border-radius:4px;padding:10px 16px;flex:1}
+  .stat-label{font-size:8.5pt;color:#7F8C8D;text-transform:uppercase;letter-spacing:.04em}
+  .stat-val{font-size:16pt;font-weight:700;color:#1A3A6B;margin-top:3px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  table{border-collapse:collapse;width:100%;margin-top:6px}
+  th{background:#1A3A6B;color:#fff;padding:6px 8px;font-size:8.5pt;text-align:left}
+  td{padding:4px 8px;border:1px solid #D0D7E2;font-size:8.5pt}
+  tr:nth-child(even){background:#f4f8ff}
+  .btn{display:inline-block;margin:0 0 14px 0;padding:8px 18px;background:#1A3A6B;color:#fff;border:none;border-radius:6px;font-size:10pt;cursor:pointer}
+  @media print{.btn{display:none}}
+</style></head><body>
+<button class="btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+<h1>Patrón: ${esc(d.label)}</h1>
+<div class="meta">Código: ${esc(d.patternCode)} · Generado: ${timestamp} · Sentinel-AI Honduras</div>
+<div class="stats">
+  <div class="stat-box"><div class="stat-label">Total Contratos</div><div class="stat-val">${d.totalAlerts.toLocaleString('es-HN')}</div></div>
+  <div class="stat-box"><div class="stat-label">Exposición Total</div><div class="stat-val">${fmtL(d.totalMonto)}</div></div>
+  <div class="stat-box"><div class="stat-label">Monto Promedio</div><div class="stat-val">${fmtL(d.avgMonto)}</div></div>
+</div>
+<div class="grid">
+  <div>
+    <h2>Top Entidades — Este Patrón</h2>
+    <table><thead><tr><th>Entidad</th><th style="text-align:right">Contratos</th><th style="text-align:right">Monto (L.)</th></tr></thead>
+    <tbody>${entRows}</tbody></table>
+  </div>
+  <div>
+    <h2>Top Proveedores — Este Patrón</h2>
+    <table><thead><tr><th>Proveedor</th><th style="text-align:right">Contratos</th><th style="text-align:right">Monto (L.)</th></tr></thead>
+    <tbody>${venRows}</tbody></table>
+  </div>
+</div>
+<h2>Top 50 Contratos por Monto</h2>
+<table>
+  <thead><tr><th>ID</th><th>Entidad</th><th>Proveedor</th><th style="text-align:center">Fecha</th><th style="text-align:right">Monto (L.)</th><th style="text-align:center">Sev.</th></tr></thead>
+  <tbody>${contractRows}</tbody>
+</table>
+</body></html>`;
+
+  const pw = window.open('','_blank','width=1150,height=850');
+  if (!pw) { alert('Por favor permita ventanas emergentes.'); return; }
+  pw.document.write(addPrintBtn ? addPrintBtn(html) : html);
+  pw.document.close();
 }
 
 function showPatternDetail(patternCode) {
@@ -10814,6 +10902,9 @@ function showPatternDetail(patternCode) {
   }
   const topEnt = [...entityMap.entries()].sort((a,b) => b[1].monto - a[1].monto).slice(0, 7);
   const topVen = [...vendorMap.entries()].sort((a,b) => b[1].monto - a[1].monto).slice(0, 7);
+
+  // Store snapshot for PDF export
+  _patternDetailSnapshot = { label, patternCode, alerts, totalAlerts, totalMonto, avgMonto, topEnt, topVen };
 
   document.getElementById('patternDetailEntityBody').innerHTML = topEnt.map(([name, d]) =>
     `<tr>

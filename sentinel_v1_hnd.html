@@ -2551,14 +2551,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="fuente-recent-title">Contratos Recientes (últimas 5)</div>
         <div class="fuente-recent-list" id="ep-recent"></div>
       </div>
-      <!-- Empresas Abiertas — only shown in vendor mode -->
-      <div id="ea-vendor-card" style="display:none;margin-top:12px;" class="fuente-chart-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <div class="fuente-recent-title" style="font-size:12px;">🏢 Registro Mercantil</div>
-          <button onclick="lookupEmpresasAbiertas()" id="ea-lookup-btn2" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--accent);font-size:10px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;">🔍 Consultar EA</button>
-        </div>
-        <div id="ea-lookup-result2" style="font-size:11px;color:var(--text-dim);">Presiona para buscar en Empresas Abiertas</div>
-      </div>
     </div>
 
     <!-- Sobrecosto drill-down -->
@@ -4540,7 +4532,7 @@ ${capNote}
     // ── 8. Open print window ──
     const pw = window.open('', '_blank', 'width=1100,height=800');
     if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-    pw.document.write(html);
+    pw.document.write(addPrintBtn(html));
     pw.document.close();
     pw.addEventListener('load', () => pw.focus());
 
@@ -5703,7 +5695,7 @@ function generateSobrecostoPDF(sobrecostos, entityName, timestamp) {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -5758,7 +5750,7 @@ function generateVendorsPDF(vendors, totalMonto, entityName, timestamp) {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -5823,7 +5815,7 @@ function generateVendorDetailPDF(contracts, vendorName, entityName, timestamp) {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -6436,7 +6428,7 @@ function exportSectorPDF(mode = 'pareto') {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -6551,7 +6543,7 @@ function exportSectorSummaryPDF() {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -6779,7 +6771,7 @@ function generarMemorandum() {
 
   const pw = window.open('', '_blank', 'width=1020,height=870');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el memorándum.'); return; }
-  pw.document.write(htmlContent);
+  pw.document.write(addPrintBtn(htmlContent));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -6961,7 +6953,7 @@ ${casoHTML}
 
   const pw = window.open('', '_blank', 'width=1100,height=860');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -7308,7 +7300,7 @@ function generarEjecutivaPDF() {
 
   const pw = window.open('', '_blank', 'width=1200,height=900');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -7831,7 +7823,7 @@ function exportProvPDF() {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -8311,7 +8303,7 @@ function exportTlPDF() {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -8438,7 +8430,7 @@ function exportTimelineSummaryPDF() {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -8629,7 +8621,7 @@ function exportEntityPDF(mode = 'pareto') {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -8992,7 +8984,7 @@ function exportRiesgoGlobalPDF() {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  pw.document.write(addPrintBtn(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <title>Reporte Riesgo Sobrecosto — SENTINEL-AI</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -9116,7 +9108,7 @@ function exportRiesgoGlobalPDF() {
     <button onclick="window.print()" style="padding:10px 24px;background:#0A1628;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin-right:10px;">🖨️ Imprimir / Guardar PDF</button>
     <button onclick="window.close()" style="padding:10px 20px;background:#e8ecf0;color:#444;border:none;border-radius:6px;font-size:13px;cursor:pointer;">✕ Cerrar</button>
   </div>
-  </body></html>`);
+  </body></html>`));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -9191,7 +9183,7 @@ function exportSobrecostoRealPDF() {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  pw.document.write(addPrintBtn(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <title>Reporte Sobrecosto Real — SENTINEL-AI</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -9339,7 +9331,7 @@ function exportSobrecostoRealPDF() {
     <button onclick="window.print()" style="padding:10px 24px;background:#0A1628;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin-right:10px;">🖨️ Imprimir / Guardar PDF</button>
     <button onclick="window.close()" style="padding:10px 20px;background:#e8ecf0;color:#444;border:none;border-radius:6px;font-size:13px;cursor:pointer;">✕ Cerrar</button>
   </div>
-  </body></html>`);
+  </body></html>`));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -9422,7 +9414,7 @@ function exportAnalyticsPDF(mode) {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Análisis de Contratos — SENTINEL-AI</title>
+  pw.document.write(addPrintBtn(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Análisis de Contratos — SENTINEL-AI</title>
   <style>
     body{font-family:Arial,sans-serif;font-size:12px;margin:32px;color:#1a1a2e;}
     h1{font-size:18px;border-bottom:2px solid #1a1a2e;padding-bottom:8px;margin-bottom:6px;}
@@ -9455,7 +9447,7 @@ function exportAnalyticsPDF(mode) {
   <table><thead><tr><th>Entidad</th><th style="text-align:right;">Contratos</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
   <tbody>${entRows}</tbody></table>
   <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · Honduras · The Prieto Group — Dallas, TX · Datos: SEFIN/EDCA Fiscal 2023–2025</div>
-  </body></html>`);
+  </body></html>`));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -9629,7 +9621,7 @@ function exportPhase4PDF() {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-  pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reporte — Anomalías Estadísticas</title>
+  pw.document.write(addPrintBtn(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reporte — Anomalías Estadísticas</title>
   <style>
     body{font-family:Arial,sans-serif;font-size:12px;margin:32px;color:#1a1a2e;}
     h1{font-size:18px;border-bottom:2px solid #1a1a2e;padding-bottom:8px;margin-bottom:6px;}
@@ -9665,7 +9657,7 @@ function exportPhase4PDF() {
   <table><thead><tr><th>#</th><th>ID Contrato</th><th>Proveedor</th><th>Entidad</th><th style="text-align:center;">Desviación</th><th style="text-align:center;">Sobrepago</th></tr></thead>
   <tbody>${anomalyRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin anomalías detectadas</td></tr>'}</tbody></table>
   <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · Honduras · The Prieto Group — Dallas, TX · Datos: SEFIN/EDCA · Este reporte es referencial — para uso interno de investigación.</div>
-  </body></html>`);
+  </body></html>`));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -10471,6 +10463,14 @@ const ENTITY_ALIASES = {
   'Empresa Nacional de Artes Gráficas (ENAG)':                                               'Empresa Nacional de Artes Gráficas',
   'Administracion Nacional de Servicio Civil':                                                'Administración Nacional de Servicio Civil',
 };
+
+// ════════════════════════════════════════════════════════════
+// PRINT BUTTON HELPER — injects into all report windows
+// ════════════════════════════════════════════════════════════
+function addPrintBtn(html) {
+  const btn = '<button class="no-print" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:#1a56db;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;"><span>🖨️</span> Imprimir / Guardar como PDF</button>';
+  return html.replace('</body>', btn + '\n</body>');
+}
 
 // Normalize a name using aliases (ONCAE long → SEFIN canonical)
 function normalizeEntity(name) {
@@ -11464,7 +11464,7 @@ ${(mode === 'pareto' ? vendorsIn80 : sortedVendors).map(v => {
 
     const pw = window.open('', '_blank', 'width=1100,height=800');
     if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-    pw.document.write(html);
+    pw.document.write(addPrintBtn(html));
     pw.document.close();
     pw.addEventListener('load', () => pw.focus());
 
@@ -11570,7 +11570,7 @@ function generateVendorDetailPDF(detail, timestamp, mode = 'todo') {
 
     const pw = window.open('', '_blank', 'width=1100,height=800');
     if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
-    pw.document.write(html);
+    pw.document.write(addPrintBtn(html));
     pw.document.close();
     pw.addEventListener('load', () => pw.focus());
 
@@ -12736,7 +12736,7 @@ function exportEngelPDF() {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -12973,7 +12973,7 @@ function exportOfacPDF() {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }

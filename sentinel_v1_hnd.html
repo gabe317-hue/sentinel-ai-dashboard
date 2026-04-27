@@ -6696,54 +6696,6 @@ function generarCasosPDF() {
 </div>`).join('');
 
 
-  // ── P4: Puntaje de Riesgo Institucional ──
-  const _normSevP4 = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'');
-  const _p4Map = {};
-  _alerts.forEach(a => {
-    const k = a.entity_name || '—';
-    if (!_p4Map[k]) _p4Map[k] = { critica:0, alta:0, media:0, baja:0, monto:0, patterns:new Set(), total:0 };
-    const sv = _normSevP4(a.severity);
-    if (_p4Map[k][sv] !== undefined) _p4Map[k][sv]++;
-    _p4Map[k].total++;
-    _p4Map[k].monto += parseFloat(a.monto_contrato)||0;
-    const pats = Array.isArray(a.patterns) ? a.patterns : (a.patterns ? [a.patterns] : []);
-    pats.forEach(p => _p4Map[k].patterns.add(String(p)));
-  });
-  const _p4Arr = Object.entries(_p4Map).map(([name, d]) => {
-    const sevRaw = (d.critica * 3 + d.alta * 2 + d.media * 0.5) / (d.total || 1);
-    return { name, ...d, patCount: d.patterns.size, sevRaw };
-  }).filter(e => e.critica + e.alta > 0);
-  const _p4MaxSev   = Math.max(..._p4Arr.map(e => e.sevRaw), 1);
-  const _p4MaxMonto = Math.max(..._p4Arr.map(e => e.monto), 1);
-  const _p4MaxPat   = Math.max(..._p4Arr.map(e => e.patCount), 1);
-  _p4Arr.forEach(e => {
-    e.score = Math.round((e.sevRaw/_p4MaxSev)*50 + (e.monto/_p4MaxMonto)*30 + (e.patCount/_p4MaxPat)*20);
-  });
-  const _p4Top10 = _p4Arr.sort((a,b) => b.score - a.score).slice(0,10);
-  const _p4ScoreColor = s => s >= 70 ? '#ff3d57' : s >= 40 ? '#ffab00' : '#2563eb';
-  const p4Rows = _p4Top10.length
-    ? _p4Top10.map((e, i) => {
-        const barW = e.score + '%';
-        const barC = _p4ScoreColor(e.score);
-        return `<tr${i%2===1?' style="background:rgba(0,0,0,0.03)"':''}>
-          <td style="padding:5px 8px;font-size:10px;color:#888;font-weight:700;">${i+1}</td>
-          <td style="padding:5px 8px;font-size:10.5px;">${esc(e.name.substring(0,45))}</td>
-          <td style="padding:5px 8px;">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <div style="flex:1;height:7px;background:#e2e6ef;border-radius:4px;overflow:hidden;">
-                <div style="width:${barW};height:100%;background:${barC};border-radius:4px;"></div>
-              </div>
-              <span style="font-size:10px;font-weight:700;color:${barC};width:28px;text-align:right;">${e.score}</span>
-            </div>
-          </td>
-          <td style="padding:5px 8px;text-align:center;color:#ff3d57;font-weight:700;font-size:11px;">${e.critica}</td>
-          <td style="padding:5px 8px;text-align:center;color:#ffab00;font-weight:700;font-size:11px;">${e.alta}</td>
-          <td style="padding:5px 8px;text-align:center;font-size:10px;color:#555;">${e.patCount}</td>
-          <td style="padding:5px 8px;text-align:right;font-size:10px;color:#ff3d57;font-weight:600;">${esc(fmtLP(e.monto))}</td>
-        </tr>`;
-      }).join('')
-    : '<tr><td colspan="7" style="padding:10px;color:#888;font-style:italic;">Sin datos suficientes.</td></tr>';
-
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <title>Sentinel-AI — Casos Activos — ${fechaStr}</title>
 <style>
@@ -6878,6 +6830,54 @@ function generarEjecutivaPDF() {
         <td style="padding:6px 10px;font-size:11px;text-align:right;color:#ff3d57;font-weight:600;">${esc(fmtLP(p.monto))}</td>
       </tr>`).join('')
     : '<tr><td colspan="4" style="padding:10px;color:#888;font-style:italic;">Sin datos de proveedores disponibles.</td></tr>';
+
+  // ── P4: Puntaje de Riesgo Institucional ──
+  const _normSevP4 = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'');
+  const _p4Map = {};
+  _alerts.forEach(a => {
+    const k = a.entity_name || '—';
+    if (!_p4Map[k]) _p4Map[k] = { critica:0, alta:0, media:0, baja:0, monto:0, patterns:new Set(), total:0 };
+    const sv = _normSevP4(a.severity);
+    if (_p4Map[k][sv] !== undefined) _p4Map[k][sv]++;
+    _p4Map[k].total++;
+    _p4Map[k].monto += parseFloat(a.monto_contrato)||0;
+    const pats = Array.isArray(a.patterns) ? a.patterns : (a.patterns ? [a.patterns] : []);
+    pats.forEach(p => _p4Map[k].patterns.add(String(p)));
+  });
+  const _p4Arr = Object.entries(_p4Map).map(([name, d]) => {
+    const sevRaw = (d.critica * 3 + d.alta * 2 + d.media * 0.5) / (d.total || 1);
+    return { name, ...d, patCount: d.patterns.size, sevRaw };
+  }).filter(e => e.critica + e.alta > 0);
+  const _p4MaxSev   = Math.max(..._p4Arr.map(e => e.sevRaw), 1);
+  const _p4MaxMonto = Math.max(..._p4Arr.map(e => e.monto), 1);
+  const _p4MaxPat   = Math.max(..._p4Arr.map(e => e.patCount), 1);
+  _p4Arr.forEach(e => {
+    e.score = Math.round((e.sevRaw/_p4MaxSev)*50 + (e.monto/_p4MaxMonto)*30 + (e.patCount/_p4MaxPat)*20);
+  });
+  const _p4Top10 = _p4Arr.sort((a,b) => b.score - a.score).slice(0,10);
+  const _p4ScoreColor = s => s >= 70 ? '#ff3d57' : s >= 40 ? '#ffab00' : '#2563eb';
+  const p4Rows = _p4Top10.length
+    ? _p4Top10.map((e, i) => {
+        const barW = e.score + '%';
+        const barC = _p4ScoreColor(e.score);
+        return `<tr${i%2===1?' style="background:rgba(0,0,0,0.03)"':''}>
+          <td style="padding:5px 8px;font-size:10px;color:#888;font-weight:700;">${i+1}</td>
+          <td style="padding:5px 8px;font-size:10.5px;">${esc(e.name.substring(0,45))}</td>
+          <td style="padding:5px 8px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="flex:1;height:7px;background:#e2e6ef;border-radius:4px;overflow:hidden;">
+                <div style="width:${barW};height:100%;background:${barC};border-radius:4px;"></div>
+              </div>
+              <span style="font-size:10px;font-weight:700;color:${barC};width:28px;text-align:right;">${e.score}</span>
+            </div>
+          </td>
+          <td style="padding:5px 8px;text-align:center;color:#ff3d57;font-weight:700;font-size:11px;">${e.critica}</td>
+          <td style="padding:5px 8px;text-align:center;color:#ffab00;font-weight:700;font-size:11px;">${e.alta}</td>
+          <td style="padding:5px 8px;text-align:center;font-size:10px;color:#555;">${e.patCount}</td>
+          <td style="padding:5px 8px;text-align:right;font-size:10px;color:#ff3d57;font-weight:600;">${esc(fmtLP(e.monto))}</td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="7" style="padding:10px;color:#888;font-style:italic;">Sin datos suficientes.</td></tr>';
 
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <title>Sentinel-AI — Briefing Ejecutivo — ${fechaStr}</title>

@@ -1876,6 +1876,14 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">📰</span> Noticias
         <span class="nav-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">RSS</span>
       </button>
+      <button class="nav-item" id="nav-engel" onclick="showEngelPanel()" style="color:var(--purple);">
+        <span class="nav-icon">🇺🇸</span> Lista Engel
+        <span class="nav-chip" id="nav-engel-chip" style="background:rgba(168,85,247,0.15);color:var(--purple);border-color:rgba(168,85,247,0.3);">—</span>
+      </button>
+      <button class="nav-item" id="nav-ofac" onclick="showOfacPanel()" style="color:var(--red);">
+        <span class="nav-icon">🚨</span> Sanciones OFAC
+        <span class="nav-chip" id="nav-ofac-chip" style="background:rgba(255,61,87,0.15);color:var(--red);border-color:rgba(255,61,87,0.3);">—</span>
+      </button>
     </div>
 
     <div class="nav-section">
@@ -3670,6 +3678,63 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     </div>
   </div>
 
+  <!-- ═══════════════════ ENGEL PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="engelPanel">
+    <button class="fuente-back" onclick="hideEngelPanel()">← Contratos</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>🇺🇸</span>
+        <span>Lista Engel — Depto. de Estado EE.UU.</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Ley RENACER · Actores Honduras sancionados o designados por corrupción
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="pdf-btn" onclick="exportEngelPDF()" style="background:rgba(168,85,247,0.12);color:var(--purple);border-color:rgba(168,85,247,0.35);">📄 Exportar PDF</button>
+      </div>
+    </div>
+
+    <div id="engelSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:18px 0 6px;padding:14px 18px;background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.2);border-radius:10px;">
+      <div><span style="font-size:11px;color:var(--muted);">ACTORES EN LISTA</span><br><span id="engel-stat-actores" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
+      <div><span style="font-size:11px;color:var(--muted);">CONTRATOS VINCULADOS</span><br><span id="engel-stat-contratos" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
+      <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="engel-stat-monto" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
+      <div><span style="font-size:11px;color:var(--muted);">CONTRATOS CRÍTICOS</span><br><span id="engel-stat-criticos" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+    </div>
+
+    <div id="engelBody" style="margin-top:18px;">
+      <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos Engel...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ OFAC PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="ofacPanel">
+    <button class="fuente-back" onclick="hideOfacPanel()">← Contratos</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>🚨</span>
+        <span>Sanciones OFAC — Tesoro EE.UU.</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Specially Designated Nationals (SDN) · Proveedores con sanción activa del gobierno de EE.UU.
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="pdf-btn" onclick="exportOfacPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);">📄 Exportar PDF</button>
+      </div>
+    </div>
+
+    <div id="ofacSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:18px 0 6px;padding:14px 18px;background:rgba(255,61,87,0.05);border:1px solid rgba(255,61,87,0.2);border-radius:10px;">
+      <div><span style="font-size:11px;color:var(--muted);">PROVEEDORES SANCIONADOS</span><br><span id="ofac-stat-proveedores" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+      <div><span style="font-size:11px;color:var(--muted);">CONTRATOS DETECTADOS</span><br><span id="ofac-stat-contratos" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+      <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="ofac-stat-monto" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+      <div><span style="font-size:11px;color:var(--muted);">ENTIDADES AFECTADAS</span><br><span id="ofac-stat-entidades" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
+    </div>
+
+    <div id="ofacBody" style="margin-top:18px;">
+      <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos OFAC...</div>
+    </div>
+  </div>
 
 
 
@@ -5828,7 +5893,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','engelPanel','ofacPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -12204,6 +12269,477 @@ function buildEngelIndex() {
   const srcEl = document.getElementById('src-engel');
   if (srcEl) srcEl.textContent = `${_engelMatchedIds.size} coincidencia${_engelMatchedIds.size !== 1 ? 's' : ''}`;
   console.log(`🇺🇸 Engel index built: ${_engelMatchedIds.size} contratos con coincidencia`);
+  // Update nav chip
+  const chip = document.getElementById('nav-engel-chip');
+  if (chip) chip.textContent = _engelMatchedIds.size || '—';
+}
+
+// ── ENGEL PANEL — show / hide / render / PDF ──────────────────────────────────
+function showEngelPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('engelPanel').classList.add('open');
+  document.getElementById('nav-engel').classList.add('active');
+  renderEngelPanel();
+}
+function hideEngelPanel() {
+  document.getElementById('engelPanel').classList.remove('open');
+  document.getElementById('nav-engel').classList.remove('active');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+}
+
+function renderEngelPanel() {
+  if (!window.allAlerts || !window.allAlerts.length) {
+    document.getElementById('engelBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">No hay datos cargados.</div>';
+    return;
+  }
+  const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const fmtL = n => { if (!n) return 'L. —'; if (n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+
+  // Build per-actor buckets
+  const actorMap = {};
+  ENGEL_LIST_HND.forEach(e => { actorMap[e.search] = { meta: e, alerts: [] }; });
+
+  window.allAlerts.forEach(a => {
+    const hay = norm([a.proveedor_nombre, a.supplier_name, a.proveedor, a.entity_name, a.entidad_nombre, a.descripcion, a.object_contract].join(' '));
+    ENGEL_LIST_HND.forEach(e => {
+      if (hay.includes(e.search)) actorMap[e.search].alerts.push(a);
+    });
+  });
+
+  const activeActors = Object.values(actorMap).filter(b => b.alerts.length > 0);
+  const totalContratos = activeActors.reduce((s,b) => s + b.alerts.length, 0);
+  const totalMonto = activeActors.reduce((s,b) => s + b.alerts.reduce((ss,a) => ss + Number(a.monto_contrato||0), 0), 0);
+  const totalCriticos = activeActors.reduce((s,b) => s + b.alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA').length, 0);
+
+  // Update summary bar
+  document.getElementById('engel-stat-actores').textContent = activeActors.length || '—';
+  document.getElementById('engel-stat-contratos').textContent = totalContratos.toLocaleString() || '—';
+  document.getElementById('engel-stat-monto').textContent = fmtL(totalMonto);
+  document.getElementById('engel-stat-criticos').textContent = totalCriticos.toLocaleString() || '—';
+
+  if (activeActors.length === 0) {
+    document.getElementById('engelBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">Sin coincidencias detectadas en los contratos monitoreados.</div>';
+    return;
+  }
+
+  let html = '';
+  activeActors.sort((a,b) => b.alerts.length - a.alerts.length).forEach(bucket => {
+    const { meta, alerts } = bucket;
+    const monto = alerts.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
+    const criticos = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA').length;
+    const altos = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'ALTA').length;
+    html += `
+    <div style="margin-bottom:28px;border:1px solid rgba(168,85,247,0.25);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;background:rgba(168,85,247,0.08);border-bottom:1px solid rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--purple);">🇺🇸 ${meta.full}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px;">${meta.role}</div>
+        </div>
+        <div style="display:flex;gap:14px;font-size:12px;">
+          <span style="color:var(--text-dim);">${alerts.length} contratos</span>
+          <span style="color:var(--text-dim);">${fmtL(monto)}</span>
+          ${criticos ? `<span style="color:var(--red);font-weight:700;">${criticos} CRÍTICOS</span>` : ''}
+          ${altos ? `<span style="color:var(--amber);">${altos} ALTOS</span>` : ''}
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:rgba(255,255,255,0.03);">
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">ID</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Entidad</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Proveedor</th>
+          <th style="padding:8px 12px;text-align:right;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Monto</th>
+          <th style="padding:8px 12px;text-align:center;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Severidad</th>
+        </tr></thead>
+        <tbody>
+          ${alerts.slice(0,50).map(a => {
+            const sev = (a.severity||a.severidad||'').toUpperCase();
+            const sevColor = sev==='CRÍTICA'?'var(--red)':sev==='ALTA'?'var(--amber)':sev==='MEDIA'?'#4d9de0':'var(--muted)';
+            const prov = a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
+            const ent  = a.entity_name||a.entidad_nombre||'—';
+            const id   = a.alert_id||a.id||'—';
+            const mc   = Number(a.monto_contrato||0);
+            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="showAlertDetail('${id}')">
+              <td style="padding:7px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;">${String(id).slice(0,12)}…</td>
+              <td style="padding:7px 12px;color:var(--text);">${ent.length>35?ent.slice(0,35)+'…':ent}</td>
+              <td style="padding:7px 12px;color:var(--text-dim);">${prov.length>30?prov.slice(0,30)+'…':prov}</td>
+              <td style="padding:7px 12px;text-align:right;color:var(--electric);">${fmtL(mc)}</td>
+              <td style="padding:7px 12px;text-align:center;color:${sevColor};font-weight:700;font-size:10px;">${sev||'—'}</td>
+            </tr>`;
+          }).join('')}
+          ${alerts.length>50?`<tr><td colspan="5" style="padding:10px 12px;text-align:center;color:var(--muted);font-size:11px;">… y ${alerts.length-50} contratos más</td></tr>`:''}
+        </tbody>
+      </table>
+    </div>`;
+  });
+  document.getElementById('engelBody').innerHTML = html;
+}
+
+function exportEngelPDF() {
+  if (!window.allAlerts || !window.allAlerts.length) { alert('Datos no cargados.'); return; }
+  const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const fmtL = n => { if (!n) return 'L. —'; if (n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const fmtUSD2 = n => { if (!n) return '—'; const u=n/USD_RATE; if(u>=1e6) return '$'+(u/1e6).toFixed(1)+'M USD'; return '$'+Math.round(u).toLocaleString('en-US')+' USD'; };
+  const today = new Date(); const ds = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-ENGEL-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  // Build actor map
+  const actorMap = {};
+  ENGEL_LIST_HND.forEach(e => { actorMap[e.search] = { meta: e, alerts: [] }; });
+  window.allAlerts.forEach(a => {
+    const hay = norm([a.proveedor_nombre,a.supplier_name,a.proveedor,a.entity_name,a.entidad_nombre,a.descripcion,a.object_contract].join(' '));
+    ENGEL_LIST_HND.forEach(e => { if (hay.includes(e.search)) actorMap[e.search].alerts.push(a); });
+  });
+  const activeActors = Object.values(actorMap).filter(b => b.alerts.length > 0).sort((a,b) => b.alerts.length - a.alerts.length);
+  const totalContratos = activeActors.reduce((s,b) => s+b.alerts.length, 0);
+  const totalMonto = activeActors.reduce((s,b) => s+b.alerts.reduce((ss,a) => ss+Number(a.monto_contrato||0),0), 0);
+  const totalCriticos = activeActors.reduce((s,b) => s+b.alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length, 0);
+
+  const actorRows = activeActors.map(bucket => {
+    const { meta, alerts } = bucket;
+    const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+    const criticos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+    const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
+    const entidades = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
+    const detRows = alerts.slice(0,20).map(a => {
+      const sev=(a.severity||a.severidad||'').toUpperCase();
+      const sc=sev==='CRÍTICA'?'#dc2626':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
+      const prov=a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
+      const ent=a.entity_name||a.entidad_nombre||'—';
+      const id=a.alert_id||a.id||'—';
+      return `<tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:5px 8px;font-family:monospace;font-size:9px;color:#666;">${String(id).slice(0,14)}</td>
+        <td style="padding:5px 8px;font-size:10px;">${ent.length>40?ent.slice(0,40)+'…':ent}</td>
+        <td style="padding:5px 8px;font-size:10px;">${prov.length>35?prov.slice(0,35)+'…':prov}</td>
+        <td style="padding:5px 8px;text-align:right;font-size:10px;">${fmtL(Number(a.monto_contrato||0))}</td>
+        <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:9px;color:${sc};">${sev}</td>
+      </tr>`;
+    }).join('');
+    return `
+    <div style="margin-bottom:28px;border:2px solid #7c3aed;border-radius:8px;overflow:hidden;page-break-inside:avoid;">
+      <div style="background:#7c3aed;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">🇺🇸 ${meta.full}</div>
+          <div style="font-size:11px;opacity:0.85;margin-top:2px;">${meta.role}</div>
+        </div>
+        <div style="text-align:right;font-size:11px;">
+          <div style="font-weight:700;">${alerts.length} contratos · ${fmtL(monto)}</div>
+          ${criticos?`<div style="color:#fca5a5;">${criticos} CRÍTICOS</div>`:''}
+          ${altos?`<div style="color:#fde68a;">${altos} ALTOS</div>`:''}
+        </div>
+      </div>
+      <div style="padding:10px 16px;background:#faf5ff;font-size:11px;color:#555;border-bottom:1px solid #e9d5ff;">
+        <strong>Entidades involucradas:</strong> ${entidades.slice(0,5).join(' · ')}${entidades.length>5?' · …':''}
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead style="background:#f5f0ff;">
+          <tr>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;">ID</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;">Entidad</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;">Proveedor</th>
+            <th style="padding:6px 8px;text-align:right;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;">Monto</th>
+            <th style="padding:6px 8px;text-align:center;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;">Sev.</th>
+          </tr>
+        </thead>
+        <tbody>${detRows}${alerts.length>20?`<tr><td colspan="5" style="padding:8px;text-align:center;color:#888;font-size:10px;">… y ${alerts.length-20} contratos adicionales</td></tr>`:''}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — Reporte Lista Engel</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 portrait;margin:18mm 15mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;padding:24px 28px 20px;margin-bottom:20px;}
+    .kpi-row{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+    .kpi-box{flex:1;min-width:100px;border:1px solid #e9d5ff;border-radius:8px;padding:12px 14px;background:#faf5ff;text-align:center;}
+    .kpi-val{font-size:22px;font-weight:700;color:#7c3aed;}
+    .kpi-lbl{font-size:10px;color:#888;margin-top:4px;letter-spacing:.05em;}
+    .warning-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:#92400e;}
+    .footer{margin-top:30px;padding-top:12px;border-top:2px solid #7c3aed;display:flex;justify-content:space-between;font-size:10px;color:#888;}
+    .classification{background:#7c3aed;color:#fff;text-align:center;padding:6px;font-size:10px;font-weight:700;letter-spacing:.12em;margin-top:16px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:6px;">SISTEMA SENTINEL — HONDURAS</div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:4px;">🇺🇸 Reporte: Lista Engel EE.UU.</div>
+        <div style="font-size:11px;opacity:.8;">Ley RENACER · Depto. de Estado de los Estados Unidos · Corrupción Pública</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.8;">
+        <div style="font-size:13px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:4px;">${ds}</div>
+        <div style="margin-top:2px;">Base: ${(window.allAlerts||[]).length.toLocaleString()} contratos SEFIN</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-val">${activeActors.length}</div><div class="kpi-lbl">ACTORES EN LISTA</div></div>
+    <div class="kpi-box"><div class="kpi-val">${totalContratos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS VINCULADOS</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">${totalCriticos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
+    <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">MONTO TOTAL</div></div>
+    <div class="kpi-box"><div class="kpi-val">${fmtUSD2(totalMonto)}</div><div class="kpi-lbl">EQUIVALENTE USD</div></div>
+  </div>
+
+  <div class="warning-box">
+    ⚠️ <strong>Nota metodológica:</strong> Esta lista fue generada mediante cruce automatizado de apellidos normalizados de la Lista Engel del Departamento de Estado de EE.UU. (Ley RENACER) contra los registros de contratación pública de SEFIN-EDCA. Un "match" indica presencia del apellido en campos de proveedor, entidad o descripción — no constituye prueba de participación directa. Se requiere verificación manual por parte de personal autorizado.
+  </div>
+
+  ${actorRows}
+
+  <div class="footer">
+    <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras</div>
+    <div>Generado: ${ds} · ${folio}</div>
+  </div>
+  <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(html);
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ── OFAC PANEL — show / hide / render / PDF ───────────────────────────────────
+function showOfacPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('ofacPanel').classList.add('open');
+  document.getElementById('nav-ofac').classList.add('active');
+  renderOfacPanel();
+}
+function hideOfacPanel() {
+  document.getElementById('ofacPanel').classList.remove('open');
+  document.getElementById('nav-ofac').classList.remove('active');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+}
+
+function renderOfacPanel() {
+  if (!window.allAlerts || !window.allAlerts.length) {
+    document.getElementById('ofacBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">No hay datos cargados.</div>';
+    return;
+  }
+  const fmtL = n => { if (!n) return 'L. —'; if (n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+
+  const ofacAlerts = window.allAlerts.filter(a => {
+    const pats = Array.isArray(a.patterns) ? a.patterns : [a.patterns||''];
+    return pats.some(p => String(p).includes('SANCIONADO'));
+  });
+
+  // Update nav chip
+  const chip = document.getElementById('nav-ofac-chip');
+  if (chip) chip.textContent = ofacAlerts.length || '—';
+
+  // Group by proveedor
+  const provMap = {};
+  ofacAlerts.forEach(a => {
+    const prov = a.proveedor_nombre||a.supplier_name||a.proveedor||'PROVEEDOR DESCONOCIDO';
+    if (!provMap[prov]) provMap[prov] = [];
+    provMap[prov].push(a);
+  });
+  const provList = Object.entries(provMap).sort((a,b) => b[1].length - a[1].length);
+
+  const totalMonto = ofacAlerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+  const totalCriticos = ofacAlerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+  const entidades = new Set(ofacAlerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean));
+
+  // Update summary bar
+  document.getElementById('ofac-stat-proveedores').textContent = provList.length || '—';
+  document.getElementById('ofac-stat-contratos').textContent = ofacAlerts.length.toLocaleString() || '—';
+  document.getElementById('ofac-stat-monto').textContent = fmtL(totalMonto);
+  document.getElementById('ofac-stat-entidades').textContent = entidades.size || '—';
+
+  if (ofacAlerts.length === 0) {
+    document.getElementById('ofacBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">No se detectaron contratos con patrón SANCIONADO OFAC en la base de datos.</div>';
+    return;
+  }
+
+  let html = '';
+  provList.forEach(([prov, alerts]) => {
+    const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+    const criticos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+    const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
+    html += `
+    <div style="margin-bottom:28px;border:1px solid rgba(255,61,87,0.3);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;background:rgba(255,61,87,0.07);border-bottom:1px solid rgba(255,61,87,0.15);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--red);">🚨 ${prov}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px;">Proveedor sancionado OFAC SDN List</div>
+        </div>
+        <div style="display:flex;gap:14px;font-size:12px;">
+          <span style="color:var(--text-dim);">${alerts.length} contratos</span>
+          <span style="color:var(--text-dim);">${fmtL(monto)}</span>
+          ${criticos?`<span style="color:var(--red);font-weight:700;">${criticos} CRÍTICOS</span>`:''}
+          ${altos?`<span style="color:var(--amber);">${altos} ALTOS</span>`:''}
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:rgba(255,255,255,0.03);">
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">ID</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Entidad Compradora</th>
+          <th style="padding:8px 12px;text-align:right;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Monto</th>
+          <th style="padding:8px 12px;text-align:center;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Severidad</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Fecha</th>
+        </tr></thead>
+        <tbody>
+          ${alerts.slice(0,50).map(a => {
+            const sev=(a.severity||a.severidad||'').toUpperCase();
+            const sevColor=sev==='CRÍTICA'?'var(--red)':sev==='ALTA'?'var(--amber)':sev==='MEDIA'?'#4d9de0':'var(--muted)';
+            const ent=a.entity_name||a.entidad_nombre||'—';
+            const id=a.alert_id||a.id||'—';
+            const mc=Number(a.monto_contrato||0);
+            const fecha=a.fecha_contrato||a.created_at||'';
+            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="showAlertDetail('${id}')">
+              <td style="padding:7px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;">${String(id).slice(0,12)}…</td>
+              <td style="padding:7px 12px;color:var(--text);">${ent.length>40?ent.slice(0,40)+'…':ent}</td>
+              <td style="padding:7px 12px;text-align:right;color:var(--electric);">${fmtL(mc)}</td>
+              <td style="padding:7px 12px;text-align:center;color:${sevColor};font-weight:700;font-size:10px;">${sev||'—'}</td>
+              <td style="padding:7px 12px;color:var(--text-dim);font-size:11px;">${fecha?fecha.slice(0,10):'—'}</td>
+            </tr>`;
+          }).join('')}
+          ${alerts.length>50?`<tr><td colspan="5" style="padding:10px 12px;text-align:center;color:var(--muted);font-size:11px;">… y ${alerts.length-50} contratos más</td></tr>`:''}
+        </tbody>
+      </table>
+    </div>`;
+  });
+  document.getElementById('ofacBody').innerHTML = html;
+}
+
+function exportOfacPDF() {
+  if (!window.allAlerts || !window.allAlerts.length) { alert('Datos no cargados.'); return; }
+  const fmtL = n => { if (!n) return 'L. —'; if (n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const fmtUSD2 = n => { if (!n) return '—'; const u=n/USD_RATE; if(u>=1e6) return '$'+(u/1e6).toFixed(1)+'M USD'; return '$'+Math.round(u).toLocaleString('en-US')+' USD'; };
+  const today = new Date(); const ds = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-OFAC-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  const ofacAlerts = window.allAlerts.filter(a => {
+    const pats = Array.isArray(a.patterns) ? a.patterns : [a.patterns||''];
+    return pats.some(p => String(p).includes('SANCIONADO'));
+  });
+
+  const provMap = {};
+  ofacAlerts.forEach(a => {
+    const prov = a.proveedor_nombre||a.supplier_name||a.proveedor||'PROVEEDOR DESCONOCIDO';
+    if (!provMap[prov]) provMap[prov] = [];
+    provMap[prov].push(a);
+  });
+  const provList = Object.entries(provMap).sort((a,b) => b[1].length - a[1].length);
+  const totalMonto = ofacAlerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+  const totalCriticos = ofacAlerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+  const entidades = new Set(ofacAlerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean));
+
+  const provRows = provList.map(([prov, alerts]) => {
+    const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+    const criticos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+    const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
+    const entsInv = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
+    const detRows = alerts.slice(0,15).map(a => {
+      const sev=(a.severity||a.severidad||'').toUpperCase();
+      const sc=sev==='CRÍTICA'?'#dc2626':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
+      const ent=a.entity_name||a.entidad_nombre||'—';
+      const id=a.alert_id||a.id||'—';
+      const fecha=a.fecha_contrato||a.created_at||'';
+      return `<tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:5px 8px;font-family:monospace;font-size:9px;color:#666;">${String(id).slice(0,14)}</td>
+        <td style="padding:5px 8px;font-size:10px;">${ent.length>45?ent.slice(0,45)+'…':ent}</td>
+        <td style="padding:5px 8px;text-align:right;font-size:10px;">${fmtL(Number(a.monto_contrato||0))}</td>
+        <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:9px;color:${sc};">${sev}</td>
+        <td style="padding:5px 8px;font-size:9px;color:#666;">${fecha?fecha.slice(0,10):'—'}</td>
+      </tr>`;
+    }).join('');
+    return `
+    <div style="margin-bottom:28px;border:2px solid #dc2626;border-radius:8px;overflow:hidden;page-break-inside:avoid;">
+      <div style="background:#dc2626;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">🚨 ${prov}</div>
+          <div style="font-size:11px;opacity:0.85;margin-top:2px;">Proveedor Sancionado — OFAC SDN List</div>
+        </div>
+        <div style="text-align:right;font-size:11px;">
+          <div style="font-weight:700;">${alerts.length} contratos · ${fmtL(monto)}</div>
+          ${criticos?`<div style="color:#fca5a5;">${criticos} CRÍTICOS</div>`:''}
+          ${altos?`<div style="color:#fde68a;">${altos} ALTOS</div>`:''}
+        </div>
+      </div>
+      <div style="padding:10px 16px;background:#fff5f5;font-size:11px;color:#555;border-bottom:1px solid #fecaca;">
+        <strong>Entidades compraron a este proveedor:</strong> ${entsInv.slice(0,5).join(' · ')}${entsInv.length>5?' · …':''}
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead style="background:#fef2f2;">
+          <tr>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">ID</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Entidad Compradora</th>
+            <th style="padding:6px 8px;text-align:right;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Monto</th>
+            <th style="padding:6px 8px;text-align:center;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Sev.</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Fecha</th>
+          </tr>
+        </thead>
+        <tbody>${detRows}${alerts.length>15?`<tr><td colspan="5" style="padding:8px;text-align:center;color:#888;font-size:10px;">… y ${alerts.length-15} contratos adicionales</td></tr>`:''}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — Reporte Sanciones OFAC</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 portrait;margin:18mm 15mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fff;padding:24px 28px 20px;margin-bottom:20px;}
+    .kpi-row{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+    .kpi-box{flex:1;min-width:100px;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;background:#fff5f5;text-align:center;}
+    .kpi-val{font-size:22px;font-weight:700;color:#dc2626;}
+    .kpi-lbl{font-size:10px;color:#888;margin-top:4px;letter-spacing:.05em;}
+    .warning-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:#92400e;}
+    .footer{margin-top:30px;padding-top:12px;border-top:2px solid #dc2626;display:flex;justify-content:space-between;font-size:10px;color:#888;}
+    .classification{background:#dc2626;color:#fff;text-align:center;padding:6px;font-size:10px;font-weight:700;letter-spacing:.12em;margin-top:16px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:6px;">SISTEMA SENTINEL — HONDURAS</div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:4px;">🚨 Reporte: Sanciones OFAC</div>
+        <div style="font-size:11px;opacity:.8;">Specially Designated Nationals · Tesoro de los Estados Unidos · SDN List</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.8;">
+        <div style="font-size:13px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:4px;">${ds}</div>
+        <div style="margin-top:2px;">Base: ${(window.allAlerts||[]).length.toLocaleString()} contratos SEFIN</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-val">${provList.length}</div><div class="kpi-lbl">PROVEEDORES SANCIONADOS</div></div>
+    <div class="kpi-box"><div class="kpi-val">${ofacAlerts.length.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS DETECTADOS</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">${totalCriticos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
+    <div class="kpi-box"><div class="kpi-val">${entidades.size}</div><div class="kpi-lbl">ENTIDADES AFECTADAS</div></div>
+    <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">MONTO TOTAL</div></div>
+  </div>
+
+  <div class="warning-box">
+    ⚠️ <strong>Nota metodológica:</strong> Este reporte identifica contratos de compra pública de Honduras cuyos proveedores presentan el patrón PROVEEDOR_SANCIONADO_OFAC en el sistema Sentinel. La designación OFAC implica que el proveedor aparece en la lista SDN del Tesoro de los EE.UU., lo que puede constituir violación de sanciones internacionales. Requiere verificación y acción inmediata por parte de las autoridades competentes.
+  </div>
+
+  ${ofacAlerts.length === 0 ? '<div style="text-align:center;padding:40px;color:#888;">No se detectaron contratos con patrón SANCIONADO OFAC en la base de datos.</div>' : provRows}
+
+  <div class="footer">
+    <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras</div>
+    <div>Generado: ${ds} · ${folio}</div>
+  </div>
+  <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(html);
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 function matchHighRiskContracts(title, summary) {

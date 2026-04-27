@@ -2546,6 +2546,14 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="fuente-recent-title">Contratos Recientes (últimas 5)</div>
         <div class="fuente-recent-list" id="ep-recent"></div>
       </div>
+      <!-- Empresas Abiertas — only shown in vendor mode -->
+      <div id="ea-vendor-card" style="display:none;margin-top:12px;" class="fuente-chart-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="fuente-recent-title" style="font-size:12px;">🏢 Registro Mercantil</div>
+          <button onclick="lookupEmpresasAbiertas()" id="ea-lookup-btn2" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--accent);font-size:10px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;">🔍 Consultar EA</button>
+        </div>
+        <div id="ea-lookup-result2" style="font-size:11px;color:var(--text-dim);">Presiona para buscar en Empresas Abiertas</div>
+      </div>
     </div>
 
     <!-- Sobrecosto drill-down -->
@@ -4971,6 +4979,10 @@ function showEntityPanel(entityName) {
     ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
     : 'L —';
 
+  // Hide EA vendor card when viewing entity (not vendor)
+  const _eaCard = document.getElementById('ea-vendor-card');
+  if (_eaCard) _eaCard.style.display = 'none';
+
   document.getElementById('ep-title').innerHTML     = `<span>${entityName}</span> — Resumen`;
   document.getElementById('ep-total').textContent   = data.length;
   document.getElementById('ep-critica').textContent = counts.critica;
@@ -5108,6 +5120,12 @@ function showVendorPanel(vendorName) {
           <span class="fri-sev" style="color:${sevColor(a.severity)}">${a.severity||'—'}</span>
         </div>`).join('')
     : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos para este proveedor.</div>`;
+
+  // Show EA card in vendor mode, reset result
+  const eaCard = document.getElementById('ea-vendor-card');
+  const eaRes  = document.getElementById('ea-lookup-result2');
+  if (eaCard) eaCard.style.display = 'block';
+  if (eaRes)  eaRes.innerHTML = 'Presiona para buscar en Empresas Abiertas';
 
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.getElementById('entityPanel').classList.add('open');
@@ -5378,14 +5396,24 @@ function closeVendorDetail() {
 //      GET /search_engine/get_sociedad/{id}  → returns socios[]
 // ════════════════════════════════════════════════════════════
 async function lookupEmpresasAbiertas() {
-  const titleEl = document.getElementById('ep-vendor-detail-title');
-  const vendorName = (titleEl ? titleEl.textContent.split(' — ')[0] : '').trim();
+  // Works from both: vendor panel (ep-title) and vendor drill-down (ep-vendor-detail-title)
+  const drillTitle = document.getElementById('ep-vendor-detail-title');
+  const panelTitle = document.getElementById('ep-title');
+  let vendorName = '';
+  if (drillTitle && drillTitle.offsetParent !== null) {
+    vendorName = drillTitle.textContent.split(' — ')[0].trim();
+  } else if (panelTitle) {
+    vendorName = panelTitle.textContent.replace(/^🏢\s*/, '').split(' — ')[0].trim();
+  }
   if (!vendorName) return;
 
-  const resultEl = document.getElementById('ea-lookup-result');
-  const btnEl    = document.getElementById('ea-lookup-btn');
-  resultEl.innerHTML = '⏳ Consultando registro mercantil…';
-  if (btnEl) btnEl.disabled = true;
+  // Support both result containers
+  const resultEl  = document.getElementById('ea-lookup-result')  || document.getElementById('ea-lookup-result2');
+  const resultEl2 = document.getElementById('ea-lookup-result2') || document.getElementById('ea-lookup-result');
+  const btnEl     = document.getElementById('ea-lookup-btn');
+  const btnEl2    = document.getElementById('ea-lookup-btn2');
+  [resultEl, resultEl2].forEach(el => { if (el) el.innerHTML = '⏳ Consultando registro mercantil…'; });
+  [btnEl, btnEl2].forEach(el => { if (el) el.disabled = true; });
 
   const EA_BASE = 'https://buscar.empresasabiertas.com/search_engine';
 
@@ -5423,7 +5451,7 @@ async function lookupEmpresasAbiertas() {
       `<a href="https://buscar.empresasabiertas.com/empresa/${h._id}" target="_blank" style="color:var(--accent);text-decoration:none;">${h._source.razon_social}</a>`
     ).join(', ');
 
-    resultEl.innerHTML = `
+    const html = `
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
         <span style="font-weight:700;color:var(--text);">${razon}</span>
         <span style="font-size:9px;padding:2px 6px;border-radius:3px;background:var(--glass);color:${matchColor};border:1px solid ${matchColor};">
@@ -5447,10 +5475,12 @@ async function lookupEmpresasAbiertas() {
         </a>
         ${altLinks ? `<span style="font-size:10px;color:var(--text-dim);">También: ${altLinks}</span>` : ''}
       </div>`;
+    [resultEl, resultEl2].forEach(el => { if (el) el.innerHTML = html; });
   } catch(e) {
-    resultEl.innerHTML = `<span style="color:var(--red,#ef4444);">Error de conexión con Empresas Abiertas.</span>`;
+    const errHtml = `<span style="color:var(--red,#ef4444);">Error de conexión con Empresas Abiertas.</span>`;
+    [resultEl, resultEl2].forEach(el => { if (el) el.innerHTML = errHtml; });
   } finally {
-    if (btnEl) btnEl.disabled = false;
+    [btnEl, btnEl2].forEach(el => { if (el) el.disabled = false; });
   }
 }
 

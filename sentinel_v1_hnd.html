@@ -2489,7 +2489,12 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <button onclick="exportEntityPDF('pareto')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="PDF top contratos (80% del monto)">📄 Pareto</button>
         <button onclick="exportEntityPDF('todo')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="PDF con todos los contratos">⬇ Todo</button>
         <button onclick="openReferModalEntity()" style="padding:5px 12px;border-radius:5px;border:1px solid rgba(99,102,241,0.35);background:rgba(99,102,241,0.12);color:#818cf8;font-size:11px;cursor:pointer;transition:all .2s;" title="Generar memorándum de referencia para esta entidad">📋 Referir</button>
+        <button id="ea-header-btn" onclick="lookupEmpresasAbiertas()" style="display:none;padding:5px 12px;border-radius:5px;border:1px solid rgba(34,197,94,0.35);background:rgba(34,197,94,0.12);color:#4ade80;font-size:11px;cursor:pointer;transition:all .2s;" title="Buscar en Empresas Abiertas (registro de socios)">🏢 Reg. Mercantil</button>
       </div>
+    </div>
+    <!-- EA inline result — shown in vendor mode -->
+    <div id="ea-inline-result" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:6px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);font-size:11px;color:var(--text-dim);">
+      Presiona <strong style="color:#4ade80;">🏢 Reg. Mercantil</strong> para buscar socios y matrícula en Empresas Abiertas.
     </div>
 
     <!-- Count stats row -->
@@ -4190,7 +4195,7 @@ function render() {
       const m = (a.description || '').match(new RegExp(key + ':\\s*([^\\n]+)'));
       return m ? m[1].trim() : null;
     };
-    const proveedorDisplay = parseDesc('Proveedor') || a.proveedor_nombre || a.entity_name || '—';
+    const proveedorDisplay = parseDesc('Proveedor') || a.proveedor_nombre || '—';
     const entidadDisplay   = parseDesc('Entidad compradora') || a.entity_name || '—';
 
     return `<tr onclick="openAlertDetail(${a.id}, event)">
@@ -4979,9 +4984,13 @@ function showEntityPanel(entityName) {
     ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
     : 'L —';
 
-  // Hide EA vendor card when viewing entity (not vendor)
-  const _eaCard = document.getElementById('ea-vendor-card');
-  if (_eaCard) _eaCard.style.display = 'none';
+  // Hide all EA vendor controls when viewing entity (not vendor)
+  const _eaCard   = document.getElementById('ea-vendor-card');
+  const _eaHdrBtn = document.getElementById('ea-header-btn');
+  const _eaInline = document.getElementById('ea-inline-result');
+  if (_eaCard)   _eaCard.style.display   = 'none';
+  if (_eaHdrBtn) _eaHdrBtn.style.display = 'none';
+  if (_eaInline) _eaInline.style.display = 'none';
 
   document.getElementById('ep-title').innerHTML     = `<span>${entityName}</span> — Resumen`;
   document.getElementById('ep-total').textContent   = data.length;
@@ -5064,9 +5073,9 @@ function showVendorPanel(vendorName) {
   if (typeof newsTimer !== 'undefined' && newsTimer) { clearInterval(newsTimer); newsTimer = null; }
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
 
-  // Filter by proveedor_nombre (or fallback to entity_name for legacy alerts)
+  // Filter by proveedor_nombre or parsed description (no entity_name fallback)
   const data = allAlerts.filter(a => {
-    const p = a.proveedor_nombre || parseDesc_for('Proveedor', a.description) || a.entity_name || '';
+    const p = a.proveedor_nombre || parseDesc_for('Proveedor', a.description) || '';
     return p === vendorName;
   });
   _epCurrentEntity = vendorName;
@@ -5121,11 +5130,15 @@ function showVendorPanel(vendorName) {
         </div>`).join('')
     : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos para este proveedor.</div>`;
 
-  // Show EA card in vendor mode, reset result
-  const eaCard = document.getElementById('ea-vendor-card');
-  const eaRes  = document.getElementById('ea-lookup-result2');
-  if (eaCard) eaCard.style.display = 'block';
-  if (eaRes)  eaRes.innerHTML = 'Presiona para buscar en Empresas Abiertas';
+  // Show EA controls in vendor mode
+  const eaCard    = document.getElementById('ea-vendor-card');
+  const eaRes     = document.getElementById('ea-lookup-result2');
+  const eaHdrBtn  = document.getElementById('ea-header-btn');
+  const eaInline  = document.getElementById('ea-inline-result');
+  if (eaCard)   eaCard.style.display   = 'block';
+  if (eaRes)    eaRes.innerHTML = 'Presiona para buscar en Empresas Abiertas';
+  if (eaHdrBtn) eaHdrBtn.style.display = 'inline-flex';
+  if (eaInline) { eaInline.style.display = 'block'; eaInline.innerHTML = 'Presiona <strong style="color:#4ade80;">🏢 Reg. Mercantil</strong> para buscar socios y matrícula en Empresas Abiertas.'; }
 
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.getElementById('entityPanel').classList.add('open');
@@ -5407,13 +5420,15 @@ async function lookupEmpresasAbiertas() {
   }
   if (!vendorName) return;
 
-  // Support both result containers
-  const resultEl  = document.getElementById('ea-lookup-result')  || document.getElementById('ea-lookup-result2');
-  const resultEl2 = document.getElementById('ea-lookup-result2') || document.getElementById('ea-lookup-result');
+  // All result/button containers (header inline + drill-down cards)
+  const resultEl  = document.getElementById('ea-lookup-result');
+  const resultEl2 = document.getElementById('ea-lookup-result2');
+  const eaInline  = document.getElementById('ea-inline-result');
   const btnEl     = document.getElementById('ea-lookup-btn');
   const btnEl2    = document.getElementById('ea-lookup-btn2');
-  [resultEl, resultEl2].forEach(el => { if (el) el.innerHTML = '⏳ Consultando registro mercantil…'; });
-  [btnEl, btnEl2].forEach(el => { if (el) el.disabled = true; });
+  const btnHdr    = document.getElementById('ea-header-btn');
+  [resultEl, resultEl2, eaInline].forEach(el => { if (el && el.style.display !== 'none') el.innerHTML = '⏳ Consultando registro mercantil…'; });
+  [btnEl, btnEl2, btnHdr].forEach(el => { if (el) el.disabled = true; });
 
   const EA_BASE = 'https://buscar.empresasabiertas.com/search_engine';
 
@@ -5475,12 +5490,12 @@ async function lookupEmpresasAbiertas() {
         </a>
         ${altLinks ? `<span style="font-size:10px;color:var(--text-dim);">También: ${altLinks}</span>` : ''}
       </div>`;
-    [resultEl, resultEl2].forEach(el => { if (el) el.innerHTML = html; });
+    [resultEl, resultEl2, eaInline].forEach(el => { if (el) el.innerHTML = html; });
   } catch(e) {
     const errHtml = `<span style="color:var(--red,#ef4444);">Error de conexión con Empresas Abiertas.</span>`;
-    [resultEl, resultEl2].forEach(el => { if (el) el.innerHTML = errHtml; });
+    [resultEl, resultEl2, eaInline].forEach(el => { if (el) el.innerHTML = errHtml; });
   } finally {
-    [btnEl, btnEl2].forEach(el => { if (el) el.disabled = false; });
+    [btnEl, btnEl2, btnHdr].forEach(el => { if (el) el.disabled = false; });
   }
 }
 

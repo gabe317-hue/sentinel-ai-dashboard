@@ -10468,6 +10468,8 @@ const ENTITY_ALIASES = {
 // PRINT BUTTON HELPER — injects into all report windows
 // ════════════════════════════════════════════════════════════
 function addPrintBtn(html) {
+  // Strip any existing inline print buttons to avoid duplicates
+  html = html.replace(/<button[^>]*onclick="window\.print\(\)"[^>]*>[\s\S]*?<\/button>/g, '');
   const btn = '<button class="no-print" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:#1a56db;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;"><span>🖨️</span> Imprimir / Guardar como PDF</button>';
   return html.replace('</body>', btn + '\n</body>');
 }

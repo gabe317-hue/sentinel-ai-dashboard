@@ -253,6 +253,7 @@ body.modo-demo .stats-grid         { display: none !important; }
 body.modo-demo .controls-bar       { display: none !important; }
 body.modo-demo #mainTableContainer { display: none !important; }
 body.modo-demo .risk-band          { display: none !important; }
+body.modo-demo #risk-band-exec     { display: flex !important; } /* keep exec risk band visible in presentation mode */
 body.modo-demo #demo-exit-bar      { display: flex !important; }
 /* Widen exec-grid in demo mode for more breathing room */
 body.modo-demo .exec-grid          { grid-template-columns: repeat(4, 1fr) !important; }
@@ -6831,6 +6832,20 @@ function generarEjecutivaPDF() {
   // Read live values from DOM (populated by renderEjecutiva())
   const g = id => { const el = document.getElementById(id); return el ? el.textContent.trim() : '—'; };
 
+  // ── Source breakdown (SEFIN vs ONCAE) for PDF header ──
+  const _alll = window.allAlerts || [];
+  const _normSevSrc = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'');
+  const _isHighRisk = a => { const sv = _normSevSrc(a.severity); return sv === 'critica' || sv === 'alta'; };
+  const _sefinHR   = _alll.filter(a => !String(a.data_source||'').includes('ONCAE') && _isHighRisk(a));
+  const _oncaeHR   = _alll.filter(a =>  String(a.data_source||'').includes('ONCAE') && _isHighRisk(a));
+  const _sumM = arr => arr.reduce((s,a) => s + (parseFloat(a.monto_contrato)||0), 0);
+  const fmtLsrc = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', {maximumFractionDigits:0}) : 'L —';
+  const sefinMonto  = fmtLsrc(_sumM(_sefinHR));
+  const oncaeMonto  = fmtLsrc(_sumM(_oncaeHR));
+  const sefinCnt    = _sefinHR.length.toLocaleString('es-HN');
+  const oncaeCnt    = _oncaeHR.length.toLocaleString('es-HN');
+  const oncaeYears  = [...new Set(_oncaeHR.map(a => (a.data_source||'').replace('ONCAE-HC1-','').slice(0,4)).filter(y => y.match(/^\d{4}$/)))].sort().join(', ');
+
   const riskTotal    = g('exec-risk-total');
   const riskCritica  = g('exec-risk-critica');
   const riskAlta     = g('exec-risk-alta');
@@ -6993,7 +7008,7 @@ function generarEjecutivaPDF() {
 <div class="header-bar">
   <div>
     <div class="header-title">🛡️ Sentinel-AI — Briefing Ejecutivo</div>
-    <div class="header-sub">Monitoreo de Contratación Pública — Honduras · SEFIN/EDCA 2023–2025</div>
+    <div class="header-sub">Monitoreo de Contratación Pública — Honduras · SEFIN/EDCA 2023–2025 · ONCAE/Honducompras 2019–2024</div>
   </div>
   <div class="header-meta">
     <div style="font-weight:700;">${esc(folio)}</div>
@@ -7022,6 +7037,23 @@ function generarEjecutivaPDF() {
       <div class="risk-bk-val" style="color:#ffab00;">${esc(riskAlta)}</div>
       <div style="font-size:9px;color:#ffab00;font-weight:700;margin-top:2px;">⬤ Altos</div>
       <div class="risk-bk-cnt">${esc(riskAltCnt)}</div>
+    </div>
+  </div>
+</div>
+<!-- Source breakdown row -->
+<div style="display:flex;gap:12px;margin-bottom:20px;">
+  <div style="flex:1;background:#f0f4ff;border:1px solid #c7d7f7;border-left:4px solid #2563eb;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#2563eb;text-transform:uppercase;margin-bottom:3px;">SEFIN / EDCA — Ejecución de Pagos</div>
+      <div style="font-size:18px;font-weight:900;color:#1a2035;">${esc(sefinMonto)}</div>
+      <div style="font-size:10px;color:#555;margin-top:2px;">${esc(sefinCnt)} contratos Críticos + Altos</div>
+    </div>
+  </div>
+  <div style="flex:1;background:#fff5f0;border:1px solid #fed7c3;border-left:4px solid #f97316;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f97316;text-transform:uppercase;margin-bottom:3px;">ONCAE / Honducompras — Proceso de Contratación · ${esc(oncaeYears)}</div>
+      <div style="font-size:18px;font-weight:900;color:#1a2035;">${esc(oncaeMonto)}</div>
+      <div style="font-size:10px;color:#555;margin-top:2px;">${esc(oncaeCnt)} contratos Críticos + Altos</div>
     </div>
   </div>
 </div>

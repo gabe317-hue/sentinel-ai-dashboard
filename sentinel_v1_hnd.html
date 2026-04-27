@@ -4201,7 +4201,7 @@ function render() {
     return `<tr onclick="openAlertDetail(${a.id}, event)">
       <td><span class="cell-id">${a.alert_id || ('#' + a.id)}</span></td>
       <td><span class="cell-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${desc}</span></td>
-      <td><button class="cell-entity-link" onclick="event.stopPropagation();showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button></td>
+      <td>${proveedorDisplay !== '—' ? `<button class="cell-entity-link" onclick="event.stopPropagation();showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button>` : `<span style="color:var(--text-dim);">—</span>`}</td>
       <td><button class="cell-entity-link" onclick="event.stopPropagation();showEntityPanel('${entidadDisplay.replace(/'/g,"\\'")}')">${entidadDisplay}</button></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
       <td><span class="cell-source">${a.data_source || '—'}</span></td>
@@ -12349,7 +12349,7 @@ function renderEjecutiva() {
     return `<tr onclick="openAlertDetail(${a.id}, event)" style="cursor:pointer;">
       <td class="cell-id">${alertId}</td>
       <td class="cell-desc" style="max-width:180px;">
-        <button class="cell-entity-link" onclick="event.stopPropagation();showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button>
+        ${proveedorDisplay !== '—' ? `<button class="cell-entity-link" onclick="event.stopPropagation();showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button>` : `<span style="color:var(--text-dim);">—</span>`}
       </td>
       <td class="cell-entity">
         <button class="cell-entity-link" onclick="event.stopPropagation();showEntityPanel('${entidadDisplay.replace(/'/g,"\\'")}')">${entidadDisplay}</button>

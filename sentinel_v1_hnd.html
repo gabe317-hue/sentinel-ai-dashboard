@@ -3759,6 +3759,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <label class="form-label">Fuente</label>
       <select class="form-select" id="f-source">
         <option value="HonduCompras">HonduCompras</option>
+        <option value="ONCAE">ONCAE</option>
         <option value="TSC">TSC</option>
         <option value="Fuentes Editoriales">Fuentes Editoriales</option>
         <option value="Reportero Ciudadano">Reportero Ciudadano</option>
@@ -10240,15 +10241,20 @@ const ENGEL_LIST_HND = [
 ];
 
 const PATTERN_LABELS = {
-  PROVEEDOR_SANCIONADO:    '🚨 Proveedor Sancionado OFAC',
-  FRACCIONAMIENTO_MICRO:   'Fraccionamiento de Contratos',
-  COMPRA_EMERGENCIA:       'Compra de Emergencia',
-  ADJUDICACION_DIRECTA:    'Adjudicación Directa',
-  PROVEEDOR_SIN_HISTORIAL: 'Proveedor Sin Historial',
-  MONTO_FRACCIONADO:       'Monto Fraccionado',
-  SOBRECOSTO:              '📈 Sobrecosto Presupuestario',
-  URGENCIA_INJUSTIFICADA:  'Urgencia Injustificada',
-  ENGEL:                   '🇺🇸 Lista Engel EE.UU.',
+  PROVEEDOR_SANCIONADO:        '🚨 Proveedor Sancionado OFAC',
+  FRACCIONAMIENTO_MICRO:       'Fraccionamiento de Contratos',
+  COMPRA_EMERGENCIA:           'Compra de Emergencia',
+  ADJUDICACION_DIRECTA:        'Adjudicación Directa',
+  PROVEEDOR_SIN_HISTORIAL:     'Proveedor Sin Historial',
+  MONTO_FRACCIONADO:           'Monto Fraccionado',
+  SOBRECOSTO:                  '📈 Sobrecosto Presupuestario',
+  URGENCIA_INJUSTIFICADA:      'Urgencia Injustificada',
+  ENGEL:                       '🇺🇸 Lista Engel EE.UU.',
+  // ONCAE patterns
+  CONTRATACION_DIRECTA_ONCAE:  '⚡ Contratación Directa (ONCAE)',
+  PERIODO_URGENTE_ONCAE:       '🔴 Período Urgente (ONCAE)',
+  PERIODO_MINIMO_ONCAE:        '⚠️ Período Mínimo (ONCAE)',
+  LICITACION_PRIVADA_ONCAE:    '🔒 Licitación Privada (ONCAE)',
 };
 
 function fmtLarge(n) {

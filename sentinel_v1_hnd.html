@@ -2010,7 +2010,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="exec-subtitle" id="execSubtitle">Cargando datos...</div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;margin-top:4px;">
-        <button onclick="generarEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;">📄 Exportar PDF</button>
+        <button onclick="generarEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;">📄 PDF</button>
       </div>
     </div>
     <!-- 3-column grid: Critical alerts, Top risk entities, System status -->
@@ -3531,6 +3531,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div class="tl-year-row">
       <span class="tl-year-lbl">Año:</span>
       <button class="tl-year-btn active" id="tl-yr-all"  onclick="setTlYear('')">Todos</button>
+      <button class="tl-year-btn" id="tl-yr-2019" onclick="setTlYear('2019')">2019</button>
+      <button class="tl-year-btn" id="tl-yr-2020" onclick="setTlYear('2020')">2020</button>
+      <button class="tl-year-btn" id="tl-yr-2021" onclick="setTlYear('2021')">2021</button>
+      <button class="tl-year-btn" id="tl-yr-2022" onclick="setTlYear('2022')">2022</button>
       <button class="tl-year-btn" id="tl-yr-2023" onclick="setTlYear('2023')">2023</button>
       <button class="tl-year-btn" id="tl-yr-2024" onclick="setTlYear('2024')">2024</button>
       <button class="tl-year-btn" id="tl-yr-2025" onclick="setTlYear('2025')">2025</button>
@@ -3557,7 +3561,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div id="tl-mes-section">
       <!-- Stacked bar chart (Chart.js) -->
       <div class="fuente-chart-card" style="margin-bottom:20px;">
-        <div class="fuente-recent-title" id="tl-chart-title">Contratos por mes</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div class="fuente-recent-title" id="tl-chart-title" style="margin-bottom:0;">Contratos por mes</div>
+          <button class="tl-export-btn pdf" onclick="exportTimelineMesPDF()" title="Exportar tabla mensual a PDF">📄 PDF</button>
+        </div>
         <div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;opacity:0.7;">
           Apilado por severidad — <span style="color:var(--red);">■</span> Crítica &nbsp;
           <span style="color:#ff6b35;">■</span> Alta &nbsp;
@@ -3610,7 +3617,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
       <!-- Horizontal bar chart — top 20 -->
       <div class="fuente-chart-card" style="margin-bottom:20px;">
-        <div class="fuente-recent-title" id="tl-prov-chart-title">Top 20 Proveedores</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div class="fuente-recent-title" id="tl-prov-chart-title" style="margin-bottom:0;">Top 20 Proveedores</div>
+          <button class="tl-export-btn pdf" onclick="exportTimelineProvPDF()" title="Exportar ranking de proveedores a PDF">📄 PDF</button>
+        </div>
         <div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;opacity:0.7;">
           Apilado por severidad — <span style="color:var(--red);">■</span> Crítica &nbsp;
           <span style="color:#ff6b35;">■</span> Alta &nbsp;
@@ -3710,7 +3720,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         Ley RENACER · Actores Honduras sancionados o designados por corrupción
       </div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="pdf-btn" onclick="exportEngelPDF()" style="background:rgba(168,85,247,0.12);color:var(--purple);border-color:rgba(168,85,247,0.35);">📄 Exportar PDF</button>
+        <button class="pdf-btn" onclick="exportEngelPDF()" style="background:rgba(168,85,247,0.12);color:var(--purple);border-color:rgba(168,85,247,0.35);">📄 PDF</button>
       </div>
     </div>
 
@@ -3739,7 +3749,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         Specially Designated Nationals (SDN) · Proveedores con sanción activa del gobierno de EE.UU.
       </div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="pdf-btn" onclick="exportOfacPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);">📄 Exportar PDF</button>
+        <button class="pdf-btn" onclick="exportOfacPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);">📄 PDF</button>
       </div>
     </div>
 
@@ -6560,7 +6570,7 @@ function _parseDescFieldR(desc, key) {
 }
 
 function openReferModal(id) {
-  const a = (window.allAlerts || []).find(x => x.id === id);
+  const a = (window.allAlerts || []).find(x => String(x.id) === String(id));
   if (!a) return;
   const desc = a.description || '';
   const proveedor = _parseDescFieldR(desc, 'Proveedor') || a.proveedor_nombre || '—';
@@ -7868,7 +7878,7 @@ function setTlMode(mode) {
 
 function setTlYear(year) {
   _tlYear = year;
-  ['all','2023','2024','2025'].forEach(y => {
+  ['all','2019','2020','2021','2022','2023','2024','2025'].forEach(y => {
     const btn = document.getElementById('tl-yr-' + (y === 'all' ? 'all' : y));
     if (btn) btn.classList.toggle('active', (y === 'all' ? '' : y) === year);
   });
@@ -8167,6 +8177,142 @@ function exportTlCSV() {
   a.download = 'Sentinel_' + title.replace(/[^a-zA-Z0-9]/g,'_').substring(0,40) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function exportTimelineMesPDF() {
+  if (!allAlerts || !allAlerts.length) return;
+  const fmtL = n => n > 0 ? 'L. ' + Number(n).toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
+  const esc  = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const entityFilter = (document.getElementById('tl-entity-select')||{}).value || '';
+  let filtered = entityFilter ? allAlerts.filter(a => a.entity_name === entityFilter) : allAlerts;
+  if (_tlYear) filtered = filtered.filter(a => {
+    const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
+    return raw.startsWith(_tlYear);
+  });
+  const monthMap = {};
+  filtered.forEach(a => {
+    const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
+    if (!raw || raw.length < 7) return;
+    const ym = raw.substring(0,7);
+    if (!monthMap[ym]) monthMap[ym] = {total:0,critica:0,alta:0,media:0,baja:0,monto:0};
+    const norm = (a.severity||'Baja').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    monthMap[ym].total++;
+    if      (norm==='critica') monthMap[ym].critica++;
+    else if (norm==='alta')    monthMap[ym].alta++;
+    else if (norm==='media')   monthMap[ym].media++;
+    else                       monthMap[ym].baja++;
+    monthMap[ym].monto += Number(a.monto_contrato||0);
+  });
+  const sortedMonths = Object.keys(monthMap).sort();
+  const fmtMon = ym => new Date(ym+'-02').toLocaleDateString('es-HN',{month:'long',year:'numeric'});
+  const timestamp = new Date().toISOString().slice(0,10);
+  const yearLabel = _tlYear || 'Todos los años';
+  const rows = sortedMonths.map(ym => {
+    const d = monthMap[ym];
+    return `<tr>
+      <td>${esc(fmtMon(ym))}</td>
+      <td style="text-align:right;font-weight:700;">${d.total}</td>
+      <td style="text-align:center;color:#c0392b;">${d.critica||'—'}</td>
+      <td style="text-align:center;color:#d35400;">${d.alta||'—'}</td>
+      <td style="text-align:center;color:#e67e22;">${d.media||'—'}</td>
+      <td style="text-align:center;color:#27ae60;">${d.baja||'—'}</td>
+      <td style="text-align:right;">${fmtL(d.monto)}</td>
+    </tr>`;
+  }).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+  @page{size:A4 portrait;margin:1.5cm 1cm 2cm 1cm}
+  body{font-family:Arial,sans-serif;font-size:10pt;color:#222;margin:0;padding:16px}
+  h1{color:#0A1628;font-size:16pt;margin-bottom:4px;margin-top:0}
+  .meta{color:#7F8C8D;font-size:9pt;margin-bottom:14px}
+  table{border-collapse:collapse;width:100%;margin-top:10px}
+  th{background:#1A3A6B;color:#fff;padding:6px 8px;font-size:9pt;text-align:left}
+  td{padding:5px 8px;border:1px solid #D0D7E2;font-size:9pt}
+  tr:nth-child(even){background:#f4f8ff}
+  .btn{display:inline-block;margin:0 0 14px 0;padding:8px 18px;background:#1A3A6B;color:#fff;border:none;border-radius:6px;font-size:10pt;cursor:pointer}
+  @media print{.btn{display:none}}
+</style></head><body>
+<button class="btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+<h1>Cronología — Contratos por Mes</h1>
+<div class="meta">Año: ${esc(yearLabel)} · ${entityFilter ? esc(entityFilter) : 'Todas las entidades'} · Generado: ${timestamp}</div>
+<table>
+  <thead><tr><th>Mes</th><th style="text-align:right">Total</th><th style="text-align:center">Crítica</th><th style="text-align:center">Alta</th><th style="text-align:center">Media</th><th style="text-align:center">Baja</th><th style="text-align:right">Monto (L.)</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+</body></html>`;
+  const pw = window.open('','_blank','width=1050,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes.'); return; }
+  pw.document.write(addPrintBtn ? addPrintBtn(html) : html);
+  pw.document.close();
+}
+
+function exportTimelineProvPDF() {
+  if (!allAlerts || !allAlerts.length) return;
+  const fmtL = n => n > 0 ? 'L. ' + Number(n).toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
+  const esc  = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const entityFilter = (document.getElementById('tl-entity-select')||{}).value || '';
+  let filtered = entityFilter ? allAlerts.filter(a => a.entity_name === entityFilter) : allAlerts;
+  if (_tlYear) filtered = filtered.filter(a => {
+    const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
+    return raw.startsWith(_tlYear);
+  });
+  const isMonto = _tlMode === 'monto';
+  const provMap = {};
+  let grandMonto = 0;
+  filtered.forEach(a => {
+    const prov = (a.proveedor_nombre||a.supplier_name||a.proveedor||'').trim() || 'Sin nombre';
+    if (!provMap[prov]) provMap[prov] = {total:0,critica:0,alta:0,media:0,baja:0,monto:0};
+    const norm = (a.severity||'Baja').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    provMap[prov].total++;
+    if      (norm==='critica') provMap[prov].critica++;
+    else if (norm==='alta')    provMap[prov].alta++;
+    else if (norm==='media')   provMap[prov].media++;
+    else                       provMap[prov].baja++;
+    provMap[prov].monto += Number(a.monto_contrato||0);
+    grandMonto += Number(a.monto_contrato||0);
+  });
+  const sorted = Object.entries(provMap).sort((a,b) => isMonto ? b[1].monto - a[1].monto : b[1].total - a[1].total).slice(0,50);
+  const timestamp = new Date().toISOString().slice(0,10);
+  const yearLabel = _tlYear || 'Todos los años';
+  const rows = sorted.map(([prov,d],i) => {
+    const pct = grandMonto > 0 ? (d.monto/grandMonto*100).toFixed(1)+'%' : '—';
+    return `<tr>
+      <td style="font-family:monospace;font-size:9pt;color:#999;">${i+1}</td>
+      <td>${esc(prov)}</td>
+      <td style="text-align:right;font-weight:700;">${d.total}</td>
+      <td style="text-align:center;color:#c0392b;">${d.critica||'—'}</td>
+      <td style="text-align:center;color:#d35400;">${d.alta||'—'}</td>
+      <td style="text-align:center;color:#e67e22;">${d.media||'—'}</td>
+      <td style="text-align:center;color:#27ae60;">${d.baja||'—'}</td>
+      <td style="text-align:right;">${fmtL(d.monto)}</td>
+      <td style="text-align:right;">${pct}</td>
+    </tr>`;
+  }).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+  @page{size:A4 landscape;margin:1.5cm 1cm 2cm 1cm}
+  body{font-family:Arial,sans-serif;font-size:9.5pt;color:#222;margin:0;padding:16px}
+  h1{color:#0A1628;font-size:16pt;margin-bottom:4px;margin-top:0}
+  .meta{color:#7F8C8D;font-size:9pt;margin-bottom:14px}
+  table{border-collapse:collapse;width:100%;margin-top:10px}
+  th{background:#1A3A6B;color:#fff;padding:6px 8px;font-size:8.5pt;text-align:left}
+  td{padding:5px 8px;border:1px solid #D0D7E2;font-size:8.5pt}
+  tr:nth-child(even){background:#f4f8ff}
+  .btn{display:inline-block;margin:0 0 14px 0;padding:8px 18px;background:#1A3A6B;color:#fff;border:none;border-radius:6px;font-size:10pt;cursor:pointer}
+  @media print{.btn{display:none}}
+</style></head><body>
+<button class="btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+<h1>Cronología — Ranking de Proveedores</h1>
+<div class="meta">Año: ${esc(yearLabel)} · ${entityFilter ? esc(entityFilter) : 'Todas las entidades'} · Top 50 por ${isMonto?'monto':'contratos'} · Generado: ${timestamp}</div>
+<table>
+  <thead><tr><th>#</th><th>Proveedor</th><th style="text-align:right">Total</th><th style="text-align:center">Crítica</th><th style="text-align:center">Alta</th><th style="text-align:center">Media</th><th style="text-align:center">Baja</th><th style="text-align:right">Monto (L.)</th><th style="text-align:right">% Monto</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+</body></html>`;
+  const pw = window.open('','_blank','width=1100,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes.'); return; }
+  pw.document.write(addPrintBtn ? addPrintBtn(html) : html);
+  pw.document.close();
 }
 
 function exportTlPDF() {
@@ -10617,7 +10763,7 @@ let patternDetailChart = null;
 function populateFuenteDropdown() {
   const sel = document.getElementById('analyticsFuenteSelect');
   if (!sel) return;
-  const sources = [...new Set(allAlerts.map(a => a.data_source).filter(Boolean))].sort();
+  const sources = [...new Set(allAlerts.map(a => a.source).filter(Boolean))].sort();
   const current = sel.value; // preserve selection on re-populate
   sel.innerHTML = '<option value="all">Todas las fuentes</option>' +
     sources.map(s => `<option value="${s}"${s === current ? ' selected' : ''}>${s}</option>`).join('');
@@ -10627,7 +10773,7 @@ function getAnalyticsAlerts() {
   const sel = document.getElementById('analyticsFuenteSelect');
   const fuente = sel ? sel.value : 'all';
   if (fuente === 'all') return allAlerts;
-  return allAlerts.filter(a => (a.data_source || '') === fuente);
+  return allAlerts.filter(a => (a.source || '') === fuente);
 }
 
 function showPatternDetail(patternCode) {

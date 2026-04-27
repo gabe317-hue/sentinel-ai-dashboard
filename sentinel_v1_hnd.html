@@ -2589,6 +2589,14 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         </div>
         <div id="ep-vendor-contract-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
+      <!-- Empresas Abiertas lookup card -->
+      <div class="fuente-chart-card" id="ea-lookup-card" style="margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="fuente-recent-title" style="font-size:12px;">🏢 Registro Mercantil</div>
+          <button onclick="lookupEmpresasAbiertas()" id="ea-lookup-btn" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--accent);font-size:10px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;">🔍 Consultar EA</button>
+        </div>
+        <div id="ea-lookup-result" style="font-size:11px;color:var(--text-dim);">Presiona para buscar en Empresas Abiertas</div>
+      </div>
     </div>
 
     <!-- Pattern distribution drill-down -->
@@ -4326,10 +4334,10 @@ async function generateReport(mode = 'todo') {
     // ── 3. Reportable = Crítica + Alta + Media ──
     const reportable = filtered.filter(a => ['Crítica','Alta','Media'].includes(a.severity));
 
-    // ── 4. Entity map (by count, for Pareto) ──
+    // ── 4. Entity map (by count, for Pareto) — normalize ONCAE names to SEFIN canonical ──
     const entityMap = {};
     for (const a of reportable) {
-      const ent = getEntidad(a);
+      const ent = normalizeEntity(getEntidad(a));
       if (!entityMap[ent]) entityMap[ent] = { count:0, monto:0, critica:0, alta:0, media:0 };
       entityMap[ent].count++;
       entityMap[ent].monto += parseFloat(a.monto_contrato || 0);
@@ -4940,8 +4948,9 @@ function showEntityPanel(entityName) {
   if (typeof newsTimer !== 'undefined' && newsTimer) { clearInterval(newsTimer); newsTimer = null; }
   document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
 
-  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
-  _epCurrentEntity = entityName;
+  const _epVariants = getEntityVariants(entityName);
+  const data = allAlerts.filter(a => _epVariants.includes(a.entity_name || ''));
+  _epCurrentEntity = normalizeEntity(entityName);
   _epData = data;
 
   // Severity counts
@@ -5128,7 +5137,8 @@ function switchEntityDrillTab(tabName, btn) {
 // SUPPORTS: monto_pagado (manual alerts) + budget_amount (SEFIN data)
 // ════════════════════════════════════════════════════════════
 function populateEntitySobrecosto(entityName) {
-  const data = allAlerts.filter(a => (a.entity_name || a.entidad || '') === entityName);
+  const _sovVariants = getEntityVariants(entityName);
+  const data = allAlerts.filter(a => _sovVariants.includes(a.entity_name || a.entidad || ''));
 
   // Filter to contracts with sobrecosto
   // Checks BOTH monto_pagado (manual) and budget_amount (SEFIN)
@@ -5187,7 +5197,8 @@ function populateEntitySobrecosto(entityName) {
 // POPULATE DRILL-DOWN: VENDOR CONCENTRATION
 // ════════════════════════════════════════════════════════════
 function populateEntityVendors(entityName) {
-  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+  const _venVariants = getEntityVariants(entityName);
+  const data = allAlerts.filter(a => _venVariants.includes(a.entity_name || ''));
 
   // Group by vendor
   const vendorMap = {};
@@ -5236,7 +5247,8 @@ function populateEntityVendors(entityName) {
 // POPULATE DRILL-DOWN: PATTERN DISTRIBUTION
 // ════════════════════════════════════════════════════════════
 function populateEntityPatterns(entityName) {
-  const data = allAlerts.filter(a => (a.entity_name || '') === entityName);
+  const _patVariants = getEntityVariants(entityName);
+  const data = allAlerts.filter(a => _patVariants.includes(a.entity_name || ''));
 
   // Count patterns
   const patternMap = {};
@@ -5279,11 +5291,11 @@ function populateEntityPatterns(entityName) {
 // VENDOR CONTRACT DETAIL DRILL-DOWN
 // ════════════════════════════════════════════════════════════
 function showVendorContractDetail(vendorName, entityName) {
-  // Filter alerts: this vendor + this entity
+  // Filter alerts: this vendor + this entity (including all ONCAE aliases)
+  const _vcdVariants = getEntityVariants(entityName);
   let contracts = allAlerts.filter(a => {
     const vendor = a.proveedor_nombre || '';
-    const entity = a.entity_name || '';
-    return vendor === vendorName && entity === entityName;
+    return vendor === vendorName && _vcdVariants.includes(a.entity_name || '');
   });
 
   // Sort by most recent first
@@ -5355,6 +5367,91 @@ function closeVendorDetail() {
   document.getElementById('ep-drill-vendors').classList.add('active');
   document.querySelectorAll('.ep-drill-tab').forEach(b => b.classList.remove('active'));
   document.querySelector('.ep-drill-tab[data-tab="vendors"]').classList.add('active');
+  // Reset EA lookup
+  const eaRes = document.getElementById('ea-lookup-result');
+  if (eaRes) eaRes.innerHTML = 'Presiona para buscar en Empresas Abiertas';
+}
+
+// ════════════════════════════════════════════════════════════
+// EMPRESAS ABIERTAS — live registry lookup
+// API: GET /search_engine/search_company?search=NAME&selection=Empresas
+//      GET /search_engine/get_sociedad/{id}  → returns socios[]
+// ════════════════════════════════════════════════════════════
+async function lookupEmpresasAbiertas() {
+  const titleEl = document.getElementById('ep-vendor-detail-title');
+  const vendorName = (titleEl ? titleEl.textContent.split(' — ')[0] : '').trim();
+  if (!vendorName) return;
+
+  const resultEl = document.getElementById('ea-lookup-result');
+  const btnEl    = document.getElementById('ea-lookup-btn');
+  resultEl.innerHTML = '⏳ Consultando registro mercantil…';
+  if (btnEl) btnEl.disabled = true;
+
+  const EA_BASE = 'https://buscar.empresasabiertas.com/search_engine';
+
+  try {
+    // 1. Search for the company
+    const searchRes = await fetch(`${EA_BASE}/search_company?search=${encodeURIComponent(vendorName)}&selection=Empresas`);
+    const searchData = await searchRes.json();
+    const hits = (searchData.hits && searchData.hits.hits) || [];
+
+    if (!hits.length) {
+      resultEl.innerHTML = `<span style="color:var(--text-dim);">No encontrado en Empresas Abiertas.</span>`;
+      if (btnEl) btnEl.disabled = false;
+      return;
+    }
+
+    // 2. Get detail for top hit (fetch socios)
+    const topHit = hits[0];
+    const companyId = topHit._id;
+    const topSrc = topHit._source;
+
+    const detailRes = await fetch(`${EA_BASE}/get_sociedad/${companyId}`);
+    const detail = await detailRes.json();
+    const socios = (detail.socios || []).map(s => s.nombres || '—').filter(n => n !== '—');
+
+    const score = Math.round((topHit._score / 15) * 100);
+    const matchColor = score >= 80 ? 'var(--green,#22c55e)' : score >= 50 ? 'var(--yellow,#eab308)' : 'var(--text-dim)';
+    const razon = detail.razon_social || topSrc.razon_social || '—';
+    const tipo  = detail.tipo_sociedad || topSrc.tipo_sociedad || '—';
+    const mat   = detail.matricula || topSrc.numero_matricula || '—';
+    const act   = (detail.actividad || topSrc.actividad_primaria || '—').slice(0, 120);
+    const camara = detail.camara_comercio || topSrc.camara_comercio || '—';
+
+    // More hits (other matches)
+    const altLinks = hits.slice(1, 3).map(h =>
+      `<a href="https://buscar.empresasabiertas.com/empresa/${h._id}" target="_blank" style="color:var(--accent);text-decoration:none;">${h._source.razon_social}</a>`
+    ).join(', ');
+
+    resultEl.innerHTML = `
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+        <span style="font-weight:700;color:var(--text);">${razon}</span>
+        <span style="font-size:9px;padding:2px 6px;border-radius:3px;background:var(--glass);color:${matchColor};border:1px solid ${matchColor};">
+          Coincidencia ~${score}%
+        </span>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:10px;">
+        <span style="color:var(--text-dim);">Tipo</span>      <span>${tipo}</span>
+        <span style="color:var(--text-dim);">Matrícula</span> <span>${mat}</span>
+        <span style="color:var(--text-dim);">Cámara</span>    <span>${camara}</span>
+        <span style="color:var(--text-dim);">Actividad</span> <span>${act}${act.length >= 120 ? '…' : ''}</span>
+        <span style="color:var(--text-dim);">Socios</span>
+        <span style="color:${socios.length ? 'var(--text)' : 'var(--text-dim)'};">
+          ${socios.length ? socios.join(', ') : 'No disponible'}
+        </span>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+        <a href="https://buscar.empresasabiertas.com/empresa/${companyId}" target="_blank"
+           style="font-size:10px;color:var(--accent);text-decoration:none;padding:3px 8px;border:1px solid var(--accent);border-radius:3px;">
+          ↗ Ver en EA
+        </a>
+        ${altLinks ? `<span style="font-size:10px;color:var(--text-dim);">También: ${altLinks}</span>` : ''}
+      </div>`;
+  } catch(e) {
+    resultEl.innerHTML = `<span style="color:var(--red,#ef4444);">Error de conexión con Empresas Abiertas.</span>`;
+  } finally {
+    if (btnEl) btnEl.disabled = false;
+  }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -10287,7 +10384,58 @@ const PATTERN_LABELS = {
   PERIODO_URGENTE_ONCAE:       '🔴 Período Urgente (ONCAE)',
   PERIODO_MINIMO_ONCAE:        '⚠️ Período Mínimo (ONCAE)',
   LICITACION_PRIVADA_ONCAE:    '🔒 Licitación Privada (ONCAE)',
+  FRACCIONAMIENTO_ONCAE:       '✂️ Fraccionamiento (ONCAE)',
 };
+
+// ════════════════════════════════════════════════════════════
+// ENTITY ALIASES — normalize ONCAE long names → SEFIN canonical
+// ════════════════════════════════════════════════════════════
+const ENTITY_ALIASES = {
+  'Secretaría de Estado en los Despachos de Infraestructura y Transporte (SIT)':            'Secretaría de Infraestructura y Transporte',
+  'Secretaria de Estado en el Despacho de Salud Pública (SESAL)':                           'Secretaría de Salud',
+  'Secretaria de Estado en el Despacho de Educación (SEDUC)':                               'Secretaría de Educación',
+  'Secretaría de Estado en el Despacho de Seguridad (SESEGU)':                              'Secretaría de Seguridad',
+  'Secretaría de Estado en el Despacho de Defensa Nacional SEDENA)':                        'Secretaría de Defensa Nacional',
+  'Secretaría de Estado en los Despachos de Relaciones Exteriores y Cooperación Internacional (SRECI)': 'Secretaría de Relaciones Exteriores y Cooperación Internacional',
+  'Secretaría de Estado en los Despachos de Gobernación, Justicia y Descentralización (SGJD)': 'Secretaría de Gobernación, Justicia y Descentralización',
+  'Secretaría de Estado en el Despacho de Planificación Estratégica (SPE)':                 'Secretaría de Planificación Estratégica',
+  'Secretaria de Estado en el Despacho de Desarrollo Social (SEDESOL)':                     'Secretaría de Desarrollo Social',
+  'Secretaria de Estado en los Despachos de Niñez Adolescencia y Familia (SENAF)':          'Secretaría de Niñez, Adolescencia y Familia',
+  'Secretaría de Estado en los Despachos de Recursos Naturales y Ambiente (SERNA)':         'Secretaría de Recursos Naturales y Ambiente',
+  'Secretaría de Estado en el Despacho de Asuntos de la Mujer (SEMUJER)':                   'Secretaría de la Mujer',
+  'Secretaría de Estado en los Despachos de Desarrollo Comunitario, Agua y Saneamiento (SEDECOAS / FHIS)': 'Fondo Hondureño de Inversión Social',
+  'Secretaría de Estado en los Despachos de Transparencia y Lucha contra la Corrupción (STLCC)': 'Secretaría de Transparencia y Lucha contra la Corrupción',
+  'Secretaría de Estado en el Despacho de Derechos Humanos (SDH)':                          'Secretaría de Derechos Humanos',
+  'Instituto de la Propiedad (IP)':                                                          'Instituto de la Propiedad',
+  'Instituto Hondureño de Turismo (IHT)':                                                   'Instituto Hondureño de Turismo',
+  'Empresa Nacional Portuaria (ENP)':                                                        'Empresa Nacional Portuaria',
+  'Instituto Nacional de Migración (INM)':                                                   'Instituto Nacional de Migración',
+  'Instituto Nacional Penitenciario (INP)':                                                  'Instituto Nacional Penitenciario',
+  'Instituto Nacional Agrario (INA)':                                                        'Instituto Nacional Agrario',
+  'Comisión Nacional de Bancos y Seguros (CNBS)':                                            'Comisión Nacional de Bancos y Seguros',
+  'Comisión Nacional de Telecomunicaciones (CONATEL)':                                       'Comisión Nacional de Telecomunicaciones',
+  'Empresa Hondureña de Telecomunicaciones (HONDUTEL)':                                      'Empresa Hondureña de Telecomunicaciones',
+  'Universidad Nacional Autónoma de Honduras (UNAH)':                                        'Universidad Nacional Autónoma de Honduras',
+  'Procuraduría General de la República (PGR)':                                              'Procuraduría General de la República',
+  'Cuerpo de Bomberos de Honduras (CBH)':                                                    'Cuerpo de Bomberos de Honduras',
+  'Empresa Nacional de Artes Gráficas (ENAG)':                                               'Empresa Nacional de Artes Gráficas',
+  'Administracion Nacional de Servicio Civil':                                                'Administración Nacional de Servicio Civil',
+};
+
+// Normalize a name using aliases (ONCAE long → SEFIN canonical)
+function normalizeEntity(name) {
+  return ENTITY_ALIASES[name] || name;
+}
+
+// Get all variants (canonical + all ONCAE aliases) for a given entity name
+function getEntityVariants(name) {
+  const canonical = normalizeEntity(name);
+  const variants = new Set([canonical, name]);
+  for (const [alias, canon] of Object.entries(ENTITY_ALIASES)) {
+    if (canon === canonical) variants.add(alias);
+  }
+  return [...variants];
+}
 
 function fmtLarge(n) {
   if (!n) return 'L. —';

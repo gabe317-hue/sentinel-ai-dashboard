@@ -6592,18 +6592,18 @@ function openReferModal(id) {
 }
 
 function openReferModalEntity() {
-  const entity = window._epCurrentEntity;
-  const data   = window._epData;
-  if (!entity || !data) { alert('Cargue el panel de entidad primero.'); return; }
+  const entity = _epCurrentEntity;
+  const data   = _epData;
+  if (!entity || !data || !data.length) { alert('Cargue el panel de entidad primero.'); return; }
   const fmtL = n => n != null ? 'L ' + Number(n).toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
-  const topAlert = (data.alerts || [])
+  const topAlert = data
     .filter(a => { const s = normSev(a.severity); return s === 'critica' || s === 'alta'; })
     .sort((a,b) => (Number(b.monto_contrato)||0) - (Number(a.monto_contrato)||0))[0];
-  const totalMonto = (data.alerts || []).reduce((s,a) => s + (Number(a.monto_contrato)||0), 0);
-  const critica = (data.alerts || []).filter(a => normSev(a.severity) === 'critica').length;
-  const alta    = (data.alerts || []).filter(a => normSev(a.severity) === 'alta').length;
+  const totalMonto = data.reduce((s,a) => s + (Number(a.monto_contrato)||0), 0);
+  const critica = data.filter(a => normSev(a.severity) === 'critica').length;
+  const alta    = data.filter(a => normSev(a.severity) === 'alta').length;
   const patSet  = new Set();
-  (data.alerts || []).forEach(a => {
+  data.forEach(a => {
     const p = _parseDescFieldR(a.description||'','Patrones') || _parseDescFieldR(a.description||'','Patrón');
     if (p) p.split(',').forEach(x => patSet.add(x.trim()));
   });
@@ -6612,13 +6612,13 @@ function openReferModalEntity() {
     alertId:  topAlert ? (topAlert.alert_id || ('#' + topAlert.id)) : '—',
     entity:   entity,
     vendor:   topAlert ? (_parseDescFieldR(topAlert.description||'','Proveedor') || topAlert.proveedor_nombre || '—') : '— (múltiples)',
-    severity: `${critica} Crítica(s), ${alta} Alta(s) de ${(data.alerts||[]).length} contratos`,
+    severity: `${critica} Crítica(s), ${alta} Alta(s) de ${data.length} contratos`,
     monto:    fmtL(totalMonto),
     fecha:    new Date().toISOString().substring(0,10),
     patrones: patrones,
     description: '',
     isEntity: true,
-    entityTotal: (data.alerts||[]).length,
+    entityTotal: data.length,
     critica, alta
   };
   _populateReferModal();

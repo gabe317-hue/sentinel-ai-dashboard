@@ -13656,7 +13656,7 @@ function renderReportesPanel() {
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;">
             <button class="pdf-btn" onclick="${c.btn}" style="background:${c.bg};color:${c.color};border-color:${c.border};white-space:nowrap;">📄 PDF</button>
-            <button class="pdf-btn" onclick="showWordCmd('${c.script}')" style="background:rgba(16,185,129,0.08);color:#10b981;border-color:rgba(16,185,129,0.3);white-space:nowrap;">📝 Word</button>
+            <button class="pdf-btn" onclick="showWordCmd('${c.script}',this)" style="background:rgba(16,185,129,0.08);color:#10b981;border-color:rgba(16,185,129,0.3);white-space:nowrap;">📝 Word</button>
           </div>
         </div>
         <div style="display:flex;gap:28px;margin-top:14px;">
@@ -13694,7 +13694,7 @@ function toggleKeyConfig() {
   exp.style.display = isExpanded ? 'none' : 'block';
 }
 
-function showWordCmd(script) {
+function showWordCmd(script, btn) {
   const key = localStorage.getItem('sentinel_sb_key') || '';
   if (!key) {
     alert('⚠️ Primero guarda tu Supabase Key en la sección de configuración arriba.');
@@ -13702,17 +13702,37 @@ function showWordCmd(script) {
   }
   const base = '/Users/gabrielprieto/Library/CloudStorage/GoogleDrive-gabe317@gmail.com/My Drive/TPG_Projects/MVP - pre-Sentinel/_02-WORK';
   const cmd  = `SUPABASE_SERVICE_ROLE_KEY=${key} node "${base}/${script}"`;
-  document.getElementById('wordCmdText').textContent = cmd;
-  document.getElementById('wordCmdModal').style.display = 'block';
-  document.getElementById('wordCmdModal').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  navigator.clipboard.writeText(cmd).then(() => {
+    // Show toast
+    _showWordToast();
+    // Flash the button
+    if (btn) { const orig = btn.textContent; btn.textContent = '✅ Copiado'; setTimeout(() => { btn.textContent = orig; }, 2500); }
+  }).catch(() => {
+    // Fallback: show modal if clipboard fails
+    document.getElementById('wordCmdText').textContent = cmd;
+    document.getElementById('wordCmdModal').style.display = 'block';
+  });
+}
+
+function _showWordToast() {
+  let toast = document.getElementById('wordToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'wordToast';
+    toast.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25);pointer-events:none;transition:opacity .4s;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = '✅ Comando copiado — Abre Terminal y pega (⌘V)';
+  toast.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
 }
 
 function copyWordCmd() {
   const txt = document.getElementById('wordCmdText').textContent;
   navigator.clipboard.writeText(txt).then(() => {
-    const btn = event.target;
-    btn.textContent = '✅ Copiado';
-    setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000);
+    _showWordToast();
+    document.getElementById('wordCmdModal').style.display = 'none';
   });
 }
 

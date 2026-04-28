@@ -13561,6 +13561,7 @@ function renderReportesPanel() {
       monto: fmtL(topOncaeMonto),
       color: '#ef4444',
       btn: 'exportReporteOncaeCriticaPDF()',
+      script: 'build_oncae_top20.js',
       bg: 'rgba(255,61,87,0.06)',
       border: 'rgba(255,61,87,0.25)',
     },
@@ -13572,6 +13573,7 @@ function renderReportesPanel() {
       monto: fmtL(topSefinMonto),
       color: '#f59e0b',
       btn: 'exportReporteSefinCriticaPDF()',
+      script: 'build_report_v5.js',
       bg: 'rgba(245,158,11,0.06)',
       border: 'rgba(245,158,11,0.25)',
     },
@@ -13583,6 +13585,7 @@ function renderReportesPanel() {
       monto: fmtL(paretoMonto),
       color: '#06b6d4',
       btn: 'exportReporteParetoPDF()',
+      script: 'build_pareto_report.js',
       bg: 'rgba(6,182,212,0.06)',
       border: 'rgba(6,182,212,0.25)',
     },
@@ -13601,13 +13604,41 @@ function renderReportesPanel() {
         monto: fmtL(actores.reduce((s,a)=>s+Number(a.monto_contrato||0),0)),
         color: '#8b5cf6',
         btn: 'exportReporteOncae2025ActoresPDF()',
+        script: 'build_oncae_2025_report.js',
         bg: 'rgba(139,92,246,0.06)',
         border: 'rgba(139,92,246,0.25)',
       };
     })(),
   ];
 
-  document.getElementById('reportesBody').innerHTML = cards.map(c => `
+  const savedKey = localStorage.getItem('sentinel_sb_key') || '';
+  const keyMasked = savedKey ? '✅ Guardada' : '⚠️ No configurada';
+  const keyColor  = savedKey ? '#10b981' : '#f59e0b';
+
+  document.getElementById('reportesBody').innerHTML = `
+    <!-- ── Key Config ───────────────────────────────────────── -->
+    <div style="border:1px solid rgba(99,102,241,0.3);border-radius:10px;padding:14px 18px;background:rgba(99,102,241,0.05);margin-bottom:4px;">
+      <div style="font-size:12px;font-weight:700;color:#6366f1;margin-bottom:8px;">🔑 Supabase Key — Reportes Word</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="sbKeyInput" type="password" placeholder="Pega tu Supabase Service Role Key aquí..."
+          value="${savedKey}"
+          style="flex:1;padding:7px 10px;border-radius:6px;border:1px solid rgba(99,102,241,0.4);background:var(--bg-card);color:var(--text-main);font-size:12px;font-family:monospace;">
+        <button onclick="saveSupabaseKey()" style="padding:7px 14px;border-radius:6px;background:#6366f1;color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:600;">Guardar</button>
+        <span id="keyStatus" style="font-size:11px;color:${keyColor};white-space:nowrap;">${keyMasked}</span>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;">Se guarda solo en tu navegador (localStorage). Los botones 📝 Word usan esta key para generar el comando de Terminal.</div>
+    </div>
+    <!-- ── Word Command Modal ──────────────────────────────── -->
+    <div id="wordCmdModal" style="display:none;border:1px solid rgba(16,185,129,0.4);border-radius:10px;padding:14px 18px;background:rgba(16,185,129,0.06);margin-bottom:4px;">
+      <div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:8px;">📝 Comando Word — Terminal</div>
+      <code id="wordCmdText" style="display:block;font-size:11px;font-family:monospace;background:var(--bg-main);padding:10px 12px;border-radius:6px;word-break:break-all;color:var(--text-main);line-height:1.6;"></code>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="copyWordCmd()" style="padding:6px 14px;border-radius:6px;background:#10b981;color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:600;">📋 Copiar</button>
+        <button onclick="document.getElementById('wordCmdModal').style.display='none'" style="padding:6px 12px;border-radius:6px;background:transparent;color:var(--muted);border:1px solid var(--border);cursor:pointer;font-size:12px;">Cerrar</button>
+        <span style="font-size:10px;color:var(--muted);align-self:center;">Pega este comando en Terminal y presiona Enter</span>
+      </div>
+    </div>
+  ` + cards.map(c => `
     <div style="border:1px solid ${c.border};border-radius:12px;overflow:hidden;background:${c.bg};">
       <div style="padding:16px 20px;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
@@ -13615,7 +13646,10 @@ function renderReportesPanel() {
             <div style="font-size:14px;font-weight:700;color:${c.color};margin-bottom:5px;">${c.icon} ${c.title}</div>
             <div style="font-size:11px;color:var(--muted);">${c.desc}</div>
           </div>
-          <button class="pdf-btn" onclick="${c.btn}" style="background:${c.bg};color:${c.color};border-color:${c.border};white-space:nowrap;flex-shrink:0;">📄 PDF</button>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="pdf-btn" onclick="${c.btn}" style="background:${c.bg};color:${c.color};border-color:${c.border};white-space:nowrap;">📄 PDF</button>
+            <button class="pdf-btn" onclick="showWordCmd('${c.script}')" style="background:rgba(16,185,129,0.08);color:#10b981;border-color:rgba(16,185,129,0.3);white-space:nowrap;">📝 Word</button>
+          </div>
         </div>
         <div style="display:flex;gap:28px;margin-top:14px;">
           <div>
@@ -13630,6 +13664,36 @@ function renderReportesPanel() {
       </div>
     </div>
   `).join('');
+}
+
+function saveSupabaseKey() {
+  const key = document.getElementById('sbKeyInput').value.trim();
+  if (!key) { alert('Por favor pega tu Supabase Service Role Key.'); return; }
+  localStorage.setItem('sentinel_sb_key', key);
+  const st = document.getElementById('keyStatus');
+  if (st) { st.textContent = '✅ Guardada'; st.style.color = '#10b981'; }
+}
+
+function showWordCmd(script) {
+  const key = localStorage.getItem('sentinel_sb_key') || '';
+  if (!key) {
+    alert('⚠️ Primero guarda tu Supabase Key en la sección de configuración arriba.');
+    return;
+  }
+  const base = '/Users/gabrielprieto/Library/CloudStorage/GoogleDrive-gabe317@gmail.com/My Drive/TPG_Projects/MVP - pre-Sentinel/_02-WORK';
+  const cmd  = `SUPABASE_SERVICE_ROLE_KEY=${key} node "${base}/${script}"`;
+  document.getElementById('wordCmdText').textContent = cmd;
+  document.getElementById('wordCmdModal').style.display = 'block';
+  document.getElementById('wordCmdModal').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function copyWordCmd() {
+  const txt = document.getElementById('wordCmdText').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = event.target;
+    btn.textContent = '✅ Copiado';
+    setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000);
+  });
 }
 
 // ── PDF 1: Top 20 ONCAE CRÍTICA por monto ────────────────────────────────────

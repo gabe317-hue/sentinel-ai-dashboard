@@ -13617,16 +13617,24 @@ function renderReportesPanel() {
 
   document.getElementById('reportesBody').innerHTML = `
     <!-- ── Key Config ───────────────────────────────────────── -->
-    <div style="border:1px solid rgba(99,102,241,0.3);border-radius:10px;padding:14px 18px;background:rgba(99,102,241,0.05);margin-bottom:4px;">
-      <div style="font-size:12px;font-weight:700;color:#6366f1;margin-bottom:8px;">🔑 Supabase Key — Reportes Word</div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input id="sbKeyInput" type="password" placeholder="Pega tu Supabase Service Role Key aquí..."
-          value="${savedKey}"
-          style="flex:1;padding:7px 10px;border-radius:6px;border:1px solid rgba(99,102,241,0.4);background:var(--bg-card);color:var(--text-main);font-size:12px;font-family:monospace;">
-        <button onclick="saveSupabaseKey()" style="padding:7px 14px;border-radius:6px;background:#6366f1;color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:600;">Guardar</button>
-        <span id="keyStatus" style="font-size:11px;color:${keyColor};white-space:nowrap;">${keyMasked}</span>
+    <div style="border:1px solid rgba(99,102,241,0.3);border-radius:10px;background:rgba(99,102,241,0.05);margin-bottom:4px;overflow:hidden;">
+      <!-- Collapsed bar (visible when key is saved) -->
+      <div id="keyConfigBar" style="display:${savedKey ? 'flex' : 'none'};align-items:center;justify-content:space-between;padding:10px 16px;">
+        <span style="font-size:12px;color:#10b981;font-weight:600;">🔑 Supabase Key ✅ Configurada</span>
+        <button onclick="toggleKeyConfig()" style="font-size:11px;color:#6366f1;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;">Cambiar</button>
       </div>
-      <div style="font-size:10px;color:var(--muted);margin-top:6px;">Se guarda solo en tu navegador (localStorage). Los botones 📝 Word usan esta key para generar el comando de Terminal.</div>
+      <!-- Expanded input (visible when no key or editing) -->
+      <div id="keyConfigExpanded" style="display:${savedKey ? 'none' : 'block'};padding:14px 18px;">
+        <div style="font-size:12px;font-weight:700;color:#6366f1;margin-bottom:8px;">🔑 Supabase Key — Reportes Word</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="sbKeyInput" type="password" placeholder="Pega tu Supabase Service Role Key aquí..."
+            value="${savedKey}"
+            style="flex:1;padding:7px 10px;border-radius:6px;border:1px solid rgba(99,102,241,0.4);background:var(--bg-card);color:var(--text-main);font-size:12px;font-family:monospace;">
+          <button onclick="saveSupabaseKey()" style="padding:7px 14px;border-radius:6px;background:#6366f1;color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:600;">Guardar</button>
+          ${savedKey ? '<button onclick="toggleKeyConfig()" style="padding:7px 10px;border-radius:6px;background:transparent;color:var(--muted);border:1px solid var(--border);cursor:pointer;font-size:12px;">Cancelar</button>' : ''}
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;">Se guarda solo en tu navegador. Los botones 📝 Word usan esta key para generar el comando de Terminal.</div>
+      </div>
     </div>
     <!-- ── Word Command Modal ──────────────────────────────── -->
     <div id="wordCmdModal" style="display:none;border:1px solid rgba(16,185,129,0.4);border-radius:10px;padding:14px 18px;background:rgba(16,185,129,0.06);margin-bottom:4px;">
@@ -13670,8 +13678,20 @@ function saveSupabaseKey() {
   const key = document.getElementById('sbKeyInput').value.trim();
   if (!key) { alert('Por favor pega tu Supabase Service Role Key.'); return; }
   localStorage.setItem('sentinel_sb_key', key);
-  const st = document.getElementById('keyStatus');
-  if (st) { st.textContent = '✅ Guardada'; st.style.color = '#10b981'; }
+  // Collapse to bar
+  const bar = document.getElementById('keyConfigBar');
+  const exp = document.getElementById('keyConfigExpanded');
+  if (bar) bar.style.display = 'flex';
+  if (exp) exp.style.display = 'none';
+}
+
+function toggleKeyConfig() {
+  const bar = document.getElementById('keyConfigBar');
+  const exp = document.getElementById('keyConfigExpanded');
+  if (!bar || !exp) return;
+  const isExpanded = exp.style.display !== 'none';
+  bar.style.display = isExpanded ? 'flex' : 'none';
+  exp.style.display = isExpanded ? 'none' : 'block';
 }
 
 function showWordCmd(script) {

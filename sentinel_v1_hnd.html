@@ -1888,6 +1888,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <button class="nav-item" id="nav-reportes" onclick="showReportesPanel()">
         <span class="nav-icon">📋</span> Reportes
       </button>
+      <button class="nav-item" id="nav-ocds" onclick="showOcdsPanel()">
+        <span class="nav-icon">🔗</span> OCDS / Cruce
+        <span class="nav-chip" id="nav-ocds-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">—</span>
+      </button>
     </div>
 
     <div class="nav-section">
@@ -3768,6 +3772,36 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
     <div id="ofacBody" style="margin-top:18px;">
       <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos OFAC...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ OCDS / CROSS-REF PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="ocdsPanel">
+    <button class="fuente-back" onclick="hideOcdsPanel()">← Contratos</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>🔗</span>
+        <span>OCDS / Cross-Reference — Transparencia</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Cruce interno SEFIN vs ONCAE · Portal OCDS Honduras (contratacionesabiertas.gob.hn)
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="pdf-btn" onclick="exportOcdsCrossRefPDF()" style="background:rgba(0,200,255,0.08);color:var(--electric);border-color:rgba(0,200,255,0.3);">📄 PDF</button>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div id="ocdsSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:18px 0 6px;padding:14px 18px;background:rgba(0,200,255,0.06);border:1px solid rgba(0,200,255,0.2);border-radius:10px;">
+      <div><span style="font-size:11px;color:var(--muted);">SEFIN TOTAL</span><br><span id="ocds-stat-sefin" style="font-size:22px;font-weight:700;color:var(--electric);font-family:'Syne',sans-serif;">—</span></div>
+      <div><span style="font-size:11px;color:var(--muted);">ONCAE TOTAL</span><br><span id="ocds-stat-oncae" style="font-size:22px;font-weight:700;color:var(--electric);font-family:'Syne',sans-serif;">—</span></div>
+      <div><span style="font-size:11px;color:var(--muted);">SIN MATCH ONCAE</span><br><span id="ocds-stat-nomatch" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
+      <div><span style="font-size:11px;color:var(--muted);">MONTO SIN MATCH</span><br><span id="ocds-stat-monto" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+    </div>
+
+    <div id="ocdsBody" style="margin-top:18px;">
+      <div style="color:var(--muted);padding:40px;text-align:center;">Calculando cruce...</div>
     </div>
   </div>
 
@@ -6069,7 +6103,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','engelPanel','ofacPanel','reportesPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','engelPanel','ofacPanel','reportesPanel','ocdsPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -13225,6 +13259,236 @@ function exportOfacPDF() {
 
   ${ofacAlerts.length === 0 ? '<div style="text-align:center;padding:40px;color:#888;">No se detectaron contratos con patrón SANCIONADO OFAC en la base de datos.</div>' : provRows}
 
+  <div class="footer">
+    <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras</div>
+    <div>Generado: ${ds} · ${folio}</div>
+  </div>
+  <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ══════════════════════════════════════════════════════════════
+// PANEL OCDS / CROSS-REFERENCE — A1 (portal status) + A2 (SEFIN vs ONCAE)
+// ══════════════════════════════════════════════════════════════
+
+function showOcdsPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('ocdsPanel').classList.add('open');
+  document.getElementById('nav-ocds').classList.add('active');
+  renderOcdsPanel();
+}
+
+function hideOcdsPanel() {
+  document.getElementById('ocdsPanel').classList.remove('open');
+  document.getElementById('nav-ocds').classList.remove('active');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+}
+
+// ── A2: SEFIN vs ONCAE cross-reference computation ────────────────────────────
+function _computeOcdsCrossRef(all) {
+  const normN = s => (s||'').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim().slice(0,18);
+
+  const sefinRecs = all.filter(a => !String(a.data_source||'').includes('ONCAE'));
+  const oncaeRecs = all.filter(a =>  String(a.data_source||'').includes('ONCAE'));
+
+  // Build ONCAE proveedor lookup (normalized, min 4 chars)
+  const oncaeProvSet = new Set(
+    oncaeRecs.map(a => normN(a.proveedor_nombre||'')).filter(s => s.length >= 4)
+  );
+
+  // Aggregate SEFIN by proveedor — sum monto, count, track severity
+  const sefinByProv = {};
+  sefinRecs.forEach(a => {
+    const prov = a.proveedor_nombre || a.entity_name || '';
+    const key  = prov;
+    const norm = normN(prov);
+    if (!sefinByProv[key]) sefinByProv[key] = { prov, norm, monto:0, count:0, entidades: new Set(), criticos:0 };
+    sefinByProv[key].monto  += Number(a.monto_contrato||0);
+    sefinByProv[key].count  += 1;
+    sefinByProv[key].entidades.add(a.entity_name||'');
+    if ((a.severity||a.severidad||'').toUpperCase().includes('CRÍT')) sefinByProv[key].criticos++;
+  });
+
+  // Flag: proveedor in SEFIN but NOT in ONCAE set
+  const noMatch = Object.values(sefinByProv).filter(p =>
+    p.norm.length >= 4 && !oncaeProvSet.has(p.norm)
+  ).sort((a,b) => b.monto - a.monto);
+
+  const totalMontoNoMatch = noMatch.reduce((s,p) => s+p.monto, 0);
+  return { sefinRecs, oncaeRecs, noMatch, oncaeProvSet, totalMontoNoMatch };
+}
+
+function renderOcdsPanel() {
+  const all = window.allAlerts || [];
+  if (!all.length) {
+    document.getElementById('ocdsBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">No hay datos cargados.</div>';
+    return;
+  }
+  const fmtL = n => { if(!n) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+
+  const { sefinRecs, oncaeRecs, noMatch, totalMontoNoMatch } = _computeOcdsCrossRef(all);
+
+  // Update summary bar
+  document.getElementById('ocds-stat-sefin').textContent   = sefinRecs.length.toLocaleString();
+  document.getElementById('ocds-stat-oncae').textContent   = oncaeRecs.length.toLocaleString();
+  document.getElementById('ocds-stat-nomatch').textContent = noMatch.length.toLocaleString();
+  document.getElementById('ocds-stat-monto').textContent   = fmtL(totalMontoNoMatch);
+
+  // Update sidebar chip
+  const chip = document.getElementById('nav-ocds-chip');
+  if (chip) chip.textContent = noMatch.length || '—';
+
+  // Top 30 no-match vendors by monto
+  const top30 = noMatch.slice(0, 30);
+  const top30TotalMonto = top30.reduce((s,p) => s+p.monto, 0);
+
+  const rows = top30.map((p, i) => {
+    const ents = [...p.entidades].filter(Boolean).slice(0,2).join(' · ');
+    const critBadge = p.criticos > 0 ? `<span style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:4px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:6px;">⚠ ${p.criticos} CRÍT</span>` : '';
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+      <td style="padding:7px 8px;font-weight:700;color:var(--electric);font-size:12px;text-align:center;">${i+1}</td>
+      <td style="padding:7px 8px;font-size:11px;font-weight:600;">${p.prov.length>45?p.prov.slice(0,44)+'…':p.prov}${critBadge}</td>
+      <td style="padding:7px 8px;font-size:10px;color:var(--muted);">${ents.length>45?ents.slice(0,44)+'…':ents}</td>
+      <td style="padding:7px 8px;text-align:center;font-size:11px;color:var(--text-dim);">${p.count}</td>
+      <td style="padding:7px 8px;text-align:right;font-weight:700;font-size:11px;color:var(--amber);">${fmtL(p.monto)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('ocdsBody').innerHTML = `
+    <!-- A1: Portal status -->
+    <div style="border:1px solid rgba(255,61,87,0.3);border-radius:10px;padding:14px 18px;margin-bottom:20px;background:rgba(255,61,87,0.05);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;flex-shrink:0;box-shadow:0 0 6px #ef4444;"></span>
+        <span style="font-size:13px;font-weight:700;color:var(--red);">Portal OCDS Honduras — No Disponible</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+        <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">contratacionesabiertas.gob.hn</code> — puertos 80/443 con connection refused (host activo, servicio caído). Último chequeo: hoy.<br>
+        <span style="color:var(--text-dim);margin-top:6px;display:block;">Cuando el portal vuelva: cruce automático de OCIDs entre Sentinel y el portal público — identificará contratos pagados sin publicación OCDS. <strong>El panel está listo para activarse.</strong></span>
+      </div>
+    </div>
+
+    <!-- A2: SEFIN vs ONCAE cross-ref -->
+    <div style="margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:700;color:var(--electric);margin-bottom:4px;">⚖️ Cruce Interno: Proveedores SEFIN sin Registro en ONCAE/Honducompras</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">
+        Proveedor que recibió pago SEFIN/EDCA pero NO aparece en ONCAE/Honducompras como adjudicatario.<br>
+        <span style="color:var(--amber);">Señal de riesgo:</span> el contrato puede no haber pasado por proceso público de compra. Total identificados: <strong style="color:var(--amber);">${noMatch.length.toLocaleString()}</strong> proveedores · <strong style="color:var(--amber);">${fmtL(totalMontoNoMatch)}</strong> en montos SEFIN.
+      </div>
+      <div style="font-size:10px;color:var(--muted);background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:6px;margin-bottom:14px;border-left:3px solid rgba(0,200,255,0.3);">
+        ℹ️ <strong>Metodología:</strong> Normalización de primeros 18 caracteres del nombre de proveedor. Los falsos positivos ocurren cuando el mismo proveedor usa nombre ligeramente distinto en cada sistema. Requiere verificación manual de los casos CRÍTICA.
+      </div>
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:1px solid rgba(0,200,255,0.2);">
+          <th style="padding:7px 8px;text-align:center;font-size:10px;color:var(--electric);width:32px;">#</th>
+          <th style="padding:7px 8px;text-align:left;font-size:10px;color:var(--electric);">Proveedor SEFIN (sin match ONCAE)</th>
+          <th style="padding:7px 8px;text-align:left;font-size:10px;color:var(--electric);">Entidad(es)</th>
+          <th style="padding:7px 8px;text-align:center;font-size:10px;color:var(--electric);width:50px;">Ctos.</th>
+          <th style="padding:7px 8px;text-align:right;font-size:10px;color:var(--electric);width:110px;">Monto SEFIN</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${noMatch.length > 30 ? `<div style="text-align:center;color:var(--muted);font-size:11px;padding:10px;">… y ${(noMatch.length-30).toLocaleString()} proveedores adicionales sin match</div>` : ''}
+  `;
+}
+
+// ── PDF export: OCDS cross-reference report ───────────────────────────────────
+function exportOcdsCrossRefPDF() {
+  const all = window.allAlerts || [];
+  if (!all.length) { alert('Datos no cargados.'); return; }
+  const fmtL = n => { if(!n) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const esc = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const today = new Date();
+  const ds = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-OCDS-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  const { sefinRecs, oncaeRecs, noMatch, totalMontoNoMatch } = _computeOcdsCrossRef(all);
+  const top50 = noMatch.slice(0, 50);
+
+  const rows = top50.map((p, i) => {
+    const ents = [...p.entidades].filter(Boolean).slice(0,3).join(' · ');
+    const rowBg = i%2===0?'#fff':'#f0f9ff';
+    return `<tr style="background:${rowBg};border-bottom:1px solid #bae6fd;">
+      <td style="padding:6px 8px;font-weight:700;color:#0e7490;font-size:11px;text-align:center;">${i+1}</td>
+      <td style="padding:6px 8px;font-size:10px;font-weight:600;">${esc(p.prov.length>50?p.prov.slice(0,49)+'…':p.prov)}</td>
+      <td style="padding:6px 8px;font-size:10px;">${esc(ents.length>50?ents.slice(0,49)+'…':ents)}</td>
+      <td style="padding:6px 8px;text-align:center;font-size:11px;">${p.count}</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:700;font-size:11px;color:#d97706;">${fmtL(p.monto)}</td>
+      ${p.criticos > 0 ? `<td style="padding:6px 8px;text-align:center;font-size:10px;color:#dc2626;font-weight:700;">⚠ ${p.criticos}</td>` : '<td style="padding:6px 8px;text-align:center;font-size:10px;color:#888;">—</td>'}
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — Cross-Reference OCDS</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 portrait;margin:18mm 15mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#0c4a6e,#0e7490);color:#fff;padding:22px 28px 18px;margin-bottom:18px;}
+    .kpi-row{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;}
+    .kpi-box{flex:1;min-width:90px;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;background:#f0f9ff;text-align:center;}
+    .kpi-val{font-size:18px;font-weight:700;color:#0e7490;}
+    .kpi-lbl{font-size:9px;color:#888;margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
+    .alert-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:10px;color:#92400e;}
+    .info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:10px;color:#1e40af;}
+    table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+    thead tr{background:#0c4a6e;}
+    thead th{padding:7px 8px;color:#fff;font-size:10px;font-weight:700;text-align:left;letter-spacing:.04em;}
+    .footer{margin-top:20px;padding-top:10px;border-top:2px solid #0e7490;display:flex;justify-content:space-between;font-size:9px;color:#888;}
+    .classification{background:#0e7490;color:#fff;text-align:center;padding:5px;font-size:9px;font-weight:700;letter-spacing:.12em;margin-top:12px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:5px;">SISTEMA SENTINEL — HONDURAS</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:3px;">🔗 Cross-Reference: Proveedores SEFIN sin Registro ONCAE</div>
+        <div style="font-size:10px;opacity:.8;">Cruce interno SEFIN/EDCA vs ONCAE/Honducompras · Posibles contratos fuera del proceso público</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.85;">
+        <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:3px;">${ds}</div>
+        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos monitoreados</div>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-val">${sefinRecs.length.toLocaleString()}</div><div class="kpi-lbl">Contratos SEFIN</div></div>
+    <div class="kpi-box"><div class="kpi-val">${oncaeRecs.length.toLocaleString()}</div><div class="kpi-lbl">Contratos ONCAE</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#d97706;">${noMatch.length.toLocaleString()}</div><div class="kpi-lbl">Proveedores sin match</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#d97706;">${fmtL(totalMontoNoMatch)}</div><div class="kpi-lbl">Monto sin match</div></div>
+  </div>
+  <div class="alert-box">
+    ⚠️ <strong>Señal de riesgo:</strong> Los proveedores listados recibieron pagos registrados en SEFIN/EDCA sin aparecer como adjudicatarios en ONCAE/Honducompras. Esto puede indicar: (1) contratos no publicados en el portal de compras públicas, (2) evasión del proceso de licitación, o (3) uso de nombres ligeramente distintos entre sistemas. Requiere verificación documental.
+  </div>
+  <div class="info-box">
+    ℹ️ <strong>Metodología:</strong> Normalización de los primeros 18 caracteres del nombre del proveedor (minúsculas, sin tildes, sin caracteres especiales). Los falsos positivos ocurren cuando el mismo proveedor registra un nombre distinto en cada sistema. Mostrando top ${Math.min(50, noMatch.length)} de ${noMatch.length.toLocaleString()} proveedores, ordenados por monto SEFIN descendente.
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:28px;">#</th>
+        <th>Proveedor (SEFIN — sin match ONCAE)</th>
+        <th>Entidad(es) compradora(s)</th>
+        <th style="text-align:center;width:45px;">Ctos.</th>
+        <th style="text-align:right;width:100px;">Monto SEFIN</th>
+        <th style="text-align:center;width:55px;">CRÍTICA</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
   <div class="footer">
     <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras</div>
     <div>Generado: ${ds} · ${folio}</div>

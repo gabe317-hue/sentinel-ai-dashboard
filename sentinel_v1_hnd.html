@@ -1885,6 +1885,9 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">🚨</span> Sanciones OFAC
         <span class="nav-chip" id="nav-ofac-chip" style="background:rgba(255,61,87,0.15);color:var(--red);border-color:rgba(255,61,87,0.3);">—</span>
       </button>
+      <button class="nav-item" id="nav-reportes" onclick="showReportesPanel()">
+        <span class="nav-icon">📋</span> Reportes
+      </button>
     </div>
 
     <div class="nav-section">
@@ -3765,6 +3768,25 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
     <div id="ofacBody" style="margin-top:18px;">
       <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos OFAC...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ REPORTES PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="reportesPanel">
+    <button class="fuente-back" onclick="hideReportesPanel()">← Contratos</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>📋</span>
+        <span>Reportes Investigativos</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Genera reportes PDF desde los datos en vivo del dashboard · 76,493 contratos monitoreados
+      </div>
+    </div>
+
+    <div id="reportesBody" style="margin-top:22px;display:flex;flex-direction:column;gap:16px;">
+      <div style="color:var(--muted);padding:40px;text-align:center;">Cargando reportes...</div>
     </div>
   </div>
 
@@ -6047,7 +6069,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','engelPanel','ofacPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','engelPanel','ofacPanel','reportesPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -13203,6 +13225,447 @@ function exportOfacPDF() {
 
   ${ofacAlerts.length === 0 ? '<div style="text-align:center;padding:40px;color:#888;">No se detectaron contratos con patrón SANCIONADO OFAC en la base de datos.</div>' : provRows}
 
+  <div class="footer">
+    <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras</div>
+    <div>Generado: ${ds} · ${folio}</div>
+  </div>
+  <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ══════════════════════════════════════════════════════════════
+// PANEL REPORTES — show / hide / render / PDF exports
+// ══════════════════════════════════════════════════════════════
+function showReportesPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('reportesPanel').classList.add('open');
+  document.getElementById('nav-reportes').classList.add('active');
+  renderReportesPanel();
+}
+
+function hideReportesPanel() {
+  document.getElementById('reportesPanel').classList.remove('open');
+  document.getElementById('nav-reportes').classList.remove('active');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+}
+
+function renderReportesPanel() {
+  const all = window.allAlerts || [];
+  if (!all.length) {
+    document.getElementById('reportesBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">No hay datos cargados.</div>';
+    return;
+  }
+  const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'');
+  const isOncae  = a => String(a.data_source||'').includes('ONCAE');
+  const isCritica = a => normSev(a.severity||a.severidad) === 'critica';
+  const isHighRisk = a => { const sv = normSev(a.severity||a.severidad); return sv==='critica'||sv==='alta'; };
+  const fmtL = n => { if(!n) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+
+  const oncaeCrit = all.filter(a => isOncae(a) && isCritica(a));
+  const sefinCrit = all.filter(a => !isOncae(a) && isCritica(a));
+  const allHighRisk = all.filter(isHighRisk);
+
+  // Pareto: top 15 entidades por nro señales CRÍTICA+ALTA
+  const entMap = {};
+  allHighRisk.forEach(a => {
+    const ent = a.entity_name||a.entidad_nombre||'—';
+    if(!entMap[ent]) entMap[ent] = { count:0, monto:0, criticos:0 };
+    entMap[ent].count++;
+    entMap[ent].monto += Number(a.monto_contrato||0);
+    if(isCritica(a)) entMap[ent].criticos++;
+  });
+  const topEntidades = Object.entries(entMap).sort((a,b) => b[1].count - a[1].count).slice(0,15);
+  const paretoMonto = topEntidades.reduce((s,[,v]) => s+v.monto, 0);
+
+  const topOncaeMonto = oncaeCrit.slice().sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0)).slice(0,20).reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+  const topSefinMonto = sefinCrit.slice().sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0)).slice(0,20).reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+
+  const cards = [
+    {
+      icon: '🔴',
+      title: 'Top 20 ONCAE — Contratos CRÍTICA por Monto',
+      desc: `${oncaeCrit.length.toLocaleString()} contratos CRÍTICA en ONCAE/Honducompras · Top 20 por monto`,
+      count: Math.min(20, oncaeCrit.length),
+      monto: fmtL(topOncaeMonto),
+      color: '#ef4444',
+      btn: 'exportReporteOncaeCriticaPDF()',
+      bg: 'rgba(255,61,87,0.06)',
+      border: 'rgba(255,61,87,0.25)',
+    },
+    {
+      icon: '🟠',
+      title: 'Top 20 SEFIN — Contratos CRÍTICA por Monto',
+      desc: `${sefinCrit.length.toLocaleString()} contratos CRÍTICA en SEFIN/EDCA · Top 20 por monto`,
+      count: Math.min(20, sefinCrit.length),
+      monto: fmtL(topSefinMonto),
+      color: '#f59e0b',
+      btn: 'exportReporteSefinCriticaPDF()',
+      bg: 'rgba(245,158,11,0.06)',
+      border: 'rgba(245,158,11,0.25)',
+    },
+    {
+      icon: '🏛️',
+      title: 'Pareto de Riesgo Institucional',
+      desc: `Top 15 entidades por señales CRÍTICA+ALTA · ${allHighRisk.length.toLocaleString()} contratos de alto riesgo en total`,
+      count: topEntidades.length,
+      monto: fmtL(paretoMonto),
+      color: '#06b6d4',
+      btn: 'exportReporteParetoPDF()',
+      bg: 'rgba(6,182,212,0.06)',
+      border: 'rgba(6,182,212,0.25)',
+    },
+  ];
+
+  document.getElementById('reportesBody').innerHTML = cards.map(c => `
+    <div style="border:1px solid ${c.border};border-radius:12px;overflow:hidden;background:${c.bg};">
+      <div style="padding:16px 20px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:${c.color};margin-bottom:5px;">${c.icon} ${c.title}</div>
+            <div style="font-size:11px;color:var(--muted);">${c.desc}</div>
+          </div>
+          <button class="pdf-btn" onclick="${c.btn}" style="background:${c.bg};color:${c.color};border-color:${c.border};white-space:nowrap;flex-shrink:0;">📄 PDF</button>
+        </div>
+        <div style="display:flex;gap:28px;margin-top:14px;">
+          <div>
+            <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Registros</span><br>
+            <span style="font-size:22px;font-weight:700;color:${c.color};font-family:'Syne',sans-serif;">${c.count}</span>
+          </div>
+          <div>
+            <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Monto total</span><br>
+            <span style="font-size:22px;font-weight:700;color:${c.color};font-family:'Syne',sans-serif;">${c.monto}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── PDF 1: Top 20 ONCAE CRÍTICA por monto ────────────────────────────────────
+function exportReporteOncaeCriticaPDF() {
+  const all = window.allAlerts || [];
+  if (!all.length) { alert('Datos no cargados.'); return; }
+  const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'');
+  const isOncae = a => String(a.data_source||'').includes('ONCAE');
+  const isCritica = a => normSev(a.severity||a.severidad) === 'critica';
+  const fmtL = n => { if(!n) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const esc = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const today = new Date();
+  const ds = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-ONCAE-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  const oncaeCrit = all.filter(a => isOncae(a) && isCritica(a)).sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0)).slice(0,20);
+  const totalMonto = oncaeCrit.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+  const entidades  = [...new Set(oncaeCrit.map(a => a.entity_name||a.entidad_nombre||'').filter(Boolean))];
+  const proveedores = [...new Set(oncaeCrit.map(a => a.proveedor_nombre||a.supplier_name||a.proveedor||'').filter(Boolean))];
+
+  const rows = oncaeCrit.map((a, i) => {
+    const prov = a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
+    const ent  = a.entity_name||a.entidad_nombre||'—';
+    const fecha = (a.fecha_contrato||a.fecha_adjudicacion||a.created_at||'').substring(0,10) || '—';
+    const id   = a.alert_id||a.id||'—';
+    const desc = a.object_contract||a.descripcion||'—';
+    const src  = (a.data_source||'ONCAE').replace('ONCAE-HC1-','ONCAE ');
+    return `<tr style="background:${i%2===0?'#fff':'#fdf8ff'};border-bottom:1px solid #f0e8ff;">
+      <td style="padding:6px 8px;font-weight:700;color:#7c3aed;font-size:11px;text-align:center;">${i+1}</td>
+      <td style="padding:6px 8px;font-family:monospace;font-size:9px;color:#888;">${String(id).slice(0,16)}</td>
+      <td style="padding:6px 8px;font-size:10px;font-weight:600;">${esc(ent.length>45?ent.slice(0,44)+'…':ent)}</td>
+      <td style="padding:6px 8px;font-size:10px;">${esc(prov.length>40?prov.slice(0,39)+'…':prov)}</td>
+      <td style="padding:6px 8px;font-size:10px;">${esc(desc.length>50?desc.slice(0,49)+'…':desc)}</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:700;font-size:11px;color:#7c3aed;">${fmtL(Number(a.monto_contrato||0))}</td>
+      <td style="padding:6px 8px;text-align:center;font-size:9px;color:#888;">${fecha}</td>
+      <td style="padding:6px 8px;text-align:center;font-size:9px;color:#666;">${esc(src)}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — Top 20 ONCAE CRÍTICA</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 landscape;margin:15mm 14mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;padding:22px 28px 18px;margin-bottom:18px;}
+    .kpi-row{display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+    .kpi-box{flex:1;min-width:90px;border:1px solid #e9d5ff;border-radius:8px;padding:10px 14px;background:#faf5ff;text-align:center;}
+    .kpi-val{font-size:20px;font-weight:700;color:#7c3aed;}
+    .kpi-lbl{font-size:9px;color:#888;margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
+    .warning-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:10px;color:#92400e;}
+    table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+    thead tr{background:#4c1d95;}
+    thead th{padding:7px 8px;color:#fff;font-size:10px;font-weight:700;text-align:left;letter-spacing:.04em;}
+    .footer{margin-top:20px;padding-top:10px;border-top:2px solid #7c3aed;display:flex;justify-content:space-between;font-size:9px;color:#888;}
+    .classification{background:#7c3aed;color:#fff;text-align:center;padding:5px;font-size:9px;font-weight:700;letter-spacing:.12em;margin-top:12px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:5px;">SISTEMA SENTINEL — HONDURAS</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:3px;">🔴 Reporte: Top 20 ONCAE — Contratos CRÍTICA por Monto</div>
+        <div style="font-size:10px;opacity:.8;">ONCAE / Honducompras 2019–2024 · Severidad CRÍTICA · Ordenado por monto descendente</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.85;">
+        <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:3px;">${ds}</div>
+        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos monitoreados</div>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-val">${oncaeCrit.length}</div><div class="kpi-lbl">Contratos Top 20</div></div>
+    <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">Monto total</div></div>
+    <div class="kpi-box"><div class="kpi-val">${entidades.length}</div><div class="kpi-lbl">Entidades únicas</div></div>
+    <div class="kpi-box"><div class="kpi-val">${proveedores.length}</div><div class="kpi-lbl">Proveedores únicos</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">CRÍTICA</div><div class="kpi-lbl">Severidad</div></div>
+  </div>
+  <div class="warning-box">
+    ⚠️ <strong>Nota:</strong> Contratos clasificados como CRÍTICA en base a patrones detectados por Sentinel (contratación directa, fraccionamiento, período urgente, licitación privada, entre otros). La clasificación es automatizada y requiere verificación por personal autorizado antes de cualquier acción formal.
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:28px;">#</th>
+        <th style="width:90px;">ID</th>
+        <th>Entidad</th>
+        <th>Proveedor</th>
+        <th>Objeto/Descripción</th>
+        <th style="text-align:right;width:110px;">Monto (L.)</th>
+        <th style="text-align:center;width:72px;">Fecha</th>
+        <th style="text-align:center;width:70px;">Fuente</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="footer">
+    <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras</div>
+    <div>Generado: ${ds} · ${folio}</div>
+  </div>
+  <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1200,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ── PDF 2: Top 20 SEFIN CRÍTICA por monto ────────────────────────────────────
+function exportReporteSefinCriticaPDF() {
+  const all = window.allAlerts || [];
+  if (!all.length) { alert('Datos no cargados.'); return; }
+  const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'');
+  const isOncae = a => String(a.data_source||'').includes('ONCAE');
+  const isCritica = a => normSev(a.severity||a.severidad) === 'critica';
+  const fmtL = n => { if(!n) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const esc = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const today = new Date();
+  const ds = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-SEFIN-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  const sefinCrit = all.filter(a => !isOncae(a) && isCritica(a)).sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0)).slice(0,20);
+  const totalMonto = sefinCrit.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+  const entidades   = [...new Set(sefinCrit.map(a => a.entity_name||a.entidad_nombre||'').filter(Boolean))];
+  const proveedores = [...new Set(sefinCrit.map(a => a.proveedor_nombre||a.supplier_name||a.proveedor||'').filter(Boolean))];
+
+  const rows = sefinCrit.map((a, i) => {
+    const prov  = a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
+    const ent   = a.entity_name||a.entidad_nombre||'—';
+    const fecha = (a.fecha_contrato||a.fecha_adjudicacion||a.created_at||'').substring(0,10) || '—';
+    const id    = a.alert_id||a.id||'—';
+    const desc  = a.object_contract||a.descripcion||'—';
+    return `<tr style="background:${i%2===0?'#fff':'#fffbf0'};border-bottom:1px solid #fde68a;">
+      <td style="padding:6px 8px;font-weight:700;color:#d97706;font-size:11px;text-align:center;">${i+1}</td>
+      <td style="padding:6px 8px;font-family:monospace;font-size:9px;color:#888;">${String(id).slice(0,16)}</td>
+      <td style="padding:6px 8px;font-size:10px;font-weight:600;">${esc(ent.length>45?ent.slice(0,44)+'…':ent)}</td>
+      <td style="padding:6px 8px;font-size:10px;">${esc(prov.length>40?prov.slice(0,39)+'…':prov)}</td>
+      <td style="padding:6px 8px;font-size:10px;">${esc(desc.length>50?desc.slice(0,49)+'…':desc)}</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:700;font-size:11px;color:#d97706;">${fmtL(Number(a.monto_contrato||0))}</td>
+      <td style="padding:6px 8px;text-align:center;font-size:9px;color:#888;">${fecha}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — Top 20 SEFIN CRÍTICA</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 landscape;margin:15mm 14mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#92400e,#d97706);color:#fff;padding:22px 28px 18px;margin-bottom:18px;}
+    .kpi-row{display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+    .kpi-box{flex:1;min-width:90px;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;background:#fffbf0;text-align:center;}
+    .kpi-val{font-size:20px;font-weight:700;color:#d97706;}
+    .kpi-lbl{font-size:9px;color:#888;margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
+    .warning-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:10px;color:#92400e;}
+    table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+    thead tr{background:#92400e;}
+    thead th{padding:7px 8px;color:#fff;font-size:10px;font-weight:700;text-align:left;letter-spacing:.04em;}
+    .footer{margin-top:20px;padding-top:10px;border-top:2px solid #d97706;display:flex;justify-content:space-between;font-size:9px;color:#888;}
+    .classification{background:#d97706;color:#fff;text-align:center;padding:5px;font-size:9px;font-weight:700;letter-spacing:.12em;margin-top:12px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:5px;">SISTEMA SENTINEL — HONDURAS</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:3px;">🟠 Reporte: Top 20 SEFIN — Contratos CRÍTICA por Monto</div>
+        <div style="font-size:10px;opacity:.8;">SEFIN / EDCA 2023–2025 · Severidad CRÍTICA · Ordenado por monto descendente</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.85;">
+        <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:3px;">${ds}</div>
+        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos monitoreados</div>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-val">${sefinCrit.length}</div><div class="kpi-lbl">Contratos Top 20</div></div>
+    <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">Monto total</div></div>
+    <div class="kpi-box"><div class="kpi-val">${entidades.length}</div><div class="kpi-lbl">Entidades únicas</div></div>
+    <div class="kpi-box"><div class="kpi-val">${proveedores.length}</div><div class="kpi-lbl">Proveedores únicos</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">CRÍTICA</div><div class="kpi-lbl">Severidad</div></div>
+  </div>
+  <div class="warning-box">
+    ⚠️ <strong>Nota:</strong> Contratos clasificados como CRÍTICA en base a patrones detectados por Sentinel (contratación directa, fraccionamiento, período urgente, licitación privada, entre otros). La clasificación es automatizada y requiere verificación por personal autorizado antes de cualquier acción formal.
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:28px;">#</th>
+        <th style="width:90px;">ID</th>
+        <th>Entidad</th>
+        <th>Proveedor</th>
+        <th>Objeto/Descripción</th>
+        <th style="text-align:right;width:110px;">Monto (L.)</th>
+        <th style="text-align:center;width:72px;">Fecha</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="footer">
+    <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras</div>
+    <div>Generado: ${ds} · ${folio}</div>
+  </div>
+  <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1200,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ── PDF 3: Pareto de Riesgo Institucional — Top 15 entidades ─────────────────
+function exportReporteParetoPDF() {
+  const all = window.allAlerts || [];
+  if (!all.length) { alert('Datos no cargados.'); return; }
+  const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'');
+  const isCritica = a => normSev(a.severity||a.severidad) === 'critica';
+  const isHighRisk = a => { const sv = normSev(a.severity||a.severidad); return sv==='critica'||sv==='alta'; };
+  const isOncae = a => String(a.data_source||'').includes('ONCAE');
+  const fmtL = n => { if(!n) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const esc = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const today = new Date();
+  const ds = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-PARETO-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  const allHighRisk = all.filter(isHighRisk);
+  const entMap = {};
+  allHighRisk.forEach(a => {
+    const ent = a.entity_name||a.entidad_nombre||'—';
+    if(!entMap[ent]) entMap[ent] = { count:0, monto:0, criticos:0, altos:0, sefin:0, oncae:0 };
+    entMap[ent].count++;
+    entMap[ent].monto += Number(a.monto_contrato||0);
+    if(isCritica(a)) entMap[ent].criticos++; else entMap[ent].altos++;
+    if(isOncae(a)) entMap[ent].oncae++; else entMap[ent].sefin++;
+  });
+
+  const top15 = Object.entries(entMap).sort((a,b) => b[1].count - a[1].count).slice(0,15);
+  const maxCount = top15[0]?.[1]?.count || 1;
+  const totalMonto = top15.reduce((s,[,v]) => s+v.monto, 0);
+  const totalSeñales = top15.reduce((s,[,v]) => s+v.count, 0);
+
+  const rows = top15.map(([ent, v], i) => {
+    const barPct = Math.round((v.count / maxCount) * 100);
+    const riskColor = v.criticos > 5 ? '#dc2626' : v.criticos > 0 ? '#d97706' : '#2563eb';
+    return `<tr style="background:${i%2===0?'#fff':'#f0f9ff'};border-bottom:1px solid #bae6fd;">
+      <td style="padding:7px 8px;font-weight:700;color:#0e7490;font-size:12px;text-align:center;">${i+1}</td>
+      <td style="padding:7px 8px;font-size:10px;font-weight:600;max-width:220px;">${esc(ent.length>55?ent.slice(0,54)+'…':ent)}</td>
+      <td style="padding:7px 8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:${barPct}%;max-width:120px;height:10px;background:${riskColor};border-radius:3px;"></div>
+          <span style="font-size:11px;font-weight:700;color:${riskColor};">${v.count}</span>
+        </div>
+      </td>
+      <td style="padding:7px 8px;text-align:center;font-size:11px;font-weight:700;color:#dc2626;">${v.criticos}</td>
+      <td style="padding:7px 8px;text-align:center;font-size:11px;color:#d97706;">${v.altos}</td>
+      <td style="padding:7px 8px;text-align:right;font-size:11px;font-weight:600;color:#0e7490;">${fmtL(v.monto)}</td>
+      <td style="padding:7px 8px;text-align:center;font-size:10px;color:#666;">${v.sefin > 0 ? v.sefin+' SEFIN' : ''}${v.sefin>0&&v.oncae>0?' · ':''}${v.oncae > 0 ? v.oncae+' ONCAE' : ''}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — Pareto Riesgo Institucional</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 portrait;margin:18mm 15mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#0c4a6e,#0284c7);color:#fff;padding:22px 28px 18px;margin-bottom:18px;}
+    .kpi-row{display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+    .kpi-box{flex:1;min-width:90px;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;background:#f0f9ff;text-align:center;}
+    .kpi-val{font-size:20px;font-weight:700;color:#0284c7;}
+    .kpi-lbl{font-size:9px;color:#888;margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
+    .info-box{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:10px;color:#0c4a6e;}
+    table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+    thead tr{background:#0c4a6e;}
+    thead th{padding:7px 8px;color:#fff;font-size:10px;font-weight:700;text-align:left;letter-spacing:.04em;}
+    .footer{margin-top:20px;padding-top:10px;border-top:2px solid #0284c7;display:flex;justify-content:space-between;font-size:9px;color:#888;}
+    .classification{background:#0284c7;color:#fff;text-align:center;padding:5px;font-size:9px;font-weight:700;letter-spacing:.12em;margin-top:12px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:5px;">SISTEMA SENTINEL — HONDURAS</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:3px;">🏛️ Pareto de Riesgo Institucional — Top 15 Entidades</div>
+        <div style="font-size:10px;opacity:.8;">Entidades ordenadas por número de señales CRÍTICA + ALTA · SEFIN/EDCA + ONCAE/Honducompras</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.85;">
+        <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:3px;">${ds}</div>
+        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos monitoreados</div>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-val">${top15.length}</div><div class="kpi-lbl">Entidades analizadas</div></div>
+    <div class="kpi-box"><div class="kpi-val">${totalSeñales.toLocaleString()}</div><div class="kpi-lbl">Señales totales</div></div>
+    <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">Monto total</div></div>
+    <div class="kpi-box"><div class="kpi-val">${allHighRisk.length.toLocaleString()}</div><div class="kpi-lbl">Contratos alto riesgo (total BD)</div></div>
+  </div>
+  <div class="info-box">
+    ℹ️ <strong>Metodología Pareto:</strong> Las entidades se ordenan por número total de señales de riesgo CRÍTICA y ALTA detectadas en sus contratos. La barra de riesgo es relativa al máximo de la lista. Un mayor número de señales no indica corrupción confirmada, sino mayor concentración de patrones que requieren revisión.
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:28px;">#</th>
+        <th>Entidad Contratante</th>
+        <th style="width:160px;">Señales (barra)</th>
+        <th style="text-align:center;width:60px;">CRÍTICA</th>
+        <th style="text-align:center;width:50px;">ALTA</th>
+        <th style="text-align:right;width:110px;">Monto (L.)</th>
+        <th style="text-align:center;width:110px;">Fuente</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
   <div class="footer">
     <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras</div>
     <div>Generado: ${ds} · ${folio}</div>

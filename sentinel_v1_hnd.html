@@ -13586,6 +13586,25 @@ function renderReportesPanel() {
       bg: 'rgba(6,182,212,0.06)',
       border: 'rgba(6,182,212,0.25)',
     },
+    (() => {
+      const oncae2025 = all.filter(a => String(a.data_source||'').includes('2025'));
+      const actores = oncae2025.filter(a => {
+        const p = (a.proveedor_nombre||'').toUpperCase();
+        return p.includes('CORINFAR') || p.includes('GEOCONSULT') || p.includes('VIVI') || p.includes('IVETTE AZRAK');
+      });
+      const monto2025Critica = oncae2025.filter(a => normSev(a.severity||a.severidad)==='critica').reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+      return {
+        icon: '📊',
+        title: 'ONCAE 2025 — Actores Conocidos',
+        desc: `CORINFAR · GEOCONSULT · VIVI & COMERCIAL · ${oncae2025.filter(a=>normSev(a.severity||a.severidad)==='critica').length} contratos CRÍTICA · L ${(monto2025Critica/1e9).toFixed(1)}B en exposición`,
+        count: actores.length,
+        monto: fmtL(actores.reduce((s,a)=>s+Number(a.monto_contrato||0),0)),
+        color: '#8b5cf6',
+        btn: 'exportReporteOncae2025ActoresPDF()',
+        bg: 'rgba(139,92,246,0.06)',
+        border: 'rgba(139,92,246,0.25)',
+      };
+    })(),
   ];
 
   document.getElementById('reportesBody').innerHTML = cards.map(c => `
@@ -13938,6 +13957,130 @@ function exportReporteParetoPDF() {
   </body></html>`;
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ── PDF 4: ONCAE 2025 — Actores Conocidos ────────────────────────────────────
+function exportReporteOncae2025ActoresPDF() {
+  const all = window.allAlerts || [];
+  if (!all.length) { alert('Datos no cargados.'); return; }
+  const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'');
+  const fmtL = n => { if(!n||n===0) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const esc  = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const today = new Date();
+  const ds    = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-ONCAE2025-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  const oncae2025 = all.filter(a => String(a.data_source||'').includes('2025'));
+  const critica2025 = oncae2025.filter(a => normSev(a.severity||a.severidad)==='critica');
+  const alta2025   = oncae2025.filter(a => normSev(a.severity||a.severidad)==='alta');
+  const total2025Monto = oncae2025.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+  const critica2025Monto = critica2025.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+
+  const ACTORES = [
+    { nombre: 'CORINFAR — Corporación Industrial Farmacéutica, S.A.', color:'#dc2626', bg:'#fff5f5',
+      match: a => (a.proveedor_nombre||'').toUpperCase().includes('CORINFAR'),
+      nota: 'Empresa bajo juicio oral activo (4 imputados). 20 contratos en 2025 detectados. Antecedentes TSC/COVID por sobrecosto en medicamentos.' },
+    { nombre: 'GEOCONSULT, S.A. de C.V.', color:'#d97706', bg:'#fffbeb',
+      match: a => (a.proveedor_nombre||'').toUpperCase().includes('GEOCONSULT'),
+      nota: '2 contratos nuevos en 2025 (UMAPS + ICF). Historial ONCAE CRÍTICA 2019–2024 (L 563 M). Socios identificados vía Empresas Abiertas.' },
+    { nombre: 'VIVI & COMERCIAL / IVETTE AZRAK HANDAL', color:'#7c3aed', bg:'#faf5ff',
+      match: a => { const p=(a.proveedor_nombre||'').toUpperCase(); return p.includes('VIVI')||p.includes('IVETTE AZRAK'); },
+      nota: '1 contrato dic-2025 con Instituto Nacional Penitenciario. Acumulado ONCAE 2019–2024: L 483.9 M bajo dos razones sociales distintas.' },
+  ];
+
+  function buildActorSection(actor) {
+    const contratos = oncae2025.filter(actor.match).sort((a,b)=>Number(b.monto_contrato||0)-Number(a.monto_contrato||0));
+    if (!contratos.length) {
+      return `<div style="margin-bottom:20px;padding:14px 18px;border-left:4px solid ${actor.color};background:${actor.bg};border-radius:6px;">
+        <div style="font-weight:700;color:${actor.color};font-size:13px;margin-bottom:4px;">${esc(actor.nombre)}</div>
+        <div style="font-size:10px;color:#888;font-style:italic;">Sin contratos encontrados en ONCAE 2025.</div>
+      </div>`;
+    }
+    const totalMonto = contratos.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+    const rows = contratos.map((a,i) => {
+      const sev = a.severity||a.severidad||'—';
+      const sevColor = normSev(sev)==='critica'?'#dc2626':normSev(sev)==='alta'?'#d97706':'#555';
+      const pat = (a.patterns||'').replace(/_ONCAE/g,'').replace(/COMPRA_MENOR/g,'Compra Menor').replace(/,/g,' ·');
+      return `<tr style="background:${i%2===0?'#fff':actor.bg};">
+        <td style="padding:5px 8px;font-size:10px;">${esc((a.fecha_contrato||a.fecha_adjudicacion||'').substring(0,10))}</td>
+        <td style="padding:5px 8px;font-size:10px;max-width:220px;">${esc((a.entity_name||a.entidad_nombre||'—').substring(0,55))}</td>
+        <td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:600;">${fmtL(a.monto_contrato)}</td>
+        <td style="padding:5px 8px;text-align:center;font-size:10px;font-weight:700;color:${sevColor};">${esc(sev)}</td>
+        <td style="padding:5px 8px;font-size:9px;color:#555;">${esc(pat.substring(0,60))}</td>
+      </tr>`;
+    }).join('');
+    return `<div style="margin-bottom:22px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;border-left:4px solid ${actor.color};padding:8px 14px;background:${actor.bg};border-radius:0 6px 6px 0;margin-bottom:8px;">
+        <div>
+          <div style="font-weight:700;color:${actor.color};font-size:13px;">${esc(actor.nombre)}</div>
+          <div style="font-size:10px;color:#555;margin-top:3px;">${esc(actor.nota)}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:16px;">
+          <div style="font-size:18px;font-weight:700;color:${actor.color};">${contratos.length} contrato(s)</div>
+          <div style="font-size:11px;color:#555;">${fmtL(totalMonto)}</div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:${actor.color};">
+          <th style="padding:5px 8px;color:#fff;text-align:left;width:90px;">Fecha</th>
+          <th style="padding:5px 8px;color:#fff;text-align:left;">Entidad</th>
+          <th style="padding:5px 8px;color:#fff;text-align:right;width:90px;">Monto</th>
+          <th style="padding:5px 8px;color:#fff;text-align:center;width:70px;">Severidad</th>
+          <th style="padding:5px 8px;color:#fff;text-align:left;">Patrones</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — ONCAE 2025 Actores Conocidos</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 portrait;margin:16mm 14mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#3b0764,#6d28d9);color:#fff;padding:20px 26px 16px;margin-bottom:16px;}
+    .kpi-row{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+    .kpi-box{flex:1;min-width:100px;border:1px solid #e9d5ff;border-radius:8px;padding:10px 14px;background:#faf5ff;text-align:center;}
+    .kpi-val{font-size:20px;font-weight:700;color:#6d28d9;}
+    .kpi-lbl{font-size:9px;color:#888;margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
+    .footer{margin-top:18px;padding-top:8px;border-top:2px solid #6d28d9;display:flex;justify-content:space-between;font-size:9px;color:#888;}
+    .classification{background:#6d28d9;color:#fff;text-align:center;padding:5px;font-size:9px;font-weight:700;letter-spacing:.12em;margin-top:10px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:5px;">SISTEMA SENTINEL — HONDURAS</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:3px;">📊 ONCAE 2025 — Seguimiento de Actores Conocidos</div>
+        <div style="font-size:10px;opacity:.8;">CORINFAR · GEOCONSULT · VIVI &amp; COMERCIAL · Contratos en vivo desde Supabase</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.85;">
+        <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:3px;">${ds}</div>
+        <div style="margin-top:2px;">Base ONCAE 2025: ${oncae2025.length.toLocaleString()} contratos</div>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-val">${oncae2025.length.toLocaleString()}</div><div class="kpi-lbl">Contratos ONCAE 2025</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">${critica2025.length}</div><div class="kpi-lbl">CRÍTICA</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#d97706;">${alta2025.length.toLocaleString()}</div><div class="kpi-lbl">ALTA</div></div>
+    <div class="kpi-box"><div class="kpi-val">${fmtL(critica2025Monto)}</div><div class="kpi-lbl">Exposición CRÍTICA</div></div>
+    <div class="kpi-box"><div class="kpi-val">${fmtL(total2025Monto)}</div><div class="kpi-lbl">Monto total monitoreado</div></div>
+  </div>
+  ${ACTORES.map(buildActorSection).join('')}
+  <div class="footer">
+    <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras · ONCAE 2025</div>
+    <div>Generado: ${ds} · ${folio}</div>
+  </div>
+  <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=850');
   if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
   pw.document.write(addPrintBtn(html));
   pw.document.close();

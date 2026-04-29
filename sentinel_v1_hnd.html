@@ -1897,6 +1897,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">📝</span> Auditoría
         <span class="nav-chip">LOG</span>
       </button>
+      <button class="nav-item" id="nav-ingest" onclick="showIngestPanel()">
+        <span class="nav-icon">🔄</span> Ingesta
+        <span class="nav-chip" style="background:rgba(0,230,118,0.12);color:var(--green);border-color:rgba(0,230,118,0.3);">LIVE</span>
+      </button>
       <a class="nav-item" href="index.html">
         <span class="nav-icon">🏠</span> Inicio
       </a>
@@ -3813,6 +3817,82 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div id="scannerResultsHeader" style="margin-bottom:12px;"></div>
       <div id="scannerResultsTable"></div>
       <div id="scannerExportBar" style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ INGEST PANEL ════════════════════ -->
+  <div class="fuente-panel" id="ingestPanel">
+    <button class="fuente-back" onclick="hideIngestPanel()">← Contratos</button>
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>🔄</span><span>Actualizar Datos — Ingesta ONCAE</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Descarga y procesa los datos más recientes de ONCAE directamente desde datosabiertos.oncae.gob.hn · Sin intervención manual
+      </div>
+    </div>
+
+    <!-- Source + Year selector -->
+    <div style="margin-top:22px;display:flex;flex-direction:column;gap:16px;">
+      <div style="border:1px solid var(--border);border-radius:12px;padding:18px;background:var(--glass);">
+        <div style="font-size:12px;font-weight:700;color:var(--electric);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;">Configuración de Ingesta</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:6px;">Fuente</label>
+            <div style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(0,200,255,0.05);color:var(--text);font-size:13px;font-weight:600;">📂 ONCAE — HC1 Contratos</div>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:6px;">Año de datos</label>
+            <select id="ingestYearSelect" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--navy-mid);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;">
+              <option value="2025" selected>2025 (más reciente)</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+              <option value="2019">2019</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.6;padding:10px;border-radius:8px;background:rgba(0,200,255,0.04);border:1px solid rgba(0,200,255,0.08);">
+          ℹ️ La ingesta descarga el archivo HC1_datos_{año}.json desde ONCAE, aplica detección de patrones de fraude y actualiza la base de datos. Tiempo estimado: 60–90 segundos.
+        </div>
+        <button id="ingestRunBtn" onclick="runIngest()" style="margin-top:16px;width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--green),#00b862);color:#001a0d;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.04em;transition:opacity .2s;">
+          🔄 Iniciar Actualización
+        </button>
+      </div>
+
+      <!-- Progress area -->
+      <div id="ingestProgress" style="display:none;border:1px solid rgba(0,200,255,0.2);border-radius:12px;padding:18px;background:rgba(0,200,255,0.04);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div id="ingestSpinner" style="width:20px;height:20px;border-radius:50%;border:3px solid rgba(0,200,255,0.15);border-top-color:var(--electric);animation:spin 1s linear infinite;flex-shrink:0;"></div>
+          <div style="font-size:13px;font-weight:700;color:var(--electric);" id="ingestStatusText">Iniciando ingesta...</div>
+        </div>
+        <div id="ingestLogLines" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);line-height:1.8;max-height:140px;overflow-y:auto;"></div>
+        <div id="ingestProgressBar" style="margin-top:12px;height:4px;border-radius:2px;background:rgba(255,255,255,0.06);overflow:hidden;">
+          <div id="ingestProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--electric),var(--green));transition:width .4s ease;border-radius:2px;"></div>
+        </div>
+      </div>
+
+      <!-- Results area -->
+      <div id="ingestResults" style="display:none;border:1px solid rgba(0,230,118,0.25);border-radius:12px;padding:18px;background:rgba(0,230,118,0.04);">
+        <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:14px;">✅ Ingesta Completada</div>
+        <div id="ingestResultsBody"></div>
+        <button onclick="document.getElementById('ingestResults').style.display='none';document.getElementById('ingestProgress').style.display='none';document.getElementById('ingestRunBtn').disabled=false;document.getElementById('ingestRunBtn').style.opacity='1';"
+          style="margin-top:14px;padding:8px 18px;border-radius:8px;border:1px solid rgba(0,230,118,0.3);background:rgba(0,230,118,0.08);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;">
+          🔄 Nueva Ingesta
+        </button>
+      </div>
+
+      <!-- Error area -->
+      <div id="ingestError" style="display:none;border:1px solid rgba(255,61,87,0.3);border-radius:12px;padding:18px;background:rgba(255,61,87,0.05);">
+        <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:8px;">❌ Error en Ingesta</div>
+        <div id="ingestErrorMsg" style="font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;line-height:1.6;"></div>
+        <button onclick="document.getElementById('ingestError').style.display='none';document.getElementById('ingestRunBtn').disabled=false;document.getElementById('ingestRunBtn').style.opacity='1';"
+          style="margin-top:12px;padding:8px 18px;border-radius:8px;border:1px solid rgba(255,61,87,0.3);background:rgba(255,61,87,0.08);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;">
+          Reintentar
+        </button>
+      </div>
     </div>
   </div>
 
@@ -6114,7 +6194,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','scannerPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','scannerPanel','ingestPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -15008,6 +15088,129 @@ function hideScannerPanel() {
   document.getElementById('scannerPanel').classList.remove('open');
   document.getElementById('scannerResults').style.display='none';
   hideAllPanels();
+}
+
+// ── INGEST PANEL ─────────────────────────────────────────────────────────────
+function showIngestPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('ingestPanel').classList.add('open');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-ingest').classList.add('active');
+}
+
+function hideIngestPanel() {
+  document.getElementById('ingestPanel').classList.remove('open');
+  hideAllPanels();
+}
+
+async function runIngest() {
+  const year = document.getElementById('ingestYearSelect').value;
+  const btn = document.getElementById('ingestRunBtn');
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+
+  // Reset areas
+  document.getElementById('ingestError').style.display = 'none';
+  document.getElementById('ingestResults').style.display = 'none';
+  const progressDiv = document.getElementById('ingestProgress');
+  progressDiv.style.display = 'block';
+  document.getElementById('ingestProgressFill').style.width = '0%';
+  const logLines = document.getElementById('ingestLogLines');
+  logLines.innerHTML = '';
+
+  function log(msg) {
+    logLines.innerHTML += `<div>${msg}</div>`;
+    logLines.scrollTop = logLines.scrollHeight;
+  }
+  function setProgress(pct) {
+    document.getElementById('ingestProgressFill').style.width = pct + '%';
+  }
+
+  document.getElementById('ingestStatusText').textContent = `Descargando datos ONCAE ${year}...`;
+  log(`[${new Date().toLocaleTimeString('es-HN')}] Iniciando ingesta ONCAE HC1 ${year}...`);
+  setProgress(10);
+
+  try {
+    const edgeFnUrl = `${SUPABASE_URL}/functions/v1/ingest-oncae`;
+    log(`[${new Date().toLocaleTimeString('es-HN')}] Conectando con Edge Function...`);
+    setProgress(25);
+
+    const res = await fetch(edgeFnUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ year }),
+    });
+
+    setProgress(85);
+    log(`[${new Date().toLocaleTimeString('es-HN')}] Procesando respuesta...`);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    setProgress(100);
+
+    if (!data.ok) throw new Error(data.error || 'Error desconocido en la función');
+
+    // Show results
+    document.getElementById('ingestStatusText').textContent = '✅ Completado';
+    document.getElementById('ingestSpinner').style.animation = 'none';
+    document.getElementById('ingestSpinner').style.borderColor = 'var(--green)';
+    document.getElementById('ingestSpinner').style.borderTopColor = 'var(--green)';
+
+    log(`[${new Date().toLocaleTimeString('es-HN')}] Ingesta completada en ${data.elapsedSec}s`);
+
+    const sevHtml = Object.entries(data.bySeverity||{}).map(([sev,cnt])=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <span style="font-size:12px;color:${sev==='CRÍTICA'?'var(--red)':sev==='ALTA'?'var(--orange)':sev==='MEDIA'?'var(--amber)':'var(--text-dim)'};">● ${sev}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--text);">${cnt.toLocaleString('es-HN')}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('ingestResultsBody').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div style="border:1px solid rgba(0,230,118,0.15);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:var(--green);">${(data.releases||0).toLocaleString('es-HN')}</div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">Releases procesados</div>
+        </div>
+        <div style="border:1px solid rgba(0,200,255,0.15);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:var(--electric);">${(data.withPatterns||0).toLocaleString('es-HN')}</div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">Con patrones</div>
+        </div>
+        <div style="border:1px solid rgba(255,171,0,0.15);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:var(--amber);">${(data.inserted||0).toLocaleString('es-HN')}</div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">Insertados/actualizados</div>
+        </div>
+        <div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:var(--text);">${(data.elapsedSec||0)}s</div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">Tiempo total</div>
+        </div>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">Por Severidad</div>
+        ${sevHtml}
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-dim);">
+        📅 Fuente: ONCAE HC1 ${year} · Recarga la página para ver los nuevos registros en el dashboard
+      </div>
+    `;
+
+    document.getElementById('ingestProgress').style.display = 'none';
+    document.getElementById('ingestResults').style.display = 'block';
+
+  } catch(e) {
+    document.getElementById('ingestProgress').style.display = 'none';
+    document.getElementById('ingestErrorMsg').textContent = e.message;
+    document.getElementById('ingestError').style.display = 'block';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
 }
 
 function _renderScannerPatternGrid() {

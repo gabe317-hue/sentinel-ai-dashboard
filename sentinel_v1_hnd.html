@@ -1877,6 +1877,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">📰</span> Noticias
         <span class="nav-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">RSS</span>
       </button>
+      <button class="nav-item" id="nav-scanner" onclick="showScannerPanel()">
+        <span class="nav-icon">🔍</span> Escáner
+        <span class="nav-chip" style="background:rgba(124,58,237,0.15);color:#a78bfa;border-color:rgba(124,58,237,0.3);">AUTO</span>
+      </button>
 
     </div>
 
@@ -3790,6 +3794,25 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
     <div id="ocdsBody" style="margin-top:18px;">
       <div style="color:var(--muted);padding:40px;text-align:center;">Calculando cruce...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SCANNER PANEL ════════════════════ -->
+  <div class="fuente-panel" id="scannerPanel">
+    <button class="fuente-back" onclick="hideScannerPanel()">← Contratos</button>
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>🔍</span><span>Escáner Automático de Patrones</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Selecciona un patrón para escanear los 127,832 contratos en tiempo real · Sin intervención manual
+      </div>
+    </div>
+    <div id="scannerPatternGrid" style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
+    <div id="scannerResults" style="display:none;margin-top:24px;">
+      <div id="scannerResultsHeader" style="margin-bottom:12px;"></div>
+      <div id="scannerResultsTable"></div>
+      <div id="scannerExportBar" style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;"></div>
     </div>
   </div>
 
@@ -6091,7 +6114,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','scannerPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -14853,6 +14876,306 @@ function exportReporteS36PDF() {
   pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
+}
+
+// ════════════════════════════════════════════════════════════
+// ESCÁNER AUTOMÁTICO DE PATRONES
+// ════════════════════════════════════════════════════════════
+
+const SCANNER_PATTERNS = [
+  {
+    id: 'fuera_giro',
+    icon: '🏪',
+    title: 'Fuera de Giro',
+    desc: 'Empresas con nombre de giro incompatible con el contrato (tiendas, ferreterías, modas en sector público)',
+    color: '#7c3aed',
+    risk: 'CRÍTICA',
+    script: 'build_s38_fuera_giro.js',
+    run: () => {
+      const kw = ['ferreteria','ferretería','variedades','tienda','modas','marketing','trends','fashion','agropecuaria','repuestos','panaderia','bazar','deposito','almacen','boutique','importadora de vehiculos'];
+      return (window.allAlerts||[])
+        .filter(a => { const p=(a.proveedor_nombre||'').toLowerCase(); return kw.some(k=>p.includes(k)) && Number(a.monto_contrato||0)>500000; })
+        .sort((a,b)=>Number(b.monto_contrato)-Number(a.monto_contrato)).slice(0,60);
+    }
+  },
+  {
+    id: 'sin_historial_alto',
+    icon: '👻',
+    title: 'Sin Historial + Alto Monto',
+    desc: 'Proveedores nuevos sin historial previo adjudicados con contratos superiores a L 10M',
+    color: '#dc2626',
+    risk: 'CRÍTICA',
+    script: null,
+    run: () => {
+      return (window.allAlerts||[])
+        .filter(a=>(a.patterns||'').includes('PROVEEDOR_SIN_HISTORIAL') && Number(a.monto_contrato||0)>10000000)
+        .sort((a,b)=>Number(b.monto_contrato)-Number(a.monto_contrato)).slice(0,60);
+    }
+  },
+  {
+    id: 'compra_menor',
+    icon: '📦',
+    title: 'Compra Menor Sobre Umbral',
+    desc: 'Uso del mecanismo Compra Menor para evadir licitación pública (flaggeado por ONCAE)',
+    color: '#ea580c',
+    risk: 'CRÍTICA',
+    script: null,
+    run: () => {
+      return (window.allAlerts||[])
+        .filter(a=>(a.patterns||'').includes('COMPRA_MENOR_ONCAE') && Number(a.monto_contrato||0)>1000000)
+        .sort((a,b)=>Number(b.monto_contrato)-Number(a.monto_contrato)).slice(0,60);
+    }
+  },
+  {
+    id: 'cd_alto',
+    icon: '🤝',
+    title: 'Contratación Directa Sospechosa',
+    desc: 'Contratos directos sin proceso competitivo por más de L 5M (señal ONCAE)',
+    color: '#b45309',
+    risk: 'ALTA',
+    script: null,
+    run: () => {
+      return (window.allAlerts||[])
+        .filter(a=>(a.patterns||'').includes('CONTRATACION_DIRECTA_ONCAE') && Number(a.monto_contrato||0)>5000000)
+        .sort((a,b)=>Number(b.monto_contrato)-Number(a.monto_contrato)).slice(0,60);
+    }
+  },
+  {
+    id: 'fraccionamiento',
+    icon: '✂️',
+    title: 'Fraccionamiento Sistémico',
+    desc: 'Mismo proveedor + entidad con 3+ pagos fraccionados (evasión de umbrales de aprobación)',
+    color: '#0369a1',
+    risk: 'ALTA',
+    script: null,
+    run: () => {
+      const groups={};
+      (window.allAlerts||[])
+        .filter(a=>(a.patterns||'').match(/FRACCIONAMIENTO|MONTO_FRACCIONADO/))
+        .forEach(a=>{
+          const k=`${(a.proveedor_nombre||'').trim()}|||${(a.entity_name||'').trim()}`;
+          if(!groups[k]) groups[k]={proveedor:a.proveedor_nombre,entidad:a.entity_name,items:[],total:0};
+          groups[k].items.push(a); groups[k].total+=Number(a.monto_contrato||0);
+        });
+      return Object.values(groups).filter(g=>g.items.length>=3)
+        .sort((a,b)=>b.items.length-a.items.length).slice(0,50)
+        .map(g=>({
+          proveedor_nombre:g.proveedor, entity_name:g.entidad,
+          monto_contrato:g.total, tipo_contratacion:`${g.items.length} pagos fraccionados`,
+          severity:'ALTA', patterns:'FRACCIONAMIENTO_SISTÉMICO', fecha_contrato:g.items[0].fecha_contrato
+        }));
+    }
+  },
+  {
+    id: 'cluster_cd',
+    icon: '🎯',
+    title: 'Cluster de CDs por Entidad',
+    desc: 'Entidades que adjudicaron 3+ contratos directos a distintos proveedores en el mismo mes',
+    color: '#065f46',
+    risk: 'ALTA',
+    script: null,
+    run: () => {
+      const groups={};
+      (window.allAlerts||[])
+        .filter(a=>(a.patterns||'').includes('CONTRATACION_DIRECTA_ONCAE') && a.fecha_contrato)
+        .forEach(a=>{
+          const mes=(a.fecha_contrato||'').substring(0,7);
+          const k=`${(a.entity_name||'').trim()}|||${mes}`;
+          if(!groups[k]) groups[k]={entidad:a.entity_name,mes,items:[],total:0};
+          groups[k].items.push(a); groups[k].total+=Number(a.monto_contrato||0);
+        });
+      return Object.values(groups).filter(g=>g.items.length>=3)
+        .sort((a,b)=>b.total-a.total).slice(0,50)
+        .map(g=>({
+          proveedor_nombre:`${g.items.length} proveedores distintos`,
+          entity_name:g.entidad, monto_contrato:g.total,
+          tipo_contratacion:`Mes: ${g.mes}`,
+          severity:'ALTA', patterns:'CLUSTER_CD', fecha_contrato:g.mes
+        }));
+    }
+  }
+];
+
+function showScannerPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('scannerPanel').classList.add('open');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-scanner').classList.add('active');
+  _renderScannerPatternGrid();
+}
+
+function hideScannerPanel() {
+  document.getElementById('scannerPanel').classList.remove('open');
+  document.getElementById('scannerResults').style.display='none';
+  hideAllPanels();
+}
+
+function _renderScannerPatternGrid() {
+  const grid=document.getElementById('scannerPatternGrid');
+  if(!grid) return;
+  grid.innerHTML = SCANNER_PATTERNS.map(p=>`
+    <div style="border:1px solid rgba(${p.id==='fuera_giro'?'124,58,237':p.id==='sin_historial_alto'?'220,38,38':p.id==='compra_menor'?'234,88,12':p.id==='cd_alto'?'180,83,9':p.id==='fraccionamiento'?'3,105,161':'6,95,70'},0.3);
+      border-radius:12px;background:rgba(${p.id==='fuera_giro'?'124,58,237':p.id==='sin_historial_alto'?'220,38,38':p.id==='compra_menor'?'234,88,12':p.id==='cd_alto'?'180,83,9':p.id==='fraccionamiento'?'3,105,161':'6,95,70'},0.06);
+      padding:16px;cursor:pointer;transition:transform .15s ease;"
+      onmouseenter="this.style.transform='translateY(-2px)'"
+      onmouseleave="this.style.transform=''"
+      onclick="runScannerPattern('${p.id}')">
+      <div style="font-size:22px;margin-bottom:8px;">${p.icon}</div>
+      <div style="font-size:13px;font-weight:700;color:${p.color};margin-bottom:5px;">${p.title}</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.4;">${p.desc}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:10px;font-weight:700;background:${p.risk==='CRÍTICA'?'rgba(220,38,38,0.15)':'rgba(234,88,12,0.15)'};
+          color:${p.risk==='CRÍTICA'?'#dc2626':'#ea580c'};padding:2px 8px;border-radius:10px;">${p.risk}</span>
+        <button onclick="event.stopPropagation();runScannerPattern('${p.id}')"
+          style="padding:5px 12px;border-radius:6px;border:1px solid ${p.color}33;background:${p.color}22;
+          color:${p.color};font-size:11px;font-weight:700;cursor:pointer;">▶ Escanear</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function runScannerPattern(patternId) {
+  const pattern = SCANNER_PATTERNS.find(p=>p.id===patternId);
+  if(!pattern) return;
+
+  // Run the pattern
+  const t0=performance.now();
+  const results = pattern.run();
+  const ms=Math.round(performance.now()-t0);
+
+  // Show results section
+  const resultsDiv=document.getElementById('scannerResults');
+  resultsDiv.style.display='block';
+
+  // Header
+  const totalMonto=results.reduce((s,r)=>s+Number(r.monto_contrato||0),0);
+  document.getElementById('scannerResultsHeader').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+      <span style="font-size:20px;">${pattern.icon}</span>
+      <div>
+        <div style="font-size:15px;font-weight:700;color:${pattern.color};">${pattern.title}</div>
+        <div style="font-size:11px;color:var(--muted);">Escaneados en ${ms}ms · ${results.length} registros detectados · Total: ${fmtL(totalMonto)}</div>
+      </div>
+      <button onclick="_renderScannerPatternGrid();document.getElementById('scannerResults').style.display='none';"
+        style="margin-left:auto;padding:5px 12px;border-radius:6px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--muted);font-size:11px;cursor:pointer;">← Volver a patrones</button>
+    </div>
+    <div style="border-top:1px solid var(--border);margin-bottom:14px;"></div>
+  `;
+
+  // Table
+  if(results.length===0){
+    document.getElementById('scannerResultsTable').innerHTML=`<div style="color:var(--muted);padding:30px;text-align:center;">✅ Sin coincidencias para este patrón en los datos actuales.</div>`;
+  } else {
+    document.getElementById('scannerResultsTable').innerHTML=`
+      <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--border);">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:rgba(255,255,255,0.04);">
+            <th style="padding:9px 12px;text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);">#</th>
+            <th style="padding:9px 12px;text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);">Proveedor</th>
+            <th style="padding:9px 12px;text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);">Entidad</th>
+            <th style="padding:9px 12px;text-align:right;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);">Monto</th>
+            <th style="padding:9px 12px;text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);">Tipo</th>
+            <th style="padding:9px 12px;text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);">Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${results.map((r,i)=>`
+          <tr style="border-bottom:1px solid var(--border);${i%2===1?'background:rgba(255,255,255,0.02)':''}">
+            <td style="padding:8px 12px;color:var(--muted);">${i+1}</td>
+            <td style="padding:8px 12px;font-weight:600;color:var(--text-main);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.proveedor_nombre||''}">${r.proveedor_nombre||'—'}</td>
+            <td style="padding:8px 12px;color:var(--text-dim);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entity_name||''}">${r.entity_name||'—'}</td>
+            <td style="padding:8px 12px;text-align:right;font-weight:700;color:${pattern.color};">${fmtL(Number(r.monto_contrato||0))}</td>
+            <td style="padding:8px 12px;color:var(--muted);font-size:10px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.tipo_contratacion||''}">${(r.tipo_contratacion||'').substring(0,50)}</td>
+            <td style="padding:8px 12px;color:var(--muted);">${(r.fecha_contrato||'').substring(0,10)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    `;
+  }
+
+  // Export bar
+  document.getElementById('scannerExportBar').innerHTML=`
+    <button onclick="exportScannerPDF('${patternId}')"
+      style="padding:8px 16px;border-radius:8px;background:${pattern.color}22;border:1px solid ${pattern.color}44;
+      color:${pattern.color};font-size:12px;font-weight:700;cursor:pointer;">📄 Exportar PDF</button>
+    ${pattern.script ? `
+    <button onclick="showWordCmd('${pattern.script}',this)"
+      style="padding:8px 16px;border-radius:8px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);
+      color:#10b981;font-size:12px;font-weight:700;cursor:pointer;">📝 Reporte Word</button>` : ''}
+    <span style="font-size:11px;color:var(--muted);align-self:center;">${results.length} registros · ${fmtL(totalMonto)}</span>
+  `;
+
+  // Scroll to results
+  resultsDiv.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function exportScannerPDF(patternId) {
+  const pattern = SCANNER_PATTERNS.find(p=>p.id===patternId);
+  if(!pattern) return;
+  const results = pattern.run();
+  const today=new Date();
+  const ds=today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const totalMonto=results.reduce((s,r)=>s+Number(r.monto_contrato||0),0);
+  const folio=`SEN-SCAN-${patternId.toUpperCase().substring(0,8)}-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  const rows=results.slice(0,80).map((r,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td style="font-weight:600;">${r.proveedor_nombre||'—'}</td>
+      <td>${r.entity_name||'—'}</td>
+      <td style="text-align:right;font-weight:700;color:${pattern.color};">${fmtL(Number(r.monto_contrato||0))}</td>
+      <td style="font-size:10px;">${(r.tipo_contratacion||'').substring(0,60)}</td>
+      <td>${(r.fecha_contrato||'').substring(0,10)}</td>
+    </tr>`).join('');
+
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Sentinel — Escáner ${pattern.title} ${ds}</title>
+  <style>
+    body{font-family:'Segoe UI',Calibri,sans-serif;margin:0;padding:0;color:#1a1a2e;}
+    .cover{background:linear-gradient(135deg,#1e1b4b,${pattern.color});color:#fff;padding:50px;min-height:200px;}
+    .cover-title{font-size:26px;font-weight:800;margin-bottom:8px;}
+    .cover-sub{font-size:14px;opacity:.85;margin-bottom:4px;}
+    .cover-folio{font-size:11px;opacity:.65;margin-top:16px;font-family:monospace;}
+    .stats{display:flex;gap:24px;padding:24px 50px;background:#f8f9fa;border-bottom:2px solid #e5e7eb;}
+    .stat{text-align:center;}
+    .stat-num{font-size:28px;font-weight:800;color:${pattern.color};}
+    .stat-label{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;}
+    .content{padding:30px 50px;}
+    h2{font-size:16px;font-weight:800;color:${pattern.color};border-bottom:2px solid ${pattern.color};padding-bottom:6px;margin-top:24px;}
+    table{width:100%;border-collapse:collapse;font-size:11px;margin-top:12px;}
+    th{background:${pattern.color};color:#fff;padding:7px 8px;text-align:left;}
+    td{padding:6px 8px;border-bottom:1px solid #e5e7eb;}
+    tr:nth-child(even) td{background:#f9fafb;}
+    .footer{margin-top:30px;padding:14px 50px;background:#f3f4f6;font-size:10px;color:#9ca3af;text-align:center;}
+  </style></head><body>
+  <div class="cover">
+    <div style="font-size:11px;opacity:.65;margin-bottom:12px;">SENTINEL-AI · ESCÁNER AUTOMÁTICO · ${ds}</div>
+    <div class="cover-title">${pattern.icon} ${pattern.title}</div>
+    <div class="cover-sub">${pattern.desc}</div>
+    <div class="cover-folio">Folio: ${folio} | Base: 127,832 contratos SEFIN/ONCAE 2019–2025</div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-num">${results.length}</div><div class="stat-label">Registros Detectados</div></div>
+    <div class="stat"><div class="stat-num">${fmtL(totalMonto)}</div><div class="stat-label">Monto Total</div></div>
+    <div class="stat"><div class="stat-num">${pattern.risk}</div><div class="stat-label">Nivel de Riesgo</div></div>
+    <div class="stat"><div class="stat-num">${ds}</div><div class="stat-label">Fecha de Escaneo</div></div>
+  </div>
+  <div class="content">
+    <h2>Registros Detectados (primeros ${Math.min(results.length,80)})</h2>
+    <table>
+      <tr><th>#</th><th>Proveedor</th><th>Entidad</th><th>Monto (L)</th><th>Tipo</th><th>Fecha</th></tr>
+      ${rows}
+    </table>
+    <p style="font-size:11px;color:#9ca3af;margin-top:16px;">⚠️ AVISO LEGAL: Las señales detectadas NO constituyen determinación de responsabilidad penal. Uso investigativo exclusivo. Folio: ${folio}</p>
+  </div>
+  </body></html>`;
+
+  const pw=window.open('','_blank');
+  if(!pw){alert('Permita ventanas emergentes.');return;}
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
 }
 
 // ── PDF 7: Investigación S38 — Empresas Fuera de Giro ────────────────────────

@@ -1836,7 +1836,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
   <div class="nav">
     <div class="nav-section">
-      <div class="nav-section-label">Monitoreo</div>
+      <div class="nav-section-label">Operación</div>
       <button class="nav-item" id="nav-ejecutiva" onclick="showVistaEjecutiva()">
         <span class="nav-icon">📊</span> Vista Ejecutiva
       </button>
@@ -1885,6 +1885,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">🚨</span> Sanciones OFAC
         <span class="nav-chip" id="nav-ofac-chip" style="background:rgba(255,61,87,0.15);color:var(--red);border-color:rgba(255,61,87,0.3);">—</span>
       </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Sistema</div>
       <button class="nav-item" id="nav-reportes" onclick="showReportesPanel()">
         <span class="nav-icon">📋</span> Reportes
       </button>
@@ -1892,10 +1896,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">🔗</span> OCDS / Cruce
         <span class="nav-chip" id="nav-ocds-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">—</span>
       </button>
-    </div>
-
-    <div class="nav-section">
-      <div class="nav-section-label">Sistema</div>
       <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
         <span class="nav-icon">📝</span> Auditoría
         <span class="nav-chip">LOG</span>

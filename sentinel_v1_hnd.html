@@ -13609,6 +13609,28 @@ function renderReportesPanel() {
         border: 'rgba(139,92,246,0.25)',
       };
     })(),
+    (() => {
+      const all2 = window.allAlerts || [];
+      const compMenorCrit = all2.filter(a => {
+        const sev = (a.severity||a.severidad||'').toUpperCase();
+        const pats = (a.patterns||'');
+        return sev === 'CRÍTICA' && pats.includes('COMPRA_MENOR_ONCAE');
+      });
+      const corinfar = all2.filter(a => (a.proveedor_nombre||'').toUpperCase().includes('CORINFAR'));
+      const totalMonto = compMenorCrit.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+      return {
+        icon: '🔍',
+        title: 'Investigación CRÍTICA — Compra Menor + CORINFAR',
+        desc: `${compMenorCrit.length} contratos CRÍTICA Compra Menor · ${corinfar.filter(a=>(a.fecha_contrato||'').startsWith('2025')).length} contratos CORINFAR 2025 activos`,
+        count: compMenorCrit.length,
+        monto: fmtL(totalMonto),
+        color: '#e11d48',
+        btn: 'exportReporteInvestigacionCriticaPDF()',
+        script: 'build_investigacion_critica.js',
+        bg: 'rgba(225,29,72,0.06)',
+        border: 'rgba(225,29,72,0.25)',
+      };
+    })(),
   ];
 
   const savedKey = localStorage.getItem('sentinel_sb_key') || '';
@@ -14182,6 +14204,160 @@ function exportReporteOncae2025ActoresPDF() {
     <div>Generado: ${ds} · ${folio}</div>
   </div>
   <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=850');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+function exportReporteInvestigacionCriticaPDF() {
+  const all = window.allAlerts || [];
+  if (!all.length) { alert('Datos no cargados.'); return; }
+  const fmtL = n => { if(!n||n===0) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const esc  = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const today = new Date();
+  const ds    = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-INVEST-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  // ── B: Compra Menor CRÍTICA ONCAE 2025
+  const compMenorCrit = all.filter(a => {
+    const sev = (a.severity||a.severidad||'').toUpperCase();
+    return sev === 'CRÍTICA' && (a.patterns||'').includes('COMPRA_MENOR_ONCAE');
+  }).sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
+  const totalCMC = compMenorCrit.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+
+  // Group by proveedor
+  const provMap = {};
+  compMenorCrit.forEach(a => {
+    const p = a.proveedor_nombre||'(sin proveedor)';
+    if (!provMap[p]) provMap[p] = {count:0, monto:0, entidades:new Set()};
+    provMap[p].count++;
+    provMap[p].monto += Number(a.monto_contrato||0);
+    provMap[p].entidades.add(a.entity_name||'—');
+  });
+  const topProvs = Object.entries(provMap).sort((a,b)=>b[1].monto-a[1].monto).slice(0,15);
+
+  // ── D: CORINFAR
+  const corinfar = all.filter(a => (a.proveedor_nombre||'').toUpperCase().includes('CORINFAR'));
+  const cor2025  = corinfar.filter(a => (a.fecha_contrato||'').startsWith('2025'));
+  const cor2024  = corinfar.filter(a => (a.fecha_contrato||'').startsWith('2024'));
+  const totalCor = corinfar.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+  const total2025Cor = cor2025.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+
+  const provRows = topProvs.map(([prov,v],i) => {
+    const isRilmac = prov.toUpperCase().includes('RILMAC');
+    const bg = isRilmac ? '#fff0f0' : (i%2===0?'#ffffff':'#f9fafb');
+    const color = isRilmac ? '#dc2626' : '#111827';
+    return `<tr style="background:${bg};">
+      <td style="padding:6px 10px;font-size:11px;color:${color};font-weight:${isRilmac?'700':'400'};">${esc(prov.length>45?prov.slice(0,45)+'…':prov)}${isRilmac?' ⚠️ VERIFICAR':''}</td>
+      <td style="padding:6px 10px;text-align:center;font-size:11px;">${v.count}</td>
+      <td style="padding:6px 10px;text-align:right;font-size:11px;font-weight:${isRilmac?'700':'400'};color:${isRilmac?'#dc2626':'#111827'};">${fmtL(v.monto)}</td>
+      <td style="padding:6px 10px;font-size:10px;color:#6b7280;">${esc([...v.entidades][0]||'—')}</td>
+    </tr>`;
+  }).join('');
+
+  // CORINFAR entidades 2025
+  const corEntidades = {};
+  cor2025.forEach(a => {
+    const e = a.entity_name||'—';
+    if (!corEntidades[e]) corEntidades[e] = {count:0,monto:0};
+    corEntidades[e].count++;
+    corEntidades[e].monto += Number(a.monto_contrato||0);
+  });
+  const corEntRows = Object.entries(corEntidades).sort((a,b)=>b[1].monto-a[1].monto).map(([e,v],i)=>
+    `<tr style="background:${i%2===0?'#fff':'#fff5f5'};">
+      <td style="padding:5px 10px;font-size:11px;">${esc(e)}</td>
+      <td style="padding:5px 10px;text-align:center;font-size:11px;">${v.count}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;">${fmtL(v.monto)}</td>
+    </tr>`
+  ).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel-AI — Investigación CRÍTICA ${ds}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0} body{font-family:Arial,sans-serif;font-size:12px;color:#111827;background:#fff;padding:32px}
+    .cover-title{font-size:32px;font-weight:900;color:#0a1628;} .cover-sub{color:#00a8d6;} .cover-label{font-size:11px;color:#6b7280;letter-spacing:.08em;text-transform:uppercase;margin-top:24px;}
+    h1{font-size:18px;font-weight:800;color:#0a1628;margin:28px 0 6px;padding-bottom:6px;border-bottom:3px solid #00a8d6;}
+    h2{font-size:14px;font-weight:700;color:#00a8d6;margin:20px 0 8px;}
+    .kpi-row{display:flex;gap:12px;margin:14px 0;}
+    .kpi{flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;text-align:center;}
+    .kpi .val{font-size:24px;font-weight:900;color:#0a1628;} .kpi .lbl{font-size:10px;color:#6b7280;text-transform:uppercase;margin-top:3px;}
+    .kpi.red{background:#fff0f0;border-color:#fecaca;} .kpi.red .val{color:#dc2626;}
+    .kpi.amb{background:#fffbeb;border-color:#fde68a;} .kpi.amb .val{color:#d97706;}
+    table{width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;}
+    thead th{background:#0a1628;color:#fff;padding:7px 10px;text-align:left;font-size:11px;}
+    .alert-box{background:#fff0f0;border:1px solid #fca5a5;border-radius:8px;padding:14px 18px;margin:12px 0;}
+    .alert-box .alert-title{font-size:13px;font-weight:700;color:#dc2626;margin-bottom:6px;}
+    .folio{font-size:10px;color:#9ca3af;text-align:right;margin-bottom:4px;}
+    .section-note{font-size:11px;color:#6b7280;font-style:italic;margin:8px 0 4px;}
+    .disclaimer{font-size:9px;color:#9ca3af;margin-top:32px;padding-top:12px;border-top:1px solid #e5e7eb;font-style:italic;}
+    @media print{body{padding:16px}}
+  </style></head><body>
+  <div class="folio">${folio} · ${ds}</div>
+  <div class="cover-title">SENTINEL<span class="cover-sub">-AI</span></div>
+  <div style="font-size:13px;color:#4a6080;margin:4px 0 20px;">Informe de Investigación · Compra Menor CRÍTICA + CORINFAR 2025</div>
+
+  <!-- ── KPIs globales -->
+  <div class="kpi-row">
+    <div class="kpi red"><div class="val">${compMenorCrit.length}</div><div class="lbl">Contratos CRÍTICA Compra Menor</div></div>
+    <div class="kpi red"><div class="val">${fmtL(totalCMC)}</div><div class="lbl">Monto Total Reportado</div></div>
+    <div class="kpi amb"><div class="val">${corinfar.length}</div><div class="lbl">Contratos CORINFAR (total DB)</div></div>
+    <div class="kpi amb"><div class="val">${fmtL(totalCor)}</div><div class="lbl">Exposición CORINFAR acumulada</div></div>
+  </div>
+
+  <!-- ── SECCIÓN B -->
+  <h1>1. ONCAE 2025 — 115 Contratos CRÍTICA Compra Menor</h1>
+  <p style="font-size:11px;color:#374151;margin-bottom:12px;">Contratos con patrón COMPRA_MENOR_ONCAE y severidad CRÍTICA (monto ≥ L 500,000 adjudicado por Compra Menor, método reservado para adquisiciones menores según la Ley de Contratación del Estado).</p>
+
+  <div class="alert-box">
+    <div class="alert-title">⚠️ ALERTA MÁXIMA — RILMAC IMPRESORES: L 5.08 BILLONES</div>
+    <table style="margin:0;">
+      <tr><td style="padding:3px 8px;font-weight:600;width:180px;">Contrato</td><td style="padding:3px 8px;">CM-INFOP-TGU-0219-2025</td></tr>
+      <tr><td style="padding:3px 8px;font-weight:600;">Entidad</td><td style="padding:3px 8px;">INFOP — Unidad Central</td></tr>
+      <tr><td style="padding:3px 8px;font-weight:600;">Monto</td><td style="padding:3px 8px;color:#dc2626;font-weight:700;">L 5,080,516,000 (~USD 202M)</td></tr>
+      <tr><td style="padding:3px 8px;font-weight:600;">Método</td><td style="padding:3px 8px;color:#dc2626;">Compra Menor (umbral legal: &lt; L 500K)</td></tr>
+      <tr><td style="padding:3px 8px;font-weight:600;">RTN</td><td style="padding:3px 8px;">HN-RTN-08019008133144</td></tr>
+      <tr><td style="padding:3px 8px;font-weight:600;">Representante</td><td style="padding:3px 8px;">Reina Isabel Lopez Gomez</td></tr>
+      <tr><td style="padding:3px 8px;font-weight:600;">Fecha</td><td style="padding:3px 8px;">2025-06-03 · Sin fecha de adjudicación registrada</td></tr>
+    </table>
+    <p style="font-size:10px;color:#dc2626;margin-top:8px;font-style:italic;">REQUIERE VERIFICACIÓN URGENTE en portal ONCAE/HonduCompras. Posible error de datos o fraude real. Imprenta con L 5B por Compra Menor a instituto vocacional.</p>
+  </div>
+
+  <h2>Top 15 Proveedores CRÍTICA Compra Menor (sin RILMAC)</h2>
+  <table>
+    <thead><tr><th>Proveedor</th><th style="text-align:center;">Ctr.</th><th style="text-align:right;">Monto Total</th><th>Entidad Principal</th></tr></thead>
+    <tbody>${provRows}</tbody>
+  </table>
+
+  <!-- ── SECCIÓN D -->
+  <h1>2. CORINFAR — Contratos Activos Bajo Juicio Oral</h1>
+  <div class="kpi-row">
+    <div class="kpi red"><div class="val">${cor2025.length}</div><div class="lbl">Contratos 2025</div></div>
+    <div class="kpi red"><div class="val">${fmtL(total2025Cor)}</div><div class="lbl">Monto 2025</div></div>
+    <div class="kpi amb"><div class="val">${cor2024.length}</div><div class="lbl">Contratos 2024</div></div>
+    <div class="kpi"><div class="val">${corinfar.length}</div><div class="lbl">Total en DB</div></div>
+  </div>
+  <p class="section-note">Estado legal: JUICIO ORAL ACTIVO — 4 imputados. La empresa continúa adjudicando contratos con el Estado hondureño en 2025.</p>
+
+  <h2>Entidades con contratos CORINFAR activos en 2025</h2>
+  <table>
+    <thead><tr><th>Entidad</th><th style="text-align:center;">Contratos</th><th style="text-align:right;">Monto</th></tr></thead>
+    <tbody>${corEntRows||'<tr><td colspan="3" style="padding:10px;text-align:center;color:#6b7280;">Sin datos 2025 en carga actual</td></tr>'}</tbody>
+  </table>
+  <p class="section-note">Patrones detectados: FRACCIONAMIENTO_MICRO · COMPRA_EMERGENCIA · ADJUDICACION_DIRECTA · COMPRA_MENOR_ONCAE</p>
+
+  <h2>Recomendaciones</h2>
+  <ul style="margin:8px 0 0 18px;font-size:11px;line-height:1.7;">
+    <li><strong>Referir al Ministerio Público</strong> la continuidad de adjudicaciones a CORINFAR durante proceso judicial activo (L ${fmtL(total2025Cor)} en 2025).</li>
+    <li><strong>Solicitar a ONCAE</strong> suspensión cautelar del registro de proveedor de CORINFAR mientras dure el juicio oral.</li>
+    <li><strong>Verificar RILMAC</strong> CM-INFOP-TGU-0219-2025 en portal ONCAE — determinar si es error de ingesta o adjudicación real.</li>
+    <li><strong>Investigar</strong> CONSULTORÍA INTEGRAL (L 57.5M) y ELECTROMECANICA GREENTEC (L 54M) via Registro Mercantil.</li>
+  </ul>
+
+  <div class="disclaimer">DISCLAIMER: Análisis basado en datos al ${ds}. Hallazgos indicativos — requieren investigación adicional para confirmación legal. No constituye auditoría oficial. Folio: ${folio} · Sentinel-AI © The Prieto Group LLC · CONFIDENCIAL</div>
   </body></html>`;
 
   const pw = window.open('', '_blank', 'width=1100,height=850');

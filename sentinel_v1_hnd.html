@@ -74,9 +74,140 @@ body::after {
 }
 
 .logo-area {
-  padding: 28px 24px 24px;
+  padding: 20px 24px 24px;
   border-bottom: 1px solid var(--border);
 }
+
+.portal-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--text-dim);
+  padding: 4px 0; margin-bottom: 14px;
+  transition: color 0.15s;
+  border: none; background: none; cursor: pointer;
+}
+.portal-back:hover { color: var(--electric); }
+.portal-back::before { content: '←'; font-size: 11px; }
+
+/* ─── PORTAL OVERLAY ─── */
+.po-overlay {
+  position: fixed; inset: 0;
+  background: var(--navy);
+  z-index: 10000;
+  overflow-y: auto;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.22s ease;
+  display: flex; flex-direction: column;
+}
+.po-overlay.visible { opacity: 1; pointer-events: all; }
+.po-overlay::before {
+  content: ''; position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+  background-size: 48px 48px; pointer-events: none; z-index: 0;
+}
+.po-overlay::after {
+  content: ''; position: fixed; top: -40%; right: -20%;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(0,200,255,0.06) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+.po-wrap {
+  position: relative; z-index: 1;
+  flex: 1; max-width: 1280px;
+  margin: 0 auto; width: 100%; padding: 0 40px;
+}
+.po-close {
+  position: fixed; top: 20px; right: 24px; z-index: 10001;
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 1px; padding: 7px 14px; cursor: pointer;
+  transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+}
+.po-close:hover { color: var(--text); border-color: rgba(0,200,255,0.3); }
+.po-header { position: relative; z-index: 1; padding: 52px 0 44px; text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 48px; }
+.po-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--electric); opacity: 0.7; margin-bottom: 18px; }
+.po-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(38px, 6vw, 64px); letter-spacing: -1.5px; color: var(--text); line-height: 1; margin-bottom: 14px; }
+.po-logo span { color: var(--electric); }
+.po-subtitle { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 24px; }
+.po-meta { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.po-status-pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 14px; background: var(--green-dim); border: 1px solid rgba(0,230,118,0.25); border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--green); text-transform: uppercase; }
+.po-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse-green 2s infinite; }
+.po-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 4px 12px; border-radius: 20px; }
+.po-badge.electric { color: var(--electric); background: var(--electric-dim); border: 1px solid rgba(0,200,255,0.2); }
+.po-badge.dim { color: var(--text-dim); background: var(--glass); border: 1px solid var(--border); }
+.po-section-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+.po-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.po-grid-top    { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+.po-grid-bottom { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 48px; }
+.po-card { background: var(--navy-light); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
+.po-card:hover { border-color: rgba(0,200,255,0.25); box-shadow: 0 0 24px rgba(0,200,255,0.05); }
+.po-card.po-expanded { box-shadow: 0 0 30px rgba(0,0,0,0.3); }
+.po-card-hd { display: flex; align-items: center; gap: 14px; padding: 22px 24px; transition: background 0.2s; user-select: none; }
+.po-card:hover .po-card-hd { background: var(--glass); }
+.po-card.po-expanded .po-card-hd { background: var(--glass-hover); }
+.po-card-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.po-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: var(--text); line-height: 1.2; }
+.po-card-desc  { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-top: 3px; }
+.po-chevron    { font-size: 11px; color: var(--text-dim); transition: transform 0.25s; flex-shrink: 0; margin-left: auto; }
+.po-card.po-expanded .po-chevron { transform: rotate(180deg); }
+.po-submenu { display: none; border-top: 1px solid var(--border); padding: 8px 12px 12px; }
+.po-card.po-expanded .po-submenu { display: block; }
+.po-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text-dim); transition: all 0.15s; font-family: 'Inter', sans-serif; border: none; background: none; width: 100%; text-align: left; }
+.po-item:hover { background: var(--glass-hover); color: var(--text); }
+.po-item:hover .po-arrow { opacity: 1; transform: translateX(0); }
+.po-item-icon  { font-size: 13px; width: 20px; text-align: center; flex-shrink: 0; }
+.po-item-label { flex: 1; }
+.po-item-tag   { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; }
+.po-arrow      { font-size: 10px; color: var(--text-dim); opacity: 0; transform: translateX(-4px); transition: all 0.15s; }
+.tag-c { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,61,87,0.25); }
+.tag-l { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,230,118,0.25); }
+.tag-n { background: var(--electric-dim); color: var(--electric); border: 1px solid rgba(0,200,255,0.25); }
+.po-electric .po-card-icon { background: var(--electric-dim); }
+.po-electric .po-card-icon span { color: var(--electric); }
+.po-electric.po-expanded .po-card-title { color: var(--electric); }
+.po-electric.po-expanded { border-color: var(--electric); }
+.po-amber .po-card-icon { background: var(--amber-dim); }
+.po-amber .po-card-icon span { color: var(--amber); }
+.po-amber.po-expanded .po-card-title { color: var(--amber); }
+.po-amber.po-expanded { border-color: var(--amber); }
+.po-red .po-card-icon { background: var(--red-dim); }
+.po-red .po-card-icon span { color: var(--red); }
+.po-red.po-expanded .po-card-title { color: var(--red); }
+.po-red.po-expanded { border-color: var(--red); }
+.po-green .po-card-icon { background: var(--green-dim); }
+.po-green .po-card-icon span { color: var(--green); }
+.po-green.po-expanded .po-card-title { color: var(--green); }
+.po-green.po-expanded { border-color: var(--green); }
+.po-purple .po-card-icon { background: var(--purple-dim); }
+.po-purple .po-card-icon span { color: var(--purple); }
+.po-purple.po-expanded .po-card-title { color: var(--purple); }
+.po-purple.po-expanded { border-color: var(--purple); }
+.po-rpt-group-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); padding: 6px 12px 4px; }
+.po-divider { height: 1px; background: var(--border); margin: 6px 0; }
+.po-band { position: relative; z-index: 1; border-top: 1px solid var(--border); background: rgba(10,22,40,0.9); backdrop-filter: blur(20px); padding: 0 40px; }
+.po-band-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; height: 56px; overflow-x: auto; }
+.po-ind { display: flex; align-items: center; gap: 8px; padding: 0 24px; border-right: 1px solid var(--border); flex-shrink: 0; white-space: nowrap; }
+.po-ind:first-child { padding-left: 0; }
+.po-ind:last-child  { border-right: none; }
+.po-ind-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); }
+.po-ind-val { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+.po-ind-val.red    { color: var(--red); }
+.po-ind-val.amber  { color: var(--amber); }
+.po-ind-val.green  { color: var(--green); }
+.po-ind-val.blue   { color: var(--electric); }
+.po-ind-val.purple { color: var(--purple); }
+.po-ind-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.po-ind-dot.green { background: var(--green); animation: pulse-green 2s infinite; }
+.po-footer { position: relative; z-index: 1; border-top: 1px solid var(--border); background: rgba(10,22,40,0.6); padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.po-footer-brand { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim); text-transform: uppercase; }
+.po-footer-brand span { color: var(--electric); }
+.po-footer-class { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+@media (max-width: 900px) { .po-grid-top { grid-template-columns: repeat(2,1fr); } .po-grid-bottom { grid-template-columns: 1fr; } }
+@media (max-width: 580px) { .po-grid-top { grid-template-columns: 1fr; } .po-wrap, .po-band, .po-footer { padding-left: 20px; padding-right: 20px; } }
 
 .logo-text {
   font-family: 'Syne', sans-serif;
@@ -1824,6 +1955,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
 <nav class="sidebar">
   <div class="logo-area">
+    <button onclick="showPortal()" class="portal-back">Portal de Acceso</button>
     <div class="logo-text">SENTINEL<span>-AI</span></div>
     <div class="logo-sub">Sistema Anticorrupción</div>
     <div class="sys-status connecting" id="sysStatus">
@@ -1920,6 +2052,174 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     </div>
   </div>
 </nav>
+
+<!-- ═══════════════════ PORTAL OVERLAY ═══════════════════ -->
+<div id="portalOverlay" class="po-overlay">
+
+  <button class="po-close" onclick="hidePortal()">✕ Cerrar Portal</button>
+
+  <div class="po-wrap">
+    <div class="po-header">
+      <div class="po-eyebrow">República de Honduras · SEFIN / ONCAE</div>
+      <div class="po-logo">SENTINEL<span>·</span>AI</div>
+      <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
+      <div class="po-meta">
+        <span class="po-status-pill"><span class="po-status-dot"></span>Sistema Activo</span>
+        <span class="po-badge electric">v1.38 · 2026</span>
+        <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
+      </div>
+    </div>
+
+    <div class="po-section-label">Módulos del sistema</div>
+
+    <div class="po-grid-top">
+
+      <!-- OPERACIÓN -->
+      <div class="po-card po-electric" id="poc-operacion" onclick="poToggle('operacion')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>⚡</span></div>
+          <div><div class="po-card-title">Operación</div><div class="po-card-desc">Vista ejecutiva · Contratos</div></div>
+          <div class="po-chevron">▼</div>
+        </div>
+        <div class="po-submenu">
+          <button class="po-item" onclick="poGo(showVistaEjecutiva)">
+            <span class="po-item-icon">🏛️</span><span class="po-item-label">Vista Ejecutiva</span><span class="po-item-tag tag-c">Alta Prioridad</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(hideAllPanels)">
+            <span class="po-item-icon">📋</span><span class="po-item-label">Contratos</span><span class="po-item-tag tag-l">Live</span><span class="po-arrow">›</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ANÁLISIS -->
+      <div class="po-card po-amber" id="poc-analisis" onclick="poToggle('analisis')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>📊</span></div>
+          <div><div class="po-card-title">Análisis</div><div class="po-card-desc">5 módulos · Riesgo cuantitativo</div></div>
+          <div class="po-chevron">▼</div>
+        </div>
+        <div class="po-submenu">
+          <button class="po-item" onclick="poGo(showAnalyticsPanel)">
+            <span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showVendorConcentrationPanel)">
+            <span class="po-item-icon">🎯</span><span class="po-item-label">Concentración</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showGlobalSobrecostos)">
+            <span class="po-item-icon">💰</span><span class="po-item-label">Sobrecostos</span><span class="po-item-tag tag-n">43 casos</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showPhase4Detection)">
+            <span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showSectorPanel)">
+            <span class="po-item-icon">🏗️</span><span class="po-item-label">Por Sector</span><span class="po-arrow">›</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- INVESTIGACIÓN -->
+      <div class="po-card po-red" id="poc-investigacion" onclick="poToggle('investigacion')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>🔎</span></div>
+          <div><div class="po-card-title">Investigación</div><div class="po-card-desc">Casos · Cronología · Escáner</div></div>
+          <div class="po-chevron">▼</div>
+        </div>
+        <div class="po-submenu">
+          <button class="po-item" onclick="poGo(showCasosPanel)">
+            <span class="po-item-icon">📁</span><span class="po-item-label">Casos Activos</span><span class="po-item-tag tag-c">Activo</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showTimelinePanel)">
+            <span class="po-item-icon">🕐</span><span class="po-item-label">Cronología</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showNewsPanel)">
+            <span class="po-item-icon">📰</span><span class="po-item-label">Noticias</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showEscanerPanel)">
+            <span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-item-tag tag-l">6 patrones</span><span class="po-arrow">›</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="po-grid-bottom">
+
+      <!-- REPORTES -->
+      <div class="po-card po-green" id="poc-reportes" onclick="poToggle('reportes')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>📄</span></div>
+          <div><div class="po-card-title">Reportes</div><div class="po-card-desc">PDF · Word · Memorándums · Briefings</div></div>
+          <div class="po-chevron">▼</div>
+        </div>
+        <div class="po-submenu">
+          <div class="po-rpt-group-label">Reportes de Riesgo</div>
+          <button class="po-item" onclick="poGo(()=>generateReport('pareto'))">
+            <span class="po-item-icon">📊</span><span class="po-item-label">Briefing Ejecutivo (Pareto 80/20)</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(()=>generateReport('todo'))">
+            <span class="po-item-icon">📋</span><span class="po-item-label">Reporte Completo</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
+          </button>
+          <div class="po-divider"></div>
+          <div class="po-rpt-group-label">Referencias Internacionales</div>
+          <button class="po-item" onclick="poGo(showEngelPanel)">
+            <span class="po-item-icon">🇺🇸</span><span class="po-item-label">Lista Engel</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showOfacPanel)">
+            <span class="po-item-icon">🚨</span><span class="po-item-label">Sanciones OFAC</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
+          </button>
+          <div class="po-divider"></div>
+          <button class="po-item" onclick="poGo(showReportesPanel)">
+            <span class="po-item-icon">📁</span><span class="po-item-label">Panel de Reportes</span><span class="po-item-tag tag-n">10 PDF · 10 Word</span><span class="po-arrow">›</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SISTEMA -->
+      <div class="po-card po-purple" id="poc-sistema" onclick="poToggle('sistema')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>⚙️</span></div>
+          <div><div class="po-card-title">Sistema</div><div class="po-card-desc">Auditoría · Ingesta · Sesión</div></div>
+          <div class="po-chevron">▼</div>
+        </div>
+        <div class="po-submenu">
+          <button class="po-item" onclick="poGo(showAuditPanel)">
+            <span class="po-item-icon">🗂️</span><span class="po-item-label">Auditoría del Sistema</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showIngestaPanel)">
+            <span class="po-item-icon">📥</span><span class="po-item-label">Panel de Ingesta</span><span class="po-item-tag tag-l">Live</span><span class="po-arrow">›</span>
+          </button>
+          <div class="po-divider"></div>
+          <button class="po-item" onclick="hidePortal()">
+            <span class="po-item-icon">🏠</span><span class="po-item-label">Entrar al Dashboard</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="doLogout()" style="color:var(--red);">
+            <span class="po-item-icon">🔒</span><span class="po-item-label">Cerrar Sesión</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STATUS BAND -->
+  <div class="po-band">
+    <div class="po-band-inner">
+      <div class="po-ind"><span class="po-ind-lbl">Contratos Críticos</span><span class="po-ind-val red" id="po-ind-crit">—</span></div>
+      <div class="po-ind"><span class="po-ind-lbl">Riesgo Alto</span><span class="po-ind-val amber" id="po-ind-alto">—</span></div>
+      <div class="po-ind"><span class="po-ind-lbl">Listas Internacionales</span><span class="po-ind-val purple" id="po-ind-intl">—</span></div>
+      <div class="po-ind"><span class="po-ind-lbl">Total Monitoreado</span><span class="po-ind-val blue" id="po-ind-total">—</span></div>
+      <div class="po-ind"><span class="po-ind-lbl">Riesgo Sobrecosto</span><span class="po-ind-val amber" id="po-ind-sob">—</span></div>
+      <div class="po-ind"><span class="po-ind-lbl">Casos Activos</span><span class="po-ind-val red" id="po-ind-casos">—</span></div>
+      <div class="po-ind"><span class="po-ind-dot green"></span><span class="po-ind-lbl">Estado</span><span class="po-ind-val green">Operativo</span></div>
+    </div>
+  </div>
+
+  <div class="po-footer">
+    <div class="po-footer-brand"><span>The Prieto Group</span> · 2026 ©</div>
+    <div class="po-footer-class">Clasificación: Reservado · Uso Institucional</div>
+  </div>
+
+</div><!-- /portalOverlay -->
 
 <!-- ═══════════════════ MAIN ═══════════════════ -->
 <main class="main">
@@ -10482,6 +10782,61 @@ function showEnhancedDetectionReport() {
 
   return { velocityThreats, anomalies, riskScores };
 }
+
+// ════════════════════════════════════════════════════════════
+// PORTAL OVERLAY
+// ════════════════════════════════════════════════════════════
+function showPortal() {
+  document.getElementById('portalOverlay').classList.add('visible');
+  poUpdateIndicators();
+}
+
+function hidePortal() {
+  document.getElementById('portalOverlay').classList.remove('visible');
+}
+
+function poGo(fn) {
+  hidePortal();
+  setTimeout(() => { try { fn(); } catch(e) { console.warn('poGo:', e); } }, 220);
+}
+
+function poToggle(id) {
+  const card = document.getElementById('poc-' + id);
+  const wasOpen = card.classList.contains('po-expanded');
+  document.querySelectorAll('.po-card').forEach(c => c.classList.remove('po-expanded'));
+  if (!wasOpen) card.classList.add('po-expanded');
+}
+
+function poUpdateIndicators() {
+  try {
+    if (typeof allAlerts !== 'undefined' && allAlerts.length) {
+      const crit  = allAlerts.filter(a => a.severity === 'CRÍTICA').length;
+      const alto  = allAlerts.filter(a => a.severity === 'ALTA').length;
+      const sob   = allAlerts.filter(a => a.tags && a.tags.includes('SOBRECOSTO')).length;
+      const engel = allAlerts.filter(a => a.tags && a.tags.includes('LISTA_ENGEL')).length;
+      const ofac  = allAlerts.filter(a => a.tags && a.tags.includes('PROVEEDOR_SANCIONADO')).length;
+      document.getElementById('po-ind-crit').textContent = crit.toLocaleString();
+      document.getElementById('po-ind-alto').textContent = alto.toLocaleString();
+      document.getElementById('po-ind-intl').textContent = (engel + ofac).toLocaleString();
+      document.getElementById('po-ind-sob').textContent  = sob.toLocaleString();
+    }
+    if (typeof window._totalContratos !== 'undefined') {
+      document.getElementById('po-ind-total').textContent = window._totalContratos.toLocaleString();
+      document.getElementById('po-db-badge').textContent  = window._totalContratos.toLocaleString() + ' contratos monitoreados';
+    }
+  } catch(e) { /* silent */ }
+}
+
+// stop submenu clicks from toggling the card
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.po-item').forEach(btn => {
+    btn.addEventListener('click', e => e.stopPropagation());
+  });
+  // show portal on load unless a hash anchor is present
+  if (!window.location.hash) {
+    setTimeout(showPortal, 80);
+  }
+});
 
 // ════════════════════════════════════════════════════════════
 // AUTH — Login / Logout / Session

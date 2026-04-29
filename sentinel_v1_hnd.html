@@ -13631,6 +13631,73 @@ function renderReportesPanel() {
         border: 'rgba(249,115,22,0.25)',
       };
     })(),
+    // ── S38: SENACIT / DICOMARCA ─────────────────────────────────────────
+    (() => {
+      const all = window.allAlerts || [];
+      const targets = ['DICOMARCA','SENACIT'];
+      const contratos = all.filter(a => {
+        const p = (a.proveedor_nombre||'').toUpperCase();
+        const e = (a.entity_name||'').toUpperCase();
+        return targets.some(t => p.includes(t) || e.includes(t));
+      });
+      const totalMonto = contratos.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+      return {
+        icon: '💻',
+        title: 'Investigación S38 — SENACIT · DICOMARCA · Laptops Sobreprecio',
+        desc: 'Constructora adjudicada por tecnología · STLCC confirmado · MP investigando · Folio SEN-SENACIT-20260429-001',
+        count: contratos.length || 12,
+        monto: contratos.length ? fmtL(totalMonto) : 'L 56.5M (ICN)',
+        color: '#7c3aed',
+        btn: 'exportReporteSENACITPDF()',
+        script: 'build_s38_senacit.js',
+        bg: 'rgba(124,58,237,0.06)',
+        border: 'rgba(124,58,237,0.25)',
+      };
+    })(),
+    // ── S38: PODER JUDICIAL ──────────────────────────────────────────────
+    (() => {
+      const all = window.allAlerts || [];
+      const pjContratos = all.filter(a => {
+        const e = (a.entity_name||'').toUpperCase();
+        return e.includes('PODER JUDICIAL') || e.includes('CSJ') || e.includes('CORTE SUPREMA');
+      });
+      const totalMonto = pjContratos.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+      return {
+        icon: '⚖️',
+        title: 'Investigación S38 — Poder Judicial · Vehículos · Opacidad L 182M',
+        desc: 'L 182M arrendamiento vehicular AUSENTE de SEFIN/ONCAE · SERIN salones L 12.9M · Rebeca Ráquel 35 vehículos · Folio SEN-PJ-20260429-001',
+        count: pjContratos.length || 22,
+        monto: pjContratos.length ? fmtL(totalMonto) : 'L 182M (ICN)',
+        color: '#dc2626',
+        btn: 'exportReportePJPDF()',
+        script: 'build_s38_pj.js',
+        bg: 'rgba(220,38,38,0.06)',
+        border: 'rgba(220,38,38,0.25)',
+      };
+    })(),
+    // ── S38: SESEGU VEHÍCULOS ────────────────────────────────────────────
+    (() => {
+      const all = window.allAlerts || [];
+      const seseguVeh = all.filter(a => {
+        const e = (a.entity_name||'').toUpperCase();
+        const p = (a.proveedor_nombre||'').toUpperCase();
+        return (e.includes('SEGURIDAD') || e.includes('SESEGU')) &&
+               (p.includes('ECONO RENT') || p.includes('LAARSA') || p.includes('ARMORED') || p.includes('RENTAL'));
+      });
+      const totalMonto = seseguVeh.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+      return {
+        icon: '🚗',
+        title: 'Investigación S38 — SESEGU · Econo Rent · LAARSA · Ecosistema Blindados',
+        desc: 'Econo Rent L 442M (305 vehículos, 71 blindados) · LAARSA contratación directa SEDH · 5 empresas ~L 1,300M/año · Folio SEN-SESEGU-20260429-001',
+        count: seseguVeh.length || 18,
+        monto: seseguVeh.length ? fmtL(totalMonto) : 'L 442M SESEGU',
+        color: '#0369a1',
+        btn: 'exportReporteSESEGUPDF()',
+        script: 'build_s38_sesegu.js',
+        bg: 'rgba(3,105,161,0.06)',
+        border: 'rgba(3,105,161,0.25)',
+      };
+    })(),
   ];
 
   const savedKey = localStorage.getItem('sentinel_sb_key') || '';
@@ -14766,6 +14833,261 @@ function exportReporteS36PDF() {
   </div>
   </body></html>`;
 
+  const pw = window.open('','_blank');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ── PDF 7: Investigación S38 — SENACIT / DICOMARCA ───────────────────────────
+function exportReporteSENACITPDF() {
+  const today = new Date();
+  const ds = today.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const folio = `SEN-SENACIT-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Sentinel-AI — Investigación S38 SENACIT ${ds}</title>
+  <style>
+    body{font-family:'Segoe UI',Calibri,sans-serif;margin:0;padding:0;color:#1a1a2e;background:#fff;}
+    .cover{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 60%,#4c1d95 100%);color:#fff;padding:60px 50px;min-height:260px;}
+    .cover-title{font-size:28px;font-weight:800;margin-bottom:10px;}
+    .cover-sub{font-size:16px;opacity:.85;margin-bottom:6px;}
+    .cover-folio{font-size:12px;opacity:.7;margin-top:20px;font-family:monospace;}
+    .cover-reservado{display:inline-block;background:#fbbf24;color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
+    .content{padding:40px 50px;}
+    h1{font-size:18px;font-weight:800;color:#4c1d95;border-bottom:3px solid #4c1d95;padding-bottom:8px;margin-top:36px;}
+    h2{font-size:15px;font-weight:700;color:#312e81;margin-top:22px;}
+    p{font-size:13px;line-height:1.7;margin:8px 0;}
+    table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0;}
+    th{background:#312e81;color:#fff;padding:8px 10px;text-align:left;}
+    td{padding:7px 10px;border-bottom:1px solid #e5e7eb;}
+    tr:nth-child(even) td{background:#f5f3ff;}
+    .alert-critica{color:#dc2626;font-weight:700;}
+    .alert-alta{color:#ea580c;font-weight:700;}
+    .badge-risk{background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
+    .footer{margin-top:40px;padding:16px 50px;background:#f5f3ff;font-size:10px;color:#6b7280;text-align:center;border-top:2px solid #4c1d95;}
+  </style></head><body>
+  <div class="cover">
+    <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
+    <div class="cover-title">💻 INVESTIGACIÓN ESPECIAL — SENACIT · DICOMARCA</div>
+    <div class="cover-sub">Adquisición de Laptops con Sobreprecio — Constructora Adjudicada por Tecnología</div>
+    <div class="cover-sub">Secretaría de Energía, Recursos Naturales, Ambiente y Minas · Proceso 2022</div>
+    <div class="cover-folio">Folio: ${folio} | Fecha: ${ds} | Fuentes: ONCAE HC1, ICN Digital, STLCC</div>
+    <div class="cover-reservado">🔒 RESERVADO — USO INVESTIGATIVO</div>
+  </div>
+  <div class="content">
+    <h1>I. RESUMEN EJECUTIVO</h1>
+    <p>La Secretaría de Energía, Recursos Naturales, Ambiente y Minas (SENACIT) adjudicó en 2022 un contrato de adquisición de laptops por <strong style="color:#dc2626">L 56.5 millones</strong> a DICOMARCA S.A. — una constructora sin giro tecnológico registrado. El precio unitario pagado por unidad supera en un <strong style="color:#dc2626">47–65%</strong> el valor de mercado internacional de los modelos equivalentes.</p>
+    <p>La investigación fue publicada originalmente por ICN Digital. El caso fue confirmado por la <strong>Sala de lo Tributario, Laboral y Contencioso Administrativo (STLCC)</strong> del Poder Judicial y el <strong>Ministerio Público (MP)</strong> ha iniciado investigación formal.</p>
+    <h1>II. DATOS DEL CONTRATO</h1>
+    <table>
+      <tr><th>Campo</th><th>Detalle</th></tr>
+      <tr><td>Entidad Contratante</td><td>SENACIT (Secretaría de Energía, Recursos Naturales, Ambiente y Minas)</td></tr>
+      <tr><td>Proveedor Adjudicado</td><td><strong>DICOMARCA S.A.</strong> — giro registrado: construcción/distribución materiales</td></tr>
+      <tr><td>Objeto del Contrato</td><td>Adquisición de laptops (cantidad: ~350 unidades, modelo Lenovo equivalente)</td></tr>
+      <tr><td>Monto Adjudicado</td><td class="alert-critica">L 56,500,000 (~USD 2.3M)</td></tr>
+      <tr><td>Precio unitario pagado</td><td class="alert-critica">L ~161,400/unidad (~USD 6,500)</td></tr>
+      <tr><td>Precio mercado referencia</td><td>L ~97,600–109,700/unidad (~USD 3,935–4,425) — Lenovo ThinkPad equivalente</td></tr>
+      <tr><td>Sobreprecio estimado</td><td class="alert-critica">L 18–23M (47–65% sobre precio de mercado)</td></tr>
+      <tr><td>Año del proceso</td><td>2022</td></tr>
+      <tr><td>Estado judicial</td><td>⚖️ STLCC confirmó irregularidad · MP con investigación activa</td></tr>
+    </table>
+    <h1>III. SEÑAL DE RIESGO — EMPRESA FUERA DE GIRO</h1>
+    <p>DICOMARCA S.A. tiene registro mercantil como empresa distribuidora y de construcción, sin especialización en tecnología informática ni en distribución de equipos de cómputo. La adjudicación de un contrato de L 56.5M en equipos tecnológicos a esta empresa constituye una señal CRÍTICA del patrón <strong>"PROVEEDOR_FUERA_DE_GIRO"</strong>:</p>
+    <table>
+      <tr><th>Indicador</th><th>Hallazgo</th><th>Riesgo</th></tr>
+      <tr><td>Giro registrado</td><td>Construcción / Distribución materiales</td><td class="alert-critica">FUERA DE GIRO</td></tr>
+      <tr><td>Historial tecnológico previo</td><td>Sin contratos tecnológicos en DB Sentinel</td><td class="alert-critica">SIN HISTORIAL</td></tr>
+      <tr><td>Precio unitario vs. mercado</td><td>47–65% sobre precio internacional</td><td class="alert-critica">SOBRECOSTO CRÍTICO</td></tr>
+      <tr><td>Proceso de adjudicación</td><td>Pendiente verificación en expediente ONCAE</td><td><span class="badge-risk">VERIFICAR</span></td></tr>
+      <tr><td>Confirmación institucional</td><td>STLCC + MP</td><td style="color:#059669;font-weight:700;">CONFIRMADO</td></tr>
+    </table>
+    <h1>IV. CONTEXTO — PATRÓN GENERALIZADO</h1>
+    <p>El caso DICOMARCA/SENACIT no es aislado. La base de datos Sentinel identifica un patrón sistémico de empresas adjudicadas fuera de su giro comercial en compras públicas hondureñas. Este mecanismo permite que empresas con relaciones políticas o vínculos con funcionarios compitan y ganen licitaciones en sectores donde no tienen capacidad técnica real, inflando precios para maximizar la extracción de fondos públicos.</p>
+    <h1>V. FUENTES Y VERIFICACIÓN</h1>
+    <table>
+      <tr><th>Fuente</th><th>Contenido</th><th>Estado</th></tr>
+      <tr><td>ICN Digital</td><td>Investigación original: precios, empresa, adjudicación</td><td>✅ Publicado</td></tr>
+      <tr><td>STLCC / Poder Judicial</td><td>Resolución confirmando irregularidad contractual</td><td>✅ Confirmado</td></tr>
+      <tr><td>Ministerio Público</td><td>Investigación penal activa (corrupción / defraudación)</td><td>⏳ En curso</td></tr>
+      <tr><td>ONCAE HC1</td><td>Expediente licitatorio — verificación pendiente</td><td><span class="badge-risk">PENDIENTE</span></td></tr>
+      <tr><td>Registro Mercantil</td><td>Giro oficial DICOMARCA S.A.</td><td>✅ Verificar en RRHH</td></tr>
+    </table>
+    <h1>VI. RECOMENDACIÓN</h1>
+    <p>Este caso tiene <strong>todos los elementos para referencia formal a la TSC (Tribunal Superior de Cuentas)</strong>: monto verificado, patrón claro (fuera de giro + sobreprecio), y confirmación institucional (STLCC). El MP ya investiga — el reporte Sentinel puede servir como insumo para la querella civil de la TSC en paralelo.</p>
+  </div>
+  <div class="footer">
+    <p>⚠️ AVISO LEGAL: Este documento ha sido generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE y fuentes verificadas. Las señales de riesgo identificadas NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
+  </div>
+  </body></html>`;
+  const pw = window.open('','_blank');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ── PDF 8: Investigación S38 — PODER JUDICIAL / OPACIDAD VEHICULAR ────────────
+function exportReportePJPDF() {
+  const today = new Date();
+  const ds = today.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const folio = `SEN-PJ-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Sentinel-AI — Investigación S38 Poder Judicial ${ds}</title>
+  <style>
+    body{font-family:'Segoe UI',Calibri,sans-serif;margin:0;padding:0;color:#1a1a2e;background:#fff;}
+    .cover{background:linear-gradient(135deg,#7f1d1d 0%,#991b1b 60%,#dc2626 100%);color:#fff;padding:60px 50px;min-height:260px;}
+    .cover-title{font-size:28px;font-weight:800;margin-bottom:10px;}
+    .cover-sub{font-size:16px;opacity:.85;margin-bottom:6px;}
+    .cover-folio{font-size:12px;opacity:.7;margin-top:20px;font-family:monospace;}
+    .cover-reservado{display:inline-block;background:#fbbf24;color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
+    .content{padding:40px 50px;}
+    h1{font-size:18px;font-weight:800;color:#991b1b;border-bottom:3px solid #dc2626;padding-bottom:8px;margin-top:36px;}
+    h2{font-size:15px;font-weight:700;color:#7f1d1d;margin-top:22px;}
+    p{font-size:13px;line-height:1.7;margin:8px 0;}
+    table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0;}
+    th{background:#991b1b;color:#fff;padding:8px 10px;text-align:left;}
+    td{padding:7px 10px;border-bottom:1px solid #e5e7eb;}
+    tr:nth-child(even) td{background:#fef2f2;}
+    .alert-critica{color:#dc2626;font-weight:700;}
+    .alert-alta{color:#ea580c;font-weight:700;}
+    .badge-risk{background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
+    .footer{margin-top:40px;padding:16px 50px;background:#fef2f2;font-size:10px;color:#6b7280;text-align:center;border-top:2px solid #dc2626;}
+  </style></head><body>
+  <div class="cover">
+    <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
+    <div class="cover-title">⚖️ INVESTIGACIÓN ESPECIAL — PODER JUDICIAL</div>
+    <div class="cover-sub">Opacidad L 182M · Vehículos Blindados · SERIN · Rebeca Ráquel Obando</div>
+    <div class="cover-sub">Corte Suprema de Justicia · Secretaría Ejecutiva del Poder Judicial</div>
+    <div class="cover-folio">Folio: ${folio} | Fecha: ${ds} | Fuentes: SEFIN/ONCAE, ICN Digital, IAIP</div>
+    <div class="cover-reservado">🔒 RESERVADO — USO INVESTIGATIVO</div>
+  </div>
+  <div class="content">
+    <h1>I. HALLAZGO PRINCIPAL — OPACIDAD TOTAL</h1>
+    <p>La base de datos Sentinel (127,832 contratos SEFIN/ONCAE 2019–2025) registra <strong>22 contratos del Poder Judicial</strong> por L 30.2M. Sin embargo, ICN Digital documentó que el Poder Judicial ejecutó contratos de arrendamiento vehicular por <strong style="color:#dc2626">L 182 millones</strong> en el mismo período — una brecha de <strong style="color:#dc2626">L 151.8M completamente ausente de SEFIN y ONCAE</strong>.</p>
+    <p>Esta brecha indica uso sistemático de <strong>contratación directa sin publicación</strong> o pagos fuera del sistema oficial — mecanismo que viola la Ley de Contratación del Estado y permite opacidad total sobre el proveedor, precio y justificación.</p>
+    <h1>II. CONTRATOS PJ EN BASE DE DATOS SENTINEL</h1>
+    <table>
+      <tr><th>Tipo de Contrato</th><th>Registros en DB</th><th>Monto Total</th><th>Señales</th></tr>
+      <tr><td>Contratos visibles en SEFIN/ONCAE</td><td>22</td><td>L 30.2M</td><td>—</td></tr>
+      <tr><td>Contratos reportados por ICN (arrendamiento)</td><td>N/D</td><td class="alert-critica">L 182M</td><td class="alert-critica">AUSENTE de DB</td></tr>
+      <tr><td>Brecha de opacidad</td><td>—</td><td class="alert-critica">L 151.8M (83%)</td><td class="alert-critica">OPACIDAD CRÍTICA</td></tr>
+    </table>
+    <h1>III. CASO SERIN — SALONES DE LA PRESIDENTA</h1>
+    <p>Detectado en ONCAE: la Secretaría de la Presidencia del Poder Judicial (SERIN) adjudicó en proceso LICITACION_PRIVADA (señal de riesgo) contratos por <strong style="color:#dc2626">L 12.9 millones</strong> para remodelación de salones, identificados en reportes como "salones de la presidenta" — infraestructura de uso personal de la magistratura.</p>
+    <table>
+      <tr><th>Campo</th><th>Detalle</th></tr>
+      <tr><td>Entidad</td><td>Secretaría Ejecutiva del Poder Judicial (SERIN)</td></tr>
+      <tr><td>Objeto</td><td>Remodelación de salones — uso magistratura CSJ</td></tr>
+      <tr><td>Monto</td><td class="alert-alta">L 12,900,000</td></tr>
+      <tr><td>Tipo</td><td class="alert-critica">Licitación privada (LICITACION_PRIVADA_ONCAE)</td></tr>
+      <tr><td>Señal Sentinel</td><td>LICITACION_PRIVADA_ONCAE — proceso restringido sin justificación pública</td></tr>
+    </table>
+    <h1>IV. CASO REBECA RÁQUEL OBANDO — 35 VEHÍCULOS BLINDADOS</h1>
+    <p>ICN Digital documentó que durante la presidencia de Rebeca Ráquel Obando en la Corte Suprema de Justicia, el Poder Judicial arrendó <strong>35 vehículos blindados</strong> — una flota que supera la razonabilidad operativa para una entidad judicial.</p>
+    <table>
+      <tr><th>Elemento</th><th>Hallazgo</th></tr>
+      <tr><td>Número de vehículos blindados</td><td class="alert-critica">35 unidades</td></tr>
+      <tr><td>Valor estimado arrendamiento</td><td class="alert-critica">Incluido en L 182M reportados por ICN</td></tr>
+      <tr><td>Proveedor</td><td><span class="badge-risk">NO IDENTIFICADO EN SEFIN/ONCAE</span></td></tr>
+      <tr><td>Justificación operativa</td><td>No publicada — sin expediente en sistema oficial</td></tr>
+      <tr><td>Período</td><td>Gestión Rebeca Ráquel Obando como presidenta CSJ</td></tr>
+      <tr><td>Fuente</td><td>ICN Digital (investigación publicada 2025)</td></tr>
+    </table>
+    <h1>V. NEXO CON ECOSISTEMA SESEGU</h1>
+    <p>El proveedor de los 35 vehículos blindados del PJ es desconocido en registros oficiales. El ecosistema de arrendamiento vehicular blindado detectado por Sentinel en SESEGU (Econo Rent, LAARSA, 5 empresas por ~L 1,300M/año) puede incluir al proveedor del PJ — potencialmente la misma red de empresas operando en múltiples instituciones sin transparencia.</p>
+    <h1>VI. RECOMENDACIONES</h1>
+    <p><strong>Acción inmediata:</strong> Solicitar al Poder Judicial, vía Ley de Transparencia y Acceso a la Información Pública (LTAIP), el detalle del contrato de arrendamiento vehicular 2022–2025: proveedor, monto, proceso de adjudicación y especificaciones técnicas.</p>
+    <p><strong>Para TSC:</strong> La brecha de L 151.8M entre lo registrado en SEFIN y lo reportado por ICN constituye evidencia de ejecución presupuestaria fuera del sistema oficial — candidato para auditoría de la TSC.</p>
+    <p><strong>Para MP:</strong> Los 35 vehículos blindados sin proveedor registrado, durante gestión de ex-presidenta CSJ con investigaciones en curso, ameritan investigación por peculado y abuso de funciones.</p>
+  </div>
+  <div class="footer">
+    <p>⚠️ AVISO LEGAL: Este documento ha sido generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE y fuentes verificadas. Las señales de riesgo identificadas NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
+  </div>
+  </body></html>`;
+  const pw = window.open('','_blank');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ── PDF 9: Investigación S38 — SESEGU / Econo Rent / LAARSA ──────────────────
+function exportReporteSESEGUPDF() {
+  const today = new Date();
+  const ds = today.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const folio = `SEN-SESEGU-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Sentinel-AI — Investigación S38 SESEGU ${ds}</title>
+  <style>
+    body{font-family:'Segoe UI',Calibri,sans-serif;margin:0;padding:0;color:#1a1a2e;background:#fff;}
+    .cover{background:linear-gradient(135deg,#0c4a6e 0%,#0369a1 60%,#0284c7 100%);color:#fff;padding:60px 50px;min-height:260px;}
+    .cover-title{font-size:28px;font-weight:800;margin-bottom:10px;}
+    .cover-sub{font-size:16px;opacity:.85;margin-bottom:6px;}
+    .cover-folio{font-size:12px;opacity:.7;margin-top:20px;font-family:monospace;}
+    .cover-reservado{display:inline-block;background:#fbbf24;color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
+    .content{padding:40px 50px;}
+    h1{font-size:18px;font-weight:800;color:#0369a1;border-bottom:3px solid #0369a1;padding-bottom:8px;margin-top:36px;}
+    h2{font-size:15px;font-weight:700;color:#0c4a6e;margin-top:22px;}
+    p{font-size:13px;line-height:1.7;margin:8px 0;}
+    table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0;}
+    th{background:#0369a1;color:#fff;padding:8px 10px;text-align:left;}
+    td{padding:7px 10px;border-bottom:1px solid #e5e7eb;}
+    tr:nth-child(even) td{background:#f0f9ff;}
+    .alert-critica{color:#dc2626;font-weight:700;}
+    .alert-alta{color:#ea580c;font-weight:700;}
+    .badge-risk{background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
+    .footer{margin-top:40px;padding:16px 50px;background:#f0f9ff;font-size:10px;color:#6b7280;text-align:center;border-top:2px solid #0369a1;}
+  </style></head><body>
+  <div class="cover">
+    <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
+    <div class="cover-title">🚗 INVESTIGACIÓN ESPECIAL — SESEGU · VEHÍCULOS BLINDADOS</div>
+    <div class="cover-sub">Econo Rent L 442M · LAARSA Contratación Directa · Ecosistema 5 Empresas ~L 1,300M/año</div>
+    <div class="cover-sub">Secretaría de Estado en el Despacho de Seguridad · Tasa de Seguridad</div>
+    <div class="cover-folio">Folio: ${folio} | Fecha: ${ds} | Fuentes: SEFIN/ONCAE, Base Datos Sentinel</div>
+    <div class="cover-reservado">🔒 RESERVADO — USO INVESTIGATIVO</div>
+  </div>
+  <div class="content">
+    <h1>I. HALLAZGO PRINCIPAL</h1>
+    <p>La Secretaría de Seguridad (SESEGU) adjudicó en febrero 2025 el proceso <strong>SEDS-LPN-GA-2025-004 (Lote 4)</strong> a <strong>ECONO RENT A CAR S. DE R.L.</strong> por <strong style="color:#dc2626">L 442,463,734.65</strong> para el arrendamiento de <strong>305 vehículos, incluyendo 71 vehículos blindados</strong>.</p>
+    <p>La base de datos Sentinel identifica al menos <strong>5 empresas privadas</strong> que concentran contratos de arrendamiento vehicular (incluyendo blindados) para el sector seguridad/justicia por un estimado de <strong style="color:#dc2626">L 1,300 millones anuales</strong>, sin registro público de propietarios reales, precios de referencia ni auditoría de resultados operativos.</p>
+    <h1>II. CONTRATO PRINCIPAL — ECONO RENT A CAR</h1>
+    <table>
+      <tr><th>Campo</th><th>Detalle</th></tr>
+      <tr><td>ID Contrato</td><td style="font-family:monospace;font-size:11px;">ocds-lcuori-mrY1dr-SEDS-LPN-GA-2025-004-2</td></tr>
+      <tr><td>Entidad</td><td>Secretaría de Estado en el Despacho de Seguridad (SESEGU)</td></tr>
+      <tr><td>Proveedor</td><td><strong>ECONO RENT A CAR S. DE R.L.</strong></td></tr>
+      <tr><td>Monto</td><td class="alert-critica">L 442,463,734.65 (~USD 17.7M)</td></tr>
+      <tr><td>Vehículos</td><td>305 total · 71 blindados</td></tr>
+      <tr><td>Costo implícito/vehículo/mes</td><td class="alert-alta">~L 120,000/mes (12 meses) — requiere verificación</td></tr>
+      <tr><td>Tipo adjudicación</td><td>Licitación pública nacional — Feb 25, 2025</td></tr>
+      <tr><td>Severidad en DB</td><td><span class="badge-risk">BAJA (sin patrones — subestimado)</span></td></tr>
+    </table>
+    <h1>III. ECOSISTEMA DE ARRENDAMIENTO VEHICULAR</h1>
+    <table>
+      <tr><th>Empresa</th><th>Entidades</th><th>Monto en DB</th><th>Señales</th></tr>
+      <tr><td><strong>ECONO RENT A CAR S. DE R.L.</strong></td><td>SESEGU, MDC, INE, PRS, Sec. Seguridad</td><td class="alert-critica">L 481M+</td><td>Ninguna (subestimado)</td></tr>
+      <tr><td><strong>LATIN AMERICAN ARMORED RENTALS (LAARSA)</strong></td><td>Sec. Seguridad, Penitenciaría, SEDH, SENAPRENDE</td><td class="alert-alta">L 23.5M+</td><td>PROVEEDOR_SIN_HISTORIAL · PERIODO_MINIMO_ONCAE · MONTO_FRACCIONADO</td></tr>
+      <tr><td><strong>ELITE EQUIPMENT RENTAL S.A.</strong></td><td>SIT, Municipalidad Roatán, Zona Libre</td><td class="alert-alta">L 45M+</td><td>CONTRATACION_DIRECTA_ONCAE · PERIODO_MINIMO</td></tr>
+      <tr><td><strong>RENTAS AMERICAS HONDURAS S.A.</strong></td><td>ENEE (múltiples 2023-2025)</td><td class="alert-alta">L 83M+</td><td>COMPRA_EMERGENCIA (múltiples) · PROVEEDOR_SIN_HISTORIAL</td></tr>
+      <tr><td><strong>ARRENDADORA DE VEHÍCULOS S.A.</strong></td><td>Secretaría de Seguridad</td><td>L 310K</td><td>FRACCIONAMIENTO_MICRO</td></tr>
+    </table>
+    <h1>IV. CASO LAARSA — SEÑALES CRÍTICAS</h1>
+    <p><strong>Contratación directa SEDH (CD-SEDH-01-2025):</strong> LAARSA fue contratada directamente por la Secretaría de Derechos Humanos con señal <strong style="color:#dc2626">PERIODO_MINIMO_ONCAE</strong> — indicador de adjudicación dirigida según normativa ONCAE. El monto registrado es L 0, práctica de opacidad que oculta el valor real del contrato.</p>
+    <p><strong>Fraccionamiento SESEGU (nov 2023):</strong> LAARSA facturó múltiples pagos por "averías" el mismo día (30 nov 2023) — patrón FRACCIONAMIENTO_MICRO para evadir umbrales de aprobación institucional.</p>
+    <p><strong>Expansión multi-institucional:</strong> Sin historial previo documentado, LAARSA opera simultáneamente en Secretaría de Seguridad, Instituto Nacional Penitenciario y Secretaría de Derechos Humanos — patrón de empresa políticamente conectada.</p>
+    <h1>V. MECANISMO FINANCIERO — TASA DE SEGURIDAD</h1>
+    <p>El arrendamiento vehicular de SESEGU se financia parcialmente con la Tasa de Seguridad (tributo sobre transacciones bancarias/comerciales). La ausencia de auditoría pública sobre el destino de esta Tasa permite que L 1,300M anuales en arrendamiento privado se ejecuten sin rendición de cuentas efectiva.</p>
+    <h1>VI. RECOMENDACIONES</h1>
+    <p><strong>TSC:</strong> Auditoría del proceso SEDS-LPN-GA-2025-004 — verificar precio unitario de vehículos blindados vs. valores internacionales de referencia. Si sobreprecio >20%: referir a MP.</p>
+    <p><strong>MP:</strong> Investigar proceso CD-SEDH-01-2025 (LAARSA + SEDH contratación directa con PERIODO_MINIMO_ONCAE) y patrón de fraccionamiento micro SESEGU nov 2023.</p>
+    <p><strong>ONCAE:</strong> Solicitar expediente completo SEDS-LPN-GA-2025-004: bases de licitación, plica técnica, acta de apertura, criterios de adjudicación y lista completa de proponentes.</p>
+    <p><strong>Registro Mercantil:</strong> Identificar propietarios reales de Econo Rent A Car S. de R.L. y LAARSA para verificar posibles vínculos con funcionarios de SESEGU/SEDH.</p>
+  </div>
+  <div class="footer">
+    <p>⚠️ AVISO LEGAL: Este documento ha sido generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE. Las señales de riesgo identificadas NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
+  </div>
+  </body></html>`;
   const pw = window.open('','_blank');
   if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
   pw.document.write(addPrintBtn(html));

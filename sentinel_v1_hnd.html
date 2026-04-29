@@ -2029,19 +2029,24 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="exec-card-sub" id="exec-altos-monto">L —</div>
         <div class="exec-card-note">▸ Escalada legal recomendada</div>
       </div>
-      <!-- OFAC sanctioned box -->
-      <div class="exec-card exec-card-electric">
-        <div class="exec-card-label">Proveedores OFAC</div>
-        <div class="exec-card-value" id="exec-ofac">—</div>
-        <div class="exec-card-sub">Lista de Sanciones EE.UU.</div>
-        <div class="exec-card-note">▸ Revisión inmediata</div>
-      </div>
-      <!-- Engel List box -->
-      <div class="exec-card exec-card-purple">
-        <div class="exec-card-label">Lista Engel EE.UU.</div>
-        <div class="exec-card-value" id="exec-engel">—</div>
-        <div class="exec-card-sub">Actores RENACER · Honduras</div>
+      <!-- Listas Internacionales combinada -->
+      <div class="exec-card exec-card-purple" onclick="showListasPanel()" style="cursor:pointer;">
+        <div class="exec-card-label">Listas Internacionales</div>
+        <div style="display:flex;gap:14px;align-items:baseline;margin:4px 0 2px;">
+          <span style="font-size:10px;color:var(--purple);letter-spacing:.04em;">ENGEL</span>
+          <span class="exec-card-value" id="exec-engel" style="font-size:22px;">—</span>
+          <span style="font-size:10px;color:var(--red);letter-spacing:.04em;">OFAC</span>
+          <span class="exec-card-value" id="exec-ofac" style="font-size:22px;color:var(--red);">—</span>
+        </div>
+        <div class="exec-card-sub">EE.UU. · Engel · OFAC-SDN</div>
         <div class="exec-card-note">▸ Alerta máxima</div>
+      </div>
+      <!-- ONCAE 2025 CRÍTICA -->
+      <div class="exec-card exec-card-red">
+        <div class="exec-card-label">ONCAE 2025 CRÍTICA</div>
+        <div class="exec-card-value" style="color:var(--red);">115</div>
+        <div class="exec-card-sub">L 5,337M — Compra Menor</div>
+        <div class="exec-card-note">▸ Sin licitación · Verificar fuente</div>
       </div>
       <!-- Total monitored -->
       <div class="exec-card exec-card-green">
@@ -3711,60 +3716,50 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
   </div>
 
   <!-- ═══════════════════ ENGEL PANEL ═══════════════════ -->
-  <div class="fuente-panel" id="engelPanel">
-    <button class="fuente-back" onclick="hideEngelPanel()">← Contratos</button>
+  <!-- ═══════════════════ LISTAS INTERNACIONALES (Engel + OFAC) ═══════════════════ -->
+  <div class="fuente-panel" id="listasPanel">
+    <button class="fuente-back" onclick="hideListasPanel()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
         <span>🇺🇸</span>
-        <span>Lista Engel — Depto. de Estado EE.UU.</span>
+        <span>Listas Internacionales — EE.UU.</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Ley RENACER · Actores Honduras sancionados o designados por corrupción
+        Lista Engel (Ley RENACER) · Sanciones OFAC-SDN (Tesoro EE.UU.) · Proveedores señalados con contratos activos en Honduras
       </div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="pdf-btn" onclick="exportEngelPDF()" style="background:rgba(168,85,247,0.12);color:var(--purple);border-color:rgba(168,85,247,0.35);">📄 PDF</button>
+        <button class="pdf-btn" onclick="exportEngelPDF()" style="background:rgba(168,85,247,0.12);color:var(--purple);border-color:rgba(168,85,247,0.35);">📄 PDF Engel</button>
+        <button class="pdf-btn" onclick="exportOfacPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);">📄 PDF OFAC</button>
       </div>
     </div>
 
-    <div id="engelSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:18px 0 6px;padding:14px 18px;background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.2);border-radius:10px;">
-      <div><span style="font-size:11px;color:var(--muted);">ACTORES EN LISTA</span><br><span id="engel-stat-actores" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
-      <div><span style="font-size:11px;color:var(--muted);">CONTRATOS VINCULADOS</span><br><span id="engel-stat-contratos" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
-      <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="engel-stat-monto" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
-      <div><span style="font-size:11px;color:var(--muted);">CONTRATOS CRÍTICOS</span><br><span id="engel-stat-criticos" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
-    </div>
-
-    <div id="engelBody" style="margin-top:18px;">
-      <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos Engel...</div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════ OFAC PANEL ═══════════════════ -->
-  <div class="fuente-panel" id="ofacPanel">
-    <button class="fuente-back" onclick="hideOfacPanel()">← Contratos</button>
-
-    <div class="fuente-header">
-      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
-        <span>🚨</span>
-        <span>Sanciones OFAC — Tesoro EE.UU.</span>
+    <!-- ENGEL SECTION -->
+    <div style="margin-top:22px;">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--purple);text-transform:uppercase;padding:0 2px 8px;border-bottom:1px solid rgba(168,85,247,0.2);margin-bottom:12px;">🇺🇸 Lista Engel — Depto. de Estado EE.UU.</div>
+      <div id="engelSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:0 0 6px;padding:14px 18px;background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.2);border-radius:10px;">
+        <div><span style="font-size:11px;color:var(--muted);">ACTORES EN LISTA</span><br><span id="engel-stat-actores" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">CONTRATOS VINCULADOS</span><br><span id="engel-stat-contratos" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="engel-stat-monto" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">CONTRATOS CRÍTICOS</span><br><span id="engel-stat-criticos" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
       </div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Specially Designated Nationals (SDN) · Proveedores con sanción activa del gobierno de EE.UU.
-      </div>
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="pdf-btn" onclick="exportOfacPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);">📄 PDF</button>
+      <div id="engelBody" style="margin-top:12px;">
+        <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos Engel...</div>
       </div>
     </div>
 
-    <div id="ofacSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:18px 0 6px;padding:14px 18px;background:rgba(255,61,87,0.05);border:1px solid rgba(255,61,87,0.2);border-radius:10px;">
-      <div><span style="font-size:11px;color:var(--muted);">PROVEEDORES SANCIONADOS</span><br><span id="ofac-stat-proveedores" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
-      <div><span style="font-size:11px;color:var(--muted);">CONTRATOS DETECTADOS</span><br><span id="ofac-stat-contratos" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
-      <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="ofac-stat-monto" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
-      <div><span style="font-size:11px;color:var(--muted);">ENTIDADES AFECTADAS</span><br><span id="ofac-stat-entidades" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
-    </div>
-
-    <div id="ofacBody" style="margin-top:18px;">
-      <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos OFAC...</div>
+    <!-- OFAC SECTION -->
+    <div style="margin-top:36px;">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--red);text-transform:uppercase;padding:0 2px 8px;border-bottom:1px solid rgba(255,61,87,0.2);margin-bottom:12px;">🚨 Sanciones OFAC — Tesoro EE.UU.</div>
+      <div id="ofacSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:0 0 6px;padding:14px 18px;background:rgba(255,61,87,0.05);border:1px solid rgba(255,61,87,0.2);border-radius:10px;">
+        <div><span style="font-size:11px;color:var(--muted);">PROVEEDORES SANCIONADOS</span><br><span id="ofac-stat-proveedores" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">CONTRATOS DETECTADOS</span><br><span id="ofac-stat-contratos" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="ofac-stat-monto" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">ENTIDADES AFECTADAS</span><br><span id="ofac-stat-entidades" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
+      </div>
+      <div id="ofacBody" style="margin-top:12px;">
+        <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos OFAC...</div>
+      </div>
     </div>
   </div>
 
@@ -6096,7 +6091,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','engelPanel','ofacPanel','reportesPanel','ocdsPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -12799,19 +12794,20 @@ function buildEngelIndex() {
 }
 
 // ── ENGEL PANEL — show / hide / render / PDF ──────────────────────────────────
-function showEngelPanel() {
+function showListasPanel() {
   _closeAllFuentePanels();
-  document.getElementById('engelPanel').classList.add('open');
-  document.getElementById('nav-engel').classList.add('active');
+  document.getElementById('listasPanel').classList.add('open');
   renderEngelPanel();
+  renderOfacPanel();
 }
-function hideEngelPanel() {
-  document.getElementById('engelPanel').classList.remove('open');
-  document.getElementById('nav-engel').classList.remove('active');
+function hideListasPanel() {
+  document.getElementById('listasPanel').classList.remove('open');
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
 }
+function showEngelPanel() { showListasPanel(); }
+function hideEngelPanel()  { hideListasPanel(); }
 
 function renderEngelPanel() {
   if (!window.allAlerts || !window.allAlerts.length) {
@@ -13030,19 +13026,8 @@ function exportEngelPDF() {
 }
 
 // ── OFAC PANEL — show / hide / render / PDF ───────────────────────────────────
-function showOfacPanel() {
-  _closeAllFuentePanels();
-  document.getElementById('ofacPanel').classList.add('open');
-  document.getElementById('nav-ofac').classList.add('active');
-  renderOfacPanel();
-}
-function hideOfacPanel() {
-  document.getElementById('ofacPanel').classList.remove('open');
-  document.getElementById('nav-ofac').classList.remove('active');
-  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
-}
+function showOfacPanel() { showListasPanel(); }
+function hideOfacPanel()  { hideListasPanel(); }
 
 function renderOfacPanel() {
   if (!window.allAlerts || !window.allAlerts.length) {

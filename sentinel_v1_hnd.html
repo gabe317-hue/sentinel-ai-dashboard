@@ -13675,6 +13675,21 @@ function renderReportesPanel() {
         border: 'rgba(220,38,38,0.25)',
       };
     })(),
+    // ── S38: FUERA DE GIRO ───────────────────────────────────────────────
+    (() => {
+      return {
+        icon: '🏪',
+        title: 'Investigación S38 — Empresas Fuera de Giro (Patrón DICOMARCA)',
+        desc: 'LIGTH TRENDS L 18.4M SEDESOL · VENTA REPUESTOS L 13.6M INFOP · Cluster SEDESOL nov-dic 2022 L 29M · 5 casos CRÍTICA · Folio SEN-FUERA-GIRO-20260429-001',
+        count: 5,
+        monto: 'L 42M+',
+        color: '#7c3aed',
+        btn: 'exportReporteFueraGiroPDF()',
+        script: 'build_s38_fuera_giro.js',
+        bg: 'rgba(124,58,237,0.06)',
+        border: 'rgba(124,58,237,0.25)',
+      };
+    })(),
     // ── S38: SESEGU VEHÍCULOS ────────────────────────────────────────────
     (() => {
       const all = window.allAlerts || [];
@@ -14840,7 +14855,92 @@ function exportReporteS36PDF() {
   pw.addEventListener('load', () => pw.focus());
 }
 
-// ── PDF 7: Investigación S38 — SENACIT / DICOMARCA ───────────────────────────
+// ── PDF 7: Investigación S38 — Empresas Fuera de Giro ────────────────────────
+function exportReporteFueraGiroPDF() {
+  const today = new Date();
+  const ds = today.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const folio = `SEN-FUERA-GIRO-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Sentinel-AI — Empresas Fuera de Giro ${ds}</title>
+  <style>
+    body{font-family:'Segoe UI',Calibri,sans-serif;margin:0;padding:0;color:#1a1a2e;background:#fff;}
+    .cover{background:linear-gradient(135deg,#3b0764 0%,#6b21a8 60%,#7c3aed 100%);color:#fff;padding:60px 50px;min-height:260px;}
+    .cover-title{font-size:28px;font-weight:800;margin-bottom:10px;}
+    .cover-sub{font-size:16px;opacity:.85;margin-bottom:6px;}
+    .cover-folio{font-size:12px;opacity:.7;margin-top:20px;font-family:monospace;}
+    .cover-reservado{display:inline-block;background:#fbbf24;color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
+    .content{padding:40px 50px;}
+    h1{font-size:18px;font-weight:800;color:#6b21a8;border-bottom:3px solid #7c3aed;padding-bottom:8px;margin-top:36px;}
+    h2{font-size:15px;font-weight:700;color:#3b0764;margin-top:22px;}
+    p{font-size:13px;line-height:1.7;margin:8px 0;}
+    table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0;}
+    th{background:#6b21a8;color:#fff;padding:8px 10px;text-align:left;}
+    td{padding:7px 10px;border-bottom:1px solid #e5e7eb;}
+    tr:nth-child(even) td{background:#f5f3ff;}
+    .alert-critica{color:#dc2626;font-weight:700;}
+    .alert-alta{color:#ea580c;font-weight:700;}
+    .badge-risk{background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
+    ul{margin:6px 0;padding-left:20px;}
+    li{font-size:13px;margin-bottom:4px;}
+    .cluster-box{background:#fdf4ff;border:2px solid #7c3aed;border-radius:8px;padding:16px 20px;margin:16px 0;}
+    .footer{margin-top:40px;padding:16px 50px;background:#f5f3ff;font-size:10px;color:#6b7280;text-align:center;border-top:2px solid #6b21a8;}
+  </style></head><body>
+  <div class="cover">
+    <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
+    <div class="cover-title">🏪 INVESTIGACIÓN ESPECIAL — EMPRESAS FUERA DE GIRO</div>
+    <div class="cover-sub">Patrón DICOMARCA Generalizado · Búsqueda Sistemática en 127,832 Contratos</div>
+    <div class="cover-sub">5 Casos CRÍTICA · L 42M+ · Cluster SEDESOL 2022 · INFOP · UNAH · Hospital Sur</div>
+    <div class="cover-folio">Folio: ${folio} | Fecha: ${ds} | Base de datos: SEFIN/ONCAE 2019–2025</div>
+    <div class="cover-reservado">🔒 RESERVADO — USO INVESTIGATIVO</div>
+  </div>
+  <div class="content">
+    <h1>I. PATRÓN IDENTIFICADO</h1>
+    <p>La búsqueda sistemática en la base de datos Sentinel detectó el patrón <strong>"PROVEEDOR_FUERA_DE_GIRO"</strong>: empresas cuyo giro comercial (inferido por su nombre) es radicalmente distinto al objeto del contrato adjudicado. El caso arquetipo es DICOMARCA S.A. (constructora que recibió L 56.5M de SENACIT para laptops, confirmado por MP y STLCC).</p>
+    <p>La búsqueda identificó <strong>5 casos con señales CRÍTICA</strong> por un total aproximado de <strong style="color:#dc2626">L 42 millones</strong>.</p>
+    <h1>II. RESUMEN DE CASOS</h1>
+    <table>
+      <tr><th>#</th><th>Empresa</th><th>Giro Aparente</th><th>Entidad</th><th>Monto (L)</th><th>Señal</th></tr>
+      <tr><td><strong>1</strong></td><td><strong>LIGTH, TRENDS & MARKETING</strong></td><td>Moda / Marketing</td><td>SEDESOL</td><td class="alert-critica">18,370,200</td><td class="alert-critica">CD + PERIODO_MIN</td></tr>
+      <tr><td><strong>2</strong></td><td><strong>VENTA DE REPUESTOS Y MAT.</strong></td><td>Ferretería/Repuestos</td><td>INFOP + UNAH + IHT</td><td class="alert-critica">15M+ (múltiple)</td><td class="alert-critica">CM CRÍTICA + FRACC</td></tr>
+      <tr><td><strong>3</strong></td><td><strong>Variedades la Económica</strong></td><td>Tienda variedades</td><td>SEDESOL</td><td class="alert-alta">4,438,139</td><td class="alert-alta">CD + PERIODO_MIN</td></tr>
+      <tr><td><strong>4</strong></td><td><strong>VARIEDADES AYALA</strong></td><td>Tienda variedades</td><td>Hospital del Sur</td><td class="alert-alta">2,799,578</td><td class="alert-alta">CD directa</td></tr>
+      <tr><td><strong>5</strong></td><td><strong>TIENDA AGROPECUARIA EL AGRICULTOR</strong></td><td>Tienda agrícola</td><td>UNAH</td><td class="alert-alta">2,998,443</td><td class="alert-alta">CD + URGENTE</td></tr>
+    </table>
+    <h1>III. CLUSTER SEDESOL NOV-DIC 2022</h1>
+    <div class="cluster-box">
+      <p><strong>Hallazgo crítico:</strong> En solo 6 semanas (1 nov – 2 dic 2022), la Secretaría de Desarrollo Social (SEDESOL) adjudicó contratos directos a 3 empresas de giros incompatibles por un total de <strong style="color:#dc2626">L 28.9 millones</strong>:</p>
+      <table>
+        <tr><th>Empresa</th><th>Giro</th><th>Monto</th><th>Fecha</th></tr>
+        <tr><td>LIGTH, TRENDS & MARKETING (x2)</td><td>Moda/marketing</td><td class="alert-critica">L 18,370,200</td><td>2 dic 2022</td></tr>
+        <tr><td>Variedades la Económica</td><td>Tienda variedades</td><td class="alert-alta">L 4,438,139</td><td>1 nov 2022</td></tr>
+        <tr><td>Cía. Aduanera Unión Latín Cargo</td><td>Logística aduanera</td><td class="alert-alta">L 6,118,089</td><td>16 nov 2022</td></tr>
+      </table>
+      <p><strong>Todos los contratos:</strong> contratación directa + PERIODO_MINIMO_ONCAE. <strong>Acción urgente:</strong> Identificar funcionario firmante en los 4 contratos y cruzar con declaraciones patrimoniales TSC.</p>
+    </div>
+    <h1>IV. CASO CRÍTICO — VENTA DE REPUESTOS / INFOP</h1>
+    <p>Una tienda de repuestos de vehículos y materiales de ferretería recibió <strong style="color:#dc2626">L 13,615,931 de INFOP</strong> (Instituto de Formación Profesional) en julio 2025 vía Compra Menor CRÍTICA — usando este mecanismo para evadir el proceso de licitación pública. La misma empresa aparece en UNAH (12+ contratos), Facultad de Ciencias Médicas, IHT y HONDUCOR.</p>
+    <ul>
+      <li>INFOP es el mismo instituto donde operaron RILMAC, GREENTEC y DICOMARCA — <strong>patrón de institución capturada.</strong></li>
+      <li>Una ferretería no tiene capacidad técnica para proveer insumos de formación profesional.</li>
+      <li>Presencia en 5 entidades distintas sugiere empresa "comodín" para reencausar pagos públicos.</li>
+    </ul>
+    <h1>V. RECOMENDACIONES</h1>
+    <p><strong>Para TSC:</strong> Cluster SEDESOL 2022 (L 29M, 4 CDs, 3 empresas fuera de giro en 6 semanas) + INFOP CM-TGU-0557-2025 (L 13.6M Compra Menor CRÍTICA).</p>
+    <p><strong>Para MP:</strong> VARIEDADES AYALA → Hospital del Sur (CD sin proceso) + TIENDA AGROPECUARIA → UNAH (CD urgente, persona natural sin capacidad).</p>
+    <p><strong>Nuevo patrón Sentinel:</strong> Implementar tag <code>PROVEEDOR_FUERA_DE_GIRO</code> automático cuando nombre del proveedor contiene palabras de giro específico incompatible con la entidad contratante.</p>
+  </div>
+  <div class="footer">
+    <p>⚠️ AVISO LEGAL: Generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE. Las señales NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
+  </div>
+  </body></html>`;
+  const pw = window.open('','_blank');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ── PDF 8: Investigación S38 — SENACIT / DICOMARCA ───────────────────────────
 function exportReporteSENACITPDF() {
   const today = new Date();
   const ds = today.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });

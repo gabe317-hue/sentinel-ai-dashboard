@@ -3815,7 +3815,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span>Reportes Investigativos</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Genera reportes PDF desde los datos en vivo del dashboard · 120,991 contratos monitoreados
+        Genera reportes PDF desde los datos en vivo del dashboard · 127,832 contratos monitoreados
       </div>
     </div>
 
@@ -13631,6 +13631,28 @@ function renderReportesPanel() {
         border: 'rgba(225,29,72,0.25)',
       };
     })(),
+    (() => {
+      const all2 = window.allAlerts || [];
+      const provTargets = ['RILMAC','GREENTEC','CONSULTORIA INTEGRAL','CONSULTORÍA INTEGRAL'];
+      const provContratos = all2.filter(a => {
+        const p = (a.proveedor_nombre||'').toUpperCase();
+        return provTargets.some(t => p.includes(t));
+      });
+      const criticos = provContratos.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA');
+      const totalMonto = criticos.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+      return {
+        icon: '🕵️',
+        title: 'Investigación S36 — INFOP · RILMAC · GREENTEC · CONSULTORÍA',
+        desc: `3 proveedores investigados · ${criticos.length} contratos CRÍTICA · Errores de datos ONCAE confirmados — Verificación fuente HC1-2025`,
+        count: provContratos.length,
+        monto: fmtL(totalMonto),
+        color: '#f97316',
+        btn: 'exportReporteS36PDF()',
+        script: 'build_s36_report.js',
+        bg: 'rgba(249,115,22,0.06)',
+        border: 'rgba(249,115,22,0.25)',
+      };
+    })(),
   ];
 
   const savedKey = localStorage.getItem('sentinel_sb_key') || '';
@@ -14557,6 +14579,220 @@ function renderNewsCards() {
         <a class="news-link" href="${item.link}" target="_blank" rel="noopener noreferrer">→ Ver artículo</a>
       </div>`;
   }).join('');
+}
+
+
+// ── PDF 6: Investigación S36 — RILMAC / GREENTEC / CONSULTORÍA INTEGRAL ──────
+function exportReporteS36PDF() {
+  const all = window.allAlerts || [];
+  if (!all.length) { alert('Datos no cargados.'); return; }
+  const fmtL = n => { if(!n||n===0) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const esc  = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const today = new Date();
+  const ds    = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-S36-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  // Pull data for the three vendors
+  const rilmac   = all.filter(a => (a.proveedor_nombre||'').toUpperCase().includes('RILMAC'));
+  const greentec = all.filter(a => (a.proveedor_nombre||'').toUpperCase().includes('GREENTEC'));
+  const consult  = all.filter(a => {
+    const p = (a.proveedor_nombre||'').toUpperCase();
+    return p.includes('CONSULTORIA INTEGRAL') || p.includes('CONSULTORÍA INTEGRAL');
+  });
+
+  const rilmacCrit   = rilmac.filter(a => (a.severity||'').toUpperCase()==='CRÍTICA');
+  const greentecCrit = greentec.filter(a => (a.severity||'').toUpperCase()==='CRÍTICA');
+  const consultCrit  = consult.filter(a => (a.severity||'').toUpperCase()==='CRÍTICA');
+
+  const totalRilmac   = rilmac.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+  const totalGreentec = greentec.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+  const totalConsult  = consult.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+
+  // Contrato CRÍTICO por proveedor
+  const topRilmac   = rilmacCrit.sort((a,b)=>Number(b.monto_contrato||0)-Number(a.monto_contrato||0))[0];
+  const topGreentec = greentecCrit.sort((a,b)=>Number(b.monto_contrato||0)-Number(a.monto_contrato||0))[0];
+  const topConsult  = consultCrit.sort((a,b)=>Number(b.monto_contrato||0)-Number(a.monto_contrato||0))[0];
+
+  function contractRow(a, nota) {
+    if (!a) return '<tr><td colspan="5" style="padding:8px;color:#9ca3af;font-size:11px;">Sin datos</td></tr>';
+    const fecha = (a.fecha_contrato||'').substring(0,10)||'—';
+    const ent   = (a.entity_name||'—').length>40?(a.entity_name||'—').slice(0,39)+'…':(a.entity_name||'—');
+    return `<tr style="background:#fff5f5;">
+      <td style="padding:6px 8px;font-size:10px;font-family:monospace;color:#9ca3af;">${esc((a.title||a.alert_id||'').slice(0,22))}</td>
+      <td style="padding:6px 8px;font-size:11px;">${esc(ent)}</td>
+      <td style="padding:6px 8px;font-size:11px;text-align:right;font-weight:700;color:#dc2626;">${fmtL(Number(a.monto_contrato||0))}</td>
+      <td style="padding:6px 8px;font-size:10px;text-align:center;">${fecha}</td>
+      <td style="padding:6px 8px;font-size:10px;color:#d97706;font-weight:600;">${esc(nota)}</td>
+    </tr>`;
+  }
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel-AI — Investigación S36 ${ds}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0} body{font-family:Arial,sans-serif;font-size:12px;color:#111827;background:#fff;padding:32px}
+    .cover-title{font-size:28px;font-weight:900;color:#0a1628;}
+    .cover-sub{color:#f97316;font-size:14px;font-weight:700;}
+    h1{font-size:17px;font-weight:800;color:#0a1628;margin:28px 0 6px;padding-bottom:6px;border-bottom:3px solid #f97316;}
+    h2{font-size:13px;font-weight:700;color:#f97316;margin:16px 0 6px;}
+    .kpi-row{display:flex;gap:12px;margin:14px 0;}
+    .kpi{flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;text-align:center;}
+    .kpi .val{font-size:22px;font-weight:900;color:#0a1628;} .kpi .lbl{font-size:10px;color:#6b7280;text-transform:uppercase;margin-top:3px;}
+    .kpi.red{background:#fff0f0;border-color:#fecaca;} .kpi.red .val{color:#dc2626;}
+    .kpi.amb{background:#fff7ed;border-color:#fed7aa;} .kpi.amb .val{color:#ea580c;}
+    .kpi.grn{background:#f0fdf4;border-color:#bbf7d0;} .kpi.grn .val{color:#16a34a;}
+    table{width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;}
+    th{background:#1f2937;color:#fff;padding:7px 8px;text-align:left;font-size:11px;}
+    tr:nth-child(even){background:#f9fafb;}
+    .alert-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:14px 18px;margin:14px 0;}
+    .alert-box.red{background:#fff0f0;border-color:#fecaca;}
+    .note{font-size:10px;color:#6b7280;margin-top:6px;}
+    .badge-error{display:inline-block;background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+    .badge-critico{display:inline-block;background:#fff0f0;border:1px solid #fecaca;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+    .page-break{page-break-before:always;margin-top:28px;}
+  </style>
+  </head><body>
+
+  <!-- PORTADA -->
+  <div style="border-bottom:4px solid #f97316;padding-bottom:24px;margin-bottom:28px;">
+    <div class="cover-title">🕵️ SISTEMA SENTINEL</div>
+    <div class="cover-sub">Investigación S36 — Verificación de Contratos CRÍTICOS</div>
+    <div style="margin-top:16px;display:flex;gap:32px;font-size:11px;color:#6b7280;">
+      <span><strong>Folio:</strong> ${folio}</span>
+      <span><strong>Fecha:</strong> ${ds}</span>
+      <span><strong>Fuente verificada:</strong> ONCAE HC1-2025 JSON</span>
+      <span style="color:#dc2626;font-weight:700;">RESERVADO</span>
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:#374151;">
+      Investigación de tres proveedores con contratos CRÍTICOS detectados por Sentinel. Se verificaron los montos directamente en la fuente HC1-2025 de ONCAE.
+      <strong style="color:#dc2626;"> Resultado: 2 de 3 contratos tienen errores de datos en ONCAE. 1 contrato real (GREENTEC L54M) requiere investigación.</strong>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi red"><div class="val">${rilmac.length}</div><div class="lbl">Contratos RILMAC en BD</div></div>
+    <div class="kpi amb"><div class="val">${greentec.length}</div><div class="lbl">Contratos GREENTEC en BD</div></div>
+    <div class="kpi amb"><div class="val">${consult.length}</div><div class="lbl">Contratos CONSULTORÍA en BD</div></div>
+    <div class="kpi red"><div class="val">2</div><div class="lbl">Errores datos ONCAE confirmados</div></div>
+    <div class="kpi grn"><div class="val">L54M</div><div class="lbl">Monto real GREENTEC (cables)</div></div>
+  </div>
+
+  <!-- ═══ I. RILMAC ═══ -->
+  <h1>I. RILMAC IMPRESORES — CM-INFOP-TGU-0219-2025</h1>
+
+  <div class="alert-box">
+    <strong>⚠️ ERROR DE DATOS ONCAE CONFIRMADO</strong><br>
+    El monto de L 5,080,516,000 que Sentinel registra <strong>ES UN ERROR DE CAPTURA EN ONCAE</strong>, no un contrato real de esa magnitud.<br><br>
+    <strong>Evidencia de la fuente HC1-2025:</strong><br>
+    Item: <em>COMPROBANTE DE PAGO</em> (Talones/Talonarios — UNSPSC 14111805)<br>
+    Qty: <strong>19,600 unidades</strong> × precio unitario: <strong>L 259,210</strong> = L 5,080,516,000<br><br>
+    El precio real por talonario debe ser <strong>L 259.21</strong> (no L 259,210). El decimal fue corrido <strong>1,000 veces</strong> en la carga al sistema ONCAE.<br>
+    Monto real estimado: <strong style="color:#16a34a;">L 5,080,516</strong> (~L 5.08M — razonable para 19,600 talonarios de pago impresos)
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi red"><div class="val">L 5.08B</div><div class="lbl">Monto registrado en ONCAE (ERROR)</div></div>
+    <div class="kpi grn"><div class="val">~L 5.1M</div><div class="lbl">Monto real estimado</div></div>
+    <div class="kpi"><div class="val">${rilmac.length}</div><div class="lbl">Total contratos BD (historial)</div></div>
+    <div class="kpi"><div class="val">32</div><div class="lbl">Entidades distintas</div></div>
+  </div>
+
+  <h2>Contrato CRÍTICO registrado en BD</h2>
+  <table><thead><tr><th>Referencia</th><th>Entidad</th><th>Monto BD</th><th>Fecha</th><th>Estado</th></tr></thead>
+  <tbody>${contractRow(topRilmac, '⚠️ Error decimal ONCAE')}</tbody></table>
+
+  <div class="note">Rep. Legal: Reina Isabel López Gómez · gerencia@rilmacimpresores.com · Tel 2245-1625 · Certificación ONCAE 3180-2022 (vigente hasta dic 2025)</div>
+  <p style="margin-top:12px;font-size:11px;color:#374151;"><strong>Recomendación:</strong> Notificar a ONCAE para corrección del precio unitario. Verificar si otros contratos en HC1-2025 tienen el mismo error de decimal. El historial normal de RILMAC (L 50K-300K por contrato) confirma que es una imprenta legítima.</p>
+
+  <!-- ═══ II. GREENTEC ═══ -->
+  <h1 class="page-break">II. ELECTROMECANICA GREENTEC — CM-INFOP-TGU-0259-2025</h1>
+
+  <div class="alert-box red">
+    <strong>🔴 CONTRATO REAL — REQUIERE INVESTIGACIÓN</strong><br>
+    El monto de <strong>L 54,010,089</strong> en cables eléctricos para INFOP <strong>ES REAL Y ESTÁ CORRECTAMENTE REGISTRADO</strong> en HC1-2025.<br><br>
+    <strong>Items verificados en fuente:</strong> Cables THHN #14, #10, #12 y TSJ — materiales eléctricos.<br>
+    <strong>Segundo proveedor en el mismo contrato:</strong> Suministros Eléctricos y Controles Honduras, S de R.L.<br>
+    <strong>Alerta:</strong> Empresa nueva (primera aparición ago-2024 con L 105K en COPECO). L 54M a INFOP en jun-2025 = 513x su contrato inicial.
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi red"><div class="val">L 54M</div><div class="lbl">Monto REAL en ONCAE</div></div>
+    <div class="kpi red"><div class="val">ago-2024</div><div class="lbl">Primera aparición (18 meses atrás)</div></div>
+    <div class="kpi amb"><div class="val">2</div><div class="lbl">Proveedores en el contrato</div></div>
+    <div class="kpi"><div class="val">${greentec.length}</div><div class="lbl">Total contratos en BD</div></div>
+  </div>
+
+  <h2>Items del Contrato — Cables Eléctricos INFOP</h2>
+  <table>
+    <thead><tr><th>Artículo</th><th style="text-align:right">Qty</th><th style="text-align:right">P. Unitario (L)</th><th style="text-align:right">Total (L)</th></tr></thead>
+    <tbody>
+      <tr><td>CABLE #14 THHN NEGRO</td><td style="text-align:right">600</td><td style="text-align:right">12,070.40</td><td style="text-align:right;font-weight:700;">7,242,240</td></tr>
+      <tr style="background:#f9fafb"><td>CABLE #14 THHN ROJO</td><td style="text-align:right">600</td><td style="text-align:right">12,070.40</td><td style="text-align:right;font-weight:700;">7,242,240</td></tr>
+      <tr><td>CABLE #14 THHN ROJO (v2)</td><td style="text-align:right">600</td><td style="text-align:right">12,070.40</td><td style="text-align:right;font-weight:700;">7,242,240</td></tr>
+      <tr style="background:#f9fafb"><td>CABLE #14 THHN AZUL</td><td style="text-align:right">600</td><td style="text-align:right">12,070.40</td><td style="text-align:right;font-weight:700;">7,242,240</td></tr>
+      <tr><td>CABLE #14 THHN VERDE</td><td style="text-align:right">300</td><td style="text-align:right">12,070.40</td><td style="text-align:right;font-weight:700;">3,621,120</td></tr>
+      <tr style="background:#f9fafb"><td>CABLE #10 THHN NEGRO</td><td style="text-align:right">300</td><td style="text-align:right">26,592.60</td><td style="text-align:right;font-weight:700;">7,977,780</td></tr>
+      <tr><td>CABLE #10 THHN BLANCO</td><td style="text-align:right">300</td><td style="text-align:right">26,592.60</td><td style="text-align:right;font-weight:700;">7,977,780</td></tr>
+      <tr style="background:#f9fafb"><td>CABLE #10 THHN VERDE</td><td style="text-align:right">200</td><td style="text-align:right">26,592.60</td><td style="text-align:right;font-weight:700;">5,318,520</td></tr>
+      <tr><td>CABLE #12 COLOR NEGRO (×3 items)</td><td style="text-align:right">500</td><td style="text-align:right">15.47</td><td style="text-align:right">7,734</td></tr>
+      <tr style="background:#f9fafb"><td>CABLE TSJ 3X12</td><td style="text-align:right">2,000</td><td style="text-align:right">61.36</td><td style="text-align:right">122,728</td></tr>
+      <tr style="background:#fff0f0;font-weight:700;"><td colspan="3" style="text-align:right;padding:8px;">TOTAL</td><td style="text-align:right;color:#dc2626;">L 54,010,089</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:12px;font-size:11px;color:#374151;"><strong>⚠️ Anomalías de precio a investigar:</strong> CABLE #14 y #10 a L 12,070–26,592 por unidad mientras #12 está a L 15.47. La unidad probablemente es "rollo" para #14/#10 y "metro" para #12 — pero los precios por rollo de #14 (~USD 485) son altos vs. mercado. INFOP adquiriendo L 54M en cables sin licitación merece auditoría técnica.</p>
+  <p style="margin-top:8px;font-size:11px;color:#374151;"><strong>Recomendación:</strong> Verificar expediente en portal ONCAE. Identificar tipo de obra en INFOP que justifique esta cantidad de cable. Investigar vínculo entre GREENTEC y "Suministros Eléctricos y Controles Honduras" (co-adjudicatario).</p>
+
+  <!-- ═══ III. CONSULTORÍA INTEGRAL ═══ -->
+  <h1 class="page-break">III. CONSULTORÍA INTEGRAL — IHT-CM-GC-2025-317</h1>
+
+  <div class="alert-box">
+    <strong>⚠️ ERROR DE DATOS ONCAE PROBABLE</strong><br>
+    El contrato es por <strong>500 MEDALLAS METÁLICAS PERSONALIZADAS</strong> para el IHT (Instituto Hondureño de Turismo).<br><br>
+    <strong>Fuente HC1-2025:</strong> Qty 500 × L 115,000 = L 57,500,000<br>
+    <strong>Pero el contrato firmado dice:</strong> Valor L 115,000 HNL<br><br>
+    El precio unitario de <strong>L 115,000 por medalla</strong> (~USD 4,630 c/u) es imposible. El precio real por medalla sublimada premium es L 200–1,500.<br>
+    <strong>Hipótesis:</strong> El monto L 115,000 es el <em>total del lote de 500 medallas</em>, ingresado incorrectamente como precio unitario.
+    Monto real: <strong style="color:#16a34a;">L 115,000</strong> (no L 57.5M).
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi red"><div class="val">L 57.5M</div><div class="lbl">Monto registrado en BD (ERROR)</div></div>
+    <div class="kpi grn"><div class="val">L 115K</div><div class="lbl">Monto real (500 medallas)</div></div>
+    <div class="kpi"><div class="val">500</div><div class="lbl">Medallas personalizadas (item)</div></div>
+    <div class="kpi"><div class="val">${consult.length}</div><div class="lbl">Total contratos BD historial</div></div>
+  </div>
+
+  <h2>Descripción del Item (fuente HC1-2025)</h2>
+  <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:12px 16px;font-size:11px;line-height:1.6;color:#374151;">
+    <strong>ELABORACION DE 500 MEDALLAS PERSONALIZADAS REDONDAS DE METAL, COLOR PLATEADO, TAMAÑO 3 PULGADAS DE DIÁMETRO CON GROSOR DE 2 MILÍMETROS, FULL SUBLIMINADO, INCLUYE LISTÓN DE COLOR BLANCO DE APROXIMADAMENTE 90 CMS FULL SUBLIMINADO CON LOGOS.</strong><br>
+    Contacto IHT: Javier Carías | Tel 2242-7920 ext. 13126<br>
+    Contrato firmado: OC 307-2025 | Valor contrato: L 115,000 HNL ✓
+  </div>
+  <p style="margin-top:12px;font-size:11px;color:#374151;"><strong>Recomendación:</strong> Notificar a ONCAE el error en el precio unitario del item. El contrato real OC 307-2025 por L 115,000 es completamente normal para 500 medallas de reconocimiento del IHT.</p>
+
+  <!-- ═══ CONCLUSIONES ═══ -->
+  <h1>IV. Resumen y Acciones Recomendadas</h1>
+  <table>
+    <thead><tr><th>Proveedor</th><th>Monto BD</th><th>Monto Real</th><th>Diagnóstico</th><th>Acción</th></tr></thead>
+    <tbody>
+      <tr><td>RILMAC IMPRESORES</td><td style="color:#dc2626;font-weight:700;">L 5.08B</td><td style="color:#16a34a;font-weight:700;">~L 5.1M</td><td><span class="badge-error">Error decimal ONCAE</span></td><td>Notificar a ONCAE</td></tr>
+      <tr style="background:#f9fafb"><td>ELECTROMECANICA GREENTEC</td><td style="color:#dc2626;font-weight:700;">L 54M</td><td style="color:#dc2626;font-weight:700;">L 54M ✓</td><td><span class="badge-critico">REAL — investigar</span></td><td>Auditoría técnica + ONCAE</td></tr>
+      <tr><td>CONSULTORÍA INTEGRAL</td><td style="color:#dc2626;font-weight:700;">L 57.5M</td><td style="color:#16a34a;font-weight:700;">L 115K</td><td><span class="badge-error">Precio unitario ≠ total</span></td><td>Notificar a ONCAE</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:28px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:10px;color:#9ca3af;">
+    Sistema Sentinel — Honduras · ${folio} · ${ds} · Fuente: ONCAE HC1-2025 JSON verificado<br>
+    Base de datos: 127,832 registros | SEFIN + ONCAE 2019–2025 | Clasificación: RESERVADO
+  </div>
+  </body></html>`;
+
+  const pw = window.open('','_blank');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 </script>

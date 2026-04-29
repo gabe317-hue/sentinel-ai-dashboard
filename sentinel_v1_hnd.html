@@ -10808,23 +10808,31 @@ function poToggle(id) {
 }
 
 function poUpdateIndicators() {
-  try {
-    if (typeof allAlerts !== 'undefined' && allAlerts.length) {
-      const crit  = allAlerts.filter(a => a.severity === 'CRÍTICA').length;
-      const alto  = allAlerts.filter(a => a.severity === 'ALTA').length;
-      const sob   = allAlerts.filter(a => a.tags && a.tags.includes('SOBRECOSTO')).length;
-      const engel = allAlerts.filter(a => a.tags && a.tags.includes('LISTA_ENGEL')).length;
-      const ofac  = allAlerts.filter(a => a.tags && a.tags.includes('PROVEEDOR_SANCIONADO')).length;
-      document.getElementById('po-ind-crit').textContent = crit.toLocaleString();
-      document.getElementById('po-ind-alto').textContent = alto.toLocaleString();
-      document.getElementById('po-ind-intl').textContent = (engel + ofac).toLocaleString();
-      document.getElementById('po-ind-sob').textContent  = sob.toLocaleString();
-    }
-    if (typeof window._totalContratos !== 'undefined') {
-      document.getElementById('po-ind-total').textContent = window._totalContratos.toLocaleString();
-      document.getElementById('po-db-badge').textContent  = window._totalContratos.toLocaleString() + ' contratos monitoreados';
-    }
-  } catch(e) { /* silent */ }
+  const MAX = 20, INTERVAL = 800; // try for up to 16 seconds
+  let attempts = 0;
+  function tryFill() {
+    try {
+      const data = (typeof allAlerts !== 'undefined') ? allAlerts : [];
+      if (data.length > 0) {
+        const crit  = data.filter(a => a.severity === 'CRÍTICA').length;
+        const alto  = data.filter(a => a.severity === 'ALTA').length;
+        const sob   = data.filter(a => a.tags && a.tags.includes('SOBRECOSTO')).length;
+        const engel = data.filter(a => a.tags && a.tags.includes('LISTA_ENGEL')).length;
+        const ofac  = data.filter(a => a.tags && a.tags.includes('PROVEEDOR_SANCIONADO')).length;
+        const casos = data.filter(a => a.tags && a.tags.includes('CASO_ACTIVO')).length;
+        document.getElementById('po-ind-crit').textContent  = crit.toLocaleString('es-HN');
+        document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
+        document.getElementById('po-ind-intl').textContent  = (engel + ofac).toLocaleString('es-HN');
+        document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
+        document.getElementById('po-ind-total').textContent = data.length.toLocaleString('es-HN');
+        document.getElementById('po-ind-casos').textContent = casos > 0 ? casos.toLocaleString('es-HN') : '—';
+        document.getElementById('po-db-badge').textContent  = data.length.toLocaleString('es-HN') + ' contratos monitoreados';
+        return; // done
+      }
+    } catch(e) { /* silent */ }
+    if (++attempts < MAX) setTimeout(tryFill, INTERVAL);
+  }
+  tryFill();
 }
 
 // stop submenu clicks from toggling the card

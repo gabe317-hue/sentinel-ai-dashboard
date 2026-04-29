@@ -14987,8 +14987,11 @@ const SCANNER_PATTERNS = [
     risk: 'CRÍTICA',
     script: null,
     run: () => {
+      // Proveedores que aparecen solo una vez en toda la BD con monto alto (sin historial previo)
+      const counts={};
+      (window.allAlerts||[]).forEach(a=>{ const k=(a.proveedor_nombre||'').trim().toUpperCase(); if(k) counts[k]=(counts[k]||0)+1; });
       return (window.allAlerts||[])
-        .filter(a=>(a.patterns||'').includes('PROVEEDOR_SIN_HISTORIAL') && Number(a.monto_contrato||0)>10000000)
+        .filter(a=>{ const k=(a.proveedor_nombre||'').trim().toUpperCase(); return counts[k]===1 && Number(a.monto_contrato||0)>10000000; })
         .sort((a,b)=>Number(b.monto_contrato)-Number(a.monto_contrato)).slice(0,60);
     }
   },
@@ -15001,8 +15004,13 @@ const SCANNER_PATTERNS = [
     risk: 'CRÍTICA',
     script: null,
     run: () => {
+      // Compra Menor con monto alto — tipo_contratacion o description menciona "compra menor"
       return (window.allAlerts||[])
-        .filter(a=>(a.patterns||'').includes('COMPRA_MENOR_ONCAE') && Number(a.monto_contrato||0)>1000000)
+        .filter(a=>{
+          const t=(a.tipo_contratacion||'').toLowerCase();
+          const d=(a.description||'').toLowerCase();
+          return (t.includes('compra menor')||d.includes('compra menor')) && Number(a.monto_contrato||0)>1000000;
+        })
         .sort((a,b)=>Number(b.monto_contrato)-Number(a.monto_contrato)).slice(0,60);
     }
   },
@@ -15241,6 +15249,8 @@ function runScannerPattern(patternId) {
   const pattern = SCANNER_PATTERNS.find(p=>p.id===patternId);
   if(!pattern) return;
 
+  const fmtL = n => 'L ' + Number(n||0).toLocaleString('es-HN', {minimumFractionDigits:0,maximumFractionDigits:0});
+
   // Run the pattern
   const t0=performance.now();
   const results = pattern.run();
@@ -15317,6 +15327,7 @@ function runScannerPattern(patternId) {
 function exportScannerPDF(patternId) {
   const pattern = SCANNER_PATTERNS.find(p=>p.id===patternId);
   if(!pattern) return;
+  const fmtL = n => 'L ' + Number(n||0).toLocaleString('es-HN', {minimumFractionDigits:0,maximumFractionDigits:0});
   const results = pattern.run();
   const today=new Date();
   const ds=today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});

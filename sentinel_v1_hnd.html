@@ -12891,7 +12891,7 @@ function renderEngelPanel() {
             const ent  = a.entity_name||a.entidad_nombre||'—';
             const id   = a.alert_id||a.id||'—';
             const mc   = Number(a.monto_contrato||0);
-            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="showAlertDetail('${id}')">
+            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="openAlertDetail(${a.id}, event)">
               <td style="padding:7px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;">${String(id).slice(0,12)}…</td>
               <td style="padding:7px 12px;color:var(--text);">${ent.length>35?ent.slice(0,35)+'…':ent}</td>
               <td style="padding:7px 12px;color:var(--text-dim);">${prov.length>30?prov.slice(0,30)+'…':prov}</td>
@@ -13126,7 +13126,7 @@ function renderOfacPanel() {
             const id=a.alert_id||a.id||'—';
             const mc=Number(a.monto_contrato||0);
             const fecha=a.fecha_contrato||a.created_at||'';
-            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="showAlertDetail('${id}')">
+            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="openAlertDetail(${a.id}, event)">
               <td style="padding:7px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;">${String(id).slice(0,12)}…</td>
               <td style="padding:7px 12px;color:var(--text);">${ent.length>40?ent.slice(0,40)+'…':ent}</td>
               <td style="padding:7px 12px;text-align:right;color:var(--electric);">${fmtL(mc)}</td>

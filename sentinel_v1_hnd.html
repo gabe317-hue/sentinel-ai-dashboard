@@ -14214,46 +14214,111 @@ function renderReportesPanel() {
       </div>
     </div>
   <!-- criteria legend -->
-    <div style="border:1px solid rgba(0,200,255,0.18);border-radius:8px;background:rgba(0,200,255,0.04);padding:10px 16px;margin-bottom:8px;">
-      <div style="font-size:11px;font-weight:700;color:var(--electric);margin-bottom:5px;">📋 Criterios de Activación — Reportes de Investigación</div>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;">
-        <span style="font-size:10px;color:var(--muted);"><span style="color:#10b981;font-weight:700;">●</span> ≥2 Patrones — actor detectado en 2+ patrones distintos por Escáner</span>
-        <span style="font-size:10px;color:var(--muted);"><span style="color:#10b981;font-weight:700;">●</span> L 10M+ — monto total supera L 10 millones</span>
-        <span style="font-size:10px;color:var(--muted);"><span style="color:#6366f1;font-weight:700;">●</span> Verif. Ext. — confirmado por ICN / MP / TSC / STLCC</span>
+    <div style="border:1px solid rgba(0,200,255,0.18);border-radius:8px;background:rgba(0,200,255,0.04);padding:9px 14px;margin-bottom:8px;">
+      <div style="font-size:10px;font-weight:700;color:var(--electric);margin-bottom:4px;">📋 Criterios de Activación — Investigaciones</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <span style="font-size:9px;color:var(--muted);"><span style="color:#10b981;font-weight:700;">●</span> ≥2 Patrones</span>
+        <span style="font-size:9px;color:var(--muted);"><span style="color:#10b981;font-weight:700;">●</span> L 10M+</span>
+        <span style="font-size:9px;color:var(--muted);"><span style="color:#6366f1;font-weight:700;">●</span> Verif. Externa (ICN/MP/TSC)</span>
       </div>
     </div>
-    ` + cards.map(c => `
-    <div style="border:1px solid ${c.border};border-radius:12px;overflow:hidden;background:${c.bg};">
+    ` + (()=>{
+    window._rptCards = cards;
+    const sectionLabel = (txt) => \`<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 4px 5px;">\${txt}</div>\`;
+    const rankCards = cards.filter(x=>!x.inv_num);
+    const invCards  = cards.filter(x=>x.inv_num);
+    const makeRow = (card, idx) => {
+      const pillP   = card.criteria ? \`<span style="font-size:9px;padding:1px 5px;border-radius:3px;\${card.criteria.p   ? 'background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25);' : 'color:var(--muted);border:1px solid var(--border);'}">≥2P</span>\` : '';
+      const pillM   = card.criteria ? \`<span style="font-size:9px;padding:1px 5px;border-radius:3px;\${card.criteria.m   ? 'background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25);' : 'color:var(--muted);border:1px solid var(--border);'}">L10M+</span>\` : '';
+      const pillExt = card.criteria ? \`<span style="font-size:9px;padding:1px 5px;border-radius:3px;\${card.criteria.ext ? 'background:rgba(99,102,241,0.12);color:#6366f1;border:1px solid rgba(99,102,241,0.25);' : 'color:var(--muted);border:1px solid var(--border);'}">VExt</span>\` : '';
+      const numBadge = card.inv_num  ? \`<span style="font-family:monospace;font-size:9px;font-weight:700;color:\${card.color};background:\${card.bg};border:1px solid \${card.border};padding:1px 5px;border-radius:3px;flex-shrink:0;">\${card.inv_num}</span>\` : '';
+      const shortTitle = card.inv_num ? card.title.replace(/Investigaci[oó]n S3\d+ — /,'').replace(/Investigaci[oó]n CRÍTICA — /,'').replace(/ONCAE 2025 — /,'') : card.title;
+      return \`<div id="rpt-row-\${idx}" onclick="selectReporteItem(\${idx})"
+        style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:background .12s;"
+        onmouseover="if(window._rptSelected!==\${idx}){this.style.background='var(--glass)';this.style.borderColor='var(--border)';}"
+        onmouseout="if(window._rptSelected!==\${idx}){this.style.background='';this.style.borderColor='transparent';}">
+        <span style="font-size:17px;flex-shrink:0;">\${card.icon}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">\${numBadge}<span style="font-size:12px;font-weight:600;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">\${shortTitle}</span></div>
+          \${card.inv_num ? \`<div style="display:flex;gap:3px;margin-top:3px;">\${pillP}\${pillM}\${pillExt}</div>\` : \`<div style="font-size:9px;color:var(--muted);margin-top:2px;">\${card.desc.substring(0,70)}\${card.desc.length>70?'…':''}</div>\`}
+        </div>
+        <span style="font-size:15px;color:var(--muted);flex-shrink:0;">›</span>
+      </div>\`;
+    };
+    const rankRows = rankCards.map(card => makeRow(card, cards.indexOf(card))).join('');
+    const invRows  = invCards.map(card  => makeRow(card, cards.indexOf(card))).join('');
+    return sectionLabel('Reportes de Análisis') + rankRows +
+           sectionLabel('Investigaciones Activas · SEN-INV-2026') + invRows +
+           \`<div id="rptDetailPanel" style="display:none;margin-top:6px;"></div>\`;
+  })();
+}
+
+function selectReporteItem(idx) {
+  const cards = window._rptCards;
+  if (!cards || !cards[idx]) return;
+  const card = cards[idx];
+  window._rptSelected = idx;
+
+  // Highlight selected row, reset others
+  cards.forEach((_, i) => {
+    const row = document.getElementById('rpt-row-' + i);
+    if (!row) return;
+    if (i === idx) {
+      row.style.background = card.bg || 'var(--glass)';
+      row.style.borderColor = card.border || 'var(--border)';
+    } else {
+      row.style.background = '';
+      row.style.borderColor = 'transparent';
+    }
+  });
+
+  const panel = document.getElementById('rptDetailPanel');
+  if (!panel) return;
+
+  const criteriaHtml = card.inv_num ? (() => {
+    const pill = (active, label, col) => `<span style="font-size:10px;padding:2px 8px;border-radius:4px;${active ? `background:${col}1a;color:${col};border:1px solid ${col}44;` : 'color:var(--muted);border:1px solid var(--border);'}">${active ? '✓ ' : ''}${label}</span>`;
+    return `<div style="display:flex;gap:5px;margin:8px 0;flex-wrap:wrap;">
+      <span style="font-family:monospace;font-size:10px;font-weight:700;color:${card.color};background:${card.bg};border:1px solid ${card.border};padding:2px 8px;border-radius:4px;">${card.inv_num}</span>
+      ${pill(card.criteria.p,   '≥2 Patrones',  '#10b981')}
+      ${pill(card.criteria.m,   'L 10M+',       '#10b981')}
+      ${pill(card.criteria.ext, 'Verif. Ext.',  '#6366f1')}
+    </div>`;
+  })() : '';
+
+  panel.style.display = 'block';
+  panel.innerHTML = `
+    <div style="border:2px solid ${card.border};border-radius:12px;background:${card.bg};overflow:hidden;">
       <div style="padding:16px 20px;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div style="font-size:15px;font-weight:700;color:${card.color};">${card.icon} ${card.title}</div>
+          <button onclick="document.getElementById('rptDetailPanel').style.display='none';window._rptSelected=null;cards&&cards.forEach((_,i)=>{const r=document.getElementById('rpt-row-'+i);if(r){r.style.background='';r.style.borderColor='transparent';}})"
+            style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:0 2px;" title="Cerrar">✕</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">${card.desc}</div>
+        ${criteriaHtml}
+        <div style="display:flex;gap:24px;margin:12px 0 16px;padding-top:10px;border-top:1px solid ${card.border};">
           <div>
-            <div style="font-size:14px;font-weight:700;color:${c.color};margin-bottom:5px;">${c.icon} ${c.title}</div>
-            <div style="font-size:11px;color:var(--muted);">${c.desc}</div>
-            ${c.inv_num ? `<div style="display:flex;align-items:center;gap:5px;margin-top:8px;flex-wrap:wrap;">
-              <span style="font-family:monospace;font-size:10px;font-weight:700;color:${c.color};background:${c.bg};border:1px solid ${c.border};padding:2px 8px;border-radius:4px;">${c.inv_num}</span>
-              <span style="font-size:10px;padding:2px 7px;border-radius:4px;${c.criteria.p ? 'background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);' : 'color:var(--muted);border:1px solid var(--border);'}">&#9679; ≥2 Patrones</span>
-              <span style="font-size:10px;padding:2px 7px;border-radius:4px;${c.criteria.m ? 'background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);' : 'color:var(--muted);border:1px solid var(--border);'}">&#9679; L 10M+</span>
-              <span style="font-size:10px;padding:2px 7px;border-radius:4px;${c.criteria.ext ? 'background:rgba(99,102,241,0.12);color:#6366f1;border:1px solid rgba(99,102,241,0.3);' : 'color:var(--muted);border:1px solid var(--border);'}">&#9679; Verif. Ext.</span>
-            </div>` : ''}
+            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Registros</div>
+            <div style="font-size:24px;font-weight:800;color:${card.color};font-family:'Syne',sans-serif;">${card.count}</div>
           </div>
-          <div style="display:flex;gap:6px;flex-shrink:0;">
-            <button class="pdf-btn" onclick="${c.btn}" style="background:${c.bg};color:${c.color};border-color:${c.border};white-space:nowrap;">📄 PDF</button>
-            <button class="pdf-btn" onclick="showWordCmd('${c.script}',this)" style="background:rgba(16,185,129,0.08);color:#10b981;border-color:rgba(16,185,129,0.3);white-space:nowrap;">📝 Word</button>
+          <div>
+            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Monto total</div>
+            <div style="font-size:24px;font-weight:800;color:${card.color};font-family:'Syne',sans-serif;">${card.monto}</div>
           </div>
         </div>
-        <div style="display:flex;gap:28px;margin-top:14px;">
-          <div>
-            <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Registros</span><br>
-            <span style="font-size:22px;font-weight:700;color:${c.color};font-family:'Syne',sans-serif;">${c.count}</span>
-          </div>
-          <div>
-            <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Monto total</span><br>
-            <span style="font-size:22px;font-weight:700;color:${c.color};font-family:'Syne',sans-serif;">${c.monto}</span>
-          </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="pdf-btn" onclick="${card.btn}"
+            style="padding:9px 20px;font-size:13px;font-weight:700;background:${card.bg};color:${card.color};border-color:${card.border};white-space:nowrap;">
+            📄 Generar PDF
+          </button>
+          <button class="pdf-btn" onclick="showWordCmd('${card.script}',this)"
+            style="padding:9px 20px;font-size:13px;font-weight:700;background:rgba(16,185,129,0.08);color:#10b981;border-color:rgba(16,185,129,0.3);white-space:nowrap;">
+            📝 Generar Word
+          </button>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 function saveSupabaseKey() {

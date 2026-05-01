@@ -142,7 +142,7 @@ body::after {
 .po-section-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
 .po-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 .po-grid-top    { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
-.po-grid-bottom { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 48px; }
+.po-grid-bottom { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }
 .po-card { background: var(--navy-light); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
 .po-card:hover { border-color: rgba(0,200,255,0.25); box-shadow: 0 0 24px rgba(0,200,255,0.05); }
 .po-card.po-expanded { box-shadow: 0 0 30px rgba(0,0,0,0.3); }
@@ -206,7 +206,8 @@ body::after {
 .po-footer-brand { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim); text-transform: uppercase; }
 .po-footer-brand span { color: var(--electric); }
 .po-footer-class { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
-@media (max-width: 900px) { .po-grid-top { grid-template-columns: repeat(2,1fr); } .po-grid-bottom { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .po-grid-top { grid-template-columns: repeat(2,1fr); } .po-grid-bottom { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 640px) { .po-grid-bottom { grid-template-columns: 1fr; } }
 @media (max-width: 580px) { .po-grid-top { grid-template-columns: 1fr; } .po-wrap, .po-band, .po-footer { padding-left: 20px; padding-right: 20px; } }
 
 .logo-text {
@@ -2198,6 +2199,24 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         </div>
       </div>
 
+      <!-- BÚSQUEDA BD -->
+      <div class="po-card po-electric" id="poc-busqueda" onclick="poToggle('busqueda')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>🔎</span></div>
+          <div><div class="po-card-title">Búsqueda BD</div><div class="po-card-desc">127,832 registros · filtros avanzados</div></div>
+          <div class="po-chevron">▼</div>
+        </div>
+        <div class="po-submenu">
+          <button class="po-item" onclick="poGo(showBusquedaBDPanel)">
+            <span class="po-item-icon">🔍</span><span class="po-item-label">Buscar en Base de Datos</span><span class="po-item-tag tag-l">Live</span><span class="po-arrow">›</span>
+          </button>
+          <div style="padding:8px 16px 4px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;">FILTROS DISPONIBLES</div>
+          <div style="padding:4px 16px 12px;font-size:10px;color:var(--text-dim);line-height:1.6;">
+            Entidad · Empresa · Contrato<br>Monto rango · Año · Patrón
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -3509,112 +3528,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     </div>
     <div style="border-top:1px solid var(--border);margin-bottom:24px;"></div>
 
-    <!-- ── BÚSQUEDA BD ── -->
-    <div id="busquedaBDCard" style="margin-bottom:24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:15px;">🔎</span>
-          <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text-main);letter-spacing:.02em;">Búsqueda en Base de Datos</span>
-          <span id="busqueda-count-badge" style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);padding:1px 6px;border-radius:3px;display:none;">0</span>
-        </div>
-        <span style="font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">127,832 registros</span>
-      </div>
-
-      <!-- Filtros -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-        <div>
-          <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:3px;">ENTIDAD</label>
-          <input id="bd-entidad" type="text" placeholder="ej. SEFIN, SEDESOL…"
-            style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--text);outline:none;"
-            onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
-            onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
-        </div>
-        <div>
-          <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:3px;">EMPRESA / PROVEEDOR</label>
-          <input id="bd-empresa" type="text" placeholder="nombre del proveedor…"
-            style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--text);outline:none;"
-            onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
-            onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
-        </div>
-        <div>
-          <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:3px;">ID CONTRATO</label>
-          <input id="bd-contrato" type="text" placeholder="ej. CM-SEFIN-2024-001…"
-            style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--text);outline:none;"
-            onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
-            onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
-        </div>
-        <div>
-          <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:3px;">AÑO</label>
-          <select id="bd-anio"
-            style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--text);outline:none;cursor:pointer;">
-            <option value="">Todos los años</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
-            <option value="2021">2021</option>
-            <option value="2020">2020</option>
-            <option value="2019">2019</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:3px;">MONTO MÍNIMO (L)</label>
-          <input id="bd-monto-min" type="number" placeholder="0"
-            style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--text);outline:none;"
-            onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
-            onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
-        </div>
-        <div>
-          <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:3px;">MONTO MÁXIMO (L)</label>
-          <input id="bd-monto-max" type="number" placeholder="sin límite"
-            style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--text);outline:none;"
-            onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
-            onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
-        </div>
-      </div>
-
-      <!-- Fila: Patrón + botones -->
-      <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:14px;">
-        <div style="flex:1;">
-          <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:3px;">PATRÓN / TAG</label>
-          <select id="bd-patron"
-            style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--text);outline:none;cursor:pointer;">
-            <option value="">Todos los patrones</option>
-            <option value="FRACCIONAMIENTO">Fraccionamiento</option>
-            <option value="FRACCIONAMIENTO_ONCAE">Fraccionamiento ONCAE</option>
-            <option value="COMPRA_MENOR_RECURRENTE">Compra Menor Recurrente</option>
-            <option value="CONCENTRACION_PROVEEDOR">Concentración Proveedor</option>
-            <option value="PROVEEDOR_FUERA_DE_GIRO">Fuera de Giro</option>
-            <option value="CD_ALTO_MONTO">CD Alto Monto</option>
-            <option value="SIN_HISTORIAL_PROVEEDOR">Sin Historial</option>
-            <option value="SOBRECOSTO">Sobrecosto</option>
-            <option value="CLUSTER_CD">Cluster CD</option>
-          </select>
-        </div>
-        <button onclick="ejecutarBusquedaBD()"
-          style="padding:8px 20px;border-radius:6px;border:1px solid var(--electric);background:rgba(0,212,255,0.1);color:var(--electric);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'Syne',sans-serif;"
-          onmouseover="this.style.background='rgba(0,212,255,0.2)'" onmouseout="this.style.background='rgba(0,212,255,0.1)'">
-          🔍 Buscar
-        </button>
-        <button onclick="limpiarBusquedaBD()"
-          style="padding:8px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s;"
-          onmouseover="this.style.borderColor='var(--text-dim)'" onmouseout="this.style.borderColor='var(--border)'">
-          ✕ Limpiar
-        </button>
-      </div>
-
-      <!-- Resultados -->
-      <div id="busqueda-results" style="display:none;">
-        <div style="border-top:1px solid var(--border);margin-bottom:12px;"></div>
-        <div id="busqueda-results-inner" style="display:flex;flex-direction:column;gap:5px;max-height:420px;overflow-y:auto;padding-right:4px;"></div>
-        <div id="busqueda-more" style="display:none;margin-top:10px;text-align:center;">
-          <span style="font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;"></span>
-        </div>
-      </div>
-    </div>
-
-    <div style="border-top:1px solid var(--border);margin-bottom:24px;"></div>
-
     <!-- ── CASO 1: SEDESOL CHEQUESOL ── -->
     <div class="caso-card juicio">
       <div class="caso-header">
@@ -4315,6 +4228,128 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           style="margin-top:12px;padding:8px 18px;border-radius:8px;border:1px solid rgba(255,61,87,0.3);background:rgba(255,61,87,0.08);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;">
           Reintentar
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ BÚSQUEDA BD PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="busquedaBDPanel">
+    <button class="fuente-back" id="busquedabd-back-btn" onclick="hideBusquedaBDPanel()">← Portal</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title">🔎 <span>Búsqueda en Base de Datos</span></div>
+      <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
+        Consulta los <span id="bd-total-registros">127,832</span> registros de SEFIN y ONCAE con filtros combinados.
+      </div>
+    </div>
+
+    <!-- Filtros grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">ENTIDAD</label>
+        <input id="bd-entidad" type="text" placeholder="ej. SEFIN, SEDESOL…"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;"
+          onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
+      </div>
+      <div>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">EMPRESA / PROVEEDOR</label>
+        <input id="bd-empresa" type="text" placeholder="nombre del proveedor…"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;"
+          onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
+      </div>
+      <div>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">ID CONTRATO</label>
+        <input id="bd-contrato" type="text" placeholder="ej. CM-SEFIN-2024-001…"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;"
+          onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
+      </div>
+      <div>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">AÑO</label>
+        <select id="bd-anio"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;cursor:pointer;">
+          <option value="">Todos los años</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2022">2022</option>
+          <option value="2021">2021</option>
+          <option value="2020">2020</option>
+          <option value="2019">2019</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">MONTO MÍNIMO (L)</label>
+        <input id="bd-monto-min" type="number" placeholder="0"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;"
+          onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
+      </div>
+      <div>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">MONTO MÁXIMO (L)</label>
+        <input id="bd-monto-max" type="number" placeholder="sin límite"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;"
+          onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
+      </div>
+    </div>
+
+    <!-- Fila: Patrón + Severidad + botones -->
+    <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;">
+      <div style="flex:2;min-width:160px;">
+        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">PATRÓN / TAG</label>
+        <select id="bd-patron"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;cursor:pointer;">
+          <option value="">Todos los patrones</option>
+          <option value="FRACCIONAMIENTO">Fraccionamiento</option>
+          <option value="FRACCIONAMIENTO_ONCAE">Fraccionamiento ONCAE</option>
+          <option value="COMPRA_MENOR_RECURRENTE">Compra Menor Recurrente</option>
+          <option value="CONCENTRACION_PROVEEDOR">Concentración Proveedor</option>
+          <option value="PROVEEDOR_FUERA_DE_GIRO">Fuera de Giro</option>
+          <option value="CD_ALTO_MONTO">CD Alto Monto</option>
+          <option value="SIN_HISTORIAL_PROVEEDOR">Sin Historial</option>
+          <option value="SOBRECOSTO">Sobrecosto</option>
+          <option value="CLUSTER_CD">Cluster CD</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:130px;">
+        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">SEVERIDAD</label>
+        <select id="bd-severidad"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;cursor:pointer;">
+          <option value="">Todas</option>
+          <option value="Crítica">Crítica</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+      </div>
+      <button onclick="ejecutarBusquedaBD()"
+        style="padding:9px 28px;border-radius:6px;border:1px solid var(--electric);background:rgba(0,212,255,0.12);color:var(--electric);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'Syne',sans-serif;"
+        onmouseover="this.style.background='rgba(0,212,255,0.22)'" onmouseout="this.style.background='rgba(0,212,255,0.12)'">
+        🔍 Buscar
+      </button>
+      <button onclick="limpiarBusquedaBD()"
+        style="padding:9px 16px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s;"
+        onmouseover="this.style.borderColor='var(--text-dim)'" onmouseout="this.style.borderColor='var(--border)'">
+        ✕ Limpiar
+      </button>
+    </div>
+
+    <!-- Resultados -->
+    <div id="busqueda-results" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text-main);">Resultados</span>
+          <span id="busqueda-count-badge" style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;background:rgba(0,212,255,0.15);color:var(--electric);border:1px solid rgba(0,212,255,0.3);padding:1px 7px;border-radius:3px;">0</span>
+        </div>
+        <span style="font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">Orden: mayor monto</span>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-bottom:14px;"></div>
+      <div id="busqueda-results-inner" style="display:flex;flex-direction:column;gap:6px;max-height:520px;overflow-y:auto;padding-right:4px;"></div>
+      <div id="busqueda-more" style="display:none;margin-top:12px;padding:10px;background:rgba(255,171,0,0.06);border:1px solid rgba(255,171,0,0.2);border-radius:6px;text-align:center;">
+        <span style="font-size:10px;color:var(--amber);font-family:'JetBrains Mono',monospace;"></span>
       </div>
     </div>
   </div>
@@ -6618,7 +6653,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','scannerPanel','ingestPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','scannerPanel','ingestPanel','busquedaBDPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
@@ -6787,9 +6822,10 @@ function ejecutarBusquedaBD() {
   const fMontoMin  = parseFloat(document.getElementById('bd-monto-min')?.value || '0') || 0;
   const fMontoMax  = parseFloat(document.getElementById('bd-monto-max')?.value || '0') || 0;
   const fPatron    = (document.getElementById('bd-patron')    ?.value || '').trim();
+  const fSeveridad = (document.getElementById('bd-severidad') ?.value || '').trim();
 
   // Sin filtros → aviso
-  if (!fEntidad && !fEmpresa && !fContrato && !fAnio && !fMontoMin && !fMontoMax && !fPatron) {
+  if (!fEntidad && !fEmpresa && !fContrato && !fAnio && !fMontoMin && !fMontoMax && !fPatron && !fSeveridad) {
     inner.innerHTML = '<div style="color:var(--text-dim);font-size:11px;padding:20px;text-align:center;">Ingresa al menos un filtro para buscar.</div>';
     resBox.style.display = 'block';
     if (badge) { badge.textContent = '0'; badge.style.display = 'inline'; }
@@ -6832,6 +6868,7 @@ function ejecutarBusquedaBD() {
     if (fMontoMin && monto < fMontoMin)             return false;
     if (fMontoMax && fMontoMax > 0 && monto > fMontoMax) return false;
     if (fPatron   && !patrones.includes(fPatron))   return false;
+    if (fSeveridad && (a.severity || '') !== fSeveridad) return false;
     return true;
   });
 
@@ -6911,7 +6948,7 @@ function limpiarBusquedaBD() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  ['bd-anio','bd-patron'].forEach(id => {
+  ['bd-anio','bd-patron','bd-severidad'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.selectedIndex = 0;
   });
@@ -6931,6 +6968,23 @@ function hideCasosPanel() {
     document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
     document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
   }
+}
+
+// ── Búsqueda BD — show / hide ────────────────────────────────────────────────
+function showBusquedaBDPanel() {
+  hideAllPanels();
+  document.getElementById('busquedaBDPanel').classList.add('open');
+  // Actualiza contador de registros desde allAlerts si ya cargaron
+  const total = (window.allAlerts || []).length;
+  const el = document.getElementById('bd-total-registros');
+  if (el && total > 0) el.textContent = total.toLocaleString('es-HN');
+}
+
+function hideBusquedaBDPanel() {
+  document.getElementById('busquedaBDPanel').classList.remove('open');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
 }
 
 // ════════════════════════════════════════════════════════════

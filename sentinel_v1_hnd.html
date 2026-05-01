@@ -4244,32 +4244,32 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     </div>
 
     <!-- Filtros grid -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">
       <div>
-        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">ENTIDAD</label>
-        <input id="bd-entidad" type="text" placeholder="ej. SEFIN, SEDESOL…"
-          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;"
+        <label style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.04em;display:block;margin-bottom:5px;">ENTIDAD</label>
+        <input id="bd-entidad" type="text" placeholder="ej. Secretaría de Salud…"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;color:var(--text);outline:none;"
           onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
           onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
       </div>
       <div>
-        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">EMPRESA / PROVEEDOR</label>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.04em;display:block;margin-bottom:5px;">EMPRESA / PROVEEDOR</label>
         <input id="bd-empresa" type="text" placeholder="nombre del proveedor…"
-          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;color:var(--text);outline:none;"
           onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
           onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
       </div>
       <div>
-        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">ID CONTRATO</label>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.04em;display:block;margin-bottom:5px;">ID CONTRATO</label>
         <input id="bd-contrato" type="text" placeholder="ej. CM-SEFIN-2024-001…"
-          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;color:var(--text);outline:none;"
           onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
           onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
       </div>
       <div>
-        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">AÑO</label>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.04em;display:block;margin-bottom:5px;">AÑO</label>
         <select id="bd-anio"
-          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;cursor:pointer;">
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;color:var(--text);outline:none;cursor:pointer;">
           <option value="">Todos los años</option>
           <option value="2025">2025</option>
           <option value="2024">2024</option>
@@ -4281,27 +4281,27 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         </select>
       </div>
       <div>
-        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">MONTO MÍNIMO (L)</label>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.04em;display:block;margin-bottom:5px;">MONTO MÍNIMO (L)</label>
         <input id="bd-monto-min" type="number" placeholder="0"
-          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;color:var(--text);outline:none;"
           onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
           onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
       </div>
       <div>
-        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">MONTO MÁXIMO (L)</label>
+        <label style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.04em;display:block;margin-bottom:5px;">MONTO MÁXIMO (L)</label>
         <input id="bd-monto-max" type="number" placeholder="sin límite"
-          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;"
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;color:var(--text);outline:none;"
           onfocus="this.style.borderColor='var(--electric)'" onblur="this.style.borderColor='var(--border)'"
           onkeydown="if(event.key==='Enter')ejecutarBusquedaBD()">
       </div>
     </div>
 
     <!-- Fila: Patrón + Severidad + botones -->
-    <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;">
-      <div style="flex:2;min-width:160px;">
-        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">PATRÓN / TAG</label>
+    <div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:24px;flex-wrap:wrap;">
+      <div style="flex:2;min-width:180px;">
+        <label style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.04em;display:block;margin-bottom:5px;">PATRÓN / TAG</label>
         <select id="bd-patron"
-          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;cursor:pointer;">
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;color:var(--text);outline:none;cursor:pointer;">
           <option value="">Todos los patrones</option>
           <option value="FRACCIONAMIENTO">Fraccionamiento</option>
           <option value="FRACCIONAMIENTO_ONCAE">Fraccionamiento ONCAE</option>
@@ -4314,10 +4314,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <option value="CLUSTER_CD">Cluster CD</option>
         </select>
       </div>
-      <div style="flex:1;min-width:130px;">
-        <label style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;display:block;margin-bottom:4px;">SEVERIDAD</label>
+      <div style="flex:1;min-width:150px;">
+        <label style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.04em;display:block;margin-bottom:5px;">SEVERIDAD</label>
         <select id="bd-severidad"
-          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:11px;color:var(--text);outline:none;cursor:pointer;">
+          style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;color:var(--text);outline:none;cursor:pointer;">
           <option value="">Todas</option>
           <option value="Crítica">Crítica</option>
           <option value="Alta">Alta</option>
@@ -4326,12 +4326,12 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         </select>
       </div>
       <button onclick="ejecutarBusquedaBD()"
-        style="padding:9px 28px;border-radius:6px;border:1px solid var(--electric);background:rgba(0,212,255,0.12);color:var(--electric);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'Syne',sans-serif;"
+        style="padding:11px 32px;border-radius:7px;border:1px solid var(--electric);background:rgba(0,212,255,0.12);color:var(--electric);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'Syne',sans-serif;"
         onmouseover="this.style.background='rgba(0,212,255,0.22)'" onmouseout="this.style.background='rgba(0,212,255,0.12)'">
         🔍 Buscar
       </button>
       <button onclick="limpiarBusquedaBD()"
-        style="padding:9px 16px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s;"
+        style="padding:11px 18px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .15s;"
         onmouseover="this.style.borderColor='var(--text-dim)'" onmouseout="this.style.borderColor='var(--border)'">
         ✕ Limpiar
       </button>
@@ -4340,16 +4340,16 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <!-- Resultados -->
     <div id="busqueda-results" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text-main);">Resultados</span>
-          <span id="busqueda-count-badge" style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;background:rgba(0,212,255,0.15);color:var(--electric);border:1px solid rgba(0,212,255,0.3);padding:1px 7px;border-radius:3px;">0</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text-main);">Resultados</span>
+          <span id="busqueda-count-badge" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;background:rgba(0,212,255,0.15);color:var(--electric);border:1px solid rgba(0,212,255,0.3);padding:2px 9px;border-radius:4px;">0</span>
         </div>
-        <span style="font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">Orden: mayor monto</span>
+        <span style="font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">Orden: mayor monto</span>
       </div>
       <div style="border-top:1px solid var(--border);margin-bottom:14px;"></div>
-      <div id="busqueda-results-inner" style="display:flex;flex-direction:column;gap:6px;max-height:520px;overflow-y:auto;padding-right:4px;"></div>
-      <div id="busqueda-more" style="display:none;margin-top:12px;padding:10px;background:rgba(255,171,0,0.06);border:1px solid rgba(255,171,0,0.2);border-radius:6px;text-align:center;">
-        <span style="font-size:10px;color:var(--amber);font-family:'JetBrains Mono',monospace;"></span>
+      <div id="busqueda-results-inner" style="display:flex;flex-direction:column;gap:8px;max-height:540px;overflow-y:auto;padding-right:4px;"></div>
+      <div id="busqueda-more" style="display:none;margin-top:12px;padding:12px;background:rgba(255,171,0,0.06);border:1px solid rgba(255,171,0,0.2);border-radius:6px;text-align:center;">
+        <span style="font-size:12px;color:var(--amber);font-family:'JetBrains Mono',monospace;"></span>
       </div>
     </div>
   </div>
@@ -6832,6 +6832,8 @@ function ejecutarBusquedaBD() {
     return;
   }
 
+  const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+
   const getYear = a => {
     const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
     return raw ? raw.substring(0, 4) : '';
@@ -6841,7 +6843,7 @@ function ejecutarBusquedaBD() {
     if (!desc) return '';
     const rx = new RegExp(key + '[:\\s]+([^\\n|]+)', 'i');
     const m  = desc.match(rx);
-    return m ? m[1].trim().toLowerCase() : '';
+    return m ? m[1].trim() : '';
   };
 
   const fmtLBD = v => {
@@ -6853,21 +6855,25 @@ function ejecutarBusquedaBD() {
   };
 
   // Filtrar
+  const nfEntidad  = norm(fEntidad);
+  const nfEmpresa  = norm(fEmpresa);
+  const nfContrato = fContrato.toLowerCase();
+
   let results = alerts.filter(a => {
-    const entidad  = (a.entity_name  || parseDescBD(a.description, 'Entidad compradora') || '').toLowerCase();
-    const empresa  = (a.proveedor_nombre || parseDescBD(a.description, 'Proveedor') || '').toLowerCase();
+    const entidad  = norm(a.entity_name || a.entidad || parseDescBD(a.description, 'Entidad compradora') || '');
+    const empresa  = norm(a.proveedor_nombre || a.proveedor || parseDescBD(a.description, 'Proveedor') || '');
     const contrato = (a.contract_id || '').toLowerCase();
     const monto    = Number(a.monto_contrato || 0);
     const anio     = getYear(a);
     const patrones = a.patterns || '';
 
-    if (fEntidad  && !entidad.includes(fEntidad))   return false;
-    if (fEmpresa  && !empresa.includes(fEmpresa))   return false;
-    if (fContrato && !contrato.includes(fContrato)) return false;
-    if (fAnio     && anio !== fAnio)                return false;
-    if (fMontoMin && monto < fMontoMin)             return false;
-    if (fMontoMax && fMontoMax > 0 && monto > fMontoMax) return false;
-    if (fPatron   && !patrones.includes(fPatron))   return false;
+    if (nfEntidad  && !entidad.includes(nfEntidad))   return false;
+    if (nfEmpresa  && !empresa.includes(nfEmpresa))   return false;
+    if (nfContrato && !contrato.includes(nfContrato)) return false;
+    if (fAnio      && anio !== fAnio)                 return false;
+    if (fMontoMin  && monto < fMontoMin)              return false;
+    if (fMontoMax  && fMontoMax > 0 && monto > fMontoMax) return false;
+    if (fPatron    && !patrones.includes(fPatron))    return false;
     if (fSeveridad && (a.severity || '') !== fSeveridad) return false;
     return true;
   });
@@ -6897,8 +6903,8 @@ function ejecutarBusquedaBD() {
   };
 
   inner.innerHTML = shown.map(a => {
-    const entidad  = a.entity_name  || parseDescBD(a.description, 'Entidad compradora') || '—';
-    const empresa  = a.proveedor_nombre || parseDescBD(a.description, 'Proveedor') || '—';
+    const entidad  = a.entity_name  || a.entidad || parseDescBD(a.description, 'Entidad compradora') || '—';
+    const empresa  = a.proveedor_nombre || a.proveedor || parseDescBD(a.description, 'Proveedor') || '—';
     const contrato = a.contract_id || '—';
     const monto    = fmtLBD(a.monto_contrato);
     const anio     = getYear(a) || '—';
@@ -6907,25 +6913,25 @@ function ejecutarBusquedaBD() {
     const sevLabel = a.severity || '—';
     const patArr   = (a.patterns || '').split(',').filter(Boolean).map(p => PAT_LABELS_BD[p.trim()] || p.trim());
     const patHtml  = patArr.map(p =>
-      `<span style="font-size:8px;padding:1px 4px;border-radius:2px;background:rgba(255,171,0,0.1);color:var(--amber);border:1px solid rgba(255,171,0,0.2);">${p}</span>`
+      `<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(255,171,0,0.1);color:var(--amber);border:1px solid rgba(255,171,0,0.2);">${p}</span>`
     ).join('');
     const empresaSafe = empresa.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
 
-    return `<div style="padding:9px 12px;border-radius:7px;background:var(--glass);border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='rgba(0,212,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">
+    return `<div style="padding:12px 16px;border-radius:8px;background:var(--glass);border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='rgba(0,212,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:11px;font-weight:700;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${empresaSafe}">${empresa}</div>
-          <div style="font-size:9px;color:var(--text-dim);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${entidad}</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${empresaSafe}">${empresa}</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${entidad}</div>
         </div>
         <div style="text-align:right;flex-shrink:0;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--electric);">${monto}</div>
-          <div style="font-size:9px;font-weight:700;color:${sevColor};margin-top:1px;">${sevLabel}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--electric);">${monto}</div>
+          <div style="font-size:11px;font-weight:700;color:${sevColor};margin-top:2px;">${sevLabel}</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text-dim);">${contrato}</span>
-        <span style="font-size:8px;color:var(--text-dim);">·</span>
-        <span style="font-size:8px;color:var(--text-dim);">${anio}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${contrato}</span>
+        <span style="font-size:10px;color:var(--text-dim);">·</span>
+        <span style="font-size:10px;color:var(--text-dim);">${anio}</span>
         ${patHtml}
       </div>
     </div>`;

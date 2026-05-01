@@ -6917,7 +6917,7 @@ function ejecutarBusquedaBD() {
     ).join('');
     const empresaSafe = empresa.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
 
-    return `<div style="padding:12px 16px;border-radius:8px;background:var(--glass);border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='rgba(0,212,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+    return `<div style="padding:12px 16px;border-radius:8px;background:var(--glass);border:1px solid var(--border);transition:border-color .15s;cursor:pointer;" onclick="openAlertDetail(${a.id}, event)" onmouseover="this.style.borderColor='rgba(0,212,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px;">
         <div style="flex:1;min-width:0;">
           <div style="font-size:14px;font-weight:700;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${empresaSafe}">${empresa}</div>
@@ -6933,6 +6933,7 @@ function ejecutarBusquedaBD() {
         <span style="font-size:10px;color:var(--text-dim);">·</span>
         <span style="font-size:10px;color:var(--text-dim);">${anio}</span>
         ${patHtml}
+        <span style="margin-left:auto;font-size:10px;color:var(--electric);opacity:0.7;">Ver detalle →</span>
       </div>
     </div>`;
   }).join('');

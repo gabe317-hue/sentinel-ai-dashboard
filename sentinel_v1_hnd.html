@@ -14224,32 +14224,35 @@ function renderReportesPanel() {
     </div>
     ` + (()=>{
     window._rptCards = cards;
-    const sectionLabel = (txt) => \`<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 4px 5px;">\${txt}</div>\`;
+    const sectionLabel = txt => '<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 4px 5px;">'+txt+'</div>';
     const rankCards = cards.filter(x=>!x.inv_num);
     const invCards  = cards.filter(x=>x.inv_num);
     const makeRow = (card, idx) => {
-      const pillP   = card.criteria ? \`<span style="font-size:9px;padding:1px 5px;border-radius:3px;\${card.criteria.p   ? 'background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25);' : 'color:var(--muted);border:1px solid var(--border);'}">≥2P</span>\` : '';
-      const pillM   = card.criteria ? \`<span style="font-size:9px;padding:1px 5px;border-radius:3px;\${card.criteria.m   ? 'background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25);' : 'color:var(--muted);border:1px solid var(--border);'}">L10M+</span>\` : '';
-      const pillExt = card.criteria ? \`<span style="font-size:9px;padding:1px 5px;border-radius:3px;\${card.criteria.ext ? 'background:rgba(99,102,241,0.12);color:#6366f1;border:1px solid rgba(99,102,241,0.25);' : 'color:var(--muted);border:1px solid var(--border);'}">VExt</span>\` : '';
-      const numBadge = card.inv_num  ? \`<span style="font-family:monospace;font-size:9px;font-weight:700;color:\${card.color};background:\${card.bg};border:1px solid \${card.border};padding:1px 5px;border-radius:3px;flex-shrink:0;">\${card.inv_num}</span>\` : '';
-      const shortTitle = card.inv_num ? card.title.replace(/Investigaci[oó]n S3\d+ — /,'').replace(/Investigaci[oó]n CRÍTICA — /,'').replace(/ONCAE 2025 — /,'') : card.title;
-      return \`<div id="rpt-row-\${idx}" onclick="selectReporteItem(\${idx})"
-        style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:background .12s;"
-        onmouseover="if(window._rptSelected!==\${idx}){this.style.background='var(--glass)';this.style.borderColor='var(--border)';}"
-        onmouseout="if(window._rptSelected!==\${idx}){this.style.background='';this.style.borderColor='transparent';}">
-        <span style="font-size:17px;flex-shrink:0;">\${card.icon}</span>
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">\${numBadge}<span style="font-size:12px;font-weight:600;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">\${shortTitle}</span></div>
-          \${card.inv_num ? \`<div style="display:flex;gap:3px;margin-top:3px;">\${pillP}\${pillM}\${pillExt}</div>\` : \`<div style="font-size:9px;color:var(--muted);margin-top:2px;">\${card.desc.substring(0,70)}\${card.desc.length>70?'…':''}</div>\`}
-        </div>
-        <span style="font-size:15px;color:var(--muted);flex-shrink:0;">›</span>
-      </div>\`;
+      const cp = card.criteria&&card.criteria.p,   cm = card.criteria&&card.criteria.m,   ce = card.criteria&&card.criteria.ext;
+      const on  = 'background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25);';
+      const on2 = 'background:rgba(99,102,241,0.12);color:#6366f1;border:1px solid rgba(99,102,241,0.25);';
+      const off = 'color:var(--muted);border:1px solid var(--border);';
+      const pillP   = card.criteria ? '<span style="font-size:9px;padding:1px 5px;border-radius:3px;'+(cp?on:off)+'">≥2P</span>' : '';
+      const pillM   = card.criteria ? '<span style="font-size:9px;padding:1px 5px;border-radius:3px;'+(cm?on:off)+'">L10M+</span>' : '';
+      const pillExt = card.criteria ? '<span style="font-size:9px;padding:1px 5px;border-radius:3px;'+(ce?on2:off)+'">VExt</span>' : '';
+      const numBadge = card.inv_num ? '<span style="font-family:monospace;font-size:9px;font-weight:700;color:'+card.color+';background:'+card.bg+';border:1px solid '+card.border+';padding:1px 5px;border-radius:3px;flex-shrink:0;">'+card.inv_num+'</span>' : '';
+      const shortTitle = card.inv_num ? card.title.replace(/Investigaci[o\u00f3]n S3\d+ \u2014 /,'').replace(/Investigaci[o\u00f3]n CR\u00cdTICA \u2014 /,'').replace(/ONCAE 2025 \u2014 /,'') : card.title;
+      const criteria = card.inv_num ? '<div style="display:flex;gap:3px;margin-top:3px;">'+pillP+pillM+pillExt+'</div>' : '<div style="font-size:9px;color:var(--muted);margin-top:2px;">'+card.desc.substring(0,70)+(card.desc.length>70?'\u2026':'')+'</div>';
+      return '<div id="rpt-row-'+idx+'" onclick="selectReporteItem('+idx+')"'
+        +' style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:background .12s;"'
+        +' onmouseover="if(window._rptSelected!=='+idx+'){this.style.background=\"var(--glass)\";this.style.borderColor=\"var(--border)\";}"'
+        +' onmouseout="if(window._rptSelected!=='+idx+'){this.style.background=\"\";this.style.borderColor=\"transparent\";}">'
+        +'<span style="font-size:17px;flex-shrink:0;">'+card.icon+'</span>'
+        +'<div style="flex:1;min-width:0;">'
+        +'<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">'+numBadge+'<span style="font-size:12px;font-weight:600;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+shortTitle+'</span></div>'
+        +criteria
+        +'</div><span style="font-size:15px;color:var(--muted);flex-shrink:0;">&#8250;</span></div>';
     };
     const rankRows = rankCards.map(card => makeRow(card, cards.indexOf(card))).join('');
     const invRows  = invCards.map(card  => makeRow(card, cards.indexOf(card))).join('');
-    return sectionLabel('Reportes de Análisis') + rankRows +
-           sectionLabel('Investigaciones Activas · SEN-INV-2026') + invRows +
-           \`<div id="rptDetailPanel" style="display:none;margin-top:6px;"></div>\`;
+    return sectionLabel('Reportes de An\u00e1lisis') + rankRows
+         + sectionLabel('Investigaciones Activas · SEN-INV-2026') + invRows
+         + '<div id="rptDetailPanel" style="display:none;margin-top:6px;"></div>';
   })();
 }
 

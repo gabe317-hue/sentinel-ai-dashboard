@@ -3228,7 +3228,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
   <!-- ══ ALERT DETAIL PANEL ══ -->
   <div id="alertDetailPanel">
-    <button class="adp-back" onclick="closeAlertDetail()">← Contratos</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+      <button class="adp-back" id="adp-back-btn" onclick="closeAlertDetail()">← Contratos</button>
+      <button onclick="exportAlertDetailPDF()" style="padding:5px 14px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.10);color:var(--electric);font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s;" onmouseover="this.style.background='rgba(0,168,214,0.2)'" onmouseout="this.style.background='rgba(0,168,214,0.10)'">📄 PDF</button>
+    </div>
     <div class="adp-title" id="adp-title">Detalle de Alerta</div>
     <div class="adp-meta" id="adp-meta"></div>
 
@@ -6453,12 +6456,18 @@ function isSiafiReal(a) {
 // ════════════════════════════════════════════════════════════
 // ALERT DETAIL PANEL — drill-down for a single alert row
 // ════════════════════════════════════════════════════════════
-function openAlertDetail(alertId, event) {
+let _alertDetailSource = 'tabla'; // 'tabla' | 'busqueda'
+
+function openAlertDetail(alertId, event, source = 'tabla') {
   // Ignore right-clicks / modifier-clicks
   if (event && (event.ctrlKey || event.metaKey || event.shiftKey)) return;
 
   const a = allAlerts.find(x => x.id === alertId);
   if (!a) return;
+
+  _alertDetailSource = source;
+  const backBtn = document.getElementById('adp-back-btn');
+  if (backBtn) backBtn.textContent = source === 'busqueda' ? '← Búsqueda BD' : '← Contratos';
 
   const fmtL = n => n != null && n > 0
     ? 'L ' + Number(n).toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
@@ -6596,17 +6605,166 @@ function openAlertDetail(alertId, event) {
 
   // -- Show panel, hide main view --
   document.getElementById('alertDetailPanel').classList.add('open');
+  // If from busqueda, hide that panel before showing detail
+  if (source === 'busqueda') {
+    document.getElementById('busquedaBDPanel').classList.remove('open');
+  }
   document.querySelector('.stats-grid').style.display      = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.getElementById('mainTableContainer').style.display = 'none';
+  document.getElementById('alertDetailPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 function closeAlertDetail() {
   document.getElementById('alertDetailPanel').classList.remove('open');
-  document.querySelector('.stats-grid').style.display      = '';
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.getElementById('mainTableContainer').style.display = '';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (_alertDetailSource === 'busqueda') {
+    _alertDetailSource = 'tabla';
+    showBusquedaBDPanel();
+  } else {
+    _alertDetailSource = 'tabla';
+    document.querySelector('.stats-grid').style.display      = '';
+    document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+    document.getElementById('mainTableContainer').style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function exportAlertDetailPDF() {
+  const esc = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const get  = id => esc(document.getElementById(id)?.textContent || '—');
+
+  const title    = get('adp-title');
+  const meta     = get('adp-meta');
+  const contrato = get('adp-contract-id');
+  const entidad  = get('adp-entidad');
+  const proveedor= get('adp-proveedor');
+  const tipo     = get('adp-tipo');
+  const fecha    = get('adp-fecha');
+  const fechaAdj = get('adp-fecha-adj');
+  const monto    = get('adp-monto');
+  const budget   = get('adp-budget');
+  const pagado   = document.getElementById('adp-monto-pagado')?.textContent?.trim() || '—';
+  const severity = get('adp-severity');
+
+  // Patterns
+  const patEls   = document.querySelectorAll('#adp-patterns .adp-pattern-tag');
+  const patsHtml = patEls.length
+    ? [...patEls].map(el => `<span style="display:inline-block;padding:2px 8px;border-radius:3px;background:#1A3A6B;color:#fff;font-size:8pt;margin:2px 3px 2px 0;">${esc(el.textContent)}</span>`).join('')
+    : '—';
+
+  // Vendor history
+  const vhRows   = [...document.querySelectorAll('#adp-vendor-history .adp-history-item')].map(el => {
+    const cells = el.querySelectorAll('span');
+    return `<tr><td>${esc(cells[0]?.textContent)}</td><td>${esc(cells[1]?.textContent)}</td><td>${esc(cells[2]?.textContent)}</td></tr>`;
+  }).join('') || '<tr><td colspan="3" style="color:#888">Sin historial registrado</td></tr>';
+
+  // Entity history
+  const ehRows   = [...document.querySelectorAll('#adp-entity-history .adp-history-item')].map(el => {
+    const cells = el.querySelectorAll('span');
+    return `<tr><td>${esc(cells[0]?.textContent)}</td><td>${esc(cells[1]?.textContent)}</td><td>${esc(cells[2]?.textContent)}</td></tr>`;
+  }).join('') || '<tr><td colspan="3" style="color:#888">Sin historial registrado</td></tr>';
+
+  const sobrecostoSection = document.getElementById('adp-sobrecosto-pagado-section');
+  const sobrecostoHtml    = sobrecostoSection && sobrecostoSection.style.display !== 'none'
+    ? `<div style="margin:12px 0;padding:8px 14px;background:#FDECEA;border:1.5pt solid #C0392B;border-radius:5px;color:#C0392B;font-weight:bold;font-size:9pt;">
+         ⚠ SOBRECOSTO DETECTADO — ${esc(document.getElementById('adp-sobrecosto-pagado-pct')?.textContent || '')}
+         <div style="font-weight:normal;font-size:8pt;margin-top:4px;">Monto pagado supera el monto contratado en más del 15%</div>
+       </div>` : '';
+
+  const now     = new Date();
+  const fechaStr= now.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const horaStr = now.toLocaleTimeString('es-HN',{hour:'2-digit',minute:'2-digit'});
+
+  const sevColors= {'Crítica':'#C0392B','Alta':'#C05000','Media':'#D68910','Baja':'#1E8449'};
+  const sevRaw   = document.getElementById('adp-severity')?.textContent?.trim() || '';
+  const sevColor = sevColors[sevRaw] || '#555';
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sentinel-AI — Contrato ${contrato}</title>
+<style>
+  @page { size: A4 portrait; margin: 1.4cm 1.2cm 1.8cm 1.2cm; }
+  @media print { body{-webkit-print-color-adjust:exact;print-color-adjust:exact;} .no-print{display:none!important;} }
+  body { font-family: Arial, sans-serif; font-size: 9pt; color: #222; margin: 0; padding: 16px; }
+  h1   { color: #0A1628; font-size: 15pt; margin: 0 0 2px 0; }
+  h2   { color: #1A3A6B; font-size: 10pt; font-weight: normal; margin: 0 0 8px 0; }
+  .meta{ color: #7F8C8D; font-size: 7.5pt; margin-bottom: 14px; }
+  .sec { color: #0A1628; font-size: 10pt; font-weight: bold; margin: 16px 0 5px 0;
+         border-bottom: 1.5pt solid #1A3A6B; padding-bottom: 3px; }
+  .grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 4px; }
+  .field{ display: flex; flex-direction: column; margin-bottom: 8px; }
+  .lbl { font-size: 7.5pt; color: #7F8C8D; text-transform: uppercase; letter-spacing: 0.05em; }
+  .val { font-size: 9.5pt; font-weight: bold; color: #0A1628; margin-top: 1px; }
+  .sev { font-size: 10.5pt; font-weight: bold; color: ${sevColor}; }
+  table{ border-collapse:collapse; width:100%; margin-top:4px; }
+  th   { background:#1A3A6B; color:#fff; padding:4px 6px; font-size:8pt; text-align:left; }
+  td   { padding:3px 6px; border:1px solid #D0D7E2; font-size:8pt; vertical-align:top; }
+  .print-btn{ display:inline-block; margin:0 0 16px 0; padding:8px 18px;
+              background:#1A3A6B; color:#fff; border:none; border-radius:6px;
+              font-size:10pt; cursor:pointer; }
+  .footer{ font-size:7pt; color:#999; margin-top:20px; border-top:1px solid #D0D7E2; padding-top:6px; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+<h1>SENTINEL-AI HONDURAS</h1>
+<h2>Detalle de Contrato</h2>
+<div class="meta">Generado: ${fechaStr} ${horaStr} &nbsp;·&nbsp; ${meta}</div>
+
+<div class="sec">Información del Contrato</div>
+<div class="grid">
+  <div>
+    <div class="field"><span class="lbl">ID / OCID</span><span class="val" style="color:#1A3A6B;">${contrato}</span></div>
+    <div class="field"><span class="lbl">Entidad Compradora</span><span class="val">${entidad}</span></div>
+    <div class="field"><span class="lbl">Proveedor</span><span class="val">${proveedor}</span></div>
+  </div>
+  <div>
+    <div class="field"><span class="lbl">Tipo de Contratación</span><span class="val">${tipo}</span></div>
+    <div class="field"><span class="lbl">Fecha Contrato</span><span class="val">${fecha}</span></div>
+    <div class="field"><span class="lbl">Fecha Adjudicación</span><span class="val">${fechaAdj}</span></div>
+  </div>
+</div>
+
+<div class="sec">Análisis Financiero</div>
+<div class="grid">
+  <div>
+    <div class="field"><span class="lbl">Monto Adjudicado</span><span class="val" style="color:#0099CC;">${monto}</span></div>
+    <div class="field"><span class="lbl">Presupuesto Original</span><span class="val">${budget}</span></div>
+    <div class="field"><span class="lbl">Monto Pagado (Ejecución)</span><span class="val" style="color:#1E8449;">${esc(pagado)}</span></div>
+  </div>
+  <div>
+    <div class="field"><span class="lbl">Severidad</span><span class="val sev">${sevRaw || '—'}</span></div>
+    <div class="field"><span class="lbl">Patrones Detectados</span><div style="margin-top:4px;">${patsHtml}</div></div>
+  </div>
+</div>
+${sobrecostoHtml}
+
+<div class="sec">Historial del Proveedor</div>
+<table>
+  <tr><th style="width:22%">ID Alerta</th><th style="width:14%">Severidad</th><th>Descripción</th></tr>
+  ${vhRows}
+</table>
+
+<div class="sec">Historial de la Entidad</div>
+<table>
+  <tr><th style="width:22%">ID Alerta</th><th style="width:14%">Severidad</th><th>Descripción</th></tr>
+  ${ehRows}
+</table>
+
+<div class="footer">
+  <span>Sentinel-AI Honduras · Sistema de Detección de Fraude en Compras Públicas</span>
+  <span>CONFIDENCIAL — Uso interno</span>
+</div>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank');
+  if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  w.document.write(html);
+  w.document.close();
 }
 
 function _sevColor(s) {
@@ -6917,7 +7075,7 @@ function ejecutarBusquedaBD() {
     ).join('');
     const empresaSafe = empresa.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
 
-    return `<div style="padding:12px 16px;border-radius:8px;background:var(--glass);border:1px solid var(--border);transition:border-color .15s;cursor:pointer;" onclick="openAlertDetail(${a.id}, event)" onmouseover="this.style.borderColor='rgba(0,212,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+    return `<div style="padding:12px 16px;border-radius:8px;background:var(--glass);border:1px solid var(--border);transition:border-color .15s;cursor:pointer;" onclick="openAlertDetail(${a.id}, event, 'busqueda')" onmouseover="this.style.borderColor='rgba(0,212,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px;">
         <div style="flex:1;min-width:0;">
           <div style="font-size:14px;font-weight:700;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${empresaSafe}">${empresa}</div>

@@ -6972,8 +6972,9 @@ function hideCasosPanel() {
 
 // ── Búsqueda BD — show / hide ────────────────────────────────────────────────
 function showBusquedaBDPanel() {
-  hideAllPanels();
+  _closeAllFuentePanels();
   document.getElementById('busquedaBDPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   // Actualiza contador de registros desde allAlerts si ya cargaron
   const total = (window.allAlerts || []).length;
   const el = document.getElementById('bd-total-registros');
@@ -6985,6 +6986,8 @@ function hideBusquedaBDPanel() {
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
 }
 
 // ════════════════════════════════════════════════════════════

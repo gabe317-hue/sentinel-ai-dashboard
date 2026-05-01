@@ -2148,7 +2148,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-card po-green" id="poc-reportes" onclick="poToggle('reportes')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>📄</span></div>
-          <div><div class="po-card-title">Reportes</div><div class="po-card-desc">PDF · Word · Memorándums · Briefings</div></div>
+          <div><div class="po-card-title">Reportes</div><div class="po-card-desc">PDF · Memorándums · Briefings</div></div>
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
@@ -2169,7 +2169,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           </button>
           <div class="po-divider"></div>
           <button class="po-item" onclick="poGo(showReportesPanel)">
-            <span class="po-item-icon">📁</span><span class="po-item-label">Panel de Reportes</span><span class="po-item-tag tag-n">10 PDF · 10 Word</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">📁</span><span class="po-item-label">Panel de Reportes</span><span class="po-item-tag tag-n">10 PDF</span><span class="po-arrow">›</span>
           </button>
         </div>
       </div>
@@ -14178,41 +14178,7 @@ function renderReportesPanel() {
     })(),
   ];
 
-  const savedKey = localStorage.getItem('sentinel_sb_key') || '';
-  const keyMasked = savedKey ? '✅ Guardada' : '⚠️ No configurada';
-  const keyColor  = savedKey ? '#10b981' : '#f59e0b';
-
   document.getElementById('reportesBody').innerHTML = `
-    <!-- ── Key Config ───────────────────────────────────────── -->
-    <div style="border:1px solid rgba(99,102,241,0.3);border-radius:10px;background:rgba(99,102,241,0.05);margin-bottom:4px;overflow:hidden;">
-      <!-- Collapsed bar (visible when key is saved) -->
-      <div id="keyConfigBar" style="display:${savedKey ? 'flex' : 'none'};align-items:center;justify-content:space-between;padding:10px 16px;">
-        <span style="font-size:12px;color:#10b981;font-weight:600;">🔑 Supabase Key ✅ Configurada</span>
-        <button onclick="toggleKeyConfig()" style="font-size:11px;color:#6366f1;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;">Cambiar</button>
-      </div>
-      <!-- Expanded input (visible when no key or editing) -->
-      <div id="keyConfigExpanded" style="display:${savedKey ? 'none' : 'block'};padding:14px 18px;">
-        <div style="font-size:12px;font-weight:700;color:#6366f1;margin-bottom:8px;">🔑 Supabase Key — Reportes Word</div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input id="sbKeyInput" type="password" placeholder="Pega tu Supabase Service Role Key aquí..."
-            value="${savedKey}"
-            style="flex:1;padding:7px 10px;border-radius:6px;border:1px solid rgba(99,102,241,0.4);background:var(--bg-card);color:var(--text-main);font-size:12px;font-family:monospace;">
-          <button onclick="saveSupabaseKey()" style="padding:7px 14px;border-radius:6px;background:#6366f1;color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:600;">Guardar</button>
-          ${savedKey ? '<button onclick="toggleKeyConfig()" style="padding:7px 10px;border-radius:6px;background:transparent;color:var(--muted);border:1px solid var(--border);cursor:pointer;font-size:12px;">Cancelar</button>' : ''}
-        </div>
-        <div style="font-size:10px;color:var(--muted);margin-top:6px;">Se guarda solo en tu navegador. Los botones 📝 Word usan esta key para generar el comando de Terminal.</div>
-      </div>
-    </div>
-    <!-- ── Word Command Modal ──────────────────────────────── -->
-    <div id="wordCmdModal" style="display:none;border:1px solid rgba(16,185,129,0.4);border-radius:10px;padding:14px 18px;background:rgba(16,185,129,0.06);margin-bottom:4px;">
-      <div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:8px;">📝 Comando Word — Terminal</div>
-      <code id="wordCmdText" style="display:block;font-size:11px;font-family:monospace;background:var(--bg-main);padding:10px 12px;border-radius:6px;word-break:break-all;color:var(--text-main);line-height:1.6;"></code>
-      <div style="display:flex;gap:8px;margin-top:10px;">
-        <button onclick="copyWordCmd()" style="padding:6px 14px;border-radius:6px;background:#10b981;color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:600;">📋 Copiar</button>
-        <button onclick="document.getElementById('wordCmdModal').style.display='none'" style="padding:6px 12px;border-radius:6px;background:transparent;color:var(--muted);border:1px solid var(--border);cursor:pointer;font-size:12px;">Cerrar</button>
-        <span style="font-size:10px;color:var(--muted);align-self:center;">Pega este comando en Terminal y presiona Enter</span>
-      </div>
-    </div>
   <!-- criteria legend -->
     <div style="border:1px solid rgba(0,200,255,0.18);border-radius:8px;background:rgba(0,200,255,0.04);padding:9px 14px;margin-bottom:8px;">
       <div style="font-size:10px;font-weight:700;color:var(--electric);margin-bottom:4px;">📋 Criterios de Activación — Investigaciones</div>
@@ -14314,77 +14280,12 @@ function selectReporteItem(idx) {
             style="padding:9px 20px;font-size:13px;font-weight:700;background:${card.bg};color:${card.color};border-color:${card.border};white-space:nowrap;">
             📄 Generar PDF
           </button>
-          <button class="pdf-btn" onclick="showWordCmd('${card.script}',this)"
-            style="padding:9px 20px;font-size:13px;font-weight:700;background:rgba(16,185,129,0.08);color:#10b981;border-color:rgba(16,185,129,0.3);white-space:nowrap;">
-            📝 Generar Word
-          </button>
         </div>
       </div>
     </div>`;
   panel.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
-function saveSupabaseKey() {
-  const key = document.getElementById('sbKeyInput').value.trim();
-  if (!key) { alert('Por favor pega tu Supabase Service Role Key.'); return; }
-  localStorage.setItem('sentinel_sb_key', key);
-  // Collapse to bar
-  const bar = document.getElementById('keyConfigBar');
-  const exp = document.getElementById('keyConfigExpanded');
-  if (bar) bar.style.display = 'flex';
-  if (exp) exp.style.display = 'none';
-}
-
-function toggleKeyConfig() {
-  const bar = document.getElementById('keyConfigBar');
-  const exp = document.getElementById('keyConfigExpanded');
-  if (!bar || !exp) return;
-  const isExpanded = exp.style.display !== 'none';
-  bar.style.display = isExpanded ? 'flex' : 'none';
-  exp.style.display = isExpanded ? 'none' : 'block';
-}
-
-function showWordCmd(script, btn) {
-  const key = localStorage.getItem('sentinel_sb_key') || '';
-  if (!key) {
-    alert('⚠️ Primero guarda tu Supabase Key en la sección de configuración arriba.');
-    return;
-  }
-  const base = '/Users/gabrielprieto/Library/CloudStorage/GoogleDrive-gabe317@gmail.com/My Drive/TPG_Projects/MVP - pre-Sentinel/_02-WORK';
-  const cmd  = `SUPABASE_SERVICE_ROLE_KEY=${key} node "${base}/${script}"`;
-  navigator.clipboard.writeText(cmd).then(() => {
-    // Show toast
-    _showWordToast();
-    // Flash the button
-    if (btn) { const orig = btn.textContent; btn.textContent = '✅ Copiado'; setTimeout(() => { btn.textContent = orig; }, 2500); }
-  }).catch(() => {
-    // Fallback: show modal if clipboard fails
-    document.getElementById('wordCmdText').textContent = cmd;
-    document.getElementById('wordCmdModal').style.display = 'block';
-  });
-}
-
-function _showWordToast() {
-  let toast = document.getElementById('wordToast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'wordToast';
-    toast.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25);pointer-events:none;transition:opacity .4s;';
-    document.body.appendChild(toast);
-  }
-  toast.textContent = '✅ Comando copiado — Abre Terminal y pega (⌘V)';
-  toast.style.opacity = '1';
-  clearTimeout(toast._t);
-  toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
-}
-
-function copyWordCmd() {
-  const txt = document.getElementById('wordCmdText').textContent;
-  navigator.clipboard.writeText(txt).then(() => {
-    _showWordToast();
-    document.getElementById('wordCmdModal').style.display = 'none';
-  });
-}
 
 // ── PDF 1: Top 20 ONCAE CRÍTICA por monto ────────────────────────────────────
 function exportReporteOncaeCriticaPDF() {
@@ -15756,10 +15657,6 @@ function runScannerPattern(patternId) {
     <button onclick="exportScannerPDF('${patternId}')"
       style="padding:8px 16px;border-radius:8px;background:${pattern.color}22;border:1px solid ${pattern.color}44;
       color:${pattern.color};font-size:12px;font-weight:700;cursor:pointer;">📄 Exportar PDF</button>
-    ${pattern.script ? `
-    <button onclick="showWordCmd('${pattern.script}',this)"
-      style="padding:8px 16px;border-radius:8px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);
-      color:#10b981;font-size:12px;font-weight:700;cursor:pointer;">📝 Reporte Word</button>` : ''}
     <span style="font-size:11px;color:var(--muted);align-self:center;">${results.length} registros · ${fmtL(totalMonto)}</span>
   `;
 

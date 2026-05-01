@@ -3492,6 +3492,23 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
     </div>
 
+    <!-- ── CANDIDATOS DETECTADOS ── -->
+    <div id="candidatosDetectadosCard" style="margin-bottom:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:15px;">🎯</span>
+          <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text-main);letter-spacing:.02em;">Candidatos Detectados</span>
+          <span id="candidatos-count-badge" style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);padding:1px 6px;border-radius:3px;">—</span>
+        </div>
+        <span style="font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">≥2 patrones · ≥L 10M</span>
+      </div>
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:12px;">Proveedores en DB con múltiples señales de riesgo. Orden: mayor monto acumulado.</div>
+      <div id="candidatos-list" style="display:flex;flex-direction:column;gap:6px;">
+        <div style="color:var(--muted);font-size:11px;padding:20px;text-align:center;">Cargando datos...</div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin-bottom:24px;"></div>
+
     <!-- ── CASO 1: SEDESOL CHEQUESOL ── -->
     <div class="caso-card juicio">
       <div class="caso-header">
@@ -6524,6 +6541,127 @@ function showCasosPanel(source) {
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
   loadCasosMonitor();
+  renderCandidatosDetectados();
+}
+
+// ── Candidatos Detectados ─────────────────────────────────────────────────────
+function renderCandidatosDetectados() {
+  const container = document.getElementById('candidatos-list');
+  const badge     = document.getElementById('candidatos-count-badge');
+  if (!container) return;
+
+  const alerts = window.allAlerts || [];
+  if (!alerts.length) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:20px;text-align:center;">Sin datos cargados aún.</div>';
+    return;
+  }
+
+  // Helpers
+  const parseDescField = (desc, key) => {
+    if (!desc) return '';
+    const rx = new RegExp(key + '[:\\s]+([^\\n|]+)', 'i');
+    const m  = desc.match(rx);
+    return m ? m[1].trim() : '';
+  };
+  const getProveedor = a => a.proveedor_nombre || parseDescField(a.description, 'Proveedor') || '—';
+  const fmtL = v => {
+    const n = Number(v || 0);
+    if (n >= 1e9) return 'L ' + (n/1e9).toFixed(1) + 'B';
+    if (n >= 1e6) return 'L ' + (n/1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return 'L ' + (n/1e3).toFixed(0) + 'K';
+    return 'L ' + n.toLocaleString('es-HN');
+  };
+
+  // Agrupar por proveedor
+  const provMap = {};
+  alerts.forEach(a => {
+    const prov = getProveedor(a);
+    if (prov === '—' || !prov) return;
+    if (!provMap[prov]) provMap[prov] = { monto: 0, patrones: new Set(), contratos: 0, entidades: new Set(), severidades: { critica:0, alta:0, media:0 } };
+    const pm = provMap[prov];
+    pm.monto     += Number(a.monto_contrato || 0);
+    pm.contratos += 1;
+    (a.entity_name || parseDescField(a.description, 'Entidad compradora') || '').split(',').forEach(e => { if (e.trim()) pm.entidades.add(e.trim()); });
+    (a.patterns || '').split(',').filter(Boolean).forEach(p => pm.patrones.add(p.trim()));
+    const sev = (a.severity || a.risk_level || '').toLowerCase();
+    if (sev.includes('critica') || sev.includes('crítica')) pm.severidades.critica++;
+    else if (sev.includes('alta')) pm.severidades.alta++;
+    else pm.severidades.media++;
+  });
+
+  // Filtrar: ≥2 patrones únicos Y monto ≥ L10M
+  const MONTO_MIN = 10_000_000;
+  const candidatos = Object.entries(provMap)
+    .filter(([, d]) => d.patrones.size >= 2 && d.monto >= MONTO_MIN)
+    .sort((a, b) => b[1].monto - a[1].monto);
+
+  if (badge) badge.textContent = candidatos.length;
+
+  if (!candidatos.length) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:20px;text-align:center;">Sin candidatos con ≥2 patrones y ≥L 10M.</div>';
+    return;
+  }
+
+  const PATTERN_LABELS_LOCAL = {
+    'FRACCIONAMIENTO':'Fraccionamiento','COMPRA_MENOR_RECURRENTE':'Compra Menor Recurrente',
+    'CONCENTRACION_PROVEEDOR':'Concentración','PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro',
+    'CD_ALTO_MONTO':'CD Alto Monto','SIN_HISTORIAL_PROVEEDOR':'Sin Historial',
+    'SOBRECOSTO':'Sobrecosto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
+  };
+
+  container.innerHTML = candidatos.slice(0, 15).map(([prov, d], idx) => {
+    const rank    = idx + 1;
+    const critica = d.severidades.critica;
+    const patArr  = [...d.patrones].map(p => PATTERN_LABELS_LOCAL[p] || p);
+    const patHtml = patArr.map(p =>
+      `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(255,171,0,0.12);color:var(--amber);border:1px solid rgba(255,171,0,0.25);">${p}</span>`
+    ).join('');
+    const sevHtml = critica > 0
+      ? `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);">${critica} CRÍTICA</span>`
+      : '';
+    const rankColor = rank <= 3 ? 'var(--red)' : rank <= 7 ? 'var(--amber)' : 'var(--text-dim)';
+    const provSafe  = prov.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;background:var(--glass);border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='var(--electric)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:${rankColor};min-width:22px;padding-top:1px;">${rank}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:700;color:var(--text-main);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${provSafe}">${prov}</div>
+        <div style="display:flex;gap:10px;margin-bottom:5px;flex-wrap:wrap;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--electric);">${fmtL(d.monto)}</span>
+          <span style="font-size:10px;color:var(--text-dim);">${d.contratos} contrato${d.contratos!==1?'s':''}</span>
+          <span style="font-size:10px;color:var(--text-dim);">${d.patrones.size} patrones</span>
+          ${sevHtml}
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;">${patHtml}</div>
+      </div>
+      <button onclick="iniciarInvestigacion('${provSafe}')"
+        style="flex-shrink:0;font-size:10px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.1);color:#818cf8;cursor:pointer;white-space:nowrap;transition:all .15s;"
+        onmouseover="this.style.background='rgba(99,102,241,0.22)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'">
+        🔍 Iniciar Investigación
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function iniciarInvestigacion(proveedorNombre) {
+  // Pre-carga el proveedor en el buscador global y navega al panel principal
+  hideCasosPanel();
+  const searchInput = document.getElementById('searchInput') || document.getElementById('globalSearch') || document.querySelector('input[type="search"]');
+  if (searchInput) {
+    searchInput.value = proveedorNombre;
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  // Muestra notificación
+  const toast = document.createElement('div');
+  toast.textContent = '🔍 Investigación iniciada: ' + proveedorNombre;
+  Object.assign(toast.style, {
+    position:'fixed', bottom:'80px', left:'50%', transform:'translateX(-50%)',
+    background:'rgba(99,102,241,0.92)', color:'#fff', padding:'10px 20px',
+    borderRadius:'8px', fontSize:'12px', fontWeight:'600', zIndex:'9999',
+    boxShadow:'0 4px 20px rgba(0,0,0,0.4)', whiteSpace:'nowrap'
+  });
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
 }
 
 function hideCasosPanel() {

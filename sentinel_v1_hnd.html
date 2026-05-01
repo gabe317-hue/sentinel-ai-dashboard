@@ -6761,7 +6761,7 @@ ${sobrecostoHtml}
 </body>
 </html>`;
 
-  const w = window.open('', '_blank');
+  const w = window.open('', '_blank', 'width=1100,height=800');
   if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
   w.document.write(html);
   w.document.close();

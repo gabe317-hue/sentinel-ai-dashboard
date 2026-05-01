@@ -15304,7 +15304,7 @@ function exportReporteS36PDF() {
   </div>
   </body></html>`;
 
-  const pw = window.open('','_blank');
+  const pw = window.open('','_blank','width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
   pw.document.write(addPrintBtn(html));
   pw.document.close();
@@ -15649,9 +15649,9 @@ function runScannerPattern(patternId) {
           ${results.map((r,i)=>`
           <tr style="border-bottom:1px solid var(--border);${i%2===1?'background:rgba(255,255,255,0.02)':''}">
             <td style="padding:8px 12px;color:var(--muted);">${i+1}</td>
-            <td style="padding:8px 12px;font-weight:600;color:var(--text-main);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.proveedor_nombre||''}">${r.proveedor_nombre||'—'}</td>
-            <td style="padding:8px 12px;color:var(--text-dim);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entity_name||''}">${r.entity_name||'—'}</td>
-            <td style="padding:8px 12px;text-align:right;font-weight:700;color:${pattern.color};">${fmtL(Number(r.monto_contrato||0))}</td>
+            <td style="padding:8px 12px;font-weight:600;color:#fff;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.proveedor_nombre||''}">${r.proveedor_nombre||'—'}</td>
+            <td style="padding:8px 12px;color:#fff;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entity_name||''}">${r.entity_name||'—'}</td>
+            <td style="padding:8px 12px;text-align:right;font-weight:700;color:#fff;">${fmtL(Number(r.monto_contrato||0))}</td>
             <td style="padding:8px 12px;color:var(--muted);font-size:10px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.tipo_contratacion||''}">${(r.tipo_contratacion||'').substring(0,50)}</td>
             <td style="padding:8px 12px;color:var(--muted);">${(r.fecha_contrato||'').substring(0,10)}</td>
           </tr>`).join('')}
@@ -15739,7 +15739,7 @@ function exportScannerPDF(patternId) {
   </div>
   </body></html>`;
 
-  const pw=window.open('','_blank');
+  const pw=window.open('','_blank','width=1100,height=800');
   if(!pw){alert('Permita ventanas emergentes.');return;}
   pw.document.write(addPrintBtn(html));
   pw.document.close();
@@ -15823,7 +15823,7 @@ function exportReporteFueraGiroPDF() {
     <p>⚠️ AVISO LEGAL: Generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE. Las señales NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
   </div>
   </body></html>`;
-  const pw = window.open('','_blank');
+  const pw = window.open('','_blank','width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
   pw.document.write(addPrintBtn(html));
   pw.document.close();
@@ -15910,7 +15910,7 @@ function exportReporteSENACITPDF() {
     <p>⚠️ AVISO LEGAL: Este documento ha sido generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE y fuentes verificadas. Las señales de riesgo identificadas NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
   </div>
   </body></html>`;
-  const pw = window.open('','_blank');
+  const pw = window.open('','_blank','width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
   pw.document.write(addPrintBtn(html));
   pw.document.close();
@@ -15995,7 +15995,7 @@ function exportReportePJPDF() {
     <p>⚠️ AVISO LEGAL: Este documento ha sido generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE y fuentes verificadas. Las señales de riesgo identificadas NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
   </div>
   </body></html>`;
-  const pw = window.open('','_blank');
+  const pw = window.open('','_blank','width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
   pw.document.write(addPrintBtn(html));
   pw.document.close();
@@ -16078,7 +16078,7 @@ function exportReporteSESEGUPDF() {
     <p>⚠️ AVISO LEGAL: Este documento ha sido generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE. Las señales de riesgo identificadas NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
   </div>
   </body></html>`;
-  const pw = window.open('','_blank');
+  const pw = window.open('','_blank','width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
   pw.document.write(addPrintBtn(html));
   pw.document.close();

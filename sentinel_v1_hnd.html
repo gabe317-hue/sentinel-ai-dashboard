@@ -15772,6 +15772,26 @@ function exportReporteFueraGiroPDF() {
   const today = new Date();
   const ds = today.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
   const folio = 'SEN-INV-2026-006';
+  const _all = window.allAlerts || [];
+  const _fmtL = n => { if(!n||n===0) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const _esc = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const _actors = _all.filter(a => { const p=(a.proveedor_nombre||'').toUpperCase(); return p.includes('LIGTH') || p.includes('TRENDS') || p.includes('VENTA DE REPUESTO') || p.includes('VARIEDADES') || p.includes('TIENDA AGROPECUARIA') || p.includes('ECONOMICA') || p.includes('DICOMARCA'); }).sort((a,b)=>Number(b.monto_contrato||0)-Number(a.monto_contrato||0));
+  const _totalDyn = _actors.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+  const _dynRows = _actors.slice(0,50).map((r,i) =>
+    '<tr style="background:'+(i%2===0?'#fff':'#f9fafb')+'">'+
+    '<td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+(i+1)+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;">'+_esc((r.entity_name||'').substring(0,42))+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;font-weight:600;">'+_esc((r.proveedor_nombre||'').substring(0,38))+'</td>'+
+    '<td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;">'+_fmtL(Number(r.monto_contrato||0))+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'#dc2626':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+_esc(r.severity||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
+    '</tr>'
+  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
+  const _dynTable = '<h1 style="font-size:15px;font-weight:800;border-bottom:2px solid #1f2937;padding-bottom:6px;margin-top:28px;color:#1f2937;">CONTRATOS EN BASE DE DATOS SENTINEL</h1>'+
+    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>LIGTH TRENDS · VENTA REPUESTOS · VARIEDADES · TIENDA AGROPECUARIA</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:#9ca3af;\">(base de datos no cargada)</em>':'')+'</p>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;">'+
+    '<thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;">N</th><th style="padding:6px 8px;color:#fff;">Entidad</th><th style="padding:6px 8px;color:#fff;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;">Fecha</th></tr></thead>'+
+    '<tbody>'+_dynRows+'</tbody></table>';
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <title>Sentinel-AI — Empresas Fuera de Giro ${ds}</title>
   <style>
@@ -15842,29 +15862,7 @@ function exportReporteFueraGiroPDF() {
     <p><strong>Nuevo patrón Sentinel:</strong> Implementar tag <code>PROVEEDOR_FUERA_DE_GIRO</code> automático cuando nombre del proveedor contiene palabras de giro específico incompatible con la entidad contratante.</p>
   </div>
   
-    <h1>CONTRATOS EN BASE DE DATOS SENTINEL</h1>
-    <script>
-      (function(){
-        var all = window.allAlerts || [];
-        var fmtL = function(n){ if(!n||n===0) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
-        var rows = all.filter(function(a){ var p=(a.proveedor_nombre||'').toUpperCase();
-          return p.includes('LIGTH') || p.includes('TRENDS') || p.includes('VENTA DE REPUESTO') || p.includes('VARIEDADES') || p.includes('TIENDA AGROPECUARIA') || p.includes('ECONOMICA') || p.includes('ECONÓMICA') || p.includes('UNION LATIN') || p.includes('DICOMARCA'); });
-        rows.sort(function(a,b){ return Number(b.monto_contrato||0)-Number(a.monto_contrato||0); });
-        var total = rows.reduce(function(s,a){ return s+Number(a.monto_contrato||0); },0);
-        var tbody = rows.slice(0,50).map(function(r,i){
-          var ent=(r.entity_name||'—').substring(0,40);
-          var prov=(r.proveedor_nombre||'—').substring(0,35);
-          var sev=r.severity||r.severidad||'—';
-          var fecha=(r.fecha_contrato||'').substring(0,10)||'—';
-          var bg=i%2===0?'#fff':'#f9fafb';
-          return '<tr style="background:'+bg+'"><td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+String(i+1)+'</td><td style="padding:5px 8px;font-size:10px;">'+ent+'</td><td style="padding:5px 8px;font-size:10px;font-weight:600;">'+prov+'</td><td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;color:#1f2937;">'+fmtL(Number(r.monto_contrato||0))+'</td><td style="padding:5px 8px;font-size:9px;text-align:center;color:'+(sev.toUpperCase()==='CRÍTICA'?'#dc2626':sev.toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+sev+'</td><td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+fecha+'</td></tr>';
-        }).join('');
-        if(!tbody) tbody='<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
-        document.write('<p style="font-size:12px;margin:8px 0;color:#374151;">Actores: <strong>LIGTH TRENDS · VENTA REPUESTOS · VARIEDADES · TIENDA AGROPECUARIA · DICOMARCA</strong> · <strong>'+rows.length+' contratos</strong> · Monto total: <strong style=\"color:#1f2937\">'+fmtL(total)+'</strong> · Top 50 por monto mostrados.</p>');
-        document.write('<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;"><thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;text-align:left;">N</th><th style="padding:6px 8px;color:#fff;text-align:left;">Entidad</th><th style="padding:6px 8px;color:#fff;text-align:left;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;text-align:left;">Fecha</th></tr></thead><tbody>'+tbody+'</tbody></table>');
-        if(!all.length) document.write('<p style="font-size:11px;color:#9ca3af;">(Base de datos no cargada — abra el reporte desde el dashboard con datos activos)</p>');
-      })();
-    </script>
+    ${_dynTable}
     
   <div class="footer">
     <p>⚠️ AVISO LEGAL: Generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE. Las señales NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
@@ -15882,6 +15880,26 @@ function exportReporteSENACITPDF() {
   const today = new Date();
   const ds = today.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
   const folio = 'SEN-INV-2026-004';
+  const _all = window.allAlerts || [];
+  const _fmtL = n => { if(!n||n===0) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const _esc = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const _actors = _all.filter(a => { const p=(a.proveedor_nombre||'').toUpperCase(); const e=(a.entity_name||'').toUpperCase(); return p.includes('DICOMARCA') || e.includes('SENACIT') || e.includes('ENERGIA') || e.includes('RECURSOS NATURALES'); }).sort((a,b)=>Number(b.monto_contrato||0)-Number(a.monto_contrato||0));
+  const _totalDyn = _actors.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+  const _dynRows = _actors.slice(0,50).map((r,i) =>
+    '<tr style="background:'+(i%2===0?'#fff':'#f9fafb')+'">'+
+    '<td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+(i+1)+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;">'+_esc((r.entity_name||'').substring(0,42))+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;font-weight:600;">'+_esc((r.proveedor_nombre||'').substring(0,38))+'</td>'+
+    '<td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;">'+_fmtL(Number(r.monto_contrato||0))+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'#dc2626':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+_esc(r.severity||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
+    '</tr>'
+  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
+  const _dynTable = '<h1 style="font-size:15px;font-weight:800;border-bottom:2px solid #1f2937;padding-bottom:6px;margin-top:28px;color:#1f2937;">CONTRATOS EN BASE DE DATOS SENTINEL</h1>'+
+    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>DICOMARCA · SENACIT</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:#9ca3af;\">(base de datos no cargada)</em>':'')+'</p>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;">'+
+    '<thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;">N</th><th style="padding:6px 8px;color:#fff;">Entidad</th><th style="padding:6px 8px;color:#fff;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;">Fecha</th></tr></thead>'+
+    '<tbody>'+_dynRows+'</tbody></table>';
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <title>Sentinel-AI — Investigación S38 SENACIT ${ds}</title>
   <style>
@@ -15954,29 +15972,7 @@ function exportReporteSENACITPDF() {
     <p>Este caso tiene <strong>todos los elementos para referencia formal a la TSC (Tribunal Superior de Cuentas)</strong>: monto verificado, patrón claro (fuera de giro + sobreprecio), y confirmación institucional (STLCC). El MP ya investiga — el reporte Sentinel puede servir como insumo para la querella civil de la TSC en paralelo.</p>
   </div>
   
-    <h1>CONTRATOS EN BASE DE DATOS SENTINEL</h1>
-    <script>
-      (function(){
-        var all = window.allAlerts || [];
-        var fmtL = function(n){ if(!n||n===0) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
-        var rows = all.filter(function(a){ var p=(a.proveedor_nombre||'').toUpperCase(); var e=(a.entity_name||'').toUpperCase();
-          return p.includes('DICOMARCA') || e.includes('SENACIT') || e.includes('ENERGIA') || e.includes('MiAMBIENTE') || e.includes('RECURSOS NATURALES'); });
-        rows.sort(function(a,b){ return Number(b.monto_contrato||0)-Number(a.monto_contrato||0); });
-        var total = rows.reduce(function(s,a){ return s+Number(a.monto_contrato||0); },0);
-        var tbody = rows.slice(0,50).map(function(r,i){
-          var ent=(r.entity_name||'—').substring(0,40);
-          var prov=(r.proveedor_nombre||'—').substring(0,35);
-          var sev=r.severity||r.severidad||'—';
-          var fecha=(r.fecha_contrato||'').substring(0,10)||'—';
-          var bg=i%2===0?'#fff':'#f9fafb';
-          return '<tr style="background:'+bg+'"><td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+String(i+1)+'</td><td style="padding:5px 8px;font-size:10px;">'+ent+'</td><td style="padding:5px 8px;font-size:10px;font-weight:600;">'+prov+'</td><td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;color:#1f2937;">'+fmtL(Number(r.monto_contrato||0))+'</td><td style="padding:5px 8px;font-size:9px;text-align:center;color:'+(sev.toUpperCase()==='CRÍTICA'?'#dc2626':sev.toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+sev+'</td><td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+fecha+'</td></tr>';
-        }).join('');
-        if(!tbody) tbody='<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
-        document.write('<p style="font-size:12px;margin:8px 0;color:#374151;">Actores: <strong>DICOMARCA · SENACIT</strong> · <strong>'+rows.length+' contratos</strong> · Monto total: <strong style=\"color:#1f2937\">'+fmtL(total)+'</strong> · Top 50 por monto mostrados.</p>');
-        document.write('<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;"><thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;text-align:left;">N</th><th style="padding:6px 8px;color:#fff;text-align:left;">Entidad</th><th style="padding:6px 8px;color:#fff;text-align:left;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;text-align:left;">Fecha</th></tr></thead><tbody>'+tbody+'</tbody></table>');
-        if(!all.length) document.write('<p style="font-size:11px;color:#9ca3af;">(Base de datos no cargada — abra el reporte desde el dashboard con datos activos)</p>');
-      })();
-    </script>
+    ${_dynTable}
     
   <div class="footer">
     <p>⚠️ AVISO LEGAL: Este documento ha sido generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE y fuentes verificadas. Las señales de riesgo identificadas NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
@@ -15994,6 +15990,26 @@ function exportReportePJPDF() {
   const today = new Date();
   const ds = today.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
   const folio = 'SEN-INV-2026-005';
+  const _all = window.allAlerts || [];
+  const _fmtL = n => { if(!n||n===0) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const _esc = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const _actors = _all.filter(a => { const e=(a.entity_name||'').toUpperCase(); return e.includes('PODER JUDICIAL') || e.includes('CSJ') || e.includes('CORTE SUPREMA') || e.includes('SERIN'); }).sort((a,b)=>Number(b.monto_contrato||0)-Number(a.monto_contrato||0));
+  const _totalDyn = _actors.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+  const _dynRows = _actors.slice(0,50).map((r,i) =>
+    '<tr style="background:'+(i%2===0?'#fff':'#f9fafb')+'">'+
+    '<td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+(i+1)+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;">'+_esc((r.entity_name||'').substring(0,42))+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;font-weight:600;">'+_esc((r.proveedor_nombre||'').substring(0,38))+'</td>'+
+    '<td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;">'+_fmtL(Number(r.monto_contrato||0))+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'#dc2626':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+_esc(r.severity||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
+    '</tr>'
+  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
+  const _dynTable = '<h1 style="font-size:15px;font-weight:800;border-bottom:2px solid #1f2937;padding-bottom:6px;margin-top:28px;color:#1f2937;">CONTRATOS EN BASE DE DATOS SENTINEL</h1>'+
+    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>Poder Judicial · CSJ · SERIN</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:#9ca3af;\">(base de datos no cargada)</em>':'')+'</p>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;">'+
+    '<thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;">N</th><th style="padding:6px 8px;color:#fff;">Entidad</th><th style="padding:6px 8px;color:#fff;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;">Fecha</th></tr></thead>'+
+    '<tbody>'+_dynRows+'</tbody></table>';
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <title>Sentinel-AI — Investigación S38 Poder Judicial ${ds}</title>
   <style>
@@ -16064,28 +16080,7 @@ function exportReportePJPDF() {
     <p><strong>Para MP:</strong> Los 35 vehículos blindados sin proveedor registrado, durante gestión de ex-presidenta CSJ con investigaciones en curso, ameritan investigación por peculado y abuso de funciones.</p>
   </div>
   
-    <h1>CONTRATOS EN BASE DE DATOS SENTINEL</h1>
-    <script>
-      (function(){
-        var all = window.allAlerts || [];
-        var fmtL = function(n){ if(!n||n===0) return 'L. \u2014'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
-        var rows = all.filter(function(a){ var e=(a.entity_name||'').toUpperCase(); var p=(a.proveedor_nombre||'').toUpperCase();
-          return e.includes('PODER JUDICIAL') || e.includes('CSJ') || e.includes('CORTE SUPREMA') || e.includes('SERIN') || p.includes('ECONO RENT'); });
-        rows.sort(function(a,b){ return Number(b.monto_contrato||0)-Number(a.monto_contrato||0); });
-        var total = rows.reduce(function(s,a){ return s+Number(a.monto_contrato||0); },0);
-        var tbody = rows.slice(0,50).map(function(r,i){
-          var ent=(r.entity_name||'\u2014').substring(0,40);
-          var prov=(r.proveedor_nombre||'\u2014').substring(0,35);
-          var sev=r.severity||r.severidad||'\u2014';
-          var fecha=(r.fecha_contrato||'').substring(0,10)||'\u2014';
-          var bg=i%2===0?'#fff':'#f9fafb';
-          return '<tr style="background:'+bg+'"><td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+(i+1)+'</td><td style="padding:5px 8px;font-size:10px;">'+ent+'</td><td style="padding:5px 8px;font-size:10px;font-weight:600;">'+prov+'</td><td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;">'+fmtL(Number(r.monto_contrato||0))+'</td><td style="padding:5px 8px;font-size:9px;text-align:center;color:'+(sev.toUpperCase()==='CR\u00cdTICA'?'#dc2626':sev.toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+sev+'</td><td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+fecha+'</td></tr>';
-        }).join('');
-        if(!tbody) tbody='<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos.</td></tr>';
-        document.write('<p style="font-size:12px;margin:8px 0;">Actores: <strong>Poder Judicial · CSJ · SERIN</strong> · <strong>'+rows.length+' contratos</strong> · Monto: <strong>'+fmtL(total)+'</strong></p>');
-        document.write('<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;"><thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;">N</th><th style="padding:6px 8px;color:#fff;">Entidad</th><th style="padding:6px 8px;color:#fff;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;">Fecha</th></tr></thead><tbody>'+tbody+'</tbody></table>');
-      })();
-    </script>
+    ${_dynTable}
     
   <div class="footer">
     <p>⚠️ AVISO LEGAL: Este documento ha sido generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE y fuentes verificadas. Las señales de riesgo identificadas NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>
@@ -16103,6 +16098,26 @@ function exportReporteSESEGUPDF() {
   const today = new Date();
   const ds = today.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
   const folio = 'SEN-INV-2026-007';
+  const _all = window.allAlerts || [];
+  const _fmtL = n => { if(!n||n===0) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const _esc = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const _actors = _all.filter(a => { const p=(a.proveedor_nombre||'').toUpperCase(); const e=(a.entity_name||'').toUpperCase(); return p.includes('ECONO RENT') || p.includes('LAARSA') || p.includes('LATIN AMERICAN ARMORED') || p.includes('ELITE EQUIPMENT') || p.includes('RENTAS AMERICAS') || e.includes('SESEGU'); }).sort((a,b)=>Number(b.monto_contrato||0)-Number(a.monto_contrato||0));
+  const _totalDyn = _actors.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+  const _dynRows = _actors.slice(0,50).map((r,i) =>
+    '<tr style="background:'+(i%2===0?'#fff':'#f9fafb')+'">'+
+    '<td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+(i+1)+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;">'+_esc((r.entity_name||'').substring(0,42))+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;font-weight:600;">'+_esc((r.proveedor_nombre||'').substring(0,38))+'</td>'+
+    '<td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;">'+_fmtL(Number(r.monto_contrato||0))+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'#dc2626':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+_esc(r.severity||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
+    '</tr>'
+  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
+  const _dynTable = '<h1 style="font-size:15px;font-weight:800;border-bottom:2px solid #1f2937;padding-bottom:6px;margin-top:28px;color:#1f2937;">CONTRATOS EN BASE DE DATOS SENTINEL</h1>'+
+    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>ECONO RENT · LAARSA · ELITE EQUIPMENT · RENTAS AMERICAS · SESEGU</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:#9ca3af;\">(base de datos no cargada)</em>':'')+'</p>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;">'+
+    '<thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;">N</th><th style="padding:6px 8px;color:#fff;">Entidad</th><th style="padding:6px 8px;color:#fff;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;">Fecha</th></tr></thead>'+
+    '<tbody>'+_dynRows+'</tbody></table>';
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <title>Sentinel-AI — Investigación S38 SESEGU ${ds}</title>
   <style>
@@ -16171,29 +16186,7 @@ function exportReporteSESEGUPDF() {
     <p><strong>Registro Mercantil:</strong> Identificar propietarios reales de Econo Rent A Car S. de R.L. y LAARSA para verificar posibles vínculos con funcionarios de SESEGU/SEDH.</p>
   </div>
   
-    <h1>CONTRATOS EN BASE DE DATOS SENTINEL</h1>
-    <script>
-      (function(){
-        var all = window.allAlerts || [];
-        var fmtL = function(n){ if(!n||n===0) return 'L. —'; if(n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
-        var rows = all.filter(function(a){ var p=(a.proveedor_nombre||'').toUpperCase(); var e=(a.entity_name||'').toUpperCase();
-          return p.includes('ECONO RENT') || p.includes('LAARSA') || p.includes('ARMORED') || p.includes('LATIN AMERICAN') || p.includes('ELITE EQUIPMENT') || p.includes('RENTAS AMERICAS') || e.includes('SESEGU') || e.includes('SEGURIDAD'); });
-        rows.sort(function(a,b){ return Number(b.monto_contrato||0)-Number(a.monto_contrato||0); });
-        var total = rows.reduce(function(s,a){ return s+Number(a.monto_contrato||0); },0);
-        var tbody = rows.slice(0,50).map(function(r,i){
-          var ent=(r.entity_name||'—').substring(0,40);
-          var prov=(r.proveedor_nombre||'—').substring(0,35);
-          var sev=r.severity||r.severidad||'—';
-          var fecha=(r.fecha_contrato||'').substring(0,10)||'—';
-          var bg=i%2===0?'#fff':'#f9fafb';
-          return '<tr style="background:'+bg+'"><td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+String(i+1)+'</td><td style="padding:5px 8px;font-size:10px;">'+ent+'</td><td style="padding:5px 8px;font-size:10px;font-weight:600;">'+prov+'</td><td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;color:#1f2937;">'+fmtL(Number(r.monto_contrato||0))+'</td><td style="padding:5px 8px;font-size:9px;text-align:center;color:'+(sev.toUpperCase()==='CRÍTICA'?'#dc2626':sev.toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+sev+'</td><td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+fecha+'</td></tr>';
-        }).join('');
-        if(!tbody) tbody='<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
-        document.write('<p style="font-size:12px;margin:8px 0;color:#374151;">Actores: <strong>ECONO RENT · LAARSA · ELITE EQUIPMENT · RENTAS AMERICAS · SESEGU</strong> · <strong>'+rows.length+' contratos</strong> · Monto total: <strong style=\"color:#1f2937\">'+fmtL(total)+'</strong> · Top 50 por monto mostrados.</p>');
-        document.write('<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;"><thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;text-align:left;">N</th><th style="padding:6px 8px;color:#fff;text-align:left;">Entidad</th><th style="padding:6px 8px;color:#fff;text-align:left;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;text-align:left;">Fecha</th></tr></thead><tbody>'+tbody+'</tbody></table>');
-        if(!all.length) document.write('<p style="font-size:11px;color:#9ca3af;">(Base de datos no cargada — abra el reporte desde el dashboard con datos activos)</p>');
-      })();
-    </script>
+    ${_dynTable}
     
   <div class="footer">
     <p>⚠️ AVISO LEGAL: Este documento ha sido generado por Sentinel-AI con base en datos públicos SEFIN/ONCAE. Las señales de riesgo identificadas NO constituyen determinación de responsabilidad penal. Folio: ${folio} · ${ds}</p>

@@ -6859,6 +6859,9 @@ function hideEntityPanel() {
   } else if (entityPanelSource === 'sector') {
     entityPanelSource = 'dashboard';
     showSectorPanel();
+  } else if (entityPanelSource === 'sobrepresupuesto') {
+    entityPanelSource = 'dashboard';
+    showGlobalSobrecostos();
   } else {
     document.querySelector('.stats-grid').style.display     = '';
     document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
@@ -8545,7 +8548,7 @@ function showEntityPanelFromSector(entityName) {
 
 // Navigate from Sobrepresupuesto panel to entity panel, pre-focused on sobrecosto tab
 function showEntitySobrepresupuesto(entityName) {
-  hideGlobalSobrecostos();
+  entityPanelSource = 'sobrepresupuesto';
   showEntityPanel(entityName);
   // Switch to sobrecosto tab after panel loads
   setTimeout(() => {

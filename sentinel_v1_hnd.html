@@ -2003,6 +2003,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">⚖️</span> Casos Activos
         <span class="nav-chip" style="background:rgba(255,61,87,0.15);color:var(--red);border-color:rgba(255,61,87,0.3);">2</span>
       </button>
+      <button class="nav-item" id="nav-candidatos" onclick="showCandidatosPanel()">
+        <span class="nav-icon">🎯</span> Candidatos
+        <span class="nav-chip" id="nav-candidatos-chip" style="background:rgba(255,61,87,0.1);color:var(--red);border-color:rgba(255,61,87,0.25);">—</span>
+      </button>
       <button class="nav-item" id="nav-timeline" onclick="showTimelinePanel()">
         <span class="nav-icon">📅</span> Cronología
       </button>
@@ -3514,23 +3518,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
     </div>
 
-    <!-- ── CANDIDATOS DETECTADOS ── -->
-    <div id="candidatosDetectadosCard" style="margin-bottom:24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:15px;">🎯</span>
-          <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text-main);letter-spacing:.02em;">Candidatos Detectados</span>
-          <span id="candidatos-count-badge" style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);padding:1px 6px;border-radius:3px;">—</span>
-        </div>
-        <span style="font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">≥2 patrones · ≥L 10M</span>
-      </div>
-      <div style="font-size:10px;color:var(--text-dim);margin-bottom:12px;">Proveedores en DB con múltiples señales de riesgo. Orden: mayor monto acumulado.</div>
-      <div id="candidatos-list" style="display:flex;flex-direction:column;gap:6px;">
-        <div style="color:var(--muted);font-size:11px;padding:20px;text-align:center;">Cargando datos...</div>
-      </div>
-    </div>
-    <div style="border-top:1px solid var(--border);margin-bottom:24px;"></div>
-
     <!-- ── CASO 1: SEDESOL CHEQUESOL ── -->
     <div class="caso-card juicio">
       <div class="caso-header">
@@ -3761,6 +3748,32 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
     </div>
 
+  </div>
+
+  <!-- ══ CANDIDATOS DETECTADOS PANEL ══ -->
+  <div class="fuente-panel" id="candidatosPanel">
+    <button class="fuente-back" onclick="hideCandidatosPanel()">← Contratos</button>
+
+    <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div>
+        <div class="fuente-title">🎯 <span>Candidatos Detectados</span></div>
+        <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
+          Proveedores con ≥2 patrones de riesgo y ≥L 10M acumulado. Ordenado por mayor monto.
+        </div>
+      </div>
+    </div>
+
+    <div id="candidatosDetectadosCard" style="margin-bottom:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="candidatos-count-badge" style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);padding:1px 6px;border-radius:3px;">—</span>
+        </div>
+        <span style="font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">≥2 patrones · ≥L 10M</span>
+      </div>
+      <div id="candidatos-list" style="display:flex;flex-direction:column;gap:6px;">
+        <div style="color:var(--muted);font-size:11px;padding:20px;text-align:center;">Cargando datos...</div>
+      </div>
+    </div>
   </div>
 
   <!-- ══ PANEL DE RIESGO POR SECTOR (Opción D) ══ -->
@@ -4658,6 +4671,7 @@ async function loadAlerts() {
     buildNewsMatchIndex(); // Opción E — entity/vendor index (all records)
     buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
     buildEngelIndex();     // P4 — Lista Engel EE.UU. cross-reference
+    renderCandidatosDetectados(); // Populate nav chip count on load
     setStatus('connected');
     hideError();
     render();
@@ -6812,8 +6826,10 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','scannerPanel','ingestPanel','busquedaBDPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','candidatosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','scannerPanel','ingestPanel','busquedaBDPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
+  // Also close the alert detail panel so it doesn't bleed into other panels
+  const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
   document.getElementById('vistaEjecutiva').style.display = 'none';
   document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
@@ -6841,7 +6857,21 @@ function showCasosPanel(source) {
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
   loadCasosMonitor();
+}
+
+// ── Candidatos Detectados Panel ───────────────────────────────────────────────
+function showCandidatosPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('nav-candidatos').classList.add('active');
+  document.getElementById('candidatosPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   renderCandidatosDetectados();
+}
+
+function hideCandidatosPanel() {
+  document.getElementById('candidatosPanel').classList.remove('open');
+  document.getElementById('nav-candidatos').classList.remove('active');
+  showContratosView();
 }
 
 // ── Candidatos Detectados ─────────────────────────────────────────────────────
@@ -6896,6 +6926,9 @@ function renderCandidatosDetectados() {
     .sort((a, b) => b[1].monto - a[1].monto);
 
   if (badge) badge.textContent = candidatos.length;
+  // Update nav chip
+  const navChip = document.getElementById('nav-candidatos-chip');
+  if (navChip) navChip.textContent = candidatos.length || '—';
 
   if (!candidatos.length) {
     container.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:20px;text-align:center;">Sin candidatos con ≥2 patrones y ≥L 10M.</div>';
@@ -6945,8 +6978,8 @@ function renderCandidatosDetectados() {
 
 function iniciarInvestigacion(proveedorNombre) {
   // Pre-carga el proveedor en el buscador global y navega al panel principal
-  hideCasosPanel();
-  const searchInput = document.getElementById('searchInput') || document.getElementById('globalSearch') || document.querySelector('input[type="search"]');
+  hideCandidatosPanel();
+  const searchInput = document.getElementById('global-search') || document.getElementById('searchInput') || document.getElementById('globalSearch') || document.querySelector('input[type="search"]');
   if (searchInput) {
     searchInput.value = proveedorNombre;
     searchInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -7487,6 +7520,27 @@ function exportSectorPDF(mode = 'pareto') {
     <td style="color:#C0392B;font-weight:bold;text-align:center">${pctHigh}%</td>
   </tr>
 </table>
+
+<p class="sec">Distribución de Severidad</p>
+${(function(){
+  const total = _sectorDrilldownData.length || 1;
+  const bars = [
+    { label:'Crítica', count: counts['Crítica'], color:'#C0392B' },
+    { label:'Alta',    count: counts['Alta'],    color:'#C05000' },
+    { label:'Media',   count: counts['Media'],   color:'#D68910' },
+    { label:'Baja',    count: counts['Baja'],    color:'#1E8449' },
+  ];
+  const maxCount = Math.max(...bars.map(b => b.count), 1);
+  const barW = 400, barH = 22, gap = 10, labelW = 55, countW = 60;
+  const svgH = bars.length * (barH + gap) + 10;
+  const svgBars = bars.map((b, i) => {
+    const y = i * (barH + gap);
+    const w = Math.round((b.count / maxCount) * barW);
+    const pct = ((b.count / total) * 100).toFixed(1);
+    return '<g transform="translate(0,' + y + ')"><text x="' + (labelW-4) + '" y="' + Math.round(barH*0.72) + '" text-anchor="end" font-size="9" fill="#555">' + b.label + '</text><rect x="' + labelW + '" y="0" width="' + w + '" height="' + barH + '" fill="' + b.color + '" rx="3"/><text x="' + (labelW+w+5) + '" y="' + Math.round(barH*0.72) + '" font-size="9" fill="#333">' + b.count + ' (' + pct + '%)</text></g>';
+  }).join('');
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="' + (labelW+barW+countW) + '" height="' + svgH + '" style="margin:6px 0 14px 0;display:block;">' + svgBars + '</svg>';
+})()}
 
 <p class="sec">Patrones de Riesgo Detectados</p>
 <table class="ptbl" style="width:40%;margin-bottom:14px">
@@ -9375,6 +9429,15 @@ function exportTimelineProvPDF() {
       <td style="text-align:right;">${pct}</td>
     </tr>`;
   }).join('');
+  // Capture provChart canvas as image
+  let chartImgHtml = '';
+  try {
+    const chartCanvas = document.getElementById('provChart');
+    if (chartCanvas && chartCanvas.width > 0) {
+      chartImgHtml = `<div style="margin-bottom:18px;"><img src="${chartCanvas.toDataURL('image/png')}" style="width:100%;max-height:380px;object-fit:contain;border:1px solid #D0D7E2;border-radius:6px;padding:8px;box-sizing:border-box;"></div>`;
+    }
+  } catch(e) {}
+
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <style>
   @page{size:A4 landscape;margin:1.5cm 1cm 2cm 1cm}
@@ -9391,6 +9454,7 @@ function exportTimelineProvPDF() {
 <button class="btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 <h1>Cronología — Ranking de Proveedores</h1>
 <div class="meta">Año: ${esc(yearLabel)} · ${entityFilter ? esc(entityFilter) : 'Todas las entidades'} · Top 50 por ${isMonto?'monto':'contratos'} · Generado: ${timestamp}</div>
+${chartImgHtml}
 <table>
   <thead><tr><th>#</th><th>Proveedor</th><th style="text-align:right">Total</th><th style="text-align:center">Crítica</th><th style="text-align:center">Alta</th><th style="text-align:center">Media</th><th style="text-align:center">Baja</th><th style="text-align:right">Monto (L.)</th><th style="text-align:right">% Monto</th></tr></thead>
   <tbody>${rows}</tbody>
@@ -9398,7 +9462,7 @@ function exportTimelineProvPDF() {
 </body></html>`;
   const pw = window.open('','_blank','width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes.'); return; }
-  pw.document.write(addPrintBtn ? addPrintBtn(html) : html);
+  pw.document.write(html);
   pw.document.close();
 }
 

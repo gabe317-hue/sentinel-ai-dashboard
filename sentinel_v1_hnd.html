@@ -4178,10 +4178,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <button class="fuente-back" onclick="hideIngestPanel()">← Contratos</button>
     <div class="fuente-header">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
-        <span>🔄</span><span>Actualizar Datos — Ingesta ONCAE</span>
+        <span>🔄</span><span>Actualizar Datos — Ingesta ONCAE + SEFIN</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Descarga y procesa los datos más recientes de ONCAE directamente desde datosabiertos.oncae.gob.hn · Sin intervención manual
+        ONCAE: contratos HC1 · SEFIN PIEP: ejecución presupuestaria para detección SOBRECOSTO
       </div>
     </div>
 
@@ -4212,8 +4212,41 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           ℹ️ La ingesta descarga el archivo HC1_datos_{año}.json desde ONCAE, aplica detección de patrones de fraude y actualiza la base de datos. Tiempo estimado: 60–90 segundos.
         </div>
         <button id="ingestRunBtn" onclick="runIngest()" style="margin-top:16px;width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--green),#00b862);color:#001a0d;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.04em;transition:opacity .2s;">
-          🔄 Iniciar Actualización
+          🔄 Iniciar Actualización ONCAE
         </button>
+      </div>
+
+      <!-- ══ SEFIN PIEP — Ejecución Presupuestaria ══ -->
+      <div style="border:1px solid rgba(255,171,0,0.3);border-radius:12px;padding:18px;background:rgba(255,171,0,0.04);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span style="font-size:18px;">🏦</span>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;">SEFIN PIEP — Ejecución Presupuestaria</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">piep.sefin.gob.hn · Detección SOBRECOSTO por ritmo de gasto institucional</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:5px;">Período (YYYYMM)</label>
+            <input id="sefinPeriodoInput" type="text" value="202603" placeholder="ej. 202603"
+              style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,171,0,0.3);background:rgba(255,171,0,0.05);color:var(--text);font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;"
+              onfocus="this.style.borderColor='var(--amber)'" onblur="this.style.borderColor='rgba(255,171,0,0.3)'">
+          </div>
+          <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+            <div style="font-size:10px;color:var(--text-dim);line-height:1.5;padding:8px;border-radius:6px;background:rgba(255,171,0,0.04);border:1px solid rgba(255,171,0,0.1);">
+              Último disponible: <strong style="color:var(--amber);">202603</strong> (marzo 2026)
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.6;padding:10px;border-radius:8px;background:rgba(255,171,0,0.04);border:1px solid rgba(255,171,0,0.08);margin-bottom:14px;">
+          ⚠️ Detecta instituciones que gastan más del 115% de su ritmo esperado. Los contratos EDCA de esas instituciones reciben <code style="color:var(--amber);">budget_amount</code> proporcional, activando SOBRECOSTO en el dashboard.
+        </div>
+        <button id="sefinRunBtn" onclick="runSEFINIngest()" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--amber),#cc8800);color:#1a0d00;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.04em;transition:opacity .2s;">
+          🏦 Actualizar SEFIN SOBRECOSTO
+        </button>
+        <!-- SEFIN result inline -->
+        <div id="sefinResult" style="display:none;margin-top:12px;padding:12px;border-radius:8px;border:1px solid rgba(0,230,118,0.2);background:rgba(0,230,118,0.04);font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;line-height:1.8;"></div>
+        <div id="sefinError" style="display:none;margin-top:12px;padding:12px;border-radius:8px;border:1px solid rgba(255,61,87,0.2);background:rgba(255,61,87,0.04);font-size:12px;color:var(--red);"></div>
       </div>
 
       <!-- Progress area -->
@@ -13646,7 +13679,14 @@ function renderEjecutiva() {
   const criticos  = alerts.filter(a => normSevLocal(a.severity) === 'critica');
   const altos     = alerts.filter(a => normSevLocal(a.severity) === 'alta');
   const ofac      = alerts.filter(a => a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SANCIONADO')));
-  const sobrecosto= alerts.filter(a => a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SOBRECOSTO')));
+  const sobrecosto= alerts.filter(a => {
+    // Pattern-based (legacy) OR budget_amount-based (SEFIN PIEP data)
+    const mc = Number(a.monto_contrato || 0);
+    const budget = Number(a.budget_amount || 0);
+    const hasSEFIN = mc > 0 && budget > mc * 1.15;
+    const hasPattern = a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SOBRECOSTO'));
+    return hasSEFIN || hasPattern;
+  });
 
   const fmtL = n => n > 0 ? 'L ' + (n >= 1e6 ? (n/1e6).toFixed(1)+'M' : (n/1e3).toFixed(0)+'K') : 'L —';
   const sumMonto = arr => arr.reduce((s,a) => s + (parseFloat(a.monto_contrato)||0), 0);
@@ -16281,6 +16321,43 @@ async function runIngest() {
     btn.disabled = false;
     btn.style.opacity = '1';
   }
+}
+
+async function runSEFINIngest() {
+  const periodo = (document.getElementById('sefinPeriodoInput')?.value || '202603').trim();
+  if (!/^\d{6}$/.test(periodo)) {
+    document.getElementById('sefinError').style.display = 'block';
+    document.getElementById('sefinError').textContent = 'Período inválido. Usa formato YYYYMM (ej. 202603).';
+    return;
+  }
+  const btn = document.getElementById('sefinRunBtn');
+  btn.disabled = true; btn.style.opacity = '0.5';
+  document.getElementById('sefinResult').style.display = 'none';
+  document.getElementById('sefinError').style.display = 'none';
+  btn.textContent = '⏳ Procesando SEFIN...';
+  try {
+    const url = `${SUPABASE_URL}/functions/v1/ingest-sefin?periodo=${periodo}`;
+    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY } });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const sobreList = (data.sobrecostos || []).map(s =>
+      `  • ${s.nombre} (${s.codigo}) → ${(s.ratio * 100).toFixed(1)}% ritmo${s.edca_match ? ` · EDCA: ${s.edca_match}` : ''}`
+    ).join('\n');
+    document.getElementById('sefinResult').style.display = 'block';
+    document.getElementById('sefinResult').innerHTML =
+      `✅ <strong style="color:var(--green);">SEFIN ${periodo} ingresado</strong><br>` +
+      `📊 ${data.instituciones_procesadas} instituciones · ${data.lineas_csv?.toLocaleString()} líneas CSV (${(data.bytes_csv/1e6).toFixed(1)} MB)<br>` +
+      `🔗 ${data.edca_matches} matches EDCA · ${data.contratos_actualizados} contratos actualizados<br>` +
+      `⚠️ <strong style="color:var(--amber);">${data.instituciones_sobrecosto} instituciones SOBRECOSTO detectadas</strong>` +
+      (sobreList ? `<pre style="margin-top:8px;font-size:10px;color:var(--amber);white-space:pre-wrap;">${sobreList}</pre>` : '') +
+      `<br><em style="font-size:10px;color:var(--text-dim);">Recarga la página para ver los cambios en el dashboard.</em>`;
+    btn.textContent = '✅ SEFIN actualizado';
+  } catch(e) {
+    document.getElementById('sefinError').style.display = 'block';
+    document.getElementById('sefinError').textContent = '❌ ' + e.message;
+    btn.textContent = '🏦 Actualizar SEFIN SOBRECOSTO';
+  }
+  btn.disabled = false; btn.style.opacity = '1';
 }
 
 function _renderScannerPatternGrid() {

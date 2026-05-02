@@ -2111,7 +2111,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
             <span class="po-item-icon">🎯</span><span class="po-item-label">Concentración</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showGlobalSobrecostos)">
-            <span class="po-item-icon">💰</span><span class="po-item-label">Sobrecostos</span><span class="po-item-tag tag-n">43 casos</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">💰</span><span class="po-item-label">Sobrepresupuestos</span><span class="po-item-tag tag-n">43 casos</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showPhase4Detection)">
             <span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span>
@@ -2231,7 +2231,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-ind"><span class="po-ind-lbl">Riesgo Alto</span><span class="po-ind-val amber" id="po-ind-alto">—</span></div>
       <div class="po-ind"><span class="po-ind-lbl">Listas Internacionales</span><span class="po-ind-val purple" id="po-ind-intl">—</span></div>
       <div class="po-ind"><span class="po-ind-lbl">Total Monitoreado</span><span class="po-ind-val blue" id="po-ind-total">—</span></div>
-      <div class="po-ind"><span class="po-ind-lbl">Riesgo Sobrecosto</span><span class="po-ind-val amber" id="po-ind-sob">—</span></div>
+      <div class="po-ind"><span class="po-ind-lbl">Riesgo Sobrepresupuesto</span><span class="po-ind-val amber" id="po-ind-sob">—</span></div>
       <div class="po-ind"><span class="po-ind-lbl">Casos Activos</span><span class="po-ind-val red" id="po-ind-casos">—</span></div>
       <div class="po-ind"><span class="po-ind-dot green"></span><span class="po-ind-lbl">Estado</span><span class="po-ind-val green">Operativo</span></div>
     </div>
@@ -2388,7 +2388,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
       <!-- Sobrecosto box -->
       <div class="exec-card exec-card-amber">
-        <div class="exec-card-label">Riesgo Sobrecosto</div>
+        <div class="exec-card-label">Riesgo Sobrepresupuesto</div>
         <div class="exec-card-value" id="exec-sobrecosto">—</div>
         <div class="exec-card-sub" id="exec-sobrecosto-monto">L —</div>
         <div class="exec-card-note">▸ Análisis SIAFI2</div>
@@ -2876,7 +2876,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <!-- Drill-down tabs -->
     <div style="display:flex;gap:8px;margin-bottom:16px;padding:12px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;">
       <button class="ep-drill-tab active" data-tab="recent" onclick="switchEntityDrillTab('recent',this)">📋 Recientes</button>
-      <button class="ep-drill-tab" data-tab="sobrecosto" onclick="switchEntityDrillTab('sobrecosto',this)">💰 Sobrecosto</button>
+      <button class="ep-drill-tab" data-tab="sobrecosto" onclick="switchEntityDrillTab('sobrecosto',this)">💰 Sobrepresupuesto</button>
       <button class="ep-drill-tab" data-tab="vendors" onclick="switchEntityDrillTab('vendors',this)">🏢 Proveedores</button>
       <button class="ep-drill-tab" data-tab="patterns" onclick="switchEntityDrillTab('patterns',this)">🎯 Patrones</button>
     </div>
@@ -2893,7 +2893,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div class="ep-drill-content" id="ep-drill-sobrecosto">
       <div class="fuente-chart-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <div class="fuente-recent-title">💰 Contratos con SOBRECOSTO (Pagado > Contratado)</div>
+          <div class="fuente-recent-title">💰 Contratos con SOBREPRESUPUESTO (Pagado > Contratado)</div>
           <div style="margin-top:4px;margin-bottom:2px;font-size:10px;color:var(--amber,#f59e0b);display:flex;align-items:center;gap:5px;">
             <span>⚠️</span>
             <span>Datos parciales — cobertura completa pendiente integración SIAFI</span>
@@ -3286,7 +3286,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         </div>
         <!-- Derived SOBRECOSTO alert — shown when monto_pagado > monto_contrato * 1.15 -->
         <div id="adp-sobrecosto-pagado-section" style="display:none;margin:8px 0;padding:8px 12px;background:rgba(255,61,87,0.1);border:1px solid var(--red);border-radius:6px;">
-          <span style="color:var(--red);font-weight:700;font-size:12px;">⚠ SOBRECOSTO DETECTADO</span>
+          <span style="color:var(--red);font-weight:700;font-size:12px;">⚠ SOBREPRESUPUESTO DETECTADO</span>
           <span id="adp-sobrecosto-pagado-pct" style="color:var(--red);font-size:11px;margin-left:8px;"></span>
           <div style="color:var(--text-dim);font-size:10px;margin-top:2px;">Monto pagado supera el monto contratado en más del 15%</div>
         </div>
@@ -3337,7 +3337,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <button class="fuente-back" onclick="hideGlobalSobrecostos()">← Contratos</button>
 
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div class="fuente-title">📊 Resumen de <span>Sobrecostos</span></div>
+      <div class="fuente-title">📊 Resumen de <span>Sobrepresupuestos</span></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button onclick="document.getElementById('sp-riesgo-section').scrollIntoView({behavior:'smooth',block:'start'})" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(255,165,0,0.5);background:rgba(255,165,0,0.08);color:var(--amber);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(255,165,0,0.16)'" onmouseout="this.style.background='rgba(255,165,0,0.08)'">⚠️ Ver Riesgo</button>
         <button onclick="exportSobrecostoRealPDF()" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.10);color:var(--electric);font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(0,168,214,0.2)'" onmouseout="this.style.background='rgba(0,168,214,0.10)'">📄 PDF</button>
@@ -3348,7 +3348,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div class="fuente-stats-row" style="margin-bottom:16px;">
       <div class="fuente-stat">
         <div class="fuente-stat-val" id="sp-total-count">0</div>
-        <div class="fuente-stat-lbl">Total Sobrecostos</div>
+        <div class="fuente-stat-lbl">Total Sobrepresupuestos</div>
       </div>
       <div class="fuente-stat">
         <div class="fuente-stat-val" style="color:var(--red);" id="sp-total-amount">L —</div>
@@ -3377,7 +3377,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <!-- All sobrecostos list -->
     <div class="fuente-chart-card">
       <div style="margin-bottom:6px;">
-        <div class="fuente-recent-title" id="sp-sobrecosto-list-title">Detalle de Sobrecostos</div>
+        <div class="fuente-recent-title" id="sp-sobrecosto-list-title">Detalle de Sobrepresupuestos</div>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;" id="sp-sobrecosto-list-sub">Ordenados por monto de exceso — mayor primero</div>
       <div class="fuente-recent-list" id="sp-sobrecosto-list"></div>
@@ -3385,19 +3385,19 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
     <!-- RIESGO SOBRECOSTO — contratos sin competencia de datos reales SEFIN -->
     <div id="sp-riesgo-section" class="fuente-chart-card" style="margin-top:20px;border:1px solid rgba(255,165,0,0.35);">
-      <div class="fuente-recent-title" style="color:var(--amber);">⚠️ RIESGO SOBRECOSTO — Contratos Reales SEFIN</div>
+      <div class="fuente-recent-title" style="color:var(--amber);">⚠️ RIESGO SOBREPRESUPUESTO — Contratos Reales SEFIN</div>
       <div style="font-size:10px;color:var(--amber,#f59e0b);margin-bottom:8px;">Datos parciales — cobertura completa pendiente integración SIAFI</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.5;">
         Los datos EDCA/SEFIN no incluyen montos pagados (etapa PAGADO). Se identifican contratos de
         <strong style="color:var(--red);">ALTO RIESGO</strong> por ausencia de competencia o uso de emergencia —
-        categorías históricamente asociadas a sobrecostos en Honduras.
+        categorías históricamente asociadas a sobrepresupuestos en Honduras.
         <br/><br/>
         La lógica de detección funciona así: en contratación pública, el precio justo se establece mediante competencia abierta entre proveedores.
         Cuando un contrato se adjudica directamente (<strong style="color:var(--red);">ADJUDICACION_DIRECTA</strong>) o bajo figura de emergencia
         (<strong style="color:var(--amber);">COMPRA_EMERGENCIA</strong>), ese mecanismo de control desaparece — el Estado acepta el precio que
         propone un solo proveedor sin compararlo. Estudios del Banco Mundial y OCDE documentan que estos contratos tienen
         entre 20% y 40% más probabilidad de resultar en pagos finales superiores al monto contratado.
-        Sentinel marca estos contratos como riesgo potencial de sobrecosto <em>preventivamente</em>, antes de que ocurra el pago.
+        Sentinel marca estos contratos como riesgo potencial de sobrepresupuesto <em>preventivamente</em>, antes de que ocurra el pago.
       </div>
       <div class="fuente-stats-row" style="margin-bottom:16px;">
         <div class="fuente-stat">
@@ -4189,7 +4189,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span>🔄</span><span>Actualizar Datos — Ingesta ONCAE + SEFIN</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        ONCAE: contratos HC1 · SEFIN PIEP: ejecución presupuestaria para detección SOBRECOSTO
+        ONCAE: contratos HC1 · SEFIN PIEP: ejecución presupuestaria para detección SOBREPRESUPUESTO
       </div>
     </div>
 
@@ -4230,7 +4230,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <span style="font-size:18px;">🏦</span>
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;">SEFIN PIEP — Ejecución Presupuestaria</div>
-            <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">piep.sefin.gob.hn · Detección SOBRECOSTO por ritmo de gasto institucional</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">piep.sefin.gob.hn · Detección SOBREPRESUPUESTO por ritmo de gasto institucional</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
@@ -4247,10 +4247,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           </div>
         </div>
         <div style="font-size:11px;color:var(--text-dim);line-height:1.6;padding:10px;border-radius:8px;background:rgba(255,171,0,0.04);border:1px solid rgba(255,171,0,0.08);margin-bottom:14px;">
-          ⚠️ Detecta instituciones que gastan más del 115% de su ritmo esperado. Los contratos EDCA de esas instituciones reciben <code style="color:var(--amber);">budget_amount</code> proporcional, activando SOBRECOSTO en el dashboard.
+          ⚠️ Detecta instituciones que gastan más del 115% de su ritmo esperado. Los contratos EDCA de esas instituciones reciben <code style="color:var(--amber);">budget_amount</code> proporcional, activando SOBREPRESUPUESTO en el dashboard.
         </div>
         <button id="sefinRunBtn" onclick="runSEFINIngest()" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--amber),#cc8800);color:#1a0d00;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.04em;transition:opacity .2s;">
-          🏦 Actualizar SEFIN SOBRECOSTO
+          🏦 Actualizar SEFIN SOBREPRESUPUESTO
         </button>
         <!-- SEFIN result inline -->
         <div id="sefinResult" style="display:none;margin-top:12px;padding:12px;border-radius:8px;border:1px solid rgba(0,230,118,0.2);background:rgba(0,230,118,0.04);font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;line-height:1.8;"></div>
@@ -4370,7 +4370,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <option value="PROVEEDOR_FUERA_DE_GIRO">Fuera de Giro</option>
           <option value="CD_ALTO_MONTO">CD Alto Monto</option>
           <option value="SIN_HISTORIAL_PROVEEDOR">Sin Historial</option>
-          <option value="SOBRECOSTO">Sobrecosto</option>
+          <option value="SOBRECOSTO">Sobrepresupuesto</option>
           <option value="CLUSTER_CD">Cluster CD</option>
         </select>
       </div>
@@ -5695,7 +5695,7 @@ function showEntityPanel(entityName) {
     const sign = dif >= 0 ? '+' : '';
     difEl.textContent = sign + fmtL(Math.abs(dif)).replace('L ', 'L ') + ` (${sign}${pct}%)`;
     difEl.className   = 'ep-fin-val ' + (dif > 0 ? 'over' : dif < 0 ? 'under' : 'exact');
-    lblEl.textContent = dif > 0 ? 'Sobrecosto' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia';
+    lblEl.textContent = dif > 0 ? 'Sobrepresupuesto' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia';
   } else {
     difEl.textContent = '—';
     difEl.className   = 'ep-fin-val';
@@ -5898,7 +5898,7 @@ function populateEntitySobrecosto(entityName) {
             <span class="ep-drill-item-highlight">+${s.pct}% (${fmtL(s.diff)})</span>
           </div>
         </div>`).join('')
-    : '<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos con sobrecosto detectado.</div>';
+    : '<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos con sobrepresupuesto detectado.</div>';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -6055,7 +6055,7 @@ function showVendorContractDetail(vendorName, entityName) {
                 <span style="color:var(--text-dim);font-size:10px;">Pagado:</span>
                 <div style="color:var(--text);font-weight:600;">${fmtL(mp)}</div>
               </div>
-              ${sobrecosto ? `<div><span style="color:var(--text-dim);font-size:10px;">Sobrecosto:</span><div style="color:var(--amber);font-weight:600;">${sobrecosto}</div></div>` : ''}
+              ${sobrecosto ? `<div><span style="color:var(--text-dim);font-size:10px;">Sobrepresupuesto:</span><div style="color:var(--amber);font-weight:600;">${sobrecosto}</div></div>` : ''}
             </div>
             ${pats ? `<div style="margin-top:6px;"><span style="color:var(--text-dim);font-size:10px;">Patrones:</span> ${pats}</div>` : ''}
           </div>
@@ -6330,7 +6330,7 @@ function generateSobrecostoPDF(sobrecostos, entityName, timestamp) {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sobrecosto - ${entityName}</title>
+<title>Sobrepresupuesto - ${entityName}</title>
 <style>
   body { font-family: Arial, sans-serif; font-size: 10pt; color: #333; }
   h1 { color: #0A1628; margin-bottom: 4px; }
@@ -6343,7 +6343,7 @@ function generateSobrecostoPDF(sobrecostos, entityName, timestamp) {
 </style>
 </head>
 <body>
-<h1>Reporte de SOBRECOSTO</h1>
+<h1>Reporte de SOBREPRESUPUESTO</h1>
 <h2>${entityName}</h2>
 <p class="meta">Generado: ${timestamp} | Total registros: ${sobrecostos.length}</p>
 
@@ -6354,8 +6354,8 @@ function generateSobrecostoPDF(sobrecostos, entityName, timestamp) {
       <th>Proveedor</th>
       <th>Monto Contrato</th>
       <th>Monto Pagado</th>
-      <th>Sobrecosto (L)</th>
-      <th>% Sobrecosto</th>
+      <th>Sobrepresupuesto (L)</th>
+      <th>% Sobrepresupuesto</th>
     </tr>
   </thead>
   <tbody>
@@ -6464,7 +6464,7 @@ function generateVendorDetailPDF(contracts, vendorName, entityName, timestamp) {
       <th>ID</th>
       <th>Contrato (L)</th>
       <th>Pagado (L)</th>
-      <th>Sobrecosto (L)</th>
+      <th>Sobrepresupuesto (L)</th>
       <th>Severidad</th>
       <th>Patrones</th>
       <th>Fecha</th>
@@ -6727,7 +6727,7 @@ function exportAlertDetailPDF() {
   const sobrecostoSection = document.getElementById('adp-sobrecosto-pagado-section');
   const sobrecostoHtml    = sobrecostoSection && sobrecostoSection.style.display !== 'none'
     ? `<div style="margin:12px 0;padding:8px 14px;background:#FDECEA;border:1.5pt solid #C0392B;border-radius:5px;color:#C0392B;font-weight:bold;font-size:9pt;">
-         ⚠ SOBRECOSTO DETECTADO — ${esc(document.getElementById('adp-sobrecosto-pagado-pct')?.textContent || '')}
+         ⚠ SOBREPRESUPUESTO DETECTADO — ${esc(document.getElementById('adp-sobrecosto-pagado-pct')?.textContent || '')}
          <div style="font-weight:normal;font-size:8pt;margin-top:4px;">Monto pagado supera el monto contratado en más del 15%</div>
        </div>` : '';
 
@@ -6983,7 +6983,7 @@ function renderCandidatosDetectados() {
     'FRACCIONAMIENTO':'Fraccionamiento','COMPRA_MENOR_RECURRENTE':'Compra Menor Recurrente',
     'CONCENTRACION_PROVEEDOR':'Concentración','PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro',
     'CD_ALTO_MONTO':'CD Alto Monto','SIN_HISTORIAL_PROVEEDOR':'Sin Historial',
-    'SOBRECOSTO':'Sobrecosto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
+    'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
   };
 
   container.innerHTML = candidatos.slice(0, 15).map(([prov, d], idx) => {
@@ -7149,7 +7149,7 @@ async function ejecutarBusquedaBD() {
       'FRACCIONAMIENTO':'Fraccionamiento','FRACCIONAMIENTO_ONCAE':'Fracc. ONCAE',
       'COMPRA_MENOR_RECURRENTE':'Compra Menor','CONCENTRACION_PROVEEDOR':'Concentración',
       'PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro','CD_ALTO_MONTO':'CD Alto Monto',
-      'SIN_HISTORIAL_PROVEEDOR':'Sin Historial','SOBRECOSTO':'Sobrecosto','CLUSTER_CD':'Cluster CD'
+      'SIN_HISTORIAL_PROVEEDOR':'Sin Historial','SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD'
     };
 
     inner.innerHTML = results.map(a => {
@@ -9835,7 +9835,7 @@ function exportEntityPDF(mode = 'pareto') {
   const difStr = dif !== null
     ? (dif >= 0 ? '+' : '') + fmtL(Math.abs(dif)) + ` (${dif >= 0 ? '+' : ''}${mc > 0 ? ((dif/mc)*100).toFixed(1) : '0'}%)`
     : '—';
-  const difLabel = dif !== null ? (dif > 0 ? 'Sobrecosto' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia') : 'Diferencia';
+  const difLabel = dif !== null ? (dif > 0 ? 'Sobrepresupuesto' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia') : 'Diferencia';
   const difColor = dif !== null ? (dif > 0 ? '#C0392B' : dif < 0 ? '#1A3A6B' : '#555') : '#555';
 
   // Pattern counts (from subset)
@@ -10095,19 +10095,19 @@ function populateGlobalSobrecostos() {
           <div style="flex:1;">
             <div class="fri-desc" style="color:var(--electric);font-weight:600;">${e.name}</div>
             <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">
-              ${e.count} sobrecostos · Exceso promedio: +${e.avgPct}%
+              ${e.count} sobrepresupuestos · Exceso promedio: +${e.avgPct}%
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0;">
             <div style="color:var(--red);font-weight:600;font-size:12px;">${fmtL(e.totalAmount)}</div>
           </div>
         </div>`).join('')
-    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin sobrecostos detectados en ninguna entidad.</div>';
+    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin sobrepresupuestos detectados en ninguna entidad.</div>';
 
   // Update list title with real count
   const listTitle = document.getElementById('sp-sobrecosto-list-title');
   const listSub   = document.getElementById('sp-sobrecosto-list-sub');
-  if (listTitle) listTitle.textContent = `Detalle de Sobrecostos (${totalCount} contratos)`;
+  if (listTitle) listTitle.textContent = `Detalle de Sobrepresupuestos (${totalCount} contratos)`;
   if (listSub) listSub.textContent = totalCount > 50
     ? `Mostrando los 50 mayores de ${totalCount} contratos — ordenados por monto de exceso. El PDF incluye todos.`
     : `Ordenados por monto de exceso — mayor primero`;
@@ -10134,7 +10134,7 @@ function populateGlobalSobrecostos() {
           </div>
         </div>`;
       }).join('')
-    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin sobrecostos detectados.</div>';
+    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin sobrepresupuestos detectados.</div>';
 
   // ── RIESGO SOBRECOSTO — contratos sin competencia (datos reales SEFIN) ──
   const getPatterns = a => Array.isArray(a.patterns)
@@ -10248,7 +10248,7 @@ function populateGlobalSobrecostos() {
   }
 }
 
-// ══ DRILL-DOWN POR ENTIDAD (Riesgo Sobrecosto) ══════════════════
+// ══ DRILL-DOWN POR ENTIDAD (Riesgo Sobrepresupuesto) ══════════════════
 function showRiesgoEntityDrilldown(entityName, riesgoAll) {
   const fmtL = n => n > 0 ? 'L ' + Number(n).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
   const getPatterns = a => Array.isArray(a.patterns)
@@ -10306,7 +10306,7 @@ function hideRiesgoEntityDrilldown() {
   if (panelEl) panelEl.style.display = 'none';
 }
 
-// ══ EXPORTAR REPORTE PDF (Riesgo Sobrecosto Global) ══════════════
+// ══ EXPORTAR REPORTE PDF (Riesgo Sobrepresupuesto Global) ══════════════
 function exportRiesgoGlobalPDF() {
   const fmtL = n => n > 0 ? 'L ' + Number(n).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : '—';
   const getPatterns = a => Array.isArray(a.patterns)
@@ -10354,7 +10354,7 @@ function exportRiesgoGlobalPDF() {
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
   pw.document.write(addPrintBtn(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-  <title>Reporte Riesgo Sobrecosto — SENTINEL-AI</title>
+  <title>Reporte Riesgo Sobrepresupuesto — SENTINEL-AI</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family: Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 12px; }
@@ -10380,7 +10380,7 @@ function exportRiesgoGlobalPDF() {
   </style></head><body>
   <div class="header">
     <div><div style="font-size:10px;color:#00A8D6;letter-spacing:.1em;margin-bottom:4px;">SENTINEL-AI | Honduras Procurement Intelligence</div>
-    <h1>⚠️ Reporte: Riesgo Sobrecosto — Contratos SEFIN</h1></div>
+    <h1>⚠️ Reporte: Riesgo Sobrepresupuesto — Contratos SEFIN</h1></div>
     <div class="meta">Generado: ${timestamp}<br/>Total registros analizados: ${allAlerts.length.toLocaleString()}</div>
   </div>
 
@@ -10394,7 +10394,7 @@ function exportRiesgoGlobalPDF() {
     </div>
     <p style="margin-top:14px;line-height:1.6;color:#444;">
       Los datos EDCA/SEFIN (etapa COMPROMISO) no incluyen montos pagados. Se identifican <strong>${riesgoAll.length}</strong> contratos
-      adjudicados sin competencia abierta, categorías históricamente asociadas a sobrecostos en Honduras.
+      adjudicados sin competencia abierta, categorías históricamente asociadas a sobrepresupuestos en Honduras.
       El análisis Pareto indica que <strong class="pareto-highlight">${pareto80idx} contratos (${((pareto80idx/riesgoAll.length)*100).toFixed(1)}%)</strong>
       concentran el 80% del riesgo financiero total.
     </p>
@@ -10403,7 +10403,7 @@ function exportRiesgoGlobalPDF() {
       Cuando un contrato se adjudica directamente (<strong>ADJUDICACION_DIRECTA</strong>) o bajo figura de emergencia (<strong>COMPRA_EMERGENCIA</strong>),
       ese mecanismo de control desaparece — el Estado acepta el precio que propone un solo proveedor sin compararlo con el mercado.
       Estudios del Banco Mundial y la OCDE documentan que estos contratos tienen entre 20% y 40% más probabilidad de resultar en pagos finales
-      superiores al monto contratado. Sentinel marca estos contratos como riesgo potencial de sobrecosto <em>preventivamente</em>,
+      superiores al monto contratado. Sentinel marca estos contratos como riesgo potencial de sobrepresupuesto <em>preventivamente</em>,
       antes de que ocurra el pago, permitiendo intervención oportuna por parte de los organismos fiscalizadores.
     </p>
   </div>
@@ -10553,7 +10553,7 @@ function exportSobrecostoRealPDF() {
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
   pw.document.write(addPrintBtn(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-  <title>Reporte Sobrecosto Real — SENTINEL-AI</title>
+  <title>Reporte Sobrepresupuesto Real — SENTINEL-AI</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family: Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 12px; }
@@ -10581,7 +10581,7 @@ function exportSobrecostoRealPDF() {
   <div class="header">
     <div>
       <div style="font-size:10px;color:#00A8D6;letter-spacing:.1em;margin-bottom:4px;">SENTINEL-AI | Honduras Procurement Intelligence</div>
-      <h1>💰 Reporte: Sobrecosto Real — Contratos SEFIN/SIAFI2</h1>
+      <h1>💰 Reporte: Sobrepresupuesto Real — Contratos SEFIN/SIAFI2</h1>
     </div>
     <div class="meta">Generado: ${timestamp}<br/>Base: ${allAlerts.length.toLocaleString()} contratos analizados</div>
   </div>
@@ -10596,13 +10596,13 @@ function exportSobrecostoRealPDF() {
     </div>
     <div class="summary-box">
       Se identificaron <strong>${totalCount} contratos</strong> con pagos o presupuesto que exceden el monto contratado en más del 15%.
-      El exceso acumulado asciende a <strong>${fmtL(totalAmount)}</strong>, con un promedio de sobrecosto de <strong>${fmtPct(avgPct)}</strong> por contrato.
+      El exceso acumulado asciende a <strong>${fmtL(totalAmount)}</strong>, con un promedio de sobrepresupuesto de <strong>${fmtPct(avgPct)}</strong> por contrato.
       De estos, <strong>${siafiCount} contratos</strong> cuentan con montos de pago verificados directamente del sistema SIAFI2 (datos reales del gobierno de Honduras, enero–junio 2023).
       Los ${totalCount - siafiCount} contratos restantes utilizan el presupuesto aprobado como referencia.
-      Las entidades con mayor concentración de sobrecosto son: <strong>${top3entities}</strong>.
+      Las entidades con mayor concentración de sobrepresupuesto son: <strong>${top3entities}</strong>.
     </div>
     <p style="font-size:11px;color:#666;line-height:1.6;border-left:3px solid #e8ecf0;padding-left:12px;">
-      <strong>Metodología:</strong> Un contrato se clasifica como sobrecosto cuando el monto pagado (fuente SIAFI2) o el presupuesto aprobado
+      <strong>Metodología:</strong> Un contrato se clasifica como sobrepresupuesto cuando el monto pagado (fuente SIAFI2) o el presupuesto aprobado
       supera el monto contratado original en más del 15%. Los casos marcados con <strong>✓ Real SIAFI2</strong> provienen de datos de
       transacciones verificadas del Sistema de Información Financiero Integrado v2.0 de SEFIN (enero–junio 2023).
     </p>
@@ -10648,7 +10648,7 @@ function exportSobrecostoRealPDF() {
   <div class="section">
     <div class="section-title">Detalle Completo — ${totalCount} Contratos</div>
     <div class="summary-box">
-      Listado completo de contratos con sobrecosto detectado, ordenados de mayor a menor exceso absoluto.
+      Listado completo de contratos con sobrepresupuesto detectado, ordenados de mayor a menor exceso absoluto.
       Los contratos marcados con <strong>✓ Real SIAFI2</strong> tienen pagos verificados en el sistema SIAFI2 del gobierno de Honduras.
       Los demás utilizan el presupuesto aprobado como referencia de comparación.
     </div>
@@ -10693,7 +10693,7 @@ function exportSobrecostoRealPDF() {
 
   <div class="footer">
     <span>SENTINEL-AI | sentinel-ai-dashboard-beta.vercel.app/mvp.html</span>
-    <span>Datos: EDCA/SEFIN 2023–2025 · SIAFI2 Ene–Jun 2023 | ${totalCount} contratos con sobrecosto</span>
+    <span>Datos: EDCA/SEFIN 2023–2025 · SIAFI2 Ene–Jun 2023 | ${totalCount} contratos con sobrepresupuesto</span>
   </div>
 
   <div class="no-print" style="padding:16px 28px;background:#f0f4f8;text-align:center;">
@@ -11016,7 +11016,7 @@ function exportPhase4PDF() {
     <div class="stat-box"><div class="stat-val">${anomalies.length}</div><div class="stat-lbl">Anomalías Detectadas</div></div>
     <div class="stat-box"><div class="stat-val" style="color:#e67e22;">${criticalCount}</div><div class="stat-lbl">Proveedores Críticos</div></div>
   </div>
-  <h2>⚡ Amenazas de Velocidad — Proveedores con Múltiples Sobrecostos</h2>
+  <h2>⚡ Amenazas de Velocidad — Proveedores con Múltiples Sobrepresupuestos</h2>
   <table><thead><tr><th>#</th><th>Proveedor</th><th style="text-align:center;">Incidentes</th><th style="text-align:center;">Puntaje/100</th><th>Severidad</th><th style="text-align:right;">Exceso Total</th></tr></thead>
   <tbody>${velocityRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin amenazas detectadas</td></tr>'}</tbody></table>
   <h2>📊 Score de Riesgo por Proveedor — Top 15</h2>
@@ -11838,7 +11838,7 @@ const PATTERN_LABELS = {
   ADJUDICACION_DIRECTA:        'Adjudicación Directa',
   PROVEEDOR_SIN_HISTORIAL:     'Proveedor Sin Historial',
   MONTO_FRACCIONADO:           'Monto Fraccionado',
-  SOBRECOSTO:                  '📈 Sobrecosto Presupuestario',
+  SOBRECOSTO:                  '📈 Sobrepresupuesto Presupuestario',
   URGENCIA_INJUSTIFICADA:      'Urgencia Injustificada',
   ENGEL:                       '🇺🇸 Lista Engel EE.UU.',
   // ONCAE patterns
@@ -16369,14 +16369,14 @@ async function runSEFINIngest() {
       `✅ <strong style="color:var(--green);">SEFIN ${periodo} ingresado</strong><br>` +
       `📊 ${data.instituciones_procesadas} instituciones · ${data.lineas_csv?.toLocaleString()} líneas CSV (${(data.bytes_csv/1e6).toFixed(1)} MB)<br>` +
       `🔗 ${data.edca_matches} matches EDCA · ${data.contratos_actualizados} contratos actualizados<br>` +
-      `⚠️ <strong style="color:var(--amber);">${data.instituciones_sobrecosto} instituciones SOBRECOSTO detectadas</strong>` +
+      `⚠️ <strong style="color:var(--amber);">${data.instituciones_sobrecosto} instituciones SOBREPRESUPUESTO detectadas</strong>` +
       (sobreList ? `<pre style="margin-top:8px;font-size:10px;color:var(--amber);white-space:pre-wrap;">${sobreList}</pre>` : '') +
       `<br><em style="font-size:10px;color:var(--text-dim);">Recarga la página para ver los cambios en el dashboard.</em>`;
     btn.textContent = '✅ SEFIN actualizado';
   } catch(e) {
     document.getElementById('sefinError').style.display = 'block';
     document.getElementById('sefinError').textContent = '❌ ' + e.message;
-    btn.textContent = '🏦 Actualizar SEFIN SOBRECOSTO';
+    btn.textContent = '🏦 Actualizar SEFIN SOBREPRESUPUESTO';
   }
   btn.disabled = false; btn.style.opacity = '1';
 }

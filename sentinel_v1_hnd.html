@@ -3360,6 +3360,14 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
     </div>
 
+    <!-- SEFIN explanatory note -->
+    <div id="sp-sefin-note" style="display:none;margin-bottom:16px;padding:12px 14px;border-radius:8px;border:1px solid rgba(255,165,0,0.4);background:rgba(255,165,0,0.07);">
+      <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:5px;">🏦 Nota — Alertas Presupuestarias SEFIN PIEP</div>
+      <div style="font-size:11px;color:var(--text-dim);line-height:1.6;">
+        Los contratos marcados con <strong style="color:var(--amber);">SEFIN PIEP</strong> reflejan una <strong>alerta de ritmo presupuestario institucional</strong>: la institución ejecutó más presupuesto del esperado para esa fecha del año (umbral: 115% del ritmo anual proporcional). <em>No confirman pago excesivo por contrato individual</em> — son una señal de alerta que justifica investigación adicional. Los contratos con fuente <strong style="color:var(--electric);">Pagado</strong> sí tienen datos de pago verificados.
+      </div>
+    </div>
+
     <!-- Breakdown by entity -->
     <div class="fuente-chart-card" style="margin-bottom:20px;">
       <div class="fuente-recent-title">Desglose por Entidad</div>
@@ -10023,8 +10031,9 @@ function populateGlobalSobrecostos() {
       const mc = Number(a.monto_contrato);
       const mp = Number(a.monto_pagado || 0);
       const budget = Number(a.budget_amount || 0);
+      const isSEFIN = mp === 0 && budget > mc * 1.15;
       const comparison = mp > 0 ? mp : budget;
-      const sourceLabel = mp > 0 ? 'Pagado' : 'Presupuesto';
+      const sourceLabel = mp > 0 ? 'Pagado' : 'SEFIN PIEP';
       const diff = comparison - mc;
       const pct = ((diff / mc) * 100).toFixed(1);
       return {
@@ -10032,6 +10041,7 @@ function populateGlobalSobrecostos() {
         diff,
         pct,
         sourceLabel,
+        isSEFIN,
         comparisonAmount: comparison,
         entityName: a.entity_name || a.entidad || 'Desconocida',
         vendorName: a.proveedor_nombre || a.proveedor || 'Desconocido'
@@ -10050,6 +10060,11 @@ function populateGlobalSobrecostos() {
   document.getElementById('sp-total-count').textContent = totalCount;
   document.getElementById('sp-total-amount').textContent = fmtL(totalAmount);
   document.getElementById('sp-avg-pct').textContent = `+${avgPct}%`;
+
+  // Show SEFIN note if any SEFIN-sourced entries exist
+  const hasSEFINEntries = sobrecostos.some(s => s.isSEFIN);
+  const sefinNote = document.getElementById('sp-sefin-note');
+  if (sefinNote) sefinNote.style.display = hasSEFINEntries ? 'block' : 'none';
 
   // Group by entity for breakdown
   const entityMap = {};
@@ -10099,7 +10114,11 @@ function populateGlobalSobrecostos() {
 
   // Display all sobrecostos (top 50)
   document.getElementById('sp-sobrecosto-list').innerHTML = sobrecostos.length
-    ? sobrecostos.slice(0, 50).map(s => `
+    ? sobrecostos.slice(0, 50).map(s => {
+        const sourceBadge = s.isSEFIN
+          ? `<span style="display:inline-block;margin-top:3px;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(255,165,0,0.15);color:var(--amber);border:1px solid rgba(255,165,0,0.35);">🏦 SEFIN PIEP · Alerta presupuestaria</span>`
+          : `<span style="display:inline-block;margin-top:3px;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(0,168,214,0.12);color:var(--electric);border:1px solid rgba(0,168,214,0.3);">✓ Pagado verificado</span>`;
+        return `
         <div class="fuente-recent-item">
           <div style="flex:1;">
             <div class="fri-desc" style="color:var(--electric);">${s.vendorName}</div>
@@ -10107,12 +10126,14 @@ function populateGlobalSobrecostos() {
               ID: ${s.alert.alert_id || '#' + s.alert.id} · Entidad: ${s.entityName}
               <br/>Contrato: ${fmtL(s.alert.monto_contrato)} → ${s.sourceLabel}: ${fmtL(s.comparisonAmount)}
             </div>
+            ${sourceBadge}
           </div>
           <div style="text-align:right;flex-shrink:0;">
             <div style="color:var(--red);font-weight:600;font-size:12px;">+${s.pct}%</div>
             <div style="color:var(--amber);font-weight:600;font-size:11px;margin-top:2px;">${fmtL(s.diff)}</div>
           </div>
-        </div>`).join('')
+        </div>`;
+      }).join('')
     : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin sobrecostos detectados.</div>';
 
   // ── RIESGO SOBRECOSTO — contratos sin competencia (datos reales SEFIN) ──

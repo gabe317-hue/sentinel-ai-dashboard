@@ -9320,10 +9320,29 @@ function exportTlCSV() {
   URL.revokeObjectURL(url);
 }
 
+// Helper: capture any Chart.js canvas with a white background (transparent → white)
+function _captureChartCanvas(canvasId) {
+  try {
+    const src = document.getElementById(canvasId);
+    if (!src || src.width === 0 || src.height === 0) return '';
+    const tmp = document.createElement('canvas');
+    tmp.width  = src.width;
+    tmp.height = src.height;
+    const ctx = tmp.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, tmp.width, tmp.height);
+    ctx.drawImage(src, 0, 0);
+    return tmp.toDataURL('image/png');
+  } catch(e) { return ''; }
+}
+
 function exportTimelineMesPDF() {
   if (!allAlerts || !allAlerts.length) return;
   const fmtL = n => n > 0 ? 'L. ' + Number(n).toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
   const esc  = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Capture the stacked bar chart
+  const chartDataUrl = _captureChartCanvas('timelineChart');
+  const chartImgHtml = chartDataUrl ? `<div style="margin-bottom:18px;"><img src="${chartDataUrl}" style="width:100%;max-height:340px;object-fit:contain;border:1px solid #D0D7E2;border-radius:6px;padding:6px;box-sizing:border-box;"></div>` : '';
   const entityFilter = (document.getElementById('tl-entity-select')||{}).value || '';
   let filtered = entityFilter ? allAlerts.filter(a => a.entity_name === entityFilter) : allAlerts;
   if (_tlYear) filtered = filtered.filter(a => {
@@ -9376,6 +9395,7 @@ function exportTimelineMesPDF() {
 <button class="btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 <h1>Cronología — Contratos por Mes</h1>
 <div class="meta">Año: ${esc(yearLabel)} · ${entityFilter ? esc(entityFilter) : 'Todas las entidades'} · Generado: ${timestamp}</div>
+${chartImgHtml}
 <table>
   <thead><tr><th>Mes</th><th style="text-align:right">Total</th><th style="text-align:center">Crítica</th><th style="text-align:center">Alta</th><th style="text-align:center">Media</th><th style="text-align:center">Baja</th><th style="text-align:right">Monto (L.)</th></tr></thead>
   <tbody>${rows}</tbody>
@@ -9383,7 +9403,7 @@ function exportTimelineMesPDF() {
 </body></html>`;
   const pw = window.open('','_blank','width=1050,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes.'); return; }
-  pw.document.write(addPrintBtn ? addPrintBtn(html) : html);
+  pw.document.write(html);
   pw.document.close();
 }
 
@@ -9429,14 +9449,9 @@ function exportTimelineProvPDF() {
       <td style="text-align:right;">${pct}</td>
     </tr>`;
   }).join('');
-  // Capture provChart canvas as image
-  let chartImgHtml = '';
-  try {
-    const chartCanvas = document.getElementById('provChart');
-    if (chartCanvas && chartCanvas.width > 0) {
-      chartImgHtml = `<div style="margin-bottom:18px;"><img src="${chartCanvas.toDataURL('image/png')}" style="width:100%;max-height:380px;object-fit:contain;border:1px solid #D0D7E2;border-radius:6px;padding:8px;box-sizing:border-box;"></div>`;
-    }
-  } catch(e) {}
+  // Capture provChart with white background (Chart.js canvas is transparent by default)
+  const _provDataUrl = _captureChartCanvas('provChart');
+  const chartImgHtml = _provDataUrl ? `<div style="margin-bottom:18px;"><img src="${_provDataUrl}" style="width:100%;max-height:400px;object-fit:contain;border:1px solid #D0D7E2;border-radius:6px;padding:6px;box-sizing:border-box;"></div>` : '';
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <style>

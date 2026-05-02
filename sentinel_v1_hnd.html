@@ -8548,6 +8548,7 @@ function showEntityPanelFromSector(entityName) {
 
 // Navigate from Sobrepresupuesto panel to entity panel, pre-focused on sobrecosto tab
 function showEntitySobrepresupuesto(entityName) {
+  _closeAllFuentePanels();
   entityPanelSource = 'sobrepresupuesto';
   showEntityPanel(entityName);
   // Switch to sobrecosto tab after panel loads

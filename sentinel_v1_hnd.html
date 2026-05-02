@@ -2139,7 +2139,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <button class="po-item" onclick="poGo(showNewsPanel)">
             <span class="po-item-icon">📰</span><span class="po-item-label">Noticias</span><span class="po-arrow">›</span>
           </button>
-          <button class="po-item" onclick="poGo(showEscanerPanel)">
+          <button class="po-item" onclick="poGo(showScannerPanel)">
             <span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-item-tag tag-l">6 patrones</span><span class="po-arrow">›</span>
           </button>
         </div>
@@ -2190,7 +2190,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <button class="po-item" onclick="poGo(showAuditPanel)">
             <span class="po-item-icon">🗂️</span><span class="po-item-label">Auditoría del Sistema</span><span class="po-arrow">›</span>
           </button>
-          <button class="po-item" onclick="poGo(showIngestaPanel)">
+          <button class="po-item" onclick="poGo(showIngestPanel)">
             <span class="po-item-icon">📥</span><span class="po-item-label">Panel de Ingesta</span><span class="po-item-tag tag-l">Live</span><span class="po-arrow">›</span>
           </button>
           <div class="po-divider"></div>
@@ -2372,19 +2372,19 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="exec-card-sub">EE.UU. · Engel · OFAC-SDN</div>
         <div class="exec-card-note">▸ Alerta máxima</div>
       </div>
-      <!-- ONCAE 2025 CRÍTICA -->
+      <!-- ONCAE CRÍTICA -->
       <div class="exec-card exec-card-red">
-        <div class="exec-card-label">ONCAE 2025 CRÍTICA</div>
-        <div class="exec-card-value" style="color:var(--red);">115</div>
-        <div class="exec-card-sub">L 5,337M — Compra Menor</div>
-        <div class="exec-card-note">▸ Sin licitación · Verificar fuente</div>
+        <div class="exec-card-label">ONCAE CRÍTICA (2025–2026)</div>
+        <div class="exec-card-value" style="color:var(--red);">145</div>
+        <div class="exec-card-sub">L 6,253M — Sin licitación</div>
+        <div class="exec-card-note">▸ 115 en 2025 · 30 en 2026</div>
       </div>
       <!-- Total monitored -->
       <div class="exec-card exec-card-green">
         <div class="exec-card-label">Total Monitoreados</div>
         <div class="exec-card-value" id="exec-total">—</div>
         <div class="exec-card-sub" id="exec-total-monto">L —</div>
-        <div class="exec-card-note">▸ Fiscal 2023–2025</div>
+        <div class="exec-card-note">▸ Fiscal 2023–2026</div>
       </div>
       <!-- Sobrecosto box -->
       <div class="exec-card exec-card-amber">
@@ -2536,7 +2536,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
         <div class="exec-source-name">ONCAE / Honducompras</div>
-        <div class="exec-source-val">36,318 contratos · 2019–2024</div>
+        <div class="exec-source-val">96,403 contratos · 2019–2026</div>
       </div>
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
@@ -3007,7 +3007,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
         <span>📈</span>
-        <span>Análisis de Contratos — 2023–2025</span>
+        <span>Análisis de Contratos — 2019–2026</span>
       </div>
       <div style="display:flex;gap:8px;">
         <button onclick="exportAnalyticsPDF('pareto')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">📄 Pareto</button>
@@ -3906,6 +3906,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <button class="tl-year-btn" id="tl-yr-2023" onclick="setTlYear('2023')">2023</button>
       <button class="tl-year-btn" id="tl-yr-2024" onclick="setTlYear('2024')">2024</button>
       <button class="tl-year-btn" id="tl-yr-2025" onclick="setTlYear('2025')">2025</button>
+      <button class="tl-year-btn" id="tl-yr-2026" onclick="setTlYear('2026')">2026</button>
     </div>
 
     <!-- Vista tabs: Por Mes / Por Proveedor (Opción 2) -->
@@ -4196,7 +4197,8 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <div>
             <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:6px;">Año de datos</label>
             <select id="ingestYearSelect" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--navy-mid);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;">
-              <option value="2025" selected>2025 (más reciente)</option>
+              <option value="2026" selected>2026 (más reciente)</option>
+              <option value="2025">2025</option>
               <option value="2024">2024</option>
               <option value="2023">2023</option>
               <option value="2022">2022</option>
@@ -4287,6 +4289,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <select id="bd-anio"
           style="width:100%;box-sizing:border-box;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;color:var(--text);outline:none;cursor:pointer;">
           <option value="">Todos los años</option>
+          <option value="2026">2026</option>
           <option value="2025">2025</option>
           <option value="2024">2024</option>
           <option value="2023">2023</option>
@@ -8298,7 +8301,7 @@ function generarEjecutivaPDF() {
 <div class="header-bar">
   <div>
     <div class="header-title">🛡️ Sentinel-AI — Briefing Ejecutivo</div>
-    <div class="header-sub">Monitoreo de Contratación Pública — Honduras · SEFIN/EDCA 2023–2025 · ONCAE/Honducompras 2019–2024</div>
+    <div class="header-sub">Monitoreo de Contratación Pública — Honduras · SEFIN/EDCA 2023–2025 · ONCAE/Honducompras 2019–2026</div>
   </div>
   <div class="header-meta">
     <div style="font-weight:700;">${esc(folio)}</div>
@@ -8585,7 +8588,7 @@ function renderCasoMonitorItems(elChq, elSed, elMeta) {
 let _timelineChart = null;
 let _provChart     = null;
 let _tlMode = 'count'; // 'count' | 'monto'
-let _tlYear = '';      // '' | '2023' | '2024' | '2025'
+let _tlYear = '';      // '' | '2019' | '2020' | '2021' | '2022' | '2023' | '2024' | '2025' | '2026'
 let _tlTab  = 'mes';   // 'mes' | 'proveedor'
 let _tlDrilldownData  = []; // contratos activos en el drilldown mensual
 let _provDrilldownData = []; // contratos activos en el drilldown de proveedor
@@ -13674,7 +13677,7 @@ function renderEjecutiva() {
   document.getElementById('exec-sobrecosto-monto').textContent = fmtL(sumMonto(sobrecosto));
   document.getElementById('exec-status-val').textContent     = '✅ Activo';
   document.getElementById('exec-last-update').textContent    = 'Actualizado: ' + new Date().toLocaleTimeString('es-HN');
-  document.getElementById('execSubtitle').textContent        = `${alerts.length.toLocaleString()} contratos monitoreados · Fiscal 2023–2025 · ${new Date().toLocaleDateString('es-HN')}`;
+  document.getElementById('execSubtitle').textContent        = `${alerts.length.toLocaleString()} contratos monitoreados · 2019–2026 · ${new Date().toLocaleDateString('es-HN')}`;
 
   // ── P2: Top 5 Entidades por riesgo ──
   const entMap = {};
@@ -15062,7 +15065,7 @@ function exportReporteOncaeCriticaPDF() {
       <div>
         <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:5px;">SISTEMA SENTINEL — HONDURAS</div>
         <div style="font-size:19px;font-weight:700;margin-bottom:3px;">🔴 Reporte: Top 20 ONCAE — Contratos CRÍTICA por Monto</div>
-        <div style="font-size:10px;opacity:.8;">ONCAE / Honducompras 2019–2024 · Severidad CRÍTICA · Ordenado por monto descendente</div>
+        <div style="font-size:10px;opacity:.8;">ONCAE / Honducompras 2019–2026 · Severidad CRÍTICA · Ordenado por monto descendente</div>
       </div>
       <div style="text-align:right;font-size:10px;opacity:.85;">
         <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>

@@ -5810,15 +5810,42 @@ function showVendorPanel(vendorName) {
     if (n.includes('media'))   return 'var(--electric)';
     return '#4caf50';
   };
-  const recent = [...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
-  document.getElementById('ep-recent').innerHTML = recent.length
-    ? recent.map(a => `
-        <div class="fuente-recent-item">
-          <span class="fri-id">${a.alert_id || '#' + a.id}</span>
-          <span class="fri-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${a.description||'—'}</span>
-          <span class="fri-sev" style="color:${sevColor(a.severity)}">${a.severity||'—'}</span>
-        </div>`).join('')
+  // Show ALL contracts sorted by severity then monto, with pattern badges
+  const SEV_ORDER = { critica: 0, crítica: 0, alta: 1, media: 2, baja: 3 };
+  const allSorted = [...data].sort((a, b) => {
+    const sa = SEV_ORDER[normSev(a.severity).replace('critica','critica')] ?? 4;
+    const sb = SEV_ORDER[normSev(b.severity).replace('critica','critica')] ?? 4;
+    if (sa !== sb) return sa - sb;
+    return Number(b.monto_contrato || 0) - Number(a.monto_contrato || 0);
+  });
+  const PLABELS = {
+    'FRACCIONAMIENTO':'Fraccionamiento','COMPRA_MENOR_RECURRENTE':'Compra Menor',
+    'CONCENTRACION_PROVEEDOR':'Concentración','PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro',
+    'CD_ALTO_MONTO':'CD Alto Monto','SIN_HISTORIAL_PROVEEDOR':'Sin Historial',
+    'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
+  };
+  const fmtLv = n => { n = Number(n||0); if(!n) return '—'; if(n>=1e9) return 'L '+(n/1e9).toFixed(1)+'B'; if(n>=1e6) return 'L '+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'L '+(n/1e3).toFixed(0)+'K'; return 'L '+n.toLocaleString('es-HN'); };
+  document.getElementById('ep-recent').innerHTML = allSorted.length
+    ? allSorted.map(a => {
+        const pats = (a.patterns||'').split(',').filter(Boolean).map(p => PLABELS[p.trim()]||p.trim());
+        const patBadges = pats.map(p => `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(255,171,0,0.12);color:var(--amber);border:1px solid rgba(255,171,0,0.25);white-space:nowrap;">${p}</span>`).join('');
+        return `<div class="fuente-recent-item" style="flex-direction:column;align-items:flex-start;gap:4px;padding:8px 10px;">
+          <div style="display:flex;align-items:center;gap:8px;width:100%;">
+            <span class="fri-id" style="flex-shrink:0;">${a.alert_id || '#' + a.id}</span>
+            <span class="fri-desc" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(a.description||'').replace(/"/g,'&quot;')}">${a.description||'—'}</span>
+            <span class="fri-sev" style="color:${sevColor(a.severity)};flex-shrink:0;">${a.severity||'—'}</span>
+            <span style="font-size:10px;color:var(--electric);flex-shrink:0;font-family:'JetBrains Mono',monospace;">${fmtLv(a.monto_contrato)}</span>
+          </div>
+          ${patBadges ? `<div style="display:flex;gap:4px;flex-wrap:wrap;padding-left:2px;">${patBadges}</div>` : ''}
+        </div>`;
+      }).join('')
     : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos para este proveedor.</div>`;
+
+  // Reset tabs to "recent"
+  document.querySelectorAll('.ep-drill-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('.ep-drill-tab[data-tab="recent"]').classList.add('active');
+  document.querySelectorAll('.ep-drill-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('ep-drill-recent').classList.add('active');
 
   // Show EA controls in vendor mode
   const eaCard    = document.getElementById('ea-vendor-card');

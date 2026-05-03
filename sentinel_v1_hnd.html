@@ -1993,7 +1993,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">⚡</span> Anomalías
       </button>
       <button class="nav-item" id="nav-sector" onclick="showSectorPanel()">
-        <span class="nav-icon">🏛️</span> Por Sector
+        <span class="nav-icon">🏛️</span> Sectores Institucionales
       </button>
     </div>
 
@@ -2070,7 +2070,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
         <span class="po-status-pill"><span class="po-status-dot"></span>Sistema Activo</span>
-        <span class="po-badge electric">v1.38 · 2026</span>
+        <span class="po-badge electric">v1.53 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
       </div>
     </div>
@@ -2117,7 +2117,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
             <span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showSectorPanel)">
-            <span class="po-item-icon">🏗️</span><span class="po-item-label">Por Sector</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🏛️</span><span class="po-item-label">Sectores Institucionales</span><span class="po-arrow">›</span>
           </button>
         </div>
       </div>
@@ -2421,6 +2421,16 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           </div>
         </div>
         <div class="exec-card-note" style="margin-top:10px;">▸ Clic para ver detalle completo →</div>
+      </div>
+      <!-- Candidatos Detectados card — clickeable → candidatosPanel -->
+      <div class="exec-card exec-card-amber" onclick="showCandidatosPanel()" title="Ver candidatos a investigación" style="cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor=''">
+        <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Candidatos Detectados</span>
+          <span style="background:var(--amber);color:#000;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">🎯</span>
+        </div>
+        <div class="exec-card-value" id="exec-candidatos-val">—</div>
+        <div class="exec-card-sub">≥2 patrones · ≥L 10M acumulado</div>
+        <div class="exec-card-note">▸ Clic para ver ranking →</div>
       </div>
     </div>
     <!-- P4 — Score de Riesgo Institucional (moved above P5 for visibility) -->
@@ -3148,7 +3158,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
       <!-- Panel Header -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-        <div class="fuente-title" style="font-size:12px;color:var(--text);letter-spacing:.08em;">📊 ANÁLISIS DE CONCENTRACIÓN DE PROVEEDORES</div>
+        <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+          <span>📊</span>
+          <span>Análisis de Concentración de Proveedores</span>
+        </div>
         <div style="display:flex;gap:8px;">
           <button onclick="exportVendorConcentration('csv')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a CSV">📥 CSV</button>
           <button onclick="exportVendorConcentration('pareto-pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF top proveedores (80% del monto)">📄 Pareto</button>
@@ -6973,6 +6986,9 @@ function renderCandidatosDetectados() {
   // Update nav chip
   const navChip = document.getElementById('nav-candidatos-chip');
   if (navChip) navChip.textContent = candidatos.length || '—';
+  // Update exec card
+  const execCandidatos = document.getElementById('exec-candidatos-val');
+  if (execCandidatos) execCandidatos.textContent = candidatos.length || '—';
 
   if (!candidatos.length) {
     container.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:20px;text-align:center;">Sin candidatos con ≥2 patrones y ≥L 10M.</div>';

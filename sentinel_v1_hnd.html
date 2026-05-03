@@ -7064,8 +7064,9 @@ function renderCandidatosDetectados() {
 }
 
 function iniciarInvestigacion(proveedorNombre) {
-  // Navega directamente al panel del proveedor con todos sus contratos
-  hideCandidatosPanel();
+  // Cierra candidatosPanel sin restaurar la vista principal, luego abre vendor panel
+  document.getElementById('candidatosPanel').classList.remove('open');
+  document.getElementById('nav-candidatos').classList.remove('active');
   showVendorPanel(proveedorNombre);
 }
 

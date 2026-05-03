@@ -1987,7 +1987,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">🔴</span> Concentración
       </button>
       <button class="nav-item" id="nav-sobrecostos" onclick="showGlobalSobrecostos()">
-        <span class="nav-icon">💰</span> Sobrecostos
+        <span class="nav-icon">💰</span> Sobrepresupuesto
       </button>
       <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()">
         <span class="nav-icon">⚡</span> Anomalías
@@ -7037,24 +7037,9 @@ function renderCandidatosDetectados() {
 }
 
 function iniciarInvestigacion(proveedorNombre) {
-  // Pre-carga el proveedor en el buscador global y navega al panel principal
+  // Navega directamente al panel del proveedor con todos sus contratos
   hideCandidatosPanel();
-  const searchInput = document.getElementById('global-search') || document.getElementById('searchInput') || document.getElementById('globalSearch') || document.querySelector('input[type="search"]');
-  if (searchInput) {
-    searchInput.value = proveedorNombre;
-    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-  // Muestra notificación
-  const toast = document.createElement('div');
-  toast.textContent = '🔍 Investigación iniciada: ' + proveedorNombre;
-  Object.assign(toast.style, {
-    position:'fixed', bottom:'80px', left:'50%', transform:'translateX(-50%)',
-    background:'rgba(99,102,241,0.92)', color:'#fff', padding:'10px 20px',
-    borderRadius:'8px', fontSize:'12px', fontWeight:'600', zIndex:'9999',
-    boxShadow:'0 4px 20px rgba(0,0,0,0.4)', whiteSpace:'nowrap'
-  });
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+  showVendorPanel(proveedorNombre);
 }
 
 // ── Búsqueda BD — S47: query directo Supabase (127K registros) ───────────────

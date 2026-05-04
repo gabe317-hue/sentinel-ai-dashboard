@@ -4112,6 +4112,9 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
         Funcionarios, empresas y fundaciones señaladas por CNA, UFERCO y Ministerio Público de Honduras (2022–2026). Cruza contra contratos monitoreados activos.
       </div>
+      <div style="margin-top:14px;">
+        <button class="pdf-btn" onclick="exportRedFlagPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);">📄 PDF Red Flags</button>
+      </div>
     </div>
     <div style="margin-top:22px;">
       <div id="rfSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:0 0 14px;padding:14px 18px;background:rgba(255,61,87,0.07);border:1px solid rgba(255,61,87,0.2);border-radius:10px;">
@@ -14685,6 +14688,142 @@ function exportOfacPDF() {
   pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
+}
+
+// ══════════════════════════════════════════════════════════════
+// RED FLAGS PDF EXPORT — CNA / UFERCO / MP Honduras
+// ══════════════════════════════════════════════════════════════
+function exportRedFlagPDF() {
+  if (!window.allAlerts || !window.allAlerts.length) { alert('Datos no cargados.'); return; }
+  const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const fmtL = n => { if (!n) return 'L. —'; if (n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const today = new Date();
+  const ds = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-RF-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  // Build actor map
+  const actorMap = {};
+  REDFLAG_LIST_HND.forEach(e => { actorMap[norm(e.search)] = { meta: e, alerts: [] }; });
+  window.allAlerts.forEach(a => {
+    const hay = norm([a.proveedor_nombre,a.supplier_name,a.proveedor,a.entity_name,a.entidad_nombre,a.descripcion,a.object_contract].join(' '));
+    REDFLAG_LIST_HND.forEach(e => { if (hay.includes(norm(e.search))) actorMap[norm(e.search)].alerts.push(a); });
+  });
+  const activeActors = Object.values(actorMap).filter(b => b.alerts.length > 0).sort((a,b) => b.alerts.length - a.alerts.length);
+  const totalContratos = activeActors.reduce((s,b) => s+b.alerts.length, 0);
+  const totalMonto = activeActors.reduce((s,b) => s+b.alerts.reduce((ss,a) => ss+Number(a.monto_contrato||0),0), 0);
+  const totalCriticos = activeActors.reduce((s,b) => s+b.alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length, 0);
+
+  const actorRows = activeActors.map(bucket => {
+    const { meta, alerts } = bucket;
+    const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+    const criticos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+    const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
+    const entidades = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
+    const nivelColor = meta.nivel === 'alto' ? '#dc2626' : '#d97706';
+    const nivelBg    = meta.nivel === 'alto' ? '#7f1d1d' : '#451a03';
+    const detRows = alerts.slice(0,20).map(a => {
+      const sev=(a.severity||a.severidad||'').toUpperCase();
+      const sc=sev==='CRÍTICA'?'#dc2626':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
+      const prov=a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
+      const ent=a.entity_name||a.entidad_nombre||'—';
+      const id=a.alert_id||a.id||'—';
+      return `<tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:5px 8px;font-family:monospace;font-size:9px;color:#666;">${String(id).slice(0,14)}</td>
+        <td style="padding:5px 8px;font-size:10px;">${ent.length>40?ent.slice(0,40)+'…':ent}</td>
+        <td style="padding:5px 8px;font-size:10px;">${prov.length>35?prov.slice(0,35)+'…':prov}</td>
+        <td style="padding:5px 8px;text-align:right;font-size:10px;">${fmtL(Number(a.monto_contrato||0))}</td>
+        <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:9px;color:${sc};">${sev}</td>
+      </tr>`;
+    }).join('');
+    return `
+    <div style="margin-bottom:28px;border:2px solid #dc2626;border-radius:8px;overflow:hidden;page-break-inside:avoid;">
+      <div style="background:${nivelBg};color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">🚩 ${meta.full}</div>
+          <div style="font-size:11px;opacity:0.85;margin-top:2px;">${meta.role}</div>
+        </div>
+        <div style="text-align:right;font-size:11px;">
+          <div style="font-weight:700;">${alerts.length} contratos · ${fmtL(monto)}</div>
+          ${criticos?`<div style="color:#fca5a5;">${criticos} CRÍTICOS</div>`:''}
+          ${altos?`<div style="color:#fde68a;">${altos} ALTOS</div>`:''}
+        </div>
+      </div>
+      <div style="padding:10px 16px;background:#fff5f5;font-size:11px;color:#555;border-bottom:1px solid #fecaca;">
+        <strong>Caso:</strong> ${meta.role} &nbsp;|&nbsp; <strong>Entidades involucradas:</strong> ${entidades.slice(0,5).join(' · ')}${entidades.length>5?' · …':''}
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead style="background:#fef2f2;">
+          <tr>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">ID</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Entidad</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Proveedor</th>
+            <th style="padding:6px 8px;text-align:right;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Monto</th>
+            <th style="padding:6px 8px;text-align:center;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Sev.</th>
+          </tr>
+        </thead>
+        <tbody>${detRows}${alerts.length>20?`<tr><td colspan="5" style="padding:8px;text-align:center;color:#888;font-size:10px;">… y ${alerts.length-20} contratos adicionales</td></tr>`:''}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+
+  const sinCoincidencias = activeActors.length === 0 ? `
+    <div style="padding:40px;text-align:center;color:#888;border:1px solid #fecaca;border-radius:8px;background:#fff5f5;">
+      <div style="font-size:24px;margin-bottom:12px;">✅</div>
+      <div style="font-weight:600;">Sin coincidencias detectadas</div>
+      <div style="font-size:11px;margin-top:6px;">Ninguna entidad de la lista aparece como proveedor en los contratos monitoreados actuales.</div>
+    </div>` : actorRows;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — Red Flags CNA/UFERCO</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 portrait;margin:18mm 15mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fff;padding:24px 28px 20px;margin-bottom:20px;}
+    .kpi-row{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+    .kpi-box{flex:1;min-width:100px;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;background:#fff5f5;text-align:center;}
+    .kpi-val{font-size:22px;font-weight:700;color:#dc2626;}
+    .kpi-lbl{font-size:10px;color:#888;margin-top:4px;letter-spacing:.05em;}
+    .info-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:#92400e;}
+    .footer{margin-top:30px;padding-top:12px;border-top:2px solid #dc2626;display:flex;justify-content:space-between;font-size:10px;color:#888;}
+    .classification{background:#dc2626;color:#fff;text-align:center;padding:6px;font-size:10px;font-weight:700;letter-spacing:.12em;margin-top:16px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:6px;">SISTEMA SENTINEL — HONDURAS</div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:4px;">🚩 Reporte: Entidades de Alto Riesgo</div>
+        <div style="font-size:11px;opacity:.8;">CNA · UFERCO · Ministerio Público · Corrupción Pública 2022–2026</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.8;">
+        <div style="font-size:13px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:4px;">${ds}</div>
+        <div style="margin-top:2px;">Base: ${(window.allAlerts||[]).length.toLocaleString()} contratos monitoreados</div>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-val">${activeActors.length || '0'}</div><div class="kpi-lbl">ENTIDADES COINCIDENTES</div></div>
+    <div class="kpi-box"><div class="kpi-val">${totalContratos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS VINCULADOS</div></div>
+    <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">MONTO TOTAL EXPUESTO</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">${totalCriticos}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
+  </div>
+  <div class="info-box">
+    ⚠️ Este reporte identifica contratos públicos de Honduras cuyos proveedores o entidades coinciden con actores señalados por el CNA, UFERCO o Ministerio Público en casos de corrupción documentados (2022–2026). Los datos son de referencia; las coincidencias no implican sentencia judicial.
+  </div>
+  ${sinCoincidencias}
+  <div class="footer">
+    <span>Sistema Sentinel — Detección de Fraude en Contratación Pública</span>
+    <span>${folio} · ${ds}</span>
+  </div>
+  <div class="classification">USO INTERNO — SISTEMA SENTINEL · CONFIDENCIAL</div>
+  </body></html>`;
+
+  const win = window.open('','_blank','width=900,height=700');
+  if (!win) { alert('Permite ventanas emergentes para generar el PDF.'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => { win.focus(); win.print(); };
 }
 
 // ══════════════════════════════════════════════════════════════

@@ -2165,6 +2165,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
             <span class="po-item-icon">📋</span><span class="po-item-label">Reporte Completo</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
           </button>
           <div class="po-divider"></div>
+          <div class="po-rpt-group-label">Actores de Riesgo</div>
+          <button class="po-item" onclick="poGo(showRedFlagPanel)">
+            <span class="po-item-icon">🚩</span><span class="po-item-label">Red Flags CNA/UFERCO</span><span class="po-item-tag" style="background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);">NUEVO</span><span class="po-arrow">›</span>
+          </button>
           <div class="po-rpt-group-label">Referencias Internacionales</div>
           <button class="po-item" onclick="poGo(showEngelPanel)">
             <span class="po-item-icon">🇺🇸</span><span class="po-item-label">Lista Engel</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
@@ -4097,6 +4101,31 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     </div>
   </div>
 
+  <!-- ═══════════════════ RED FLAGS CNA/UFERCO PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="redFlagPanel">
+    <button class="fuente-back" onclick="hideRedFlagPanel()">← Contratos</button>
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>🚩</span>
+        <span>Entidades de Alto Riesgo — CNA / UFERCO / MP</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Funcionarios, empresas y fundaciones señaladas por CNA, UFERCO y Ministerio Público de Honduras (2022–2026). Cruza contra contratos monitoreados activos.
+      </div>
+    </div>
+    <div style="margin-top:22px;">
+      <div id="rfSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:0 0 14px;padding:14px 18px;background:rgba(255,61,87,0.07);border:1px solid rgba(255,61,87,0.2);border-radius:10px;">
+        <div><span style="font-size:11px;color:var(--muted);">ENTIDADES COINCIDENTES</span><br><span id="rf-stat-actores"   style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">CONTRATOS VINCULADOS</span><br><span id="rf-stat-contratos" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="rf-stat-monto"     style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">CONTRATOS CRÍTICOS</span><br><span id="rf-stat-criticos"  style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+      </div>
+      <div id="redFlagBody" style="margin-top:12px;">
+        <div style="color:var(--muted);padding:40px;text-align:center;">Cargando análisis Red Flags...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══════════════════ ENGEL PANEL ═══════════════════ -->
   <!-- ═══════════════════ LISTAS INTERNACIONALES (Engel + OFAC) ═══════════════════ -->
   <div class="fuente-panel" id="listasPanel">
@@ -4728,6 +4757,7 @@ async function loadAlerts() {
     buildNewsMatchIndex(); // Opción E — entity/vendor index (all records)
     buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
     buildEngelIndex();     // P4 — Lista Engel EE.UU. cross-reference
+    buildRedFlagIndex();   // S59 — Entidades alto riesgo CNA/UFERCO/MP Honduras
     renderCandidatosDetectados(); // Populate nav chip count on load
     setStatus('connected');
     hideError();
@@ -11848,6 +11878,26 @@ function renderAuditLog() {
 // ════════════════════════════════════════════════════════════
 const USD_RATE = 24.5; // HNL per USD (approx 2025)
 
+// ── RED FLAGS CNA/UFERCO Honduras (Entidades de Alto Riesgo) ──
+// Fuente: CNA, UFERCO, Ministerio Público — incorporado S59 (2026-05-04)
+// Actualizar cuando MP/CNA publiquen nuevos casos o nombres de empresas/ONG.
+const REDFLAG_LIST_HND = [
+  // PERSONAS — Funcionarios implicados
+  { search: 'vaquero',             full: 'Tomás Vaquero',                          role: 'Exministro Gobernación · Red ONG-SGJD 2022-2024',   nivel: 'alto' },
+  { search: 'pinto dubon',         full: 'Jackeline Lizzette Pinto Dubón',         role: 'Exgerente Gobernación · Red ~L103M',                 nivel: 'alto' },
+  { search: 'bogran',              full: 'Marco Bográn',                           role: 'Exdirector Invest-H · Sentencia firme hospitales',   nivel: 'alto' },
+  { search: 'tabora',              full: 'Rocío Isabel Tábora',                    role: 'Exsecretaria Finanzas · Hospitales móviles',         nivel: 'alto' },
+  { search: 'alba consuelo flores',full: 'Alba Consuelo Flores',                  role: 'Exministra Salud · Hospitales móviles',              nivel: 'alto' },
+  { search: 'carlos zelaya',       full: 'Carlos Zelaya',                         role: 'Exdiputado · Narcopolítica campaña 2013',            nivel: 'alto' },
+  { search: 'jose zelaya',         full: 'José Zelaya',                           role: 'Exministro Defensa · Vínculo caso Zelaya',           nivel: 'medio_alto' },
+  // FUNDACIONES implicadas directamente
+  { search: 'todos somos honduras',full: 'Todos Somos Honduras',                 role: 'Fundación · Pandora II · fondos irregulares Congreso',nivel: 'alto' },
+  { search: 'dibattista',          full: 'Dibattista',                            role: 'Fundación · Pandora II · fondos irregulares Congreso',nivel: 'alto' },
+  // ENTIDADES PÚBLICAS de alto riesgo
+  { search: 'invest-h',            full: 'Invest-H',                             role: 'Inversión Estratégica HND · Hospitales móviles',     nivel: 'alto' },
+];
+let _redFlagMatchedIds = new Set();
+
 // ── LISTA ENGEL Honduras (Depto. de Estado EE.UU. — Ley RENACER) ──
 // Fuente: state.gov · Actualizar cuando el Depto. de Estado publique nueva lista
 const ENGEL_LIST_HND = [
@@ -14032,6 +14082,115 @@ function buildHighRiskIndex() {
   console.log(`🚨 Índice alto riesgo (CRÍTICA/ALTA): ${highRisk.length} contratos, ${_highRiskIndex.entities.length} entidades, ${_highRiskIndex.vendors.length} proveedores`);
 }
 
+// ── RED FLAGS CNA/UFERCO — Cross-reference contra allAlerts ────────────────────
+// Busca entidades de alto riesgo (CNA, UFERCO, MP) en proveedor, entidad y descripción.
+function buildRedFlagIndex() {
+  if (!window.allAlerts || !window.allAlerts.length) return;
+  const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  _redFlagMatchedIds = new Set();
+  window.allAlerts.forEach(a => {
+    const haystack = norm([
+      a.proveedor_nombre, a.supplier_name, a.proveedor,
+      a.entity_name, a.entidad_nombre,
+      a.descripcion, a.object_contract
+    ].join(' '));
+    if (REDFLAG_LIST_HND.some(e => haystack.includes(norm(e.search)))) {
+      _redFlagMatchedIds.add(a.alert_id || a.id);
+    }
+  });
+  const chip = document.getElementById('nav-redflag-chip');
+  if (chip) chip.textContent = _redFlagMatchedIds.size || '—';
+  console.log(`🚩 Red Flag index built: ${_redFlagMatchedIds.size} contratos con coincidencia CNA/UFERCO`);
+}
+
+function renderRedFlagPanel() {
+  const body = document.getElementById('redFlagBody');
+  if (!body) return;
+  if (!window.allAlerts || !window.allAlerts.length) {
+    body.innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">No hay datos cargados.</div>';
+    return;
+  }
+  const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const fmtL = n => { if (!n) return 'L. —'; if (n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+
+  const actorMap = {};
+  REDFLAG_LIST_HND.forEach(e => { actorMap[norm(e.search)] = { meta: e, alerts: [] }; });
+
+  window.allAlerts.forEach(a => {
+    const hay = norm([a.proveedor_nombre, a.supplier_name, a.proveedor, a.entity_name, a.entidad_nombre, a.descripcion, a.object_contract].join(' '));
+    REDFLAG_LIST_HND.forEach(e => {
+      if (hay.includes(norm(e.search))) actorMap[norm(e.search)].alerts.push(a);
+    });
+  });
+
+  const activeActors = Object.values(actorMap).filter(b => b.alerts.length > 0);
+  const totalContratos = activeActors.reduce((s,b) => s + b.alerts.length, 0);
+  const totalMonto = activeActors.reduce((s,b) => s + b.alerts.reduce((ss,a) => ss + Number(a.monto_contrato||0), 0), 0);
+  const totalCriticos = activeActors.reduce((s,b) => s + b.alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA').length, 0);
+
+  document.getElementById('rf-stat-actores').textContent   = activeActors.length || '—';
+  document.getElementById('rf-stat-contratos').textContent = totalContratos.toLocaleString() || '—';
+  document.getElementById('rf-stat-monto').textContent     = fmtL(totalMonto);
+  document.getElementById('rf-stat-criticos').textContent  = totalCriticos.toLocaleString() || '—';
+
+  if (activeActors.length === 0) {
+    body.innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">Sin coincidencias detectadas. Las entidades de riesgo no aparecen en los contratos monitoreados actuales.</div>';
+    return;
+  }
+
+  let html = '';
+  activeActors.sort((a,b) => b.alerts.length - a.alerts.length).forEach(bucket => {
+    const { meta, alerts } = bucket;
+    const monto    = alerts.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
+    const criticos = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA').length;
+    const altos    = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'ALTA').length;
+    const nivelColor = meta.nivel === 'alto' ? 'var(--red)' : 'var(--amber)';
+    html += `
+    <div style="margin-bottom:28px;border:1px solid rgba(255,61,87,0.25);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;background:rgba(255,61,87,0.07);border-bottom:1px solid rgba(255,61,87,0.15);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:${nivelColor};">🚩 ${meta.full}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px;">${meta.role}</div>
+        </div>
+        <div style="display:flex;gap:14px;font-size:12px;">
+          <span style="color:var(--text-dim);">${alerts.length} contratos</span>
+          <span style="color:var(--text-dim);">${fmtL(monto)}</span>
+          ${criticos ? `<span style="color:var(--red);font-weight:700;">${criticos} CRÍTICOS</span>` : ''}
+          ${altos    ? `<span style="color:var(--amber);">${altos} ALTOS</span>` : ''}
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:rgba(255,255,255,0.03);">
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">ID</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Entidad</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Proveedor</th>
+          <th style="padding:8px 12px;text-align:right;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Monto</th>
+          <th style="padding:8px 12px;text-align:center;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Severidad</th>
+        </tr></thead>
+        <tbody>
+          ${alerts.slice(0,50).map(a => {
+            const sev = (a.severity||a.severidad||'').toUpperCase();
+            const sevColor = sev==='CRÍTICA'?'var(--red)':sev==='ALTA'?'var(--amber)':sev==='MEDIA'?'#4d9de0':'var(--muted)';
+            const prov = a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
+            const ent  = a.entity_name||a.entidad_nombre||'—';
+            const id   = a.alert_id||a.id||'—';
+            const mc   = Number(a.monto_contrato||0);
+            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="openAlertDetail(${a.id}, event)">
+              <td style="padding:7px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;">${String(id).slice(0,12)}…</td>
+              <td style="padding:7px 12px;color:var(--text);">${ent.length>35?ent.slice(0,35)+'…':ent}</td>
+              <td style="padding:7px 12px;color:var(--text-dim);">${prov.length>30?prov.slice(0,30)+'…':prov}</td>
+              <td style="padding:7px 12px;text-align:right;color:var(--electric);">${fmtL(mc)}</td>
+              <td style="padding:7px 12px;text-align:center;color:${sevColor};font-weight:700;font-size:10px;">${sev||'—'}</td>
+            </tr>`;
+          }).join('')}
+          ${alerts.length>50?`<tr><td colspan="5" style="padding:10px 12px;text-align:center;color:var(--muted);font-size:11px;">… y ${alerts.length-50} contratos más</td></tr>`:''}
+        </tbody>
+      </table>
+    </div>`;
+  });
+  body.innerHTML = html;
+}
+
 // ── P4: LISTA ENGEL — Cross-reference contra allAlerts ─────────────────────────
 // Busca coincidencias de apellidos normalizados de la Lista Engel contra
 // proveedor_nombre, entity_name y descripción de cada contrato.
@@ -14073,6 +14232,18 @@ function hideListasPanel() {
 }
 function showEngelPanel() { showListasPanel(); }
 function hideEngelPanel()  { hideListasPanel(); }
+
+function showRedFlagPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('redFlagPanel').classList.add('open');
+  renderRedFlagPanel();
+}
+function hideRedFlagPanel() {
+  document.getElementById('redFlagPanel').classList.remove('open');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+}
 
 function renderEngelPanel() {
   if (!window.allAlerts || !window.allAlerts.length) {

@@ -14819,11 +14819,11 @@ function exportRedFlagPDF() {
   <div class="classification">USO INTERNO — SISTEMA SENTINEL · CONFIDENCIAL</div>
   </body></html>`;
 
-  const win = window.open('','_blank','width=900,height=700');
-  if (!win) { alert('Permite ventanas emergentes para generar el PDF.'); return; }
-  win.document.write(html);
-  win.document.close();
-  win.onload = () => { win.focus(); win.print(); };
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Permite ventanas emergentes para generar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 // ══════════════════════════════════════════════════════════════

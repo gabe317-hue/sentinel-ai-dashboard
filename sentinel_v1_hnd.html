@@ -11623,6 +11623,7 @@ function showEnhancedDetectionReport() {
 // PORTAL OVERLAY
 // ════════════════════════════════════════════════════════════
 function showPortal() {
+  document.querySelectorAll('.po-card').forEach(c => c.classList.remove('po-expanded'));
   document.getElementById('portalOverlay').classList.add('visible');
   poUpdateIndicators();
 }

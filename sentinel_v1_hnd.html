@@ -4103,7 +4103,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
   <!-- ═══════════════════ RED FLAGS CNA/UFERCO PANEL ═══════════════════ -->
   <div class="fuente-panel" id="redFlagPanel">
-    <button class="fuente-back" onclick="hideRedFlagPanel()">← Contratos</button>
+    <button class="fuente-back" onclick="hideRedFlagPanel()">← Portal</button>
     <div class="fuente-header">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
         <span>🚩</span>
@@ -14243,9 +14243,7 @@ function showRedFlagPanel() {
 }
 function hideRedFlagPanel() {
   document.getElementById('redFlagPanel').classList.remove('open');
-  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+  showPortal();
 }
 
 function renderEngelPanel() {

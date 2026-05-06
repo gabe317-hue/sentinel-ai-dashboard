@@ -11906,15 +11906,67 @@ let _redFlagMatchedIds = new Set();
 
 // ── LISTA ENGEL Honduras (Depto. de Estado EE.UU. — Ley RENACER) ──
 // Fuente: state.gov · Actualizar cuando el Depto. de Estado publique nueva lista
+// Lista Engel Honduras — 52 entradas (S64, May 6 2026)
+// Fuente: U.S. Department of State / Ley RENACER
+// NOTA: ~90% son políticos que no aparecen como proveedores directos.
+// Incluidos para cobertura futura (ENEE, municipalidades, nuevas fuentes).
 const ENGEL_LIST_HND = [
-  { search: 'casana',               full: 'Edgardo Antonio Casaña Meza',          role: 'Diputado LIBRE · SEDUC Cortés' },
-  { search: 'bonilla de lobo',      full: 'Rosa Elena Bonilla de Lobo',           role: 'Ex-Primera Dama' },
-  { search: 'chimirri',             full: 'Marcelo Chimirri Osbén',               role: 'Ex-Director CONATEL' },
-  { search: 'silvestri',            full: 'Emilio Silvestri',                     role: 'Ex-Director SAR' },
-  { search: 'rosenthal',            full: 'Yani Rosenthal Hidalgo',               role: 'Ex-Ministro' },
-  { search: 'hernandez alvarado',   full: 'Juan Orlando Hernández Alvarado',      role: 'Ex-Presidente' },
-  { search: 'bonilla castellanos',  full: 'Teodora Bonilla Castellanos',          role: 'Ex-Directora INSEP' },
-  { search: 'funez izaguirre',      full: 'Luis Alonso Fúnez Izaguirre',          role: 'Ex-Comisionado CONATEL' },
+  // ── 2021 ──────────────────────────────────────────────────────────────
+  { search: 'bogran corrales',      full: 'Marco Antonio Bográn Corrales',        role: 'Ex-Director INVEST-H', year: 2021 },
+  { search: 'bonilla de lobo',      full: 'Rosa Elena Bonilla de Lobo',           role: 'Ex-Primera Dama (2010–2014)', year: 2021 },
+  { search: 'cruz asensio',         full: 'Augusto Domingo Cruz Asensio',         role: 'Ex-Diputado CN', year: 2021 },
+  { search: 'discua elvir',         full: 'José Celín Discua Elvir',              role: 'Diputado CN', year: 2021 },
+  { search: 'hernandez alvarado',   full: 'Juan Orlando Hernández Alvarado',      role: 'Ex-Presidente Honduras', year: 2021 },
+  { search: 'irias navas',          full: 'Rodolfo Irías Navas',                  role: 'Diputado CN', year: 2021 },
+  { search: 'juarez sarabia',       full: 'Eleazar Alexánder Juárez Sarabia',     role: 'Ex-Diputado CN', year: 2021 },
+  { search: 'lobo sosa',            full: 'Porfirio Lobo Sosa',                   role: 'Ex-Presidente Honduras (2010–2014)', year: 2021 },
+  { search: 'lopez calderon gladis', full: 'Gladis Aurora López Calderón',        role: 'Ex-Junta Directiva CN · Arca Abierta', year: 2021 },
+  { search: 'martinez pineda',      full: 'Miguel Edgardo Martínez Pineda',       role: 'Diputado CN · Caso Pandora', year: 2021 },
+  { search: 'medina galo',          full: 'Sara Ismela Medina Galo',              role: 'Diputada CN', year: 2021 },
+  { search: 'najera oscar',         full: 'Oscar Nájera',                         role: 'Diputado CN', year: 2021 },
+  { search: 'padilla hernandez',    full: 'Héctor Enrique Padilla Hernández',     role: 'Ex-Diputado CN', year: 2021 },
+  { search: 'perez gustavo',        full: 'Gustavo Alberto Pérez',                role: 'Ex-Diputado CN · Caso Arca Abierta', year: 2021 },
+  { search: 'puertoseguera',        full: 'Milton Jesús Puertoseguera',           role: 'Diputado CN · Caso Arca Abierta', year: 2021 },
+  { search: 'rodriguez rodrigo audelia', full: 'Audelia Rodríguez Rodrigo',       role: 'Diputada CN', year: 2021 },
+  { search: 'sanchez fernandez dennys', full: 'Dennys Antonio Sánchez Fernández', role: 'Diputado CN', year: 2021 },
+  { search: 'santos ordonez elvin', full: 'Elvin Ernesto Santos Ordóñez',         role: 'Diputado CN', year: 2021 },
+  { search: 'valenzuela molina',    full: 'Juan Carlos Valenzuela Molina',        role: 'Diputado CN · Caso Arca Abierta', year: 2021 },
+  { search: 'vasquez elden',        full: 'Elden Vásquez',                        role: 'Diputado CN · Caso Pandora', year: 2021 },
+  { search: 'vasquez lopez welsy',  full: 'Welsy Milena Vásquez López',           role: 'Diputada CN · Caso Arca Abierta', year: 2021 },
+  { search: 'villeda aguilar',      full: 'Roman Villeda Aguilar',                role: 'Diputado CN', year: 2021 },
+  // ── 2022 ──────────────────────────────────────────────────────────────
+  { search: 'alvarado izaguirre carol', full: 'Carol Vanessa Alvarado Izaguirre', role: 'Ex-Gerente Financiera Casa Presidencial', year: 2022 },
+  { search: 'bonilla valladares',   full: 'Juan Carlos Bonilla Valladares',       role: 'Ex-Director Policía Nacional (2012–2013)', year: 2022 },
+  { search: 'casana mejia',         full: 'Edgardo Antonio Casaña Mejía',         role: 'Diputado LIBRE · SEDUC Cortés', year: 2022 },
+  { search: 'castillo mejia roberto', full: 'Roberto David Castillo Mejía',       role: 'Ex-Comité Ejecutivo ENEE (2006–2009)', year: 2022 },
+  { search: 'flores lanza',         full: 'Enrique Alberto Flores Lanza',         role: 'Ex-Ministro Presidencia (2008–2009)', year: 2022 },
+  { search: 'herrera carballo',     full: 'Harvis Edulfo Herrera Carballo',       role: 'Ex-Gerente Casa Presidencial (2010–2014)', year: 2022 },
+  { search: 'maradiaga juan ramon', full: 'Juan Ramón Maradiaga',                 role: 'Ex-Gerente General BANADESA (2010–2014)', year: 2022 },
+  { search: 'molina solorzano',     full: 'Gonzalo Molina Solórzano',             role: 'Ex-Gerente Suministros BANADESA', year: 2022 },
+  { search: 'montes rodriguez carlos josue', full: 'Carlos Josué Montes Rodríguez', role: 'Ex-Viceministro Trabajo 2011', year: 2022 },
+  { search: 'noriega gonzalez',     full: 'Claudia Yamilia Noriega González',     role: 'Ex-Coordinadora Tarjeta Catracha', year: 2022 },
+  { search: 'ordonez espinal',      full: 'Elmer Jeovanny Ordóñez Espinal',       role: 'Ex-Supervisor BANADESA (2010–2014)', year: 2022 },
+  { search: 'pastor vasquez javier', full: 'Javier Rodolfo Pastor Vásquez',       role: 'Ex-Viceministro Salud 2011', year: 2022 },
+  { search: 'romero puerto',        full: 'Carlos Josué Romero Puerto',           role: 'Ex-Coordinador Bono 10 Mil', year: 2022 },
+  { search: 'tome rasel',           full: 'Rasel Tomé',                           role: 'Vicepresidente CN', year: 2022 },
+  // ── 2023 ──────────────────────────────────────────────────────────────
+  { search: 'amdani bai',           full: 'Mohammad Yusuf Amdani Bai',            role: 'Empresario privado · influencia gubernamental', year: 2023 },
+  { search: 'batres cruz',          full: 'Edna Yolany Batres Cruz',              role: 'Ex-Ministra de Salud', year: 2023 },
+  { search: 'bendeck ramirez',      full: 'Víctor Elías Bendeck Ramírez',         role: 'Empresario · Ex-Diputado PARLACEN · ENEE', year: 2023 },
+  { search: 'chimirri',             full: 'Marcelo Antonio Chimirri Castro',      role: 'Ex-Director CONATEL/Hondutel', year: 2023 },
+  { search: 'garcia salgado samuel', full: 'Samuel García Salgado',               role: 'Diputado CN', year: 2023 },
+  { search: 'lopez orellana alexander', full: 'Alexander López Orellana',         role: 'Alcalde El Progreso · Sec. Gral. PL', year: 2023 },
+  { search: 'mejia arita',          full: 'Jesús Arturo Mejía Arita',             role: 'Ex-Gerente General ENEE', year: 2023 },
+  { search: 'moraes giron',         full: 'Álex Alberto Moraes Girón',            role: 'Ex-Gerente Administrativo INVEST-H', year: 2023 },
+  { search: 'ordonez roberto',      full: 'Roberto Ordóñez',                      role: 'Ex-Ministro Infraestructura · Ex-Ministro Energía', year: 2023 },
+  { search: 'pastor miguel soptravi', full: 'Miguel Pastor',                      role: 'Ex-Director SOPTRAVI', year: 2023 },
+  { search: 'rosenthal',            full: 'Yani Rosenthal Hidalgo',               role: 'Presidente Partido Liberal Honduras', year: 2023 },
+  { search: 'salgado bonilla',      full: 'Ricardo Arturo Salgado Bonilla',       role: 'Ex-Ministro Planificación Estratégica', year: 2023 },
+  { search: 'sanchez cristian adolfo', full: 'Cristian Adolfo Sánchez',           role: 'Particular · vinculado a corrupción', year: 2023 },
+  // ── 2024 ──────────────────────────────────────────────────────────────
+  { search: 'blanco luque',         full: 'Lourdes Pamela Blanco Luque',          role: 'Abogada · esposa Secretario SGJD · tráfico influencias', year: 2024 },
+  { search: 'diaz lupian',          full: 'Ebal Jair Díaz Lupián',               role: 'Ex-Secretario Presidencia (2018–2022)', year: 2024 },
+  { search: 'dubon marlina',        full: 'Sonia Marlina Dubón',                  role: 'Magistrada CSJ Sala Constitucional', year: 2024 },
 ];
 
 const PATTERN_LABELS = {

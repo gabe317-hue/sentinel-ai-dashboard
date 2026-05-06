@@ -2167,7 +2167,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <div class="po-divider"></div>
           <div class="po-rpt-group-label">Actores de Riesgo</div>
           <button class="po-item" onclick="poGo(showRedFlagPanel)">
-            <span class="po-item-icon">🚩</span><span class="po-item-label">Red Flags CNA/UFERCO</span><span class="po-item-tag" style="background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);">NUEVO</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🚩</span><span class="po-item-label">Red Flags CNA/UFERCO/ASJ</span><span class="po-item-tag" style="background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);">NUEVO</span><span class="po-arrow">›</span>
           </button>
           <div class="po-rpt-group-label">Referencias Internacionales</div>
           <button class="po-item" onclick="poGo(showEngelPanel)">
@@ -4107,7 +4107,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div class="fuente-header">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
         <span>🚩</span>
-        <span>Entidades de Alto Riesgo — CNA / UFERCO / MP</span>
+        <span>Entidades de Alto Riesgo — CNA / UFERCO / ASJ</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
         Funcionarios, empresas y fundaciones señaladas por CNA, UFERCO y Ministerio Público de Honduras (2022–2026). Cruza contra contratos monitoreados activos.
@@ -14160,7 +14160,7 @@ function buildRedFlagIndex() {
   });
   const chip = document.getElementById('nav-redflag-chip');
   if (chip) chip.textContent = _redFlagMatchedIds.size || '—';
-  console.log(`🚩 Red Flag index built: ${_redFlagMatchedIds.size} contratos con coincidencia CNA/UFERCO`);
+  console.log(`🚩 Red Flag index built: ${_redFlagMatchedIds.size} contratos con coincidencia CNA/UFERCO/ASJ`);
 }
 
 function renderRedFlagPanel() {
@@ -14381,7 +14381,7 @@ async function loadRedFlagPendientes() {
     section.innerHTML = `<div style="border:1px solid rgba(202,138,4,0.4);border-radius:10px;overflow:hidden;margin-bottom:16px;">
       <div style="padding:12px 18px;background:rgba(202,138,4,0.08);border-bottom:1px solid rgba(202,138,4,0.3);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
         <div style="font-size:13px;font-weight:700;color:#ca8a04;">⏳ Pendientes de revisión — Monitor Automático (${data.length})</div>
-        <div style="font-size:11px;color:var(--muted);">Auto-detectados por CNA/UFERCO · No activos hasta que apruebes</div>
+        <div style="font-size:11px;color:var(--muted);">Auto-detectados por CNA / UFERCO / ASJ · No activos hasta que apruebes</div>
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead><tr style="background:rgba(255,255,255,0.03);">
@@ -14942,7 +14942,7 @@ function exportRedFlagPDF() {
     </div>` : actorRows;
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Sentinel — Red Flags CNA/UFERCO</title>
+  <title>Sentinel — Red Flags CNA/UFERCO/ASJ</title>
   <style>
     body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
     @page{size:A4 portrait;margin:18mm 15mm;}

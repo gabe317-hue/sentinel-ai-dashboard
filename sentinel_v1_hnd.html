@@ -1964,7 +1964,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.0 — HND</div>
+    <div class="logo-version">v1.56 — HND</div>
   </div>
 
   <div class="nav">
@@ -4123,6 +4123,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="rf-stat-monto"     style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
         <div><span style="font-size:11px;color:var(--muted);">CONTRATOS CRÍTICOS</span><br><span id="rf-stat-criticos"  style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
       </div>
+      <div id="redFlagPendientes" style="margin-top:12px;display:none;"></div>
       <div id="redFlagBody" style="margin-top:12px;">
         <div style="color:var(--muted);padding:40px;text-align:center;">Cargando análisis Red Flags...</div>
       </div>
@@ -4761,6 +4762,7 @@ async function loadAlerts() {
     buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
     buildEngelIndex();     // P4 — Lista Engel EE.UU. cross-reference
     buildRedFlagIndex();   // S59 — Entidades alto riesgo CNA/UFERCO/MP Honduras
+    loadRedFlagsFromSupabase(); // S64 — merge activo=true records from Supabase
     renderCandidatosDetectados(); // Populate nav chip count on load
     setStatus('connected');
     hideError();
@@ -14240,11 +14242,111 @@ function hideEngelPanel()  { hideListasPanel(); }
 function showRedFlagPanel() {
   _closeAllFuentePanels();
   document.getElementById('redFlagPanel').classList.add('open');
+  loadRedFlagPendientes(); // S64 — muestra candidatos auto-detectados pendientes
   renderRedFlagPanel();
 }
 function hideRedFlagPanel() {
   document.getElementById('redFlagPanel').classList.remove('open');
   showPortal();
+}
+
+// ── S64: Cargar entidades activas desde Supabase y mergear con REDFLAG_LIST_HND ──
+async function loadRedFlagsFromSupabase() {
+  try {
+    const { data, error } = await _supabase
+      .from('entidades_alto_riesgo')
+      .select('*')
+      .eq('activo', true);
+    if (error || !data || !data.length) return;
+    const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const existingSearches = new Set(REDFLAG_LIST_HND.map(e => norm(e.search||'')));
+    let added = 0;
+    data.forEach(e => {
+      const searchTerm = norm(e.nombre_alternativo || e.nombre || '');
+      if (!searchTerm || existingSearches.has(searchTerm)) return;
+      REDFLAG_LIST_HND.push({
+        search: searchTerm,
+        full:   e.nombre,
+        role:   e.caso || e.tipo || '',
+        nivel:  ['alta','crítica','critica'].includes((e.nivel_riesgo||'').toLowerCase()) ? 'alto' : 'medio',
+        fuente: e.fuente || 'Supabase'
+      });
+      existingSearches.add(searchTerm);
+      added++;
+    });
+    if (added > 0) {
+      console.log(`[red-flags] ${added} entidades adicionales desde Supabase (activo=true)`);
+      buildRedFlagIndex();
+    }
+  } catch(err) { console.error('[red-flags] loadRedFlagsFromSupabase error:', err); }
+}
+
+// ── S64: Panel de pendientes — candidatos auto-detectados por monitor ──
+async function loadRedFlagPendientes() {
+  const section = document.getElementById('redFlagPendientes');
+  if (!section) return;
+  try {
+    const { data, error } = await _supabase
+      .from('entidades_alto_riesgo')
+      .select('*')
+      .eq('activo', false)
+      .order('created_at', { ascending: false });
+    if (error || !data || !data.length) { section.style.display = 'none'; return; }
+    let rows = data.map((e, i) => {
+      const bg = i%2===0 ? '' : 'background:rgba(255,255,255,0.02);';
+      const partes = (e.notas||'').split(' | ');
+      const artUrl   = partes[2] || '';
+      const artTitle = partes[1] || e.notas || '';
+      const artLink  = artUrl
+        ? `<a href="${artUrl}" target="_blank" style="color:#1d4ed8;font-size:11px;">${artTitle.substring(0,60)}…</a>`
+        : `<span style="font-size:11px;color:var(--text-dim);">${artTitle.substring(0,60)||'—'}</span>`;
+      return `<tr style="${bg}border-bottom:1px solid var(--border);">
+        <td style="padding:8px 12px;font-weight:600;color:var(--text);">${e.nombre}</td>
+        <td style="padding:8px 12px;color:var(--muted);font-size:11px;">${e.tipo||'—'}</td>
+        <td style="padding:8px 12px;color:var(--text-dim);font-size:11px;">${e.caso||'—'} <span style="color:#7c3aed;font-size:10px;">[${e.fuente||'—'}]</span></td>
+        <td style="padding:8px 12px;">${artLink}</td>
+        <td style="padding:8px 12px;text-align:center;white-space:nowrap;">
+          <button onclick="activarRedFlag(${e.id})" style="background:#16a34a;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;margin-right:4px;">✓ Activar</button>
+          <button onclick="rechazarRedFlag(${e.id})" style="background:rgba(239,68,68,0.08);color:#dc2626;border:1px solid rgba(239,68,68,0.3);border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+    section.innerHTML = `<div style="border:1px solid rgba(202,138,4,0.4);border-radius:10px;overflow:hidden;margin-bottom:16px;">
+      <div style="padding:12px 18px;background:rgba(202,138,4,0.08);border-bottom:1px solid rgba(202,138,4,0.3);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:13px;font-weight:700;color:#ca8a04;">⏳ Pendientes de revisión — Monitor Automático (${data.length})</div>
+        <div style="font-size:11px;color:var(--muted);">Auto-detectados por CNA/UFERCO · No activos hasta que apruebes</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:rgba(255,255,255,0.03);">
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Nombre</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Tipo</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Caso / Fuente</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Artículo fuente</th>
+          <th style="padding:8px 12px;text-align:center;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Acción</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+    section.style.display = 'block';
+  } catch(err) { console.error('[pendientes] error:', err); section.style.display = 'none'; }
+}
+
+async function activarRedFlag(id) {
+  try {
+    const { error } = await _supabase.from('entidades_alto_riesgo').update({ activo: true }).eq('id', id);
+    if (error) { alert('Error al activar: ' + error.message); return; }
+    await loadRedFlagPendientes();
+    await loadRedFlagsFromSupabase();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function rechazarRedFlag(id) {
+  if (!confirm('¿Rechazar y eliminar este candidato?')) return;
+  try {
+    const { error } = await _supabase.from('entidades_alto_riesgo').delete().eq('id', id);
+    if (error) { alert('Error al rechazar: ' + error.message); return; }
+    await loadRedFlagPendientes();
+  } catch(e) { alert('Error: ' + e.message); }
 }
 
 function renderEngelPanel() {

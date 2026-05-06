@@ -6601,7 +6601,7 @@ function openAlertDetail(alertId, event, source = 'tabla') {
 
   _alertDetailSource = source;
   const backBtn = document.getElementById('adp-back-btn');
-  if (backBtn) backBtn.textContent = source === 'busqueda' ? '← Búsqueda BD' : '← Contratos';
+  if (backBtn) backBtn.textContent = source === 'busqueda' ? '← Búsqueda BD' : source === 'redflag' ? '← Red Flags' : '← Contratos';
 
   const fmtL = n => n != null && n > 0
     ? 'L ' + Number(n).toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
@@ -6752,11 +6752,13 @@ function openAlertDetail(alertId, event, source = 'tabla') {
 
 function closeAlertDetail() {
   document.getElementById('alertDetailPanel').classList.remove('open');
-  if (_alertDetailSource === 'busqueda') {
-    _alertDetailSource = 'tabla';
+  const src = _alertDetailSource;
+  _alertDetailSource = 'tabla';
+  if (src === 'busqueda') {
     showBusquedaBDPanel();
+  } else if (src === 'redflag') {
+    showRedFlagPanel();
   } else {
-    _alertDetailSource = 'tabla';
     document.querySelector('.stats-grid').style.display      = '';
     document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
     document.getElementById('mainTableContainer').style.display = '';
@@ -14196,57 +14198,70 @@ function renderRedFlagPanel() {
     return;
   }
 
-  let html = '';
-  activeActors.sort((a,b) => b.alerts.length - a.alerts.length).forEach(bucket => {
+  // S65 — Vista colapsada: solo lista de entidades. Click expande contratos.
+  let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+  activeActors.sort((a,b) => b.alerts.length - a.alerts.length).forEach((bucket, idx) => {
     const { meta, alerts } = bucket;
     const monto    = alerts.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
     const criticos = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA').length;
     const altos    = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'ALTA').length;
     const nivelColor = meta.nivel === 'alto' ? 'var(--red)' : 'var(--amber)';
+    const tableRows = alerts.slice(0,50).map(a => {
+      const sev = (a.severity||a.severidad||'').toUpperCase();
+      const sevColor = sev==='CRÍTICA'?'var(--red)':sev==='ALTA'?'var(--amber)':sev==='MEDIA'?'#4d9de0':'var(--muted)';
+      const prov = a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
+      const ent  = a.entity_name||a.entidad_nombre||'—';
+      const id   = a.alert_id||a.id||'—';
+      const mc   = Number(a.monto_contrato||0);
+      return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="openAlertDetail(${a.id}, event, 'redflag')">
+        <td style="padding:7px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;">${String(id).slice(0,12)}…</td>
+        <td style="padding:7px 12px;color:var(--text);">${ent.length>35?ent.slice(0,35)+'…':ent}</td>
+        <td style="padding:7px 12px;color:var(--text-dim);">${prov.length>30?prov.slice(0,30)+'…':prov}</td>
+        <td style="padding:7px 12px;text-align:right;color:var(--electric);">${fmtL(mc)}</td>
+        <td style="padding:7px 12px;text-align:center;color:${sevColor};font-weight:700;font-size:10px;">${sev||'—'}</td>
+      </tr>`;
+    }).join('') + (alerts.length>50?`<tr><td colspan="5" style="padding:10px 12px;text-align:center;color:var(--muted);font-size:11px;">… y ${alerts.length-50} contratos más</td></tr>`:'');
+
     html += `
-    <div style="margin-bottom:28px;border:1px solid rgba(255,61,87,0.25);border-radius:12px;overflow:hidden;">
-      <div style="padding:14px 18px;background:rgba(255,61,87,0.07);border-bottom:1px solid rgba(255,61,87,0.15);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div style="border:1px solid rgba(255,61,87,0.25);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;background:rgba(255,61,87,0.07);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;cursor:pointer;" onclick="rfToggle(${idx})">
         <div>
           <div style="font-size:14px;font-weight:700;color:${nivelColor};">🚩 ${meta.full}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:3px;">${meta.role}</div>
         </div>
-        <div style="display:flex;gap:14px;font-size:12px;">
+        <div style="display:flex;gap:14px;font-size:12px;align-items:center;">
           <span style="color:var(--text-dim);">${alerts.length} contratos</span>
           <span style="color:var(--text-dim);">${fmtL(monto)}</span>
           ${criticos ? `<span style="color:var(--red);font-weight:700;">${criticos} CRÍTICOS</span>` : ''}
           ${altos    ? `<span style="color:var(--amber);">${altos} ALTOS</span>` : ''}
+          <span id="rf-chevron-${idx}" style="color:var(--muted);font-size:16px;transition:transform .2s;">▸</span>
         </div>
       </div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px;">
-        <thead><tr style="background:rgba(255,255,255,0.03);">
-          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">ID</th>
-          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Entidad</th>
-          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Proveedor</th>
-          <th style="padding:8px 12px;text-align:right;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Monto</th>
-          <th style="padding:8px 12px;text-align:center;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Severidad</th>
-        </tr></thead>
-        <tbody>
-          ${alerts.slice(0,50).map(a => {
-            const sev = (a.severity||a.severidad||'').toUpperCase();
-            const sevColor = sev==='CRÍTICA'?'var(--red)':sev==='ALTA'?'var(--amber)':sev==='MEDIA'?'#4d9de0':'var(--muted)';
-            const prov = a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
-            const ent  = a.entity_name||a.entidad_nombre||'—';
-            const id   = a.alert_id||a.id||'—';
-            const mc   = Number(a.monto_contrato||0);
-            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="openAlertDetail(${a.id}, event)">
-              <td style="padding:7px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;">${String(id).slice(0,12)}…</td>
-              <td style="padding:7px 12px;color:var(--text);">${ent.length>35?ent.slice(0,35)+'…':ent}</td>
-              <td style="padding:7px 12px;color:var(--text-dim);">${prov.length>30?prov.slice(0,30)+'…':prov}</td>
-              <td style="padding:7px 12px;text-align:right;color:var(--electric);">${fmtL(mc)}</td>
-              <td style="padding:7px 12px;text-align:center;color:${sevColor};font-weight:700;font-size:10px;">${sev||'—'}</td>
-            </tr>`;
-          }).join('')}
-          ${alerts.length>50?`<tr><td colspan="5" style="padding:10px 12px;text-align:center;color:var(--muted);font-size:11px;">… y ${alerts.length-50} contratos más</td></tr>`:''}
-        </tbody>
-      </table>
+      <div id="rf-table-${idx}" style="display:none;border-top:1px solid rgba(255,61,87,0.15);">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead><tr style="background:rgba(255,255,255,0.03);">
+            <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">ID</th>
+            <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Entidad</th>
+            <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Proveedor</th>
+            <th style="padding:8px 12px;text-align:right;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Monto</th>
+            <th style="padding:8px 12px;text-align:center;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Severidad</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
     </div>`;
   });
+  html += '</div>';
   body.innerHTML = html;
+}
+
+function rfToggle(idx) {
+  const tbl = document.getElementById('rf-table-' + idx);
+  const chv = document.getElementById('rf-chevron-' + idx);
+  if (!tbl) return;
+  const open = tbl.style.display === 'none';
+  tbl.style.display = open ? '' : 'none';
+  if (chv) chv.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 // ── P4: LISTA ENGEL — Cross-reference contra allAlerts ─────────────────────────

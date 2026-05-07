@@ -15602,7 +15602,7 @@ const INVESTIGATIONS_EXEC = [
     filtro: a => {
       const p = (a.proveedor_nombre||'').toUpperCase();
       const e = (a.entity_name||'').toUpperCase();
-      return p.includes('DICOMARCA') || e.includes('SENACIT');
+      return p.includes('DICOMARCA') || e.includes('ENERGIA') || e.includes('RECURSOS NATURALES');
     }
   },
   {
@@ -15628,7 +15628,7 @@ const INVESTIGATIONS_EXEC = [
     recomendacion: 'Ampliar búsqueda de patrón PROVEEDOR_FUERA_DE_GIRO en toda la BD. Priorizar SEDESOL e INFOP.',
     filtro: a => {
       const p = (a.proveedor_nombre||'').toUpperCase();
-      return p.includes('LIGTH TRENDS') || p.includes('VENTA REPUESTO');
+      return p.includes('LIGTH') || p.includes('TRENDS') || p.includes('VENTA DE REPUESTO') || p.includes('VARIEDADES') || p.includes('TIENDA AGROPECUARIA') || p.includes('ECONOMICA') || p.includes('DICOMARCA');
     }
   },
   {

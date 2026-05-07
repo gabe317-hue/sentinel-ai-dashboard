@@ -2148,7 +2148,33 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
           <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
         </div>
-        <div class="exec-more" onclick="executeTodasInvestigacionesPDF()">
+        <div id="exec-inv-extra" style="display:none;">
+          <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-002')">
+            <span class="exec-inv-id">SEN-INV-002</span>
+            <span class="exec-inv-name">Compra Menor + CORINFAR — Patrón CRÍTICA</span>
+            <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
+            <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
+          </div>
+          <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-003')">
+            <span class="exec-inv-id">SEN-INV-003</span>
+            <span class="exec-inv-name">INFOP — RILMAC · GREENTEC · Consultoría</span>
+            <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
+            <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
+          </div>
+          <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-004')">
+            <span class="exec-inv-id">SEN-INV-004</span>
+            <span class="exec-inv-name">SENACIT · DICOMARCA · Laptops Sobreprecio</span>
+            <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
+            <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
+          </div>
+          <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-006')">
+            <span class="exec-inv-id">SEN-INV-006</span>
+            <span class="exec-inv-name">Empresas Fuera de Giro — Patrón DICOMARCA</span>
+            <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
+            <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
+          </div>
+        </div>
+        <div class="exec-more" id="exec-more-btn" onclick="(function(){var x=document.getElementById('exec-inv-extra'),b=document.getElementById('exec-more-btn');x.style.display=x.style.display==='none'?'block':'none';b.textContent=x.style.display==='none'?'+ 4 más — ver todas las investigaciones':'▲ mostrar menos';})()">
           + 4 más — ver todas las investigaciones <span style="margin-left:auto;font-size:14px;">›</span>
         </div>
 

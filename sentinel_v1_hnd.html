@@ -2075,6 +2075,64 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
     </div>
 
+    <!-- ══ PLAYBOOK CARD — Consultas Rápidas PGR ══ -->
+    <div class="po-section-label">Consultas Rápidas — Playbook PGR</div>
+
+    <div class="po-card po-amber" id="poc-playbook" style="margin-bottom:20px;">
+      <div class="po-card-hd" style="cursor:default;">
+        <div class="po-card-icon"><span>🔍</span></div>
+        <div>
+          <div class="po-card-title">Consultas Rápidas</div>
+          <div class="po-card-desc">Playbook PGR · ejecuta query → PDF en 1 clic</div>
+        </div>
+        <div style="margin-left:auto;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">6 queries activas</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--border);">
+        <div onclick="executePlaybookQuery('prov-nuevo')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
+          <span style="width:7px;height:7px;border-radius:50%;background:#ef4444;flex-shrink:0;"></span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:600;color:var(--text);">Proveedor nuevo + contrato grande</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:1px;">&lt;90 días · &gt;L 500K</div>
+          </div>
+        </div>
+        <div onclick="executePlaybookQuery('prov-inactivo')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
+          <span style="width:7px;height:7px;border-radius:50%;background:#ef4444;flex-shrink:0;"></span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:600;color:var(--text);">Proveedor inactivo reactivado</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:1px;">Sin actividad 12+ meses</div>
+          </div>
+        </div>
+        <div onclick="executePlaybookQuery('contratacion-directa')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
+          <span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:600;color:var(--text);">Contratación directa por institución</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:1px;">Evita licitación · ranking</div>
+          </div>
+        </div>
+        <div onclick="executePlaybookQuery('top10-riesgo')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-right:1px solid var(--border);transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
+          <span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:600;color:var(--text);">Top 10 proveedores de riesgo</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:1px;">Score compuesto + monto total</div>
+          </div>
+        </div>
+        <div onclick="executePlaybookQuery('inst-alertas')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-right:1px solid var(--border);transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
+          <span style="width:7px;height:7px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:600;color:var(--text);">Instituciones con más alertas</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:1px;">Ranking señales por entidad</div>
+          </div>
+        </div>
+        <div onclick="executePlaybookQuery('evolucion-mensual')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
+          <span style="width:7px;height:7px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:600;color:var(--text);">Evolución mensual de alertas</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:1px;">Tendencia últimos 12 meses</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="po-section-label">Módulos del sistema</div>
 
     <div class="po-grid-top">
@@ -2211,7 +2269,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-card po-electric" id="poc-busqueda" onclick="poToggle('busqueda')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>🔎</span></div>
-          <div><div class="po-card-title">Búsqueda BD</div><div class="po-card-desc">127,832 registros · filtros avanzados</div></div>
+          <div><div class="po-card-title">Búsqueda BD</div><div class="po-card-desc"><span id="busqueda-card-count">—</span> registros · filtros avanzados</div></div>
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
@@ -4216,7 +4274,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span>🔍</span><span>Escáner Automático de Patrones</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Selecciona un patrón para escanear los 127,832 contratos en tiempo real · Sin intervención manual
+        Selecciona un patrón para escanear los <span id="scanner-total-registros">—</span> contratos en tiempo real · Sin intervención manual
       </div>
     </div>
     <div id="scannerPatternGrid" style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
@@ -4758,6 +4816,7 @@ async function loadAlerts() {
     allAlerts = all;
     window.allAlerts = allAlerts; // expose for Vista Ejecutiva
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
+    updateBDCountDisplay(allAlerts.length); // S67 — número dinámico en UI
     buildNewsMatchIndex(); // Opción E — entity/vendor index (all records)
     buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
     buildEngelIndex();     // P4 — Lista Engel EE.UU. cross-reference
@@ -11646,6 +11705,15 @@ function poToggle(id) {
   const wasOpen = card.classList.contains('po-expanded');
   document.querySelectorAll('.po-card').forEach(c => c.classList.remove('po-expanded'));
   if (!wasOpen) card.classList.add('po-expanded');
+}
+
+// S67 — número de registros dinámico en UI
+function updateBDCountDisplay(n) {
+  const fmt = n ? n.toLocaleString('es-HN') : '—';
+  ['bd-total-registros','scanner-total-registros','busqueda-card-count'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = fmt;
+  });
 }
 
 function poUpdateIndicators() {

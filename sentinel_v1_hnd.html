@@ -2130,25 +2130,25 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <span class="exec-section-badge" style="background:var(--red-dim);color:var(--red);">7 activas</span>
         </div>
 
-        <div class="exec-inv-row" onclick="poGo(showReportesPanel)">
+        <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-001')">
           <span class="exec-inv-id">SEN-INV-001</span>
           <span class="exec-inv-name">Concentración ENEE — 3 proveedores</span>
           <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
           <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
         </div>
-        <div class="exec-inv-row" onclick="poGo(showReportesPanel)">
+        <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-005')">
           <span class="exec-inv-id">SEN-INV-005</span>
           <span class="exec-inv-name">Poder Judicial — Vehículos L 182M</span>
           <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
           <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
         </div>
-        <div class="exec-inv-row" onclick="poGo(showReportesPanel)">
+        <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-007')">
           <span class="exec-inv-id">SEN-INV-007</span>
           <span class="exec-inv-name">SESEGU · Econo Rent · LAARSA · L 442M</span>
           <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
           <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
         </div>
-        <div class="exec-more" onclick="poGo(showReportesPanel)">
+        <div class="exec-more" onclick="executeTodasInvestigacionesPDF()">
           + 4 más — ver todas las investigaciones <span style="margin-left:auto;font-size:14px;">›</span>
         </div>
 
@@ -15525,6 +15525,222 @@ const PLAYBOOK_QUERIES = [
     }
   }
 ];
+
+// ── Investigaciones ejecutivas → PDF directo (S67) ──────────────────────────
+const INVESTIGATIONS_EXEC = [
+  {
+    id: 'inv-001', folio: 'SEN-INV-2026-001', estado: 'Activa',
+    titulo: 'Concentración ENEE — 3 proveedores',
+    entidad: 'Empresa Nacional de Energía Eléctrica (ENEE)',
+    actores: ['CORINFAR S.A.', 'GEOCONSULT S.A.', 'VIVI & COMERCIAL S.A.', 'IVETTE AZRAK'],
+    patrones: ['CONCENTRACION_PROVEEDOR', 'CLUSTER_CD', 'COMPRA_MENOR_ONCAE'],
+    hallazgo: '3 proveedores concentran contratación directa en ENEE. Patrón CLUSTER_CD activo — múltiples contratos en períodos cortos con los mismos actores.',
+    recomendacion: 'Referir a UFERCO para investigación formal. Solicitar expedientes de adjudicación 2023–2025.',
+    filtro: a => {
+      const p = (a.proveedor_nombre||'').toUpperCase();
+      return p.includes('CORINFAR') || p.includes('GEOCONSULT') || p.includes('VIVI') || p.includes('AZRAK');
+    }
+  },
+  {
+    id: 'inv-002', folio: 'SEN-INV-2026-002', estado: 'Activa',
+    titulo: 'Compra Menor + CORINFAR — Patrón CRÍTICA',
+    entidad: 'Múltiples instituciones ONCAE',
+    actores: ['CORINFAR S.A.'],
+    patrones: ['COMPRA_MENOR_ONCAE', 'FRACCIONAMIENTO'],
+    hallazgo: 'CORINFAR aparece en múltiples contratos CRÍTICA bajo modalidad Compra Menor. Posible fraccionamiento sistemático para evadir umbrales de licitación.',
+    recomendacion: 'Cruzar con registro mercantil. Solicitar contratos originales a ONCAE.',
+    filtro: a => (a.proveedor_nombre||'').toUpperCase().includes('CORINFAR')
+  },
+  {
+    id: 'inv-003', folio: 'SEN-INV-2026-003', estado: 'Activa',
+    titulo: 'INFOP — RILMAC · GREENTEC · Consultoría Integral',
+    entidad: 'Instituto Nacional de Formación Profesional (INFOP)',
+    actores: ['RILMAC S.A.', 'GREENTEC S.A.', 'CONSULTORÍA INTEGRAL S.A.'],
+    patrones: ['CONCENTRACION_PROVEEDOR', 'COMPRA_MENOR_ONCAE'],
+    hallazgo: '3 proveedores investigados en INFOP. Errores de datos ONCAE confirmados en 2 contratos — verificación fuente HC1-2025 pendiente.',
+    recomendacion: 'Verificar montos contra HC1 JSON antes de referir. Ver Regla #7 protocolo Sentinel.',
+    filtro: a => {
+      const p = (a.proveedor_nombre||'').toUpperCase();
+      const e = (a.entity_name||'').toUpperCase();
+      return p.includes('RILMAC') || p.includes('GREENTEC') || p.includes('CONSULTOR') || e.includes('INFOP');
+    }
+  },
+  {
+    id: 'inv-004', folio: 'SEN-INV-2026-004', estado: 'Activa',
+    titulo: 'SENACIT · DICOMARCA · Laptops Sobreprecio',
+    entidad: 'Secretaría Nacional de Ciencia y Tecnología (SENACIT)',
+    actores: ['DICOMARCA S.A.'],
+    patrones: ['PROVEEDOR_FUERA_DE_GIRO', 'CONTRATACION_DIRECTA_ONCAE'],
+    hallazgo: 'DICOMARCA (constructora) adjudicada con L 56.5M para laptops en SENACIT. Confirmado por MP y STLCC. Folio: SEN-SENACIT-20260429-001.',
+    recomendacion: 'Caso confirmado por autoridades. Monitorear avance judicial. Archivar evidencia Sentinel.',
+    filtro: a => {
+      const p = (a.proveedor_nombre||'').toUpperCase();
+      const e = (a.entity_name||'').toUpperCase();
+      return p.includes('DICOMARCA') || e.includes('SENACIT');
+    }
+  },
+  {
+    id: 'inv-005', folio: 'SEN-INV-2026-005', estado: 'Activa',
+    titulo: 'Poder Judicial — Vehículos · Opacidad L 182M',
+    entidad: 'Corte Suprema de Justicia / Poder Judicial',
+    actores: ['Múltiples arrendadoras vehiculares'],
+    patrones: ['OPACIDAD_PRESUPUESTARIA', 'LICITACION_PRIVADA_ONCAE'],
+    hallazgo: 'L 182M en arrendamiento vehicular AUSENTE de SEFIN y ONCAE. SERIN adjudicó L 12.9M para "salones de la presidenta". Rebeca Ráquel — 35 vehículos. Folio: SEN-PJ-20260429-001.',
+    recomendacion: 'Solicitar acceso a contratos vía IAIP. Referir a TSC para auditoría. Brecha L 151.8M no registrada.',
+    filtro: a => {
+      const e = (a.entity_name||'').toUpperCase();
+      return e.includes('PODER JUDICIAL') || e.includes('CSJ') || e.includes('CORTE SUPREMA') || e.includes('SERIN');
+    }
+  },
+  {
+    id: 'inv-006', folio: 'SEN-INV-2026-006', estado: 'Activa',
+    titulo: 'Empresas Fuera de Giro — Patrón DICOMARCA',
+    entidad: 'SEDESOL · INFOP · Múltiples',
+    actores: ['LIGTH TRENDS S.A.', 'VENTA REPUESTOS S.A.'],
+    patrones: ['PROVEEDOR_FUERA_DE_GIRO', 'CONCENTRACION_PROVEEDOR'],
+    hallazgo: 'LIGTH TRENDS (no tecnológica) adjudicada L 18.4M en SEDESOL. VENTA REPUESTOS L 13.6M en INFOP. Cluster SEDESOL nov-dic 2022: L 29M. 5 casos CRÍTICA. Folio: SEN-FUERA-GIRO-20260429-001.',
+    recomendacion: 'Ampliar búsqueda de patrón PROVEEDOR_FUERA_DE_GIRO en toda la BD. Priorizar SEDESOL e INFOP.',
+    filtro: a => {
+      const p = (a.proveedor_nombre||'').toUpperCase();
+      return p.includes('LIGTH TRENDS') || p.includes('VENTA REPUESTO');
+    }
+  },
+  {
+    id: 'inv-007', folio: 'SEN-INV-2026-007', estado: 'Activa',
+    titulo: 'SESEGU · Econo Rent · LAARSA · Ecosistema Blindados',
+    entidad: 'Secretaría de Seguridad (SESEGU)',
+    actores: ['ECONO RENT S.A.', 'LAARSA S.A.', 'ARMORED S.A.', 'ELITE EQUIPMENT RENTAL S.A.'],
+    patrones: ['CONTRATACION_DIRECTA_ONCAE', 'CONCENTRACION_PROVEEDOR', 'FRACCIONAMIENTO_MICRO'],
+    hallazgo: 'Econo Rent: L 442M (305 vehículos, 71 blindados). LAARSA: contratación directa SEDH + fraccionamiento micro nov-2023. 5 empresas ~L 1,300M/año en ecosistema vehicular seguridad. Folio: SEN-SESEGU-20260429-001.',
+    recomendacion: 'Caso de alto impacto. Referir a UFERCO y CNA. Cruzar con Lista Engel actualizada.',
+    filtro: a => {
+      const p = (a.proveedor_nombre||'').toUpperCase();
+      return p.includes('ECONO RENT') || p.includes('LAARSA') || p.includes('ARMORED') || p.includes('ELITE EQUIPMENT');
+    }
+  }
+];
+
+function executeInvestigacionPDF(invId) {
+  const inv = INVESTIGATIONS_EXEC.find(x => x.id === invId);
+  if (!inv) return;
+  const all = window.allAlerts || [];
+  const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+  const now = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const contratos = all.filter(inv.filtro);
+  const monto = contratos.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
+  const criticos = contratos.filter(a => (a.severity||a.severidad||'').toUpperCase().includes('CRÍTICA') || (a.severity||a.severidad||'').toUpperCase() === 'CRITICA').length;
+
+  const tablaRows = contratos.slice(0,15).map((a,i) => {
+    const bg = i%2===0?'#ffffff':'#f8fafc';
+    return `<tr style="background:${bg};">
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;">${a.proveedor_nombre||'—'}</td>
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;">${a.entity_name||'—'}</td>
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;text-align:right;">${fmtL(Number(a.monto_contrato||0))}</td>
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;">${a.fecha_contrato||'—'}</td>
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;color:${(a.severity||a.severidad||'').toUpperCase().includes('CRÍTICA')||((a.severity||a.severidad)||'').toUpperCase()==='CRITICA'?'#dc2626':'#374151'};">${a.severity||a.severidad||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>${inv.folio} — SENTINEL AI</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Segoe UI',Arial,sans-serif; background:#f8fafc; color:#1e293b; }
+.header { background:#1e3a5f; color:white; padding:22px 28px; }
+.folio { font-size:11px; opacity:.6; letter-spacing:.08em; margin-bottom:6px; }
+.titulo { font-size:20px; font-weight:700; }
+.entidad { font-size:12px; opacity:.75; margin-top:4px; }
+.body { padding:20px 28px; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
+.stat { background:white; border:1px solid #e5e7eb; border-radius:8px; padding:12px 16px; }
+.stat-val { font-size:24px; font-weight:700; }
+.stat-label { font-size:10px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+.section { margin-bottom:16px; }
+.section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#1e3a5f; border-bottom:2px solid #1e3a5f; padding-bottom:4px; margin-bottom:10px; }
+.hallazgo { background:#fef3c7; border-left:3px solid #f59e0b; padding:10px 14px; border-radius:0 6px 6px 0; font-size:13px; line-height:1.6; margin-bottom:10px; }
+.recomendacion { background:#dbeafe; border-left:3px solid #3b82f6; padding:10px 14px; border-radius:0 6px 6px 0; font-size:13px; line-height:1.6; }
+.actor-pill { display:inline-block; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; font-size:11px; padding:3px 8px; margin:2px; }
+.patron-pill { display:inline-block; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:4px; font-size:10px; padding:2px 7px; margin:2px; font-family:monospace; }
+table { width:100%; border-collapse:collapse; background:white; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+th { padding:7px 8px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; border-bottom:2px solid #1e3a5f; color:#1e3a5f; background:white; }
+.footer { margin-top:16px; font-size:9px; color:#9ca3af; text-align:right; }
+.estado { display:inline-block; background:#d1fae5; color:#065f46; font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px; margin-left:12px; }
+@media print { body { background:white; } }
+</style></head><body>
+<div class="header">
+  <div class="folio">${inv.folio} &nbsp;·&nbsp; ${now}</div>
+  <div class="titulo">${inv.titulo} <span class="estado">${inv.estado}</span></div>
+  <div class="entidad">${inv.entidad}</div>
+</div>
+<div class="body">
+  <div class="grid3">
+    <div class="stat"><div class="stat-val" style="color:#dc2626;">${contratos.length}</div><div class="stat-label">Contratos en BD</div></div>
+    <div class="stat"><div class="stat-val" style="color:#d97706;">${fmtL(monto)}</div><div class="stat-label">Monto expuesto</div></div>
+    <div class="stat"><div class="stat-val" style="color:#dc2626;">${criticos}</div><div class="stat-label">Contratos críticos</div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Actores identificados</div>
+    ${inv.actores.map(a=>`<span class="actor-pill">${a}</span>`).join('')}
+  </div>
+  <div class="section">
+    <div class="section-title">Patrones detectados</div>
+    ${inv.patrones.map(p=>`<span class="patron-pill">${p}</span>`).join('')}
+  </div>
+  <div class="section">
+    <div class="section-title">Hallazgo principal</div>
+    <div class="hallazgo">${inv.hallazgo}</div>
+  </div>
+  <div class="section">
+    <div class="section-title">Recomendación</div>
+    <div class="recomendacion">${inv.recomendacion}</div>
+  </div>
+  ${contratos.length ? `<div class="section">
+    <div class="section-title">Contratos en base de datos${contratos.length>15?' (top 15)':''}</div>
+    <table><thead><tr><th>Proveedor</th><th>Entidad</th><th>Monto</th><th>Fecha</th><th>Severidad</th></tr></thead>
+    <tbody>${tablaRows}</tbody></table>
+  </div>` : '<div style="font-size:12px;color:#6b7280;padding:12px 0;">No se encontraron contratos relacionados en la base de datos actual.</div>'}
+  <div class="footer">SENTINEL AI · ${inv.folio} · Uso oficial restringido · ${now}</div>
+</div></body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(typeof addPrintBtn === 'function' ? addPrintBtn(html) : html);
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+function executeTodasInvestigacionesPDF() {
+  const all = window.allAlerts || [];
+  const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+  const now = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const rows = INVESTIGATIONS_EXEC.map((inv,i) => {
+    const contratos = all.filter(inv.filtro);
+    const monto = contratos.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
+    const bg = i%2===0?'#ffffff':'#f8fafc';
+    return `<tr style="background:${bg};">
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #e5e7eb;font-family:monospace;color:#1e40af;font-weight:700;">${inv.folio}</td>
+      <td style="padding:8px 10px;font-size:12px;border-bottom:1px solid #e5e7eb;font-weight:600;">${inv.titulo}</td>
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #e5e7eb;">${inv.entidad}</td>
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:600;">${fmtL(monto)}</td>
+      <td style="padding:8px 10px;font-size:10px;border-bottom:1px solid #e5e7eb;"><span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-weight:700;">${inv.estado}</span></td>
+    </tr>`;
+  }).join('');
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Investigaciones Activas — SENTINEL AI</title>
+<style>* {box-sizing:border-box;margin:0;padding:0;} body{font-family:'Segoe UI',Arial,sans-serif;background:#f8fafc;}
+.header{background:#1e3a5f;color:white;padding:22px 28px;} .header h1{font-size:20px;font-weight:700;} .header p{font-size:12px;opacity:.7;margin-top:4px;}
+.body{padding:20px 28px;} table{width:100%;border-collapse:collapse;background:white;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;}
+th{padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #1e3a5f;color:#1e3a5f;}
+.footer{margin-top:16px;font-size:9px;color:#9ca3af;text-align:right;} @media print{body{background:white;}}</style></head>
+<body><div class="header"><h1>Investigaciones Activas — SEN-INV-2026</h1><p>SENTINEL AI · ${now} · ${INVESTIGATIONS_EXEC.length} investigaciones</p></div>
+<div class="body"><table><thead><tr><th>Folio</th><th>Caso</th><th>Entidad principal</th><th>Monto expuesto</th><th>Estado</th></tr></thead>
+<tbody>${rows}</tbody></table>
+<div class="footer">SENTINEL AI · Uso oficial restringido · ${now}</div></div></body></html>`;
+  const pw = window.open('', '_blank', 'width=1100,height=700');
+  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(typeof addPrintBtn === 'function' ? addPrintBtn(html) : html);
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
 
 function executePlaybookQuery(id) {
   const q = PLAYBOOK_QUERIES.find(x => x.id === id);

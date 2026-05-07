@@ -186,6 +186,27 @@ body::after {
 .po-purple .po-card-icon span { color: var(--purple); }
 .po-purple.po-expanded .po-card-title { color: var(--purple); }
 .po-purple.po-expanded { border-color: var(--purple); }
+/* ── Executive Consultas card (S67) ── */
+#poc-playbook { border: 1px solid rgba(255,171,0,0.3); }
+#poc-playbook.po-expanded { border-color: var(--amber); }
+#poc-playbook.po-expanded .po-card-title { color: var(--amber); }
+.exec-metrics { display: grid; grid-template-columns: repeat(3,1fr); border-top: 1px solid var(--border); }
+.exec-metric { padding: 12px 18px; }
+.exec-metric + .exec-metric { border-left: 1px solid var(--border); }
+.exec-metric-val { font-size: 21px; font-weight: 700; font-family: 'Syne', sans-serif; }
+.exec-metric-val.v-red   { color: var(--red); }
+.exec-metric-val.v-amber { color: var(--amber); }
+.exec-metric-val.v-text  { color: var(--text); }
+.exec-metric-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+.exec-section-hd { padding: 7px 14px; background: rgba(255,255,255,0.02); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text-dim); }
+.exec-section-badge { margin-left: auto; padding: 1px 7px; border-radius: 10px; font-size: 9px; }
+.exec-inv-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-top: 1px solid var(--border); cursor: pointer; transition: background .12s; }
+.exec-inv-row:hover { background: var(--glass-hover); }
+.exec-inv-id { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; color: var(--electric); min-width: 78px; }
+.exec-inv-name { font-size: 12px; color: var(--text); flex: 1; }
+.exec-inv-status { font-size: 9px; padding: 2px 7px; border-radius: 10px; }
+.exec-more { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--border); cursor: pointer; font-size: 11px; color: var(--electric); transition: background .12s; }
+.exec-more:hover { background: var(--glass-hover); }
 .po-rpt-group-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); padding: 6px 12px 4px; }
 .po-divider { height: 1px; background: var(--border); margin: 6px 0; }
 .po-band { position: relative; z-index: 1; border-top: 1px solid var(--border); background: rgba(10,22,40,0.9); backdrop-filter: blur(20px); padding: 0 40px; }
@@ -2075,16 +2096,67 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
     </div>
 
-    <!-- ══ CONSULTAS CARD ══ -->
+    <!-- ══ CONSULTAS EXECUTIVE CARD (S67) ══ -->
     <div class="po-section-label">Consultas</div>
 
-    <div class="po-card po-amber" id="poc-playbook" onclick="poToggle('playbook')" style="margin-bottom:20px;">
-      <div class="po-card-hd">
+    <div class="po-card po-amber" id="poc-playbook" style="margin-bottom:20px;">
+      <div class="po-card-hd" onclick="poToggle('playbook')" style="cursor:pointer;">
         <div class="po-card-icon"><span>🔍</span></div>
-        <div><div class="po-card-title">Consultas</div><div class="po-card-desc">6 análisis predefinidos · genera PDF directo</div></div>
+        <div><div class="po-card-title">Consultas</div><div class="po-card-desc">Vista ejecutiva · datos en tiempo real</div></div>
         <div class="po-chevron">▼</div>
       </div>
+
+      <!-- métricas siempre visibles -->
+      <div class="exec-metrics">
+        <div class="exec-metric">
+          <div class="exec-metric-val v-red" id="exec-m-criticos">—</div>
+          <div class="exec-metric-label">Contratos críticos</div>
+        </div>
+        <div class="exec-metric">
+          <div class="exec-metric-val v-amber" id="exec-m-monto">—</div>
+          <div class="exec-metric-label">Monto expuesto</div>
+        </div>
+        <div class="exec-metric">
+          <div class="exec-metric-val v-text" id="exec-m-inv">7</div>
+          <div class="exec-metric-label">Investigaciones activas</div>
+        </div>
+      </div>
+
+      <!-- submenu expandible -->
       <div class="po-submenu">
+
+        <div class="exec-section-hd">
+          🗂 &nbsp;Investigaciones activas
+          <span class="exec-section-badge" style="background:var(--red-dim);color:var(--red);">7 activas</span>
+        </div>
+
+        <div class="exec-inv-row" onclick="poGo(showReportesPanel)">
+          <span class="exec-inv-id">SEN-INV-001</span>
+          <span class="exec-inv-name">Concentración ENEE — 3 proveedores</span>
+          <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
+          <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
+        </div>
+        <div class="exec-inv-row" onclick="poGo(showReportesPanel)">
+          <span class="exec-inv-id">SEN-INV-005</span>
+          <span class="exec-inv-name">Poder Judicial — Vehículos L 182M</span>
+          <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
+          <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
+        </div>
+        <div class="exec-inv-row" onclick="poGo(showReportesPanel)">
+          <span class="exec-inv-id">SEN-INV-007</span>
+          <span class="exec-inv-name">SESEGU · Econo Rent · LAARSA · L 442M</span>
+          <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
+          <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
+        </div>
+        <div class="exec-more" onclick="poGo(showReportesPanel)">
+          + 4 más — ver todas las investigaciones <span style="margin-left:auto;font-size:14px;">›</span>
+        </div>
+
+        <div class="exec-section-hd" style="margin-top:4px;">
+          🔍 &nbsp;Consultas rápidas
+          <span class="exec-section-badge" style="background:var(--electric-dim);color:var(--electric);">→ PDF directo</span>
+        </div>
+
         <button class="po-item" onclick="executePlaybookQuery('prov-nuevo')">
           <span class="po-item-icon">🔴</span><span class="po-item-label">Proveedor nuevo + contrato grande</span><span class="po-item-tag tag-r">&lt;90 días</span><span class="po-arrow">›</span>
         </button>
@@ -2103,6 +2175,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <button class="po-item" onclick="executePlaybookQuery('evolucion-mensual')">
           <span class="po-item-icon">🔵</span><span class="po-item-label">Evolución mensual de alertas</span><span class="po-item-tag tag-n">12 meses</span><span class="po-arrow">›</span>
         </button>
+
       </div>
     </div>
 
@@ -4790,6 +4863,7 @@ async function loadAlerts() {
     window.allAlerts = allAlerts; // expose for Vista Ejecutiva
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
     updateBDCountDisplay(allAlerts.length); // S67 — número dinámico en UI
+    updateConsultasMetrics(allAlerts);      // S67 — métricas card ejecutivo
     buildNewsMatchIndex(); // Opción E — entity/vendor index (all records)
     buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
     buildEngelIndex();     // P4 — Lista Engel EE.UU. cross-reference
@@ -11687,6 +11761,18 @@ function updateBDCountDisplay(n) {
     const el = document.getElementById(id);
     if (el) el.textContent = fmt;
   });
+}
+
+// S67 — métricas del card ejecutivo Consultas
+function updateConsultasMetrics(all) {
+  const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const criticos = all.filter(a => normSev(a.severity||a.severidad) === 'critica');
+  const monto = criticos.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
+  const fmtM = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(1) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(0) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+  const elC = document.getElementById('exec-m-criticos');
+  const elM = document.getElementById('exec-m-monto');
+  if (elC) elC.textContent = criticos.length.toLocaleString('es-HN');
+  if (elM) elM.textContent = fmtM(monto);
 }
 
 function poUpdateIndicators() {

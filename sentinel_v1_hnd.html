@@ -2121,7 +2121,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <div class="exec-metric-label">Sobrepresupuesto</div>
         </div>
         <div class="exec-metric">
-          <div class="exec-metric-val v-text" id="exec-m-inv">7</div>
+          <div class="exec-metric-val v-text" id="exec-m-inv">8</div>
           <div class="exec-metric-label">Investigaciones activas</div>
         </div>
       </div>
@@ -2131,7 +2131,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
         <div class="exec-section-hd">
           🗂 &nbsp;Investigaciones activas
-          <span class="exec-section-badge" style="background:var(--red-dim);color:var(--red);">7 activas</span>
+          <span class="exec-section-badge" style="background:var(--red-dim);color:var(--red);">8 activas</span>
         </div>
 
         <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-001')">
@@ -2177,9 +2177,15 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
             <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
             <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
           </div>
+          <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-008')">
+            <span class="exec-inv-id">SEN-INV-008</span>
+            <span class="exec-inv-name">SEPLAN · Salgado · Propaganda Medios · Lista Engel</span>
+            <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
+            <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
+          </div>
         </div>
-        <div class="exec-more" id="exec-more-btn" onclick="(function(){var x=document.getElementById('exec-inv-extra'),b=document.getElementById('exec-more-btn');x.style.display=x.style.display==='none'?'block':'none';b.textContent=x.style.display==='none'?'+ 4 más — ver todas las investigaciones':'▲ mostrar menos';})()">
-          + 4 más — ver todas las investigaciones <span style="margin-left:auto;font-size:14px;">›</span>
+        <div class="exec-more" id="exec-more-btn" onclick="(function(){var x=document.getElementById('exec-inv-extra'),b=document.getElementById('exec-more-btn');x.style.display=x.style.display==='none'?'block':'none';b.textContent=x.style.display==='none'?'+ 5 más — ver todas las investigaciones':'▲ mostrar menos';})()">
+          + 5 más — ver todas las investigaciones <span style="margin-left:auto;font-size:14px;">›</span>
         </div>
 
         <div class="exec-section-hd" style="margin-top:4px;">
@@ -15688,6 +15694,19 @@ const INVESTIGATIONS_EXEC = [
     filtro: a => {
       const p = (a.proveedor_nombre||'').toUpperCase();
       return p.includes('ECONO RENT') || p.includes('LAARSA') || p.includes('ARMORED') || p.includes('ELITE EQUIPMENT');
+    }
+  },
+  {
+    id: 'inv-008', folio: 'SEN-INV-2026-008', estado: 'Activa',
+    titulo: 'SEPLAN — Salgado · Propaganda Medios · Lista Engel',
+    entidad: 'Secretaría de Planificación Estratégica (SEPLAN)',
+    actores: ['Ricardo Salgado (Ministro)', 'EMISORAS UNIDAS S.A.', 'COMPAÑIA TELEVISORA HONDUREÑA', 'SOCIEDAD INFORMATIVA DE TELEVISION CON VALORES S.A.', 'COMPAÑIA DE TELEVISION Y RADIO S.A.'],
+    patrones: ['CONCENTRACION_PROVEEDOR', 'CONTRATACION_DIRECTA_ONCAE'],
+    hallazgo: 'Ministro Ricardo Salgado incluido en Lista Engel EEUU (dic 2023) por corrupción. SEPLAN adjudicó L 25M+ a medios de comunicación: Emisoras Unidas L 7.4M, Canal TV L 6.4M, Televisión con Valores L 5.3M. Patrón: gasto publicitario/propaganda disfrazado de planificación estratégica. Total SEPLAN: 840 contratos · L 266M (2024–2025).',
+    recomendacion: 'Cruzar contratos de medios con períodos electorales. Verificar si hay licitación o contratación directa. Referir a CNA para auditoría de gasto en comunicación.',
+    filtro: a => {
+      const e = (a.entity_name||'').toUpperCase();
+      return e.includes('PLANIF') || e.includes('SEPLAN') || e.includes('SPE');
     }
   }
 ];

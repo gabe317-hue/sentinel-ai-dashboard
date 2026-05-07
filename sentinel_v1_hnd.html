@@ -4470,7 +4470,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span>Reportes Investigativos</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Genera reportes PDF desde los datos en vivo del dashboard · 127,832 contratos monitoreados
+        Genera reportes PDF desde los datos en vivo del dashboard · 136,578 contratos monitoreados
       </div>
     </div>
 
@@ -15225,6 +15225,248 @@ function exportOcdsCrossRefPDF() {
 }
 
 // ══════════════════════════════════════════════════════════════
+// PLAYBOOK — Consultas Rápidas → PDF directo
+// ══════════════════════════════════════════════════════════════
+
+const PLAYBOOK_QUERIES = [
+  {
+    id: 'prov-nuevo',
+    nombre: 'Proveedor nuevo + contrato grande',
+    desc: 'Empresa con 1 solo contrato en BD y monto > L 500K',
+    severidad: 'alta',
+    run: function(all) {
+      const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+      const provMap = {};
+      all.forEach(a => {
+        const p = a.proveedor_nombre || '—';
+        if (!provMap[p]) provMap[p] = { contratos: [], monto: 0 };
+        provMap[p].contratos.push(a);
+        provMap[p].monto += Number(a.monto_contrato || 0);
+      });
+      const results = Object.entries(provMap)
+        .filter(([, v]) => v.contratos.length === 1 && v.monto > 500000)
+        .sort((a, b) => b[1].monto - a[1].monto)
+        .slice(0, 30)
+        .map(([nombre, v]) => ({ nombre, monto: v.monto, contrato: v.contratos[0] }));
+      return { titulo: 'Proveedor Nuevo + Contrato Grande', filas: results.map((r, i) => ({
+        num: i+1, proveedor: r.nombre, entidad: r.contrato.entity_name || '—',
+        monto: fmtL(r.monto), fecha: r.contrato.fecha_contrato || '—',
+        severidad: r.contrato.severity || r.contrato.severidad || '—'
+      })), cols: ['#','Proveedor','Entidad','Monto','Fecha','Severidad'] };
+    }
+  },
+  {
+    id: 'prov-inactivo',
+    nombre: 'Proveedor inactivo reactivado',
+    desc: 'Sin actividad 12+ meses, vuelve con contrato nuevo',
+    severidad: 'alta',
+    run: function(all) {
+      const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+      const provMap = {};
+      all.forEach(a => {
+        const p = a.proveedor_nombre || '—';
+        const f = a.fecha_contrato || '';
+        if (!f) return;
+        if (!provMap[p]) provMap[p] = { fechas: [], contratos: [], monto: 0 };
+        provMap[p].fechas.push(f);
+        provMap[p].contratos.push(a);
+        provMap[p].monto += Number(a.monto_contrato || 0);
+      });
+      const results = [];
+      Object.entries(provMap).forEach(([nombre, v]) => {
+        if (v.fechas.length < 2) return;
+        const sorted = v.fechas.slice().sort();
+        for (let i = 1; i < sorted.length; i++) {
+          const prev = new Date(sorted[i-1]), curr = new Date(sorted[i]);
+          const diffMeses = (curr - prev) / (1000 * 60 * 60 * 24 * 30);
+          if (diffMeses >= 12) {
+            results.push({ nombre, pausa: Math.round(diffMeses), fechaAntes: sorted[i-1], fechaDespues: sorted[i], monto: v.monto });
+            break;
+          }
+        }
+      });
+      results.sort((a, b) => b.pausa - a.pausa);
+      return { titulo: 'Proveedor Inactivo Reactivado', filas: results.slice(0, 30).map((r, i) => ({
+        num: i+1, proveedor: r.nombre, pausa: r.pausa + ' meses',
+        ultimo: r.fechaAntes, reactivado: r.fechaDespues, monto: fmtL(r.monto)
+      })), cols: ['#','Proveedor','Pausa','Último contrato','Reactivado','Monto total'] };
+    }
+  },
+  {
+    id: 'contratacion-directa',
+    nombre: 'Contratación directa por institución',
+    desc: 'Ranking de instituciones que evitan licitación',
+    severidad: 'media',
+    run: function(all) {
+      const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+      const cdContratos = all.filter(a => {
+        const pat = a.patterns || '';
+        const tipo = (a.tipo_contratacion || '').toUpperCase();
+        return pat.includes('CONTRATACION_DIRECTA') || tipo.includes('DIRECTA') || tipo.includes('CD_ALTO');
+      });
+      const entMap = {};
+      cdContratos.forEach(a => {
+        const e = a.entity_name || '—';
+        if (!entMap[e]) entMap[e] = { count: 0, monto: 0 };
+        entMap[e].count++;
+        entMap[e].monto += Number(a.monto_contrato || 0);
+      });
+      const results = Object.entries(entMap).sort((a, b) => b[1].monto - a[1].monto).slice(0, 25);
+      return { titulo: 'Contratación Directa por Institución', filas: results.map(([ent, v], i) => ({
+        num: i+1, entidad: ent, contratos: v.count, monto: fmtL(v.monto)
+      })), cols: ['#','Institución','Contratos directos','Monto total'] };
+    }
+  },
+  {
+    id: 'top10-riesgo',
+    nombre: 'Top 10 proveedores de riesgo',
+    desc: 'Score compuesto: contratos CRÍTICA + monto total',
+    severidad: 'alta',
+    run: function(all) {
+      const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+      const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      const provMap = {};
+      all.forEach(a => {
+        const p = a.proveedor_nombre || '—';
+        if (!provMap[p]) provMap[p] = { criticos: 0, total: 0, monto: 0, entidades: new Set() };
+        provMap[p].total++;
+        provMap[p].monto += Number(a.monto_contrato || 0);
+        if (normSev(a.severity || a.severidad) === 'critica') provMap[p].criticos++;
+        provMap[p].entidades.add(a.entity_name || '');
+      });
+      const results = Object.entries(provMap)
+        .map(([nombre, v]) => ({ nombre, ...v, score: v.criticos * 3 + v.total }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10);
+      return { titulo: 'Top 10 Proveedores de Riesgo', filas: results.map((r, i) => ({
+        num: i+1, proveedor: r.nombre, criticos: r.criticos, totalContratos: r.total,
+        entidades: r.entidades.size, monto: fmtL(r.monto), score: r.score
+      })), cols: ['#','Proveedor','Críticos','Total contratos','Entidades','Monto','Score'] };
+    }
+  },
+  {
+    id: 'inst-alertas',
+    nombre: 'Instituciones con más alertas',
+    desc: 'Ranking señales de riesgo por entidad pública',
+    severidad: 'info',
+    run: function(all) {
+      const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+      const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      const entMap = {};
+      all.forEach(a => {
+        const e = a.entity_name || '—';
+        if (!entMap[e]) entMap[e] = { criticos: 0, altos: 0, total: 0, monto: 0 };
+        entMap[e].total++;
+        entMap[e].monto += Number(a.monto_contrato || 0);
+        const sev = normSev(a.severity || a.severidad);
+        if (sev === 'critica') entMap[e].criticos++;
+        else if (sev === 'alta') entMap[e].altos++;
+      });
+      const results = Object.entries(entMap)
+        .sort((a, b) => b[1].criticos - a[1].criticos || b[1].altos - a[1].altos)
+        .slice(0, 25);
+      return { titulo: 'Instituciones con más Alertas', filas: results.map(([ent, v], i) => ({
+        num: i+1, entidad: ent, criticos: v.criticos, altos: v.altos,
+        total: v.total, monto: fmtL(v.monto)
+      })), cols: ['#','Institución','Críticos','Altos','Total alertas','Monto expuesto'] };
+    }
+  },
+  {
+    id: 'evolucion-mensual',
+    nombre: 'Evolución mensual de alertas',
+    desc: 'Tendencia de señales por mes — últimos 12 meses',
+    severidad: 'info',
+    run: function(all) {
+      const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      const mesMap = {};
+      all.forEach(a => {
+        const f = a.fecha_contrato || '';
+        if (!f || f.length < 7) return;
+        const mes = f.substring(0, 7);
+        if (!mesMap[mes]) mesMap[mes] = { criticos: 0, altos: 0, medios: 0, total: 0 };
+        mesMap[mes].total++;
+        const sev = normSev(a.severity || a.severidad);
+        if (sev === 'critica') mesMap[mes].criticos++;
+        else if (sev === 'alta') mesMap[mes].altos++;
+        else if (sev === 'media') mesMap[mes].medios++;
+      });
+      const meses = Object.keys(mesMap).sort().slice(-12);
+      return { titulo: 'Evolución Mensual de Alertas', filas: meses.map((mes, i) => ({
+        num: i+1, mes, criticos: mesMap[mes].criticos, altos: mesMap[mes].altos,
+        medios: mesMap[mes].medios, total: mesMap[mes].total
+      })), cols: ['#','Mes','Críticos','Altos','Medios','Total'] };
+    }
+  }
+];
+
+function executePlaybookQuery(id) {
+  const q = PLAYBOOK_QUERIES.find(x => x.id === id);
+  if (!q) return;
+  const all = window.allAlerts || [];
+  if (!all.length) { alert('Datos no cargados aún. Espera un momento y vuelve a intentar.'); return; }
+
+  const result = q.run(all);
+  const now = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+
+  const colWidths = result.cols.map(() => Math.floor(100 / result.cols.length) + '%').join(' ');
+
+  const headerRow = result.cols.map(c => `<th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-bottom:2px solid #1e3a5f;color:#1e3a5f;">${c}</th>`).join('');
+  const dataRows = result.filas.map((fila, idx) => {
+    const vals = result.cols.map(col => {
+      const key = Object.keys(fila).find(k => {
+        const kl = k.toLowerCase(); const cl = col.toLowerCase().replace(/[^a-z]/g,'');
+        return kl === cl || kl.includes(cl.substring(0,5)) || cl.includes(kl.substring(0,5));
+      });
+      return fila[key !== undefined ? key : Object.keys(fila)[result.cols.indexOf(col)]] || '—';
+    });
+    const bg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+    const cells = vals.map(v => `<td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;color:#374151;">${v}</td>`).join('');
+    return `<tr style="background:${bg};">${cells}</tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>${result.titulo} — SENTINEL AI</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; color: #1e293b; padding: 0; }
+  .header { background: #1e3a5f; color: white; padding: 20px 28px; }
+  .header-title { font-size: 18px; font-weight: 700; letter-spacing: .02em; }
+  .header-sub { font-size: 11px; opacity: .75; margin-top: 4px; }
+  .body { padding: 20px 28px; }
+  .meta { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .meta-pill { background: #e0f2fe; color: #0369a1; font-size: 10px; font-weight: 700;
+               padding: 3px 10px; border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; background: white;
+          border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .footer { margin-top: 16px; font-size: 9px; color: #9ca3af; text-align: right; }
+  @media print { body { background: white; } }
+</style></head><body>
+<div class="header">
+  <div class="header-title">SENTINEL AI — ${result.titulo}</div>
+  <div class="header-sub">Consulta Rápida · Playbook PGR · ${now} · ${result.filas.length} resultados</div>
+</div>
+<div class="body">
+  <div class="meta">
+    <span class="meta-pill">BD: 136,578 registros</span>
+    <span class="meta-pill">Fuente: SEFIN + ONCAE 2019–2026</span>
+    <span class="meta-pill">Generado: ${now}</span>
+  </div>
+  <table>
+    <thead><tr>${headerRow}</tr></thead>
+    <tbody>${dataRows}</tbody>
+  </table>
+  <div class="footer">SENTINEL AI · Uso oficial restringido · No distribuir sin autorización · gabe317@gmail.com</div>
+</div>
+</body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(typeof addPrintBtn === 'function' ? addPrintBtn(html) : html);
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+// ══════════════════════════════════════════════════════════════
 // PANEL REPORTES — show / hide / render / PDF exports
 // ══════════════════════════════════════════════════════════════
 function showReportesPanel() {
@@ -15465,7 +15707,33 @@ function renderReportesPanel() {
     })(),
   ];
 
-  document.getElementById('reportesBody').innerHTML = `
+  // ── Playbook section HTML ─────────────────────────────────────
+  const playbookSection = (() => {
+    const dotColor = { alta: '#ef4444', media: '#f59e0b', info: '#3b82f6' };
+    const rows = PLAYBOOK_QUERIES.map(q => {
+      const dot = dotColor[q.severidad] || '#888';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;transition:background .12s;"
+        onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''"
+        onclick="executePlaybookQuery('${q.id}')">
+        <span style="width:8px;height:8px;border-radius:50%;background:${dot};flex-shrink:0;display:inline-block;"></span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-main);">${q.nombre}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:1px;">${q.desc}</div>
+        </div>
+        <span style="font-size:11px;color:var(--electric);font-weight:600;flex-shrink:0;border:1px solid rgba(0,200,255,0.3);border-radius:5px;padding:2px 9px;">Ejecutar →</span>
+      </div>`;
+    }).join('');
+    return `<div style="border:1px solid rgba(0,200,255,0.22);border-radius:10px;background:rgba(0,200,255,0.03);margin-bottom:14px;overflow:hidden;">
+      <div style="padding:9px 14px;border-bottom:1px solid rgba(0,200,255,0.15);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px;">🔍</span>
+        <span style="font-size:11px;font-weight:700;color:var(--electric);text-transform:uppercase;letter-spacing:.08em;">Consultas Rápidas — Playbook PGR</span>
+        <span style="margin-left:auto;font-size:9px;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:1px 7px;">${PLAYBOOK_QUERIES.length} queries · clic → PDF</span>
+      </div>
+      <div style="padding:6px 6px;">${rows}</div>
+    </div>`;
+  })();
+
+  document.getElementById('reportesBody').innerHTML = playbookSection + `
   <!-- criteria legend -->
     <div style="border:1px solid rgba(0,200,255,0.18);border-radius:8px;background:rgba(0,200,255,0.04);padding:9px 14px;margin-bottom:8px;">
       <div style="font-size:10px;font-weight:700;color:var(--electric);margin-bottom:4px;">📋 Criterios de Activación — Investigaciones</div>

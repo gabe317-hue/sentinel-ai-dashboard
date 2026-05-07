@@ -2075,61 +2075,34 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
     </div>
 
-    <!-- ══ PLAYBOOK CARD — Consultas Rápidas PGR ══ -->
-    <div class="po-section-label">Consultas Rápidas — Playbook PGR</div>
+    <!-- ══ CONSULTAS CARD ══ -->
+    <div class="po-section-label">Consultas</div>
 
-    <div class="po-card po-amber" id="poc-playbook" style="margin-bottom:20px;">
-      <div class="po-card-hd" style="cursor:default;">
+    <div class="po-card po-amber" id="poc-playbook" onclick="poToggle('playbook')" style="margin-bottom:20px;">
+      <div class="po-card-hd">
         <div class="po-card-icon"><span>🔍</span></div>
-        <div>
-          <div class="po-card-title">Consultas Rápidas</div>
-          <div class="po-card-desc">Playbook PGR · ejecuta query → PDF en 1 clic</div>
-        </div>
-        <div style="margin-left:auto;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">6 queries activas</div>
+        <div><div class="po-card-title">Consultas</div><div class="po-card-desc">6 análisis predefinidos · genera PDF directo</div></div>
+        <div class="po-chevron">▼</div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--border);">
-        <div onclick="executePlaybookQuery('prov-nuevo')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
-          <span style="width:7px;height:7px;border-radius:50%;background:#ef4444;flex-shrink:0;"></span>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;font-weight:600;color:var(--text);">Proveedor nuevo + contrato grande</div>
-            <div style="font-size:9px;color:var(--muted);margin-top:1px;">&lt;90 días · &gt;L 500K</div>
-          </div>
-        </div>
-        <div onclick="executePlaybookQuery('prov-inactivo')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
-          <span style="width:7px;height:7px;border-radius:50%;background:#ef4444;flex-shrink:0;"></span>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;font-weight:600;color:var(--text);">Proveedor inactivo reactivado</div>
-            <div style="font-size:9px;color:var(--muted);margin-top:1px;">Sin actividad 12+ meses</div>
-          </div>
-        </div>
-        <div onclick="executePlaybookQuery('contratacion-directa')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
-          <span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></span>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;font-weight:600;color:var(--text);">Contratación directa por institución</div>
-            <div style="font-size:9px;color:var(--muted);margin-top:1px;">Evita licitación · ranking</div>
-          </div>
-        </div>
-        <div onclick="executePlaybookQuery('top10-riesgo')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-right:1px solid var(--border);transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
-          <span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></span>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;font-weight:600;color:var(--text);">Top 10 proveedores de riesgo</div>
-            <div style="font-size:9px;color:var(--muted);margin-top:1px;">Score compuesto + monto total</div>
-          </div>
-        </div>
-        <div onclick="executePlaybookQuery('inst-alertas')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-right:1px solid var(--border);transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
-          <span style="width:7px;height:7px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></span>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;font-weight:600;color:var(--text);">Instituciones con más alertas</div>
-            <div style="font-size:9px;color:var(--muted);margin-top:1px;">Ranking señales por entidad</div>
-          </div>
-        </div>
-        <div onclick="executePlaybookQuery('evolucion-mensual')" style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background=''">
-          <span style="width:7px;height:7px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></span>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;font-weight:600;color:var(--text);">Evolución mensual de alertas</div>
-            <div style="font-size:9px;color:var(--muted);margin-top:1px;">Tendencia últimos 12 meses</div>
-          </div>
-        </div>
+      <div class="po-submenu">
+        <button class="po-item" onclick="executePlaybookQuery('prov-nuevo')">
+          <span class="po-item-icon">🔴</span><span class="po-item-label">Proveedor nuevo + contrato grande</span><span class="po-item-tag tag-r">&lt;90 días</span><span class="po-arrow">›</span>
+        </button>
+        <button class="po-item" onclick="executePlaybookQuery('prov-inactivo')">
+          <span class="po-item-icon">🔴</span><span class="po-item-label">Proveedor inactivo reactivado</span><span class="po-item-tag tag-r">12+ meses</span><span class="po-arrow">›</span>
+        </button>
+        <button class="po-item" onclick="executePlaybookQuery('contratacion-directa')">
+          <span class="po-item-icon">🟠</span><span class="po-item-label">Contratación directa por institución</span><span class="po-item-tag tag-n">ranking</span><span class="po-arrow">›</span>
+        </button>
+        <button class="po-item" onclick="executePlaybookQuery('top10-riesgo')">
+          <span class="po-item-icon">🟠</span><span class="po-item-label">Top 10 proveedores de riesgo</span><span class="po-item-tag tag-n">score</span><span class="po-arrow">›</span>
+        </button>
+        <button class="po-item" onclick="executePlaybookQuery('inst-alertas')">
+          <span class="po-item-icon">🔵</span><span class="po-item-label">Instituciones con más alertas</span><span class="po-item-tag tag-n">ranking</span><span class="po-arrow">›</span>
+        </button>
+        <button class="po-item" onclick="executePlaybookQuery('evolucion-mensual')">
+          <span class="po-item-icon">🔵</span><span class="po-item-label">Evolución mensual de alertas</span><span class="po-item-tag tag-n">12 meses</span><span class="po-arrow">›</span>
+        </button>
       </div>
     </div>
 
@@ -15511,7 +15484,7 @@ function executePlaybookQuery(id) {
 </style></head><body>
 <div class="header">
   <div class="header-title">SENTINEL AI — ${result.titulo}</div>
-  <div class="header-sub">Consulta Rápida · Playbook PGR · ${now} · ${result.filas.length} resultados</div>
+  <div class="header-sub">Consulta Rápida · SENTINEL AI · ${now} · ${result.filas.length} resultados</div>
 </div>
 <div class="body">
   <div class="meta">
@@ -15794,7 +15767,7 @@ function renderReportesPanel() {
     return `<div style="border:1px solid rgba(0,200,255,0.22);border-radius:10px;background:rgba(0,200,255,0.03);margin-bottom:14px;overflow:hidden;">
       <div style="padding:9px 14px;border-bottom:1px solid rgba(0,200,255,0.15);display:flex;align-items:center;gap:8px;">
         <span style="font-size:13px;">🔍</span>
-        <span style="font-size:11px;font-weight:700;color:var(--electric);text-transform:uppercase;letter-spacing:.08em;">Consultas Rápidas — Playbook PGR</span>
+        <span style="font-size:11px;font-weight:700;color:var(--electric);text-transform:uppercase;letter-spacing:.08em;">Consultas — Análisis Predefinidos</span>
         <span style="margin-left:auto;font-size:9px;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:1px 7px;">${PLAYBOOK_QUERIES.length} queries · clic → PDF</span>
       </div>
       <div style="padding:6px 6px;">${rows}</div>

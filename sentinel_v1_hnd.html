@@ -2107,7 +2107,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
 
       <!-- métricas siempre visibles -->
-      <div class="exec-metrics">
+      <div class="exec-metrics" style="grid-template-columns: repeat(4,1fr);">
         <div class="exec-metric">
           <div class="exec-metric-val v-red" id="exec-m-criticos">—</div>
           <div class="exec-metric-label">Contratos críticos</div>
@@ -2115,6 +2115,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="exec-metric">
           <div class="exec-metric-val v-amber" id="exec-m-monto">—</div>
           <div class="exec-metric-label">Monto expuesto</div>
+        </div>
+        <div class="exec-metric">
+          <div class="exec-metric-val v-amber" id="exec-m-sobre">—</div>
+          <div class="exec-metric-label">Sobrepresupuesto</div>
         </div>
         <div class="exec-metric">
           <div class="exec-metric-val v-text" id="exec-m-inv">7</div>
@@ -2200,6 +2204,9 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         </button>
         <button class="po-item" onclick="executePlaybookQuery('evolucion-mensual')">
           <span class="po-item-icon">🔵</span><span class="po-item-label">Evolución mensual de alertas</span><span class="po-item-tag tag-n">12 meses</span><span class="po-arrow">›</span>
+        </button>
+        <button class="po-item" onclick="executePlaybookQuery('sobre-presupuesto')">
+          <span class="po-item-icon">🟠</span><span class="po-item-label">Instituciones Sobrepresupuesto</span><span class="po-item-tag tag-c" style="background:rgba(255,171,0,.15);color:var(--amber);">SEFIN PIEP</span><span class="po-arrow">›</span>
         </button>
 
       </div>
@@ -11795,10 +11802,18 @@ function updateConsultasMetrics(all) {
   const criticos = all.filter(a => normSev(a.severity||a.severidad) === 'critica');
   const monto = criticos.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
   const fmtM = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(1) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(0) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+  const sobre = all.filter(a => {
+    const mc = Number(a.monto_contrato||0);
+    const budget = Number(a.budget_amount||0);
+    return mc > 0 && budget > mc * 1.15;
+  });
+  const sobreInst = new Set(sobre.map(a => a.entity_name||a.entidad).filter(Boolean)).size;
   const elC = document.getElementById('exec-m-criticos');
   const elM = document.getElementById('exec-m-monto');
+  const elS = document.getElementById('exec-m-sobre');
   if (elC) elC.textContent = criticos.length.toLocaleString('es-HN');
   if (elM) elM.textContent = fmtM(monto);
+  if (elS) elS.textContent = sobreInst > 0 ? sobreInst + ' inst.' : '—';
 }
 
 function poUpdateIndicators() {
@@ -15548,6 +15563,37 @@ const PLAYBOOK_QUERIES = [
         num: i+1, mes, criticos: mesMap[mes].criticos, altos: mesMap[mes].altos,
         medios: mesMap[mes].medios, total: mesMap[mes].total
       })), cols: ['#','Mes','Críticos','Altos','Medios','Total'] };
+    }
+  },
+  {
+    id: 'sobre-presupuesto',
+    nombre: 'Instituciones Sobrepresupuesto',
+    desc: 'Instituciones con ejecución >115% del ritmo esperado (SEFIN PIEP)',
+    severidad: 'amber',
+    run: function(all) {
+      const sobre = all.filter(a => {
+        const mc = Number(a.monto_contrato||0);
+        const budget = Number(a.budget_amount||0);
+        return mc > 0 && budget > mc * 1.15;
+      });
+      const instMap = {};
+      sobre.forEach(a => {
+        const inst = a.entity_name || a.entidad || '—';
+        if (!instMap[inst]) instMap[inst] = { total: 0, monto: 0, maxRatio: 0 };
+        instMap[inst].total++;
+        instMap[inst].monto += Number(a.monto_contrato||0);
+        const ratio = Number(a.budget_amount||0) / Number(a.monto_contrato||1);
+        if (ratio > instMap[inst].maxRatio) instMap[inst].maxRatio = ratio;
+      });
+      const filas = Object.entries(instMap)
+        .sort((a,b) => b[1].maxRatio - a[1].maxRatio)
+        .map(([inst, d], i) => ({
+          num: i+1, inst,
+          contratos: d.total,
+          monto: 'L ' + (d.monto/1e6).toFixed(1) + 'M',
+          ratio: (d.maxRatio * 100).toFixed(0) + '%'
+        }));
+      return { titulo: 'Instituciones Sobrepresupuesto — SEFIN PIEP', filas, cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'] };
     }
   }
 ];

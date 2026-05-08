@@ -1,8 +1,10 @@
 {
-  "crons": [
+  "headers": [
     {
-      "path": "/api/run-pipeline",
-      "schedule": "0 2 * * *"
+      "source": "/(.*\\.html)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
     }
   ]
 }

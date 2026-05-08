@@ -8284,12 +8284,12 @@ async function loadInvestigacionesDB() {
     const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(1)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
     const TOP = 3;
 
-    list.innerHTML = data.slice(0, TOP).map(r => {
-      const esNuevo  = r.estado === 'Nuevo';
-      const statusBg = esNuevo ? 'background:rgba(255,171,0,0.15);color:var(--amber)' : 'background:var(--green-dim);color:var(--green)';
+    const renderRow = r => {
+      const esNuevo    = r.estado === 'Nuevo';
+      const statusBg   = esNuevo ? 'background:rgba(255,171,0,0.15);color:var(--amber)' : 'background:var(--green-dim);color:var(--green)';
       const folioCorto = r.folio.replace('SEN-INV-2026-','SEN-INV-');
-      const montoStr = r.monto ? fmtL(r.monto) : '';
-      const invId = r.folio.replace('SEN-INV-2026-','inv-').replace('SEN-INV-','inv-').toLowerCase();
+      const montoStr   = r.monto ? fmtL(r.monto) : '';
+      const invId      = r.folio.replace('SEN-INV-2026-','inv-').replace('SEN-INV-','inv-').toLowerCase();
       return `<div class="exec-inv-row" onclick="tryExecuteInvestigacionPDF('${invId}')" style="${esNuevo?'border-left:2px solid var(--amber);padding-left:8px;':''}">
         <span class="exec-inv-id">${folioCorto}</span>
         <span class="exec-inv-name" style="flex:1;">${r.proveedor}${r.entidad?' · '+r.entidad:''}</span>
@@ -8297,10 +8297,23 @@ async function loadInvestigacionesDB() {
         <span class="exec-inv-status" style="${statusBg}">${r.estado}</span>
         <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
       </div>`;
-    }).join('') + (data.length > TOP ? `
-      <div class="exec-more" onclick="poGo(showCasosPanel)" style="font-size:10px;color:var(--electric);padding:6px 8px;cursor:pointer;">
-        + ${data.length - TOP} más — ver todas las investigaciones <span style="margin-left:auto;">›</span>
-      </div>` : '');
+    };
+
+    const topRows  = data.slice(0, TOP).map(renderRow).join('');
+    const extraRows = data.slice(TOP).map(renderRow).join('');
+    const hasExtra  = data.length > TOP;
+
+    list.innerHTML = topRows
+      + (hasExtra ? `<div id="exec-inv-extra" style="display:none;">${extraRows}</div>
+        <div class="exec-more" id="exec-inv-more-btn"
+          onclick="(function(){
+            var x=document.getElementById('exec-inv-extra'),b=document.getElementById('exec-inv-more-btn');
+            var open=x.style.display==='none';
+            x.style.display=open?'block':'none';
+            b.innerHTML=open?'▲ mostrar menos':'+ ${data.length - TOP} más — ver todas las investigaciones <span style=\\'margin-left:auto;font-size:14px;\\'>›</span>';
+          })()">
+          + ${data.length - TOP} más — ver todas las investigaciones <span style="margin-left:auto;font-size:14px;">›</span>
+        </div>` : '');
 
   } catch(e) {
     if (list) list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;padding:8px;">Error cargando investigaciones.</div>';

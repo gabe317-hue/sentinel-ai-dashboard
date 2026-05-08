@@ -2129,6 +2129,16 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <!-- submenu expandible -->
       <div class="po-submenu">
 
+        <!-- ── Candidatos Sentinel (S69) ── -->
+        <div class="exec-section-hd" style="cursor:pointer;" onclick="poGo(showCandidatosPanel)">
+          🎯 &nbsp;Candidatos a investigar
+          <span class="exec-section-badge" id="po-candidatos-badge" style="background:rgba(255,61,87,0.15);color:var(--red);">cargando…</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--electric);font-weight:600;">Ver todos →</span>
+        </div>
+        <div id="po-candidatos-preview" style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+          <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando candidatos…</div>
+        </div>
+
         <div class="exec-section-hd">
           🗂 &nbsp;Investigaciones activas
           <span class="exec-section-badge" style="background:var(--red-dim);color:var(--red);">8 activas</span>
@@ -7224,7 +7234,11 @@ function renderCandidatosDetectados() {
     const rankColor = rank <= 3 ? 'var(--red)' : rank <= 7 ? 'var(--amber)' : 'var(--text-dim)';
     const provSafe  = prov.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
 
-    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;background:var(--glass);border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='var(--electric)'" onmouseout="this.style.borderColor='var(--border)'">
+    const montoRaw = d.monto;
+    const patRaw   = [...d.patrones].join(',');
+    const entRaw   = [...d.entidades].slice(0,3).join(' | ');
+
+    return `<div id="cand-card-${idx}" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;background:var(--glass);border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='var(--electric)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:${rankColor};min-width:22px;padding-top:1px;">${rank}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:12px;font-weight:700;color:var(--text-main);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${provSafe}">${prov}</div>
@@ -7236,13 +7250,47 @@ function renderCandidatosDetectados() {
         </div>
         <div style="display:flex;gap:4px;flex-wrap:wrap;">${patHtml}</div>
       </div>
-      <button onclick="iniciarInvestigacion('${provSafe}')"
-        style="flex-shrink:0;font-size:10px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.1);color:#818cf8;cursor:pointer;white-space:nowrap;transition:all .15s;"
-        onmouseover="this.style.background='rgba(99,102,241,0.22)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'">
-        🔍 Iniciar Investigación
-      </button>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+        <button onclick="iniciarInvestigacion('${provSafe}')"
+          style="font-size:10px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.1);color:#818cf8;cursor:pointer;white-space:nowrap;transition:all .15s;"
+          onmouseover="this.style.background='rgba(99,102,241,0.22)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'" title="Ver contratos de este proveedor">
+          🔍 Ver evidencia
+        </button>
+        <button onclick="openReferModalCandidato('${provSafe}',${montoRaw},'${patRaw.replace(/'/g,"&#39;")}','${entRaw.replace(/'/g,"&#39;")}')"
+          style="font-size:10px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid rgba(255,61,87,0.35);background:rgba(255,61,87,0.1);color:var(--red);cursor:pointer;white-space:nowrap;transition:all .15s;"
+          onmouseover="this.style.background='rgba(255,61,87,0.22)'" onmouseout="this.style.background='rgba(255,61,87,0.1)'" title="Generar memorándum de referencia">
+          📋 Referir
+        </button>
+        <button onclick="descartarCandidato('${provSafe}',${idx})"
+          style="font-size:10px;font-weight:500;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;white-space:nowrap;transition:all .15s;"
+          onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-dim)'" title="Descartar — no escalar">
+          ✕ Descartar
+        </button>
+      </div>
     </div>`;
   }).join('');
+
+  // ── Poblar preview Portal Consultas (top 3) ──
+  const preview = document.getElementById('po-candidatos-preview');
+  const badge2  = document.getElementById('po-candidatos-badge');
+  if (badge2) badge2.textContent = candidatos.length + ' detectados';
+  if (preview) {
+    if (!candidatos.length) {
+      preview.innerHTML = '<div style="color:var(--text-dim);font-size:10px;padding:6px 0;text-align:center;">Sin candidatos activos</div>';
+    } else {
+      preview.innerHTML = candidatos.slice(0,3).map(([prov, d], i) => {
+        const patArr2 = [...d.patrones].slice(0,2).map(p => PATTERN_LABELS_LOCAL[p] || p);
+        const col = i === 0 ? 'var(--red)' : i === 1 ? 'var(--amber)' : 'var(--text-dim)';
+        return `<div onclick="poGo(showCandidatosPanel)" style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:var(--glass);cursor:pointer;border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='var(--electric)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;color:${col};min-width:14px;">${i+1}</span>
+          <span style="flex:1;font-size:10px;font-weight:600;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${prov}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--electric);white-space:nowrap;">${fmtL(d.monto)}</span>
+          <span style="font-size:9px;color:var(--text-dim);white-space:nowrap;">${patArr2.join(' · ')}</span>
+          <span style="font-size:12px;color:var(--text-dim);">›</span>
+        </div>`;
+      }).join('');
+    }
+  }
 }
 
 function iniciarInvestigacion(proveedorNombre) {
@@ -7250,6 +7298,47 @@ function iniciarInvestigacion(proveedorNombre) {
   document.getElementById('candidatosPanel').classList.remove('open');
   document.getElementById('nav-candidatos').classList.remove('active');
   showVendorPanel(proveedorNombre);
+}
+
+// ── Candidatos: Descartar (S69) ───────────────────────────────────────────────
+const _descartadosCandidatos = new Set();
+
+function descartarCandidato(prov, idx) {
+  _descartadosCandidatos.add(prov);
+  const card = document.getElementById('cand-card-' + idx);
+  if (card) {
+    card.style.opacity = '0';
+    card.style.transition = 'opacity .3s';
+    setTimeout(() => { card.remove(); }, 300);
+  }
+  // Actualizar badge
+  const badge = document.getElementById('candidatos-count-badge');
+  if (badge) {
+    const n = parseInt(badge.textContent) - 1;
+    badge.textContent = n > 0 ? n : '0';
+  }
+  const badge2 = document.getElementById('po-candidatos-badge');
+  if (badge2) {
+    const n2 = parseInt(badge2.textContent) - 1;
+    badge2.textContent = (n2 > 0 ? n2 : 0) + ' detectados';
+  }
+}
+
+// ── Candidatos: Referir desde panel (S69) ────────────────────────────────────
+function openReferModalCandidato(prov, monto, patronesStr, entidadesStr) {
+  const fmtL = n => 'L ' + Number(n).toLocaleString('es-HN', { minimumFractionDigits:0, maximumFractionDigits:0 });
+  _referModalData = {
+    alertId:  'CANDIDATO-' + new Date().toISOString().substring(0,10),
+    entity:   entidadesStr || '(múltiples entidades)',
+    vendor:   prov,
+    severity: 'Candidato Sentinel — multi-patrón automático',
+    monto:    fmtL(monto),
+    fecha:    new Date().toISOString().substring(0,10),
+    patrones: patronesStr.split(',').join(', '),
+    description: ''
+  };
+  _populateReferModal();
+  document.getElementById('referModalOverlay').classList.add('open');
 }
 
 // ── Búsqueda BD — S47: query directo Supabase (127K registros) ───────────────

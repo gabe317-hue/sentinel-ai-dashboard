@@ -2141,61 +2141,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
         <div class="exec-section-hd">
           🗂 &nbsp;Investigaciones activas
-          <span class="exec-section-badge" style="background:var(--red-dim);color:var(--red);">8 activas</span>
+          <span class="exec-section-badge" id="exec-inv-badge" style="background:var(--red-dim);color:var(--red);">cargando…</span>
         </div>
-
-        <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-001')">
-          <span class="exec-inv-id">SEN-INV-001</span>
-          <span class="exec-inv-name">Concentración ENEE — 3 proveedores</span>
-          <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
-          <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
-        </div>
-        <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-005')">
-          <span class="exec-inv-id">SEN-INV-005</span>
-          <span class="exec-inv-name">Poder Judicial — Vehículos L 182M</span>
-          <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
-          <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
-        </div>
-        <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-007')">
-          <span class="exec-inv-id">SEN-INV-007</span>
-          <span class="exec-inv-name">SESEGU · Econo Rent · LAARSA · L 442M</span>
-          <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
-          <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
-        </div>
-        <div id="exec-inv-extra" style="display:none;">
-          <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-002')">
-            <span class="exec-inv-id">SEN-INV-002</span>
-            <span class="exec-inv-name">Compra Menor + CORINFAR — Patrón CRÍTICA</span>
-            <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
-            <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
-          </div>
-          <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-003')">
-            <span class="exec-inv-id">SEN-INV-003</span>
-            <span class="exec-inv-name">INFOP — RILMAC · GREENTEC · Consultoría</span>
-            <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
-            <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
-          </div>
-          <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-004')">
-            <span class="exec-inv-id">SEN-INV-004</span>
-            <span class="exec-inv-name">SENACIT · DICOMARCA · Laptops Sobreprecio</span>
-            <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
-            <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
-          </div>
-          <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-006')">
-            <span class="exec-inv-id">SEN-INV-006</span>
-            <span class="exec-inv-name">Empresas Fuera de Giro — Patrón DICOMARCA</span>
-            <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
-            <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
-          </div>
-          <div class="exec-inv-row" onclick="executeInvestigacionPDF('inv-008')">
-            <span class="exec-inv-id">SEN-INV-008</span>
-            <span class="exec-inv-name">SEPLAN · Salgado · Propaganda Medios · Lista Engel</span>
-            <span class="exec-inv-status" style="background:var(--green-dim);color:var(--green);">Activa</span>
-            <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
-          </div>
-        </div>
-        <div class="exec-more" id="exec-more-btn" onclick="(function(){var x=document.getElementById('exec-inv-extra'),b=document.getElementById('exec-more-btn');x.style.display=x.style.display==='none'?'block':'none';b.textContent=x.style.display==='none'?'+ 5 más — ver todas las investigaciones':'▲ mostrar menos';})()">
-          + 5 más — ver todas las investigaciones <span style="margin-left:auto;font-size:14px;">›</span>
+        <div id="exec-inv-list">
+          <div style="color:var(--text-dim);font-size:10px;padding:10px;text-align:center;">Cargando investigaciones…</div>
         </div>
 
         <div class="exec-section-hd" style="margin-top:4px;">
@@ -4919,6 +4868,7 @@ async function loadAlerts() {
     buildRedFlagIndex();   // S59 — Entidades alto riesgo CNA/UFERCO/MP Honduras
     loadRedFlagsFromSupabase(); // S64 — merge activo=true records from Supabase
     renderCandidatosDetectados(); // Populate nav chip count on load
+    loadInvestigacionesDB();      // S69 — cargar investigaciones desde Supabase
     setStatus('connected');
     hideError();
     render();
@@ -7328,14 +7278,16 @@ function descartarCandidato(prov, idx) {
 function openReferModalCandidato(prov, monto, patronesStr, entidadesStr) {
   const fmtL = n => 'L ' + Number(n).toLocaleString('es-HN', { minimumFractionDigits:0, maximumFractionDigits:0 });
   _referModalData = {
-    alertId:  'CANDIDATO-' + new Date().toISOString().substring(0,10),
-    entity:   entidadesStr || '(múltiples entidades)',
-    vendor:   prov,
-    severity: 'Candidato Sentinel — multi-patrón automático',
-    monto:    fmtL(monto),
-    fecha:    new Date().toISOString().substring(0,10),
-    patrones: patronesStr.split(',').join(', '),
-    description: ''
+    alertId:      'CANDIDATO-' + new Date().toISOString().substring(0,10),
+    entity:       entidadesStr || '(múltiples entidades)',
+    vendor:       prov,
+    severity:     'Candidato Sentinel — multi-patrón automático',
+    monto:        fmtL(monto),
+    _montoRaw:    monto,
+    fecha:        new Date().toISOString().substring(0,10),
+    patrones:     patronesStr.split(',').join(', '),
+    description:  '',
+    fromCandidato: true
   };
   _populateReferModal();
   document.getElementById('referModalOverlay').classList.add('open');
@@ -8269,6 +8221,96 @@ function generarMemorandum() {
   pw.document.write(addPrintBtn(htmlContent));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
+
+  // ── S69: Si viene de un candidato, insertar en tabla investigaciones ──
+  if (d.fromCandidato) {
+    (async () => {
+      try {
+        const nextFolio = await _generarSiguienteFolio();
+        const fmtMonto = v => isNaN(Number(v)) ? 0 : Number(String(v).replace(/[^0-9.]/g,''));
+        await db.from('investigaciones').insert({
+          folio:            nextFolio,
+          proveedor:        d.vendor || '—',
+          entidad:          d.entity || '—',
+          monto:            fmtMonto(d._montoRaw || 0),
+          patrones:         d.patrones || '',
+          estado:           'Nuevo',
+          destino_referido: destino,
+          notas:            `Referido desde candidatos Sentinel. Folio memorándum: ${folio}.`,
+          origen:           'sentinel'
+        });
+        showToast(`✅ Caso registrado como ${nextFolio} — aparecerá en Investigaciones`, 'ok');
+        loadInvestigacionesDB(); // refrescar lista
+      } catch(e) {
+        console.error('Error guardando investigación:', e);
+        showToast('⚠️ PDF generado pero no se pudo guardar en DB', 'warn');
+      }
+    })();
+  }
+}
+
+// ── S69: Cargar investigaciones desde Supabase ────────────────────────────────
+async function _generarSiguienteFolio() {
+  const { data } = await db.from('investigaciones').select('folio').order('id', { ascending: false }).limit(1);
+  if (!data || !data.length) return 'SEN-INV-2026-009';
+  const last = data[0].folio || '';
+  const match = last.match(/(\d+)$/);
+  const next = match ? (parseInt(match[1]) + 1).toString().padStart(3, '0') : '009';
+  return `SEN-INV-2026-${next}`;
+}
+
+async function loadInvestigacionesDB() {
+  const list  = document.getElementById('exec-inv-list');
+  const badge = document.getElementById('exec-inv-badge');
+  const metricEl = document.getElementById('exec-m-inv');
+  if (!list) return;
+
+  try {
+    const { data, error } = await db
+      .from('investigaciones')
+      .select('folio,proveedor,entidad,monto,estado,destino_referido,fecha_referido,origen')
+      .order('id', { ascending: false })
+      .limit(20);
+
+    if (error || !data) throw error;
+
+    const activas = data.filter(r => r.estado === 'Activa').length;
+    const nuevas  = data.filter(r => r.estado === 'Nuevo').length;
+    const total   = data.length;
+
+    if (badge) badge.textContent = `${activas} activa${activas!==1?'s':''} · ${nuevas} nueva${nuevas!==1?'s':''}`;
+    if (metricEl) metricEl.textContent = total;
+
+    const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(1)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
+    const TOP = 3;
+
+    list.innerHTML = data.slice(0, TOP).map(r => {
+      const esNuevo  = r.estado === 'Nuevo';
+      const statusBg = esNuevo ? 'background:rgba(255,171,0,0.15);color:var(--amber)' : 'background:var(--green-dim);color:var(--green)';
+      const folioCorto = r.folio.replace('SEN-INV-2026-','SEN-INV-');
+      const montoStr = r.monto ? fmtL(r.monto) : '';
+      const invId = r.folio.replace('SEN-INV-2026-','inv-').replace('SEN-INV-','inv-').toLowerCase();
+      return `<div class="exec-inv-row" onclick="tryExecuteInvestigacionPDF('${invId}')" style="${esNuevo?'border-left:2px solid var(--amber);padding-left:8px;':''}">
+        <span class="exec-inv-id">${folioCorto}</span>
+        <span class="exec-inv-name" style="flex:1;">${r.proveedor}${r.entidad?' · '+r.entidad:''}</span>
+        ${montoStr ? `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--electric);margin-right:4px;">${montoStr}</span>` : ''}
+        <span class="exec-inv-status" style="${statusBg}">${r.estado}</span>
+        <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
+      </div>`;
+    }).join('') + (data.length > TOP ? `
+      <div class="exec-more" onclick="poGo(showCasosPanel)" style="font-size:10px;color:var(--electric);padding:6px 8px;cursor:pointer;">
+        + ${data.length - TOP} más — ver todas las investigaciones <span style="margin-left:auto;">›</span>
+      </div>` : '');
+
+  } catch(e) {
+    if (list) list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;padding:8px;">Error cargando investigaciones.</div>';
+  }
+}
+
+function tryExecuteInvestigacionPDF(invId) {
+  if (typeof executeInvestigacionPDF === 'function') {
+    try { executeInvestigacionPDF(invId); } catch(e) { /* caso nuevo sin PDF aún */ }
+  }
 }
 
 // ════════════════════════════════════════════════════════════

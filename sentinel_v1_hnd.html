@@ -1968,7 +1968,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">The Prieto Group</span>
       <span class="login-inst-tag">·</span>
-      <span class="login-inst-tag">© Sentinel-AI v1.68</span>
+      <span class="login-inst-tag">© Sentinel-AI v1.69</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
@@ -1985,7 +1985,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.68 — HND</div>
+    <div class="logo-version">v1.69 — HND</div>
   </div>
 
   <div class="nav">
@@ -2091,7 +2091,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
         <span class="po-status-pill"><span class="po-status-dot"></span>Sistema Activo</span>
-        <span class="po-badge electric">v1.68 · 2026</span>
+        <span class="po-badge electric">v1.69 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
       </div>
     </div>
@@ -7325,57 +7325,25 @@ async function ejecutarBusquedaBD() {
   if (moreEl) moreEl.style.display = 'none';
 
   const MAX_SHOW = 100;
-  const escIlike = s => s.replace(/[%_]/g, '\\$&');
 
   try {
-    let query = db.from('alerts')
-      .select('*', { count: 'exact' })
-      .order('monto_contrato', { ascending: false, nullsFirst: false })
-      .limit(MAX_SHOW);
-
-    if (fEntidad) {
-      // Dividir en palabras (≥3 chars) para búsqueda AND flexible
-      const words = fEntidad.trim().split(/\s+/).filter(w => w.length >= 3);
-      const terms = words.length > 0 ? words : [fEntidad.trim()];
-      for (const word of terms) {
-        const e = escIlike(word);
-        query = query.or(`entity_name.ilike.%${e}%,entidad.ilike.%${e}%`);
-      }
-    }
-    if (fEmpresa) {
-      const words = fEmpresa.trim().split(/\s+/).filter(w => w.length >= 3);
-      const terms = words.length > 0 ? words : [fEmpresa.trim()];
-      for (const word of terms) {
-        const e = escIlike(word);
-        query = query.or(`proveedor_nombre.ilike.%${e}%,proveedor.ilike.%${e}%`);
-      }
-    }
-    if (fContrato) {
-      query = query.ilike('contract_id', `%${escIlike(fContrato)}%`);
-    }
-    if (fAnio) {
-      query = query
-        .gte('fecha_contrato', `${fAnio}-01-01`)
-        .lte('fecha_contrato', `${fAnio}-12-31`);
-    }
-    if (fMontoMin) {
-      query = query.gte('monto_contrato', fMontoMin);
-    }
-    if (fMontoMax && fMontoMax > 0) {
-      query = query.lte('monto_contrato', fMontoMax);
-    }
-    if (fPatron) {
-      query = query.ilike('patterns', `%${escIlike(fPatron)}%`);
-    }
-    if (fSeveridad) {
-      query = query.eq('severity', fSeveridad);
-    }
-
-    const { data, error, count } = await query;
+    // Usar RPC buscar_contratos (accent+case insensitive via unaccent)
+    const rpcParams = {
+      p_entidad:   fEntidad   || null,
+      p_proveedor: fEmpresa   || null,
+      p_contrato:  fContrato  || null,
+      p_anio:      fAnio      ? parseInt(fAnio) : null,
+      p_monto_min: fMontoMin  || null,
+      p_monto_max: (fMontoMax && fMontoMax > 0) ? fMontoMax : null,
+      p_patron:    fPatron    || null,
+      p_severidad: fSeveridad || null,
+      p_limit:     MAX_SHOW
+    };
+    const { data, error } = await db.rpc('buscar_contratos', rpcParams);
     if (error) throw error;
 
     const results = data || [];
-    const total   = count ?? results.length;
+    const total   = results.length;
 
     // Cache para openAlertDetail (registros fuera de allAlerts)
     window.busquedaResults = results;
@@ -8214,7 +8182,7 @@ function generarMemorandum() {
   </div>
   <div class="firma">
     <div class="flinea">Analista de Integridad</div>
-    <div class="fcargo">The Praxis Group &middot; Honduras</div>
+    <div class="fcargo">The Prieto Group &middot; Honduras</div>
   </div>
 </div>
 

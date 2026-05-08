@@ -4749,7 +4749,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <input type="checkbox" value="IAIP" onchange="toggleDest(this)">
         <div><div class="dest-name">IAIP</div><div class="dest-full">Acceso a la Información</div></div>
       </label>
-      <label class="dest-option" id="dest-cna">
+      <label class="dest-option" id="dest-cna" style="display:none">
         <input type="checkbox" value="CNA" onchange="toggleDest(this)">
         <div><div class="dest-name">CNA</div><div class="dest-full">Consejo Anticorrupción</div></div>
       </label>
@@ -15412,7 +15412,7 @@ const PLAYBOOK_QUERIES = [
       const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
       const provMap = {};
       all.forEach(a => {
-        const p = a.proveedor_nombre || '—';
+        const p = a.proveedor_nombre; if (!p || p.trim() === '') return;
         if (!provMap[p]) provMap[p] = { contratos: [], monto: 0 };
         provMap[p].contratos.push(a);
         provMap[p].monto += Number(a.monto_contrato || 0);
@@ -15438,7 +15438,7 @@ const PLAYBOOK_QUERIES = [
       const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
       const provMap = {};
       all.forEach(a => {
-        const p = a.proveedor_nombre || '—';
+        const p = a.proveedor_nombre; if (!p || p.trim() === '') return;
         const f = a.fecha_contrato || '';
         if (!f) return;
         if (!provMap[p]) provMap[p] = { fechas: [], contratos: [], monto: 0 };
@@ -15501,7 +15501,7 @@ const PLAYBOOK_QUERIES = [
       const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
       const provMap = {};
       all.forEach(a => {
-        const p = a.proveedor_nombre || '—';
+        const p = a.proveedor_nombre; if (!p || p.trim() === '') return;
         if (!provMap[p]) provMap[p] = { criticos: 0, total: 0, monto: 0, entidades: new Set() };
         provMap[p].total++;
         provMap[p].monto += Number(a.monto_contrato || 0);
@@ -15616,7 +15616,9 @@ const INVESTIGATIONS_EXEC = [
     recomendacion: 'Referir a UFERCO para investigación formal. Solicitar expedientes de adjudicación 2023–2025.',
     filtro: a => {
       const p = (a.proveedor_nombre||'').toUpperCase();
-      return p.includes('CORINFAR') || p.includes('GEOCONSULT') || p.includes('VIVI') || p.includes('AZRAK');
+      const e = (a.entity_name||'').toUpperCase();
+      return (p.includes('CORINFAR') || p.includes('GEOCONSULT') || p.includes('VIVI') || p.includes('AZRAK'))
+          && (e.includes('ENEE') || e.includes('ENERGIA ELECTRICA') || e.includes('EMPRESA NACIONAL DE ENERG'));
     }
   },
   {
@@ -15690,7 +15692,7 @@ const INVESTIGATIONS_EXEC = [
     actores: ['ECONO RENT S.A.', 'LAARSA S.A.', 'ARMORED S.A.', 'ELITE EQUIPMENT RENTAL S.A.'],
     patrones: ['CONTRATACION_DIRECTA_ONCAE', 'CONCENTRACION_PROVEEDOR', 'FRACCIONAMIENTO_MICRO'],
     hallazgo: 'Econo Rent: L 442M (305 vehículos, 71 blindados). LAARSA: contratación directa SEDH + fraccionamiento micro nov-2023. 5 empresas ~L 1,300M/año en ecosistema vehicular seguridad. Folio: SEN-SESEGU-20260429-001.',
-    recomendacion: 'Caso de alto impacto. Referir a UFERCO y CNA. Cruzar con Lista Engel actualizada.',
+    recomendacion: 'Caso de alto impacto. Referir a UFERCO/MP. Cruzar con Lista Engel actualizada.',
     filtro: a => {
       const p = (a.proveedor_nombre||'').toUpperCase();
       return p.includes('ECONO RENT') || p.includes('LAARSA') || p.includes('ARMORED') || p.includes('ELITE EQUIPMENT');
@@ -15703,7 +15705,7 @@ const INVESTIGATIONS_EXEC = [
     actores: ['Ricardo Salgado (Ministro)', 'EMISORAS UNIDAS S.A.', 'COMPAÑIA TELEVISORA HONDUREÑA', 'SOCIEDAD INFORMATIVA DE TELEVISION CON VALORES S.A.', 'COMPAÑIA DE TELEVISION Y RADIO S.A.'],
     patrones: ['CONCENTRACION_PROVEEDOR', 'CONTRATACION_DIRECTA_ONCAE'],
     hallazgo: 'Ministro Ricardo Salgado incluido en Lista Engel EEUU (dic 2023) por corrupción. SEPLAN adjudicó L 25M+ a medios de comunicación: Emisoras Unidas L 7.4M, Canal TV L 6.4M, Televisión con Valores L 5.3M. Patrón: gasto publicitario/propaganda disfrazado de planificación estratégica. Total SEPLAN: 840 contratos · L 266M (2024–2025).',
-    recomendacion: 'Cruzar contratos de medios con períodos electorales. Verificar si hay licitación o contratación directa. Referir a CNA para auditoría de gasto en comunicación.',
+    recomendacion: 'Cruzar contratos de medios con períodos electorales. Verificar si hay licitación o contratación directa. Referir a TSC/MP para auditoría de gasto en comunicación.',
     filtro: a => {
       const e = (a.entity_name||'').toUpperCase();
       return e.includes('PLANIF') || e.includes('SEPLAN') || e.includes('SPE');

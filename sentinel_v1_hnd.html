@@ -1968,7 +1968,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">The Prieto Group</span>
       <span class="login-inst-tag">·</span>
-      <span class="login-inst-tag">© Sentinel-AI v1.69</span>
+      <span class="login-inst-tag">© Sentinel-AI v1.70</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
@@ -1985,7 +1985,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.69 — HND</div>
+    <div class="logo-version">v1.70 — HND</div>
   </div>
 
   <div class="nav">
@@ -2091,7 +2091,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
         <span class="po-status-pill"><span class="po-status-dot"></span>Sistema Activo</span>
-        <span class="po-badge electric">v1.69 · 2026</span>
+        <span class="po-badge electric">v1.70 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
       </div>
     </div>
@@ -14615,7 +14615,7 @@ function hideRedFlagPanel() {
 // ── S64: Cargar entidades activas desde Supabase y mergear con REDFLAG_LIST_HND ──
 async function loadRedFlagsFromSupabase() {
   try {
-    const { data, error } = await _supabase
+    const { data, error } = await db
       .from('entidades_alto_riesgo')
       .select('*')
       .eq('activo', true);
@@ -14648,7 +14648,7 @@ async function loadRedFlagPendientes() {
   const section = document.getElementById('redFlagPendientes');
   if (!section) return;
   try {
-    const { data, error } = await _supabase
+    const { data, error } = await db
       .from('entidades_alto_riesgo')
       .select('*')
       .eq('activo', false)
@@ -14695,7 +14695,7 @@ async function loadRedFlagPendientes() {
 
 async function activarRedFlag(id) {
   try {
-    const { error } = await _supabase.from('entidades_alto_riesgo').update({ activo: true }).eq('id', id);
+    const { error } = await db.from('entidades_alto_riesgo').update({ activo: true }).eq('id', id);
     if (error) { alert('Error al activar: ' + error.message); return; }
     await loadRedFlagPendientes();
     await loadRedFlagsFromSupabase();
@@ -14705,7 +14705,7 @@ async function activarRedFlag(id) {
 async function rechazarRedFlag(id) {
   if (!confirm('¿Rechazar y eliminar este candidato?')) return;
   try {
-    const { error } = await _supabase.from('entidades_alto_riesgo').delete().eq('id', id);
+    const { error } = await db.from('entidades_alto_riesgo').delete().eq('id', id);
     if (error) { alert('Error al rechazar: ' + error.message); return; }
     await loadRedFlagPendientes();
   } catch(e) { alert('Error: ' + e.message); }
@@ -15723,6 +15723,41 @@ const PLAYBOOK_QUERIES = [
           ratio: (d.maxRatio * 100).toFixed(0) + '%'
         }));
       return { titulo: 'Instituciones Sobrepresupuesto — SEFIN PIEP', filas, cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'] };
+    }
+  },
+  {
+    id: 'red-flags',
+    nombre: '🚩 Entidades y Personas en Lista de Riesgo',
+    desc: 'Red Flags activos — lista Engel, UFERCO, CNA, Invest-H y entidades monitoreadas',
+    severidad: 'critica',
+    run: function(all) {
+      const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : n > 0 ? 'L ' + Math.round(n).toLocaleString('es-HN') : '—';
+      const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      const rfList = window.REDFLAG_LIST_HND || [];
+      const filas = rfList.map((rf, i) => {
+        const search = norm(rf.search || rf.full || '');
+        const matches = all.filter(a => {
+          const p = norm(a.proveedor_nombre || '');
+          const e = norm(a.entity_name || '');
+          return search && (p.includes(search) || e.includes(search));
+        });
+        const monto = matches.reduce((sum, a) => sum + Number(a.monto_contrato||0), 0);
+        return {
+          num: i+1,
+          nombre: rf.full || rf.search || '—',
+          rol: rf.role || '—',
+          nivel: (rf.nivel||'—').toUpperCase(),
+          contratos: matches.length || '—',
+          monto: matches.length ? fmtL(monto) : '—',
+          fuente: rf.fuente || '—'
+        };
+      }).filter(f => f.nombre !== '—');
+      return {
+        titulo: 'Entidades y Personas en Lista de Riesgo',
+        nota: 'Red Flags activos en Sentinel AI. Incluye Lista Engel (EEUU), UFERCO, CNA, Invest-H y entidades de alto riesgo monitoreadas. Los montos reflejan contratos cruzados en BD SEFIN/ONCAE.',
+        filas,
+        cols: ['#','Nombre','Rol / Caso','Nivel','Contratos en BD','Monto Total','Fuente']
+      };
     }
   }
 ];

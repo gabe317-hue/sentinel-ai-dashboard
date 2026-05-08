@@ -2093,6 +2093,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="po-status-pill"><span class="po-status-dot"></span>Sistema Activo</span>
         <span class="po-badge electric">v1.70 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
+        <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
       </div>
     </div>
 
@@ -12915,6 +12916,17 @@ async function init() {
   showPortal();          // portal is entry point — show immediately
   await loadAlerts();    // data loads in background; poUpdateIndicators() polls for it
   startRealtime();
+}
+
+async function reloadDashboardData() {
+  const btn = document.getElementById('btn-reload-data');
+  if (btn) { btn.textContent = '⏳ Cargando…'; btn.disabled = true; btn.style.opacity = '.6'; }
+  document.getElementById('po-db-badge').textContent = 'Actualizando…';
+  try {
+    await loadAlerts();
+  } finally {
+    if (btn) { btn.textContent = '↺ Cargar Datos'; btn.disabled = false; btn.style.opacity = '1'; }
+  }
 }
 
 // ════════════════════════════════════════════════════════════════

@@ -555,7 +555,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 }
 .risk-band-amount {
   font-family: 'Syne', sans-serif;
-  font-size: 44px; font-weight: 800;
+  font-size: 37px; font-weight: 800;
   color: var(--red); line-height: 1;
   margin-bottom: 5px;
   text-shadow: 0 0 40px rgba(255,61,87,0.25);
@@ -1968,7 +1968,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">The Prieto Group</span>
       <span class="login-inst-tag">·</span>
-      <span class="login-inst-tag">© Sentinel-AI v1.0</span>
+      <span class="login-inst-tag">© Sentinel-AI v1.68</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
@@ -1985,7 +1985,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.56 — HND</div>
+    <div class="logo-version">v1.68 — HND</div>
   </div>
 
   <div class="nav">
@@ -2091,7 +2091,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
         <span class="po-status-pill"><span class="po-status-dot"></span>Sistema Activo</span>
-        <span class="po-badge electric">v1.53 · 2026</span>
+        <span class="po-badge electric">v1.68 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
       </div>
     </div>
@@ -5969,14 +5969,14 @@ function showVendorPanel(vendorName) {
     ? allSorted.map(a => {
         const pats = (a.patterns||'').split(',').filter(Boolean).map(p => PLABELS[p.trim()]||p.trim());
         const patBadges = pats.map(p => `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(255,171,0,0.12);color:var(--amber);border:1px solid rgba(255,171,0,0.25);white-space:nowrap;">${p}</span>`).join('');
-        return `<div class="fuente-recent-item" style="flex-direction:column;align-items:flex-start;gap:4px;padding:8px 10px;">
-          <div style="display:flex;align-items:center;gap:8px;width:100%;">
+        return `<div class="fuente-recent-item" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:8px 10px;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:8px;width:100%;min-width:0;">
             <span class="fri-id" style="flex-shrink:0;">${a.alert_id || '#' + a.id}</span>
             <span class="fri-desc" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(a.description||'').replace(/"/g,'&quot;')}">${a.description||'—'}</span>
             <span class="fri-sev" style="color:${sevColor(a.severity)};flex-shrink:0;">${a.severity||'—'}</span>
             <span style="font-size:10px;color:var(--electric);flex-shrink:0;font-family:'JetBrains Mono',monospace;">${fmtLv(a.monto_contrato)}</span>
           </div>
-          ${patBadges ? `<div style="display:flex;gap:4px;flex-wrap:wrap;padding-left:2px;">${patBadges}</div>` : ''}
+          ${patBadges ? `<div style="display:flex;gap:4px;flex-wrap:wrap;padding-left:2px;max-width:100%;overflow:hidden;">${patBadges}</div>` : ''}
         </div>`;
       }).join('')
     : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos para este proveedor.</div>`;
@@ -7334,12 +7334,21 @@ async function ejecutarBusquedaBD() {
       .limit(MAX_SHOW);
 
     if (fEntidad) {
-      const e = escIlike(fEntidad);
-      query = query.or(`entity_name.ilike.%${e}%,entidad.ilike.%${e}%`);
+      // Dividir en palabras (≥3 chars) para búsqueda AND flexible
+      const words = fEntidad.trim().split(/\s+/).filter(w => w.length >= 3);
+      const terms = words.length > 0 ? words : [fEntidad.trim()];
+      for (const word of terms) {
+        const e = escIlike(word);
+        query = query.or(`entity_name.ilike.%${e}%,entidad.ilike.%${e}%`);
+      }
     }
     if (fEmpresa) {
-      const e = escIlike(fEmpresa);
-      query = query.or(`proveedor_nombre.ilike.%${e}%,proveedor.ilike.%${e}%`);
+      const words = fEmpresa.trim().split(/\s+/).filter(w => w.length >= 3);
+      const terms = words.length > 0 ? words : [fEmpresa.trim()];
+      for (const word of terms) {
+        const e = escIlike(word);
+        query = query.or(`proveedor_nombre.ilike.%${e}%,proveedor.ilike.%${e}%`);
+      }
     }
     if (fContrato) {
       query = query.ilike('contract_id', `%${escIlike(fContrato)}%`);
@@ -7451,7 +7460,11 @@ async function ejecutarBusquedaBD() {
     }
 
   } catch (err) {
-    inner.innerHTML = `<div style="color:var(--red);font-size:11px;padding:20px;text-align:center;">Error al buscar: ${err.message}</div>`;
+    const isTimeout = (err.message||'').includes('timeout') || (err.message||'').includes('canceling');
+    const errMsg = isTimeout
+      ? 'Búsqueda muy amplia — usa términos más específicos (ej: "salud" en vez de "secretaria de salud").'
+      : `Error al buscar: ${err.message}`;
+    inner.innerHTML = `<div style="color:var(--red);font-size:11px;padding:20px;text-align:center;">${errMsg}</div>`;
     if (badge) { badge.textContent = '!'; badge.style.display = 'inline'; }
   }
 }
@@ -7496,11 +7509,7 @@ function showBusquedaBDPanel() {
 
 function hideBusquedaBDPanel() {
   document.getElementById('busquedaBDPanel').classList.remove('open');
-  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
+  showPortal();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -8205,7 +8214,7 @@ function generarMemorandum() {
   </div>
   <div class="firma">
     <div class="flinea">Analista de Integridad</div>
-    <div class="fcargo">The Praxis Group · Honduras</div>
+    <div class="fcargo">The Praxis Group &middot; Honduras</div>
   </div>
 </div>
 
@@ -15603,7 +15612,7 @@ const PLAYBOOK_QUERIES = [
           }
         }
       });
-      results.sort((a, b) => b.pausa - a.pausa);
+      results.sort((a, b) => new Date(b.fechaDespues) - new Date(a.fechaDespues));
       return { titulo: 'Proveedor Inactivo Reactivado', filas: results.slice(0, 30).map((r, i) => ({
         num: i+1, proveedor: r.nombre, pausa: r.pausa + ' meses',
         ultimo: r.fechaAntes, reactivado: r.fechaDespues, monto: fmtL(r.monto)
@@ -15659,7 +15668,8 @@ const PLAYBOOK_QUERIES = [
       return { titulo: 'Top 10 Proveedores de Riesgo', filas: results.map((r, i) => ({
         num: i+1, proveedor: r.nombre, criticos: r.criticos, totalContratos: r.total,
         entidades: r.entidades.size, monto: fmtL(r.monto), score: r.score
-      })), cols: ['#','Proveedor','Críticos','Total contratos','Entidades','Monto','Score'] };
+      })), cols: ['#','Proveedor','Críticos','Total contratos','Entidades','Monto','Score'],
+      nota: 'Score = (contratos Críticos × 3) + total contratos del proveedor. Mayor score = mayor exposición al riesgo.' };
     }
   },
   {
@@ -15681,7 +15691,7 @@ const PLAYBOOK_QUERIES = [
         else if (sev === 'alta') entMap[e].altos++;
       });
       const results = Object.entries(entMap)
-        .sort((a, b) => b[1].criticos - a[1].criticos || b[1].altos - a[1].altos)
+        .sort((a, b) => b[1].monto - a[1].monto)
         .slice(0, 25);
       return { titulo: 'Instituciones con más Alertas', filas: results.map(([ent, v], i) => ({
         num: i+1, entidad: ent, criticos: v.criticos, altos: v.altos,
@@ -15708,7 +15718,8 @@ const PLAYBOOK_QUERIES = [
         else if (sev === 'alta') mesMap[mes].altos++;
         else if (sev === 'media') mesMap[mes].medios++;
       });
-      const meses = Object.keys(mesMap).sort().slice(-12);
+      const currentMonth = new Date().toISOString().substring(0, 7);
+      const meses = Object.keys(mesMap).sort().filter(m => m <= currentMonth).slice(-12);
       return { titulo: 'Evolución Mensual de Alertas', filas: meses.map((mes, i) => ({
         num: i+1, mes, criticos: mesMap[mes].criticos, altos: mesMap[mes].altos,
         medios: mesMap[mes].medios, total: mesMap[mes].total
@@ -16035,6 +16046,7 @@ function executePlaybookQuery(id) {
     <thead><tr>${headerRow}</tr></thead>
     <tbody>${dataRows}</tbody>
   </table>
+  ${result.nota ? `<div style="font-size:9px;color:#6b7280;margin-top:10px;padding-top:8px;border-top:1px solid #e5e7eb;font-style:italic;">* ${result.nota}</div>` : ''}
   <div class="footer">SENTINEL AI · Uso oficial restringido · No distribuir sin autorización · gabe317@gmail.com</div>
 </div>
 </body></html>`;

@@ -2068,9 +2068,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">🔄</span> Ingesta
         <span class="nav-chip" style="background:rgba(0,230,118,0.12);color:var(--green);border-color:rgba(0,230,118,0.3);">LIVE</span>
       </button>
-      <button class="nav-item" onclick="showPortal()" style="color:var(--red);border-color:rgba(255,61,87,0.2);">
-        <span class="nav-icon">⊞</span> Dashboard
-      </button>
       <a class="nav-item" href="index.html">
         <span class="nav-icon">🏠</span> Inicio
       </a>
@@ -2081,6 +2078,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
   </div>
 
   <div class="nav-footer">
+    <button onclick="showPortal()" style="width:100%;margin-bottom:8px;padding:8px 12px;background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.25);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;" onmouseover="this.style.background='rgba(255,61,87,0.2)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'">⊞ Dashboard</button>
     <div class="user-card">
       <div class="user-avatar" id="userAvatar">—</div>
       <div class="user-info">

@@ -13989,19 +13989,31 @@ function renderDbeBarChart(sev) {
 
 function closeDashboardEjecutivo() {
   document.getElementById('dashboardEjecutivoModal').style.display = 'none';
+  showPortal();
 }
 
 function exportDashboardEjecutivoPDF() {
+  // Clonar contenido sin botones del header (Exportar + ✕)
   const inner = document.querySelector('#dashboardEjecutivoModal > div');
+  if (!inner) return;
+  const clone = inner.cloneNode(true);
+  // Quitar el div del header (primer hijo = header con botones)
+  const headerDiv = clone.querySelector('div:first-child');
+  if (headerDiv) headerDiv.remove();
+
   const html = `<!DOCTYPE html><html><head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
-      body{background:#050c18;color:#e8edf5;font-family:sans-serif;padding:32px;}
-      *{box-sizing:border-box;}
-      :root{--electric:#00c8ff;--red:#ff3d57;--amber:#ffab00;--green:#00e676;--glass:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--text-dim:#7a8ba8;}
+      *{box-sizing:border-box;margin:0;padding:0;}
+      body{background:#ffffff;color:#1a202c;font-family:'Helvetica Neue',Arial,sans-serif;padding:32px;font-size:13px;}
+      :root{--electric:#0066cc;--red:#cc0000;--amber:#cc7700;--green:#007700;--glass:#f7f8fa;--border:#dde1e7;--text-dim:#6b7280;}
+      h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#1a202c;margin-bottom:4px;}
+      table{width:100%;border-collapse:collapse;}
+      th,td{border-bottom:1px solid #dde1e7;}
+      canvas{max-width:100%;}
     </style>
-  </head><body>${inner ? inner.innerHTML : ''}</body></html>`;
+  </head><body>${clone.innerHTML}</body></html>`;
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
   pw.document.write(addPrintBtn(html));

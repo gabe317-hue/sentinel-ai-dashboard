@@ -1968,7 +1968,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">The Prieto Group</span>
       <span class="login-inst-tag">·</span>
-      <span class="login-inst-tag">© Sentinel-AI v1.70</span>
+      <span class="login-inst-tag">© Sentinel-AI v1.71</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
@@ -1985,7 +1985,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.70 — HND</div>
+    <div class="logo-version">v1.71 — HND</div>
   </div>
 
   <div class="nav">
@@ -2091,7 +2091,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
         <span class="po-status-pill"><span class="po-status-dot"></span>Sistema Activo</span>
-        <span class="po-badge electric">v1.70 · 2026</span>
+        <span class="po-badge electric">v1.71 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
       </div>
@@ -4752,6 +4752,17 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <button class="btn-cancel" onclick="closeReferModal()">Cancelar</button>
       <button class="btn-save" onclick="generarMemorandum()">📄 Generar Memorándum</button>
     </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.07);margin:14px 0 10px;"></div>
+    <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">📝 Solicitud LTAIP — Acceso a Documentación Oficial</div>
+    <div style="font-size:10px;color:#64748b;margin-bottom:8px;line-height:1.4;">Carta formal con lenguaje de indicios estadísticos para solicitar documentos bajo la LTAIP. <em>No acusa — solicita verificación documental.</em></div>
+    <select class="refer-select" id="rm-ltaip-dest">
+      <option value="SEFIN">SEFIN — Secretaría de Finanzas (ruta presupuestaria y pagos)</option>
+      <option value="ONCAE">ONCAE — Oficina Normativa de Contratación (expediente licitación)</option>
+      <option value="TSC">TSC — Tribunal Superior de Cuentas (informes de auditoría)</option>
+    </select>
+    <div class="refer-modal-actions" style="margin-top:8px;">
+      <button class="btn-save" onclick="generarSolicitudLTAIP()" style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.35);color:#818cf8;">📝 Generar Solicitud LTAIP</button>
+    </div>
   </div>
 </div>
 
@@ -7172,6 +7183,22 @@ function renderCandidatosDetectados() {
     'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
   };
 
+  // ── S72: Score de Prosecutabilidad CNA ──────────────────────────────────────
+  // Evalúa 6 criterios que Sentinel puede calcular automáticamente.
+  // Lenguaje de indicios estadísticos — no implica determinación legal.
+  function calcCNAScore(pd, critCount) {
+    const items = [
+      { label: 'Recursos públicos',    ok: true },
+      { label: 'Patrones detectados',  ok: pd.patrones.size >= 2 },
+      { label: 'Red de actores',       ok: pd.entidades.size >= 2 },
+      { label: 'Impacto económico',    ok: pd.monto >= 10_000_000 },
+      { label: 'Viabilidad probatoria',ok: pd.contratos >= 1 },
+      { label: 'Urgencia / riesgo',    ok: critCount >= 1 }
+    ];
+    const score = items.filter(i => i.ok).length;
+    return { score, max: items.length, items };
+  }
+
   container.innerHTML = candidatos.slice(0, 15).map(([prov, d], idx) => {
     const rank    = idx + 1;
     const critica = d.severidades.critica;
@@ -7189,6 +7216,12 @@ function renderCandidatosDetectados() {
     const patRaw   = [...d.patrones].join(',');
     const entRaw   = [...d.entidades].slice(0,3).join(' | ');
 
+    // Score CNA
+    const cna = calcCNAScore(d, critica);
+    const cnaColor  = cna.score >= 5 ? '#22c55e' : cna.score >= 3 ? '#f59e0b' : '#94a3b8';
+    const cnaLabel  = cna.score >= 5 ? 'Referir' : cna.score >= 3 ? 'Revisar' : 'Preliminar';
+    const cnaTooltip = cna.items.map(i => (i.ok ? '✓' : '✗') + ' ' + i.label).join(' | ');
+
     return `<div id="cand-card-${idx}" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;background:var(--glass);border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='var(--electric)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:${rankColor};min-width:22px;padding-top:1px;">${rank}</div>
       <div style="flex:1;min-width:0;">
@@ -7199,7 +7232,12 @@ function renderCandidatosDetectados() {
           <span style="font-size:10px;color:var(--text-dim);">${d.patrones.size} patrones</span>
           ${sevHtml}
         </div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;">${patHtml}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px;">${patHtml}</div>
+        <div style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px 2px 6px;border-radius:4px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);cursor:default;" title="Criterios CNA: ${cnaTooltip}. Indicios estadísticos — no constituyen determinación legal.">
+          <span style="font-size:10px;font-weight:800;color:${cnaColor};font-family:'JetBrains Mono',monospace;">${cna.score}/${cna.max}</span>
+          <span style="font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;">CNA</span>
+          <span style="font-size:9px;font-weight:600;color:${cnaColor};">${cnaLabel}</span>
+        </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
         <button onclick="iniciarInvestigacion('${provSafe}')"
@@ -8225,6 +8263,164 @@ function generarMemorandum() {
       }
     })();
   }
+}
+
+// ── S72: Generador de Solicitudes LTAIP ──────────────────────────────────────
+function generarSolicitudLTAIP() {
+  const destino = document.getElementById('rm-ltaip-dest').value;
+  const d = _referModalData;
+  if (!d) return;
+  closeReferModal();
+
+  const today    = new Date();
+  const fechaLarga = today.toLocaleDateString('es-HN', {year:'numeric',month:'long',day:'numeric'});
+  const yyyymmdd   = today.toISOString().substring(0,10).replace(/-/g,'');
+
+  const INSTITUCIONES = {
+    SEFIN: {
+      nombre:  'SECRETARÍA DE ESTADO EN EL DESPACHO DE FINANZAS (SEFIN)',
+      oficial: 'Oficial de Información Pública',
+      color:   '#1a3a6b',
+      peticion: `<ol>
+        <li>Copia digital de los registros presupuestarios y de ejecución correspondientes al contrato con folio <strong>${d.alertId}</strong>, suscrito con el proveedor <strong>${d.vendor}</strong>, incluyendo: programa presupuestario, subprograma, fuente de financiamiento, monto aprobado y monto ejecutado.</li>
+        <li>Copia de las resoluciones, acuerdos o documentos internos mediante los cuales se autorizó la contratación o se realizaron modificaciones presupuestarias vinculadas al proceso de referencia.</li>
+        <li>Registros de pagos efectuados al proveedor bajo el contrato indicado, con fechas y montos por cada desembolso.</li>
+      </ol>`,
+      fundamento: `El Sistema Sentinel-AI, en su análisis de datos públicos de ejecución presupuestaria (SEFIN/EDCA), identificó señales estadísticas anómalas en el contrato de referencia que justifican solicitar documentación de respaldo para verificar el cumplimiento normativo.`
+    },
+    ONCAE: {
+      nombre:  'OFICINA NORMATIVA DE CONTRATACIÓN Y ADQUISICIONES DEL ESTADO (ONCAE)',
+      oficial: 'Oficial de Información Pública',
+      color:   '#4a1a6b',
+      peticion: `<ol>
+        <li>Copia digital del expediente completo del proceso de contratación identificado con folio <strong>${d.alertId}</strong>, suscrito entre <strong>${d.entity}</strong> y el proveedor <strong>${d.vendor}</strong>, incluyendo: bases de licitación, actas de evaluación técnica y económica, dictamen de adjudicación y contrato suscrito.</li>
+        <li>Copia de las comunicaciones oficiales, aclaraciones a oferentes y cualquier adenda o modificación al contrato original.</li>
+        <li>Información sobre el tipo de proceso utilizado (licitación pública, contratación directa, compra menor u otro) y su justificación legal conforme a la Ley de Contratación del Estado.</li>
+      </ol>`,
+      fundamento: `El Sistema Sentinel-AI, en su análisis de datos de contratación pública (ONCAE/Honducompras), detectó patrones estadísticos que sugieren la necesidad de verificar el cumplimiento de los procedimientos establecidos en la Ley de Contratación del Estado para el proceso de referencia.`
+    },
+    TSC: {
+      nombre:  'TRIBUNAL SUPERIOR DE CUENTAS (TSC)',
+      oficial: 'Oficial de Información Pública',
+      color:   '#1a5c3a',
+      peticion: `<ol>
+        <li>Copia de cualquier informe de auditoría, examen especial o informe de seguimiento emitido por ese Tribunal en relación con la entidad <strong>${d.entity}</strong> o con contratos suscritos con el proveedor <strong>${d.vendor}</strong>, correspondientes al período del contrato bajo folio <strong>${d.alertId}</strong>.</li>
+        <li>En caso de existir hallazgos, indicios de responsabilidad administrativa o penal vinculados al proceso de referencia, copia de los mismos en la parte no reservada, con la motivación escrita correspondiente.</li>
+        <li>Estado actual de seguimiento de recomendaciones emitidas a la entidad <strong>${d.entity}</strong>.</li>
+      </ol>`,
+      fundamento: `El Sistema Sentinel-AI identificó señales estadísticas de riesgo en contratos de la entidad <strong>${d.entity}</strong> que ameritan verificar si existen antecedentes de auditoría o hallazgos por parte de ese Tribunal que complementen el análisis realizado.`
+    }
+  };
+
+  const inst  = INSTITUCIONES[destino] || INSTITUCIONES.SEFIN;
+  const folio = `SEN-LTAIP-${yyyymmdd}-${destino}`;
+
+  const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8">
+<title>Solicitud LTAIP — ${folio}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Arial,sans-serif;font-size:11pt;color:#1a1a2e;background:#fff;padding:48px 56px;max-width:800px;margin:0 auto}
+  .hdr{border-bottom:2px solid ${inst.color};padding-bottom:14px;margin-bottom:22px;text-align:center}
+  .inst-name{font-size:11pt;font-weight:bold;color:${inst.color};text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+  .oficial{font-size:9pt;color:#777;margin-bottom:10px}
+  .asunto{font-size:10pt;font-weight:bold;margin-bottom:18px;padding:8px 14px;background:#f5f7ff;border-left:4px solid ${inst.color};border-radius:0 4px 4px 0}
+  .body-text{font-size:11pt;line-height:1.75;margin-bottom:14px}
+  .ref-box{background:#f8f9fa;border:1px solid #dde;border-radius:6px;padding:14px 18px;margin:16px 0;font-size:10pt}
+  .ref-box table{width:100%;border-collapse:collapse}
+  .ref-box td{padding:4px 8px;vertical-align:top}
+  .ref-box td:first-child{color:#888;font-size:9pt;white-space:nowrap;width:170px;text-transform:uppercase;letter-spacing:.04em}
+  .ref-box td:last-child{font-weight:500;color:#1a1a2e}
+  .peticion{margin:16px 0}
+  .peticion ol{padding-left:20px}
+  .peticion li{margin-bottom:10px;line-height:1.65;font-size:10.5pt}
+  .disclaimer{background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:12px 16px;margin:20px 0;font-size:9pt;color:#555;line-height:1.6}
+  .disclaimer strong{color:#b8860b}
+  .blank{display:inline-block;border-bottom:1px solid #555;min-width:170px;margin:0 2px}
+  .fecha-line{text-align:right;font-size:10pt;margin-bottom:22px;color:#555}
+  .firmas{margin-top:44px;display:flex;justify-content:space-between}
+  .firma{text-align:center;width:220px}
+  .flinea{border-top:1px solid #444;padding-top:6px;font-size:9pt;font-weight:bold}
+  .fcargo{font-size:8pt;color:#777;margin-top:2px}
+  .footer{margin-top:30px;border-top:1px solid #ddd;padding-top:8px;font-size:8pt;color:#aaa;display:flex;justify-content:space-between}
+  @media print{body{padding:20px 30px}.noprint{display:none}}
+</style>
+</head>
+<body>
+<button class="noprint" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:${inst.color};color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;z-index:100;">🖨️ Imprimir / PDF</button>
+
+<div class="hdr">
+  <div style="font-size:10pt;color:#999;margin-bottom:4px;text-transform:uppercase;letter-spacing:.1em">República de Honduras</div>
+  <div class="inst-name">${inst.nombre}</div>
+  <div class="oficial">${inst.oficial}</div>
+</div>
+
+<div class="asunto">Asunto: Solicitud de acceso a información pública — Contrato ${d.alertId} · ${d.entity}</div>
+
+<div class="fecha-line">Tegucigalpa, M.D.C., ${fechaLarga}</div>
+
+<p class="body-text">
+  <strong>SEÑOR(A) ${inst.oficial.toUpperCase()}</strong><br>
+  <strong>${inst.nombre}</strong><br>
+  Su despacho.
+</p>
+
+<p class="body-text">
+  Yo, <span class="blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>, en representación de <span class="blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>, con domicilio en <span class="blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>, con fundamento en los artículos 13, 14 y 20 de la <strong>Ley de Transparencia y Acceso a la Información Pública (LTAIP)</strong>, respetuosamente comparezco a solicitar lo siguiente:
+</p>
+
+<div class="ref-box">
+  <p style="font-size:9pt;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Contrato de referencia — identificado por Sistema Sentinel-AI</p>
+  <table>
+    <tr><td>Folio / ID</td><td>${d.alertId}</td></tr>
+    <tr><td>Entidad Contratante</td><td>${d.entity}</td></tr>
+    <tr><td>Proveedor</td><td>${d.vendor}</td></tr>
+    <tr><td>Monto Contratado</td><td>${d.monto}</td></tr>
+    <tr><td>Fecha de Contrato</td><td>${d.fecha}</td></tr>
+    <tr><td>Fuente de datos</td><td>SEFIN/EDCA — Sistema de Administración Financiera de Honduras</td></tr>
+  </table>
+</div>
+
+<div class="disclaimer">
+  <strong>⚠️ Nota metodológica:</strong> La presente solicitud se basa en señales estadísticas identificadas por el Sistema Sentinel-AI mediante análisis automatizado de datos públicos de contratación. <strong>Los hallazgos son de naturaleza estadística y no constituyen determinación legal, penal ni judicial.</strong> El propósito exclusivo es obtener documentación que permita verificar el cumplimiento normativo del proceso de referencia.
+</div>
+
+<p class="body-text"><strong>PETICIÓN</strong></p>
+<div class="peticion">${inst.peticion}</div>
+
+<p class="body-text">
+  <strong>FUNDAMENTO:</strong> ${inst.fundamento}
+</p>
+
+<p class="body-text">
+  <strong>FORMA DE ENTREGA:</strong> Solicito que la información sea remitida en formato digital al correo electrónico <span class="blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>. De considerarse que parte de la información está sujeta a reserva, solicito se entregue la parte no clasificada con motivación escrita de la reserva, conforme a la ley.
+</p>
+
+<p class="body-text"><strong>OTROSÍ DIGO:</strong> Que la presente solicitud no prejuzga responsabilidad alguna de funcionarios, servidores públicos o proveedores. Su único fin es verificar el cumplimiento de la normativa aplicable en materia de contratación pública.</p>
+
+<div class="firmas">
+  <div class="firma">
+    <div class="flinea">Nombre completo</div>
+    <div class="fcargo">Número de identidad</div>
+  </div>
+  <div class="firma">
+    <div class="flinea">Cargo / Institución</div>
+    <div class="fcargo">Teléfono / correo electrónico</div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>Generado por Sistema Sentinel-AI · ${new Date().toLocaleString('es-HN')} · Ref: ${folio}</span>
+  <span>LTAIP Art. 13–20 · Uso Oficial</span>
+</div>
+</body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1020,height=870');
+  if (!pw) { alert('Por favor permita ventanas emergentes para generar la solicitud.'); return; }
+  pw.document.write(htmlContent);
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 // ── S69: Cargar investigaciones desde Supabase ────────────────────────────────

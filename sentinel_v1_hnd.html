@@ -17712,7 +17712,7 @@ async function mfExportarPDF() {
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }

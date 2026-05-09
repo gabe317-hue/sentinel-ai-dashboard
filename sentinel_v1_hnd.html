@@ -13924,34 +13924,34 @@ function showDashboardEjecutivo() {
 
   // Cargar datos desde Supabase
   if (typeof db !== 'undefined') {
-    // KPI alertas críticas
-    db.from('alerts').select('severity,amount', {count:'exact'}).then(({ data, count }) => {
-      document.getElementById('dbe-alertas').textContent = count ? count.toLocaleString('es-HN') : '136,578';
+    // KPI total + severidad + monto críticos
+    db.from('alerts').select('severity,monto_contrato', {count:'exact'}).then(({ data, count }) => {
+      document.getElementById('dbe-alertas').textContent = count ? count.toLocaleString('es-HN') : '—';
       document.getElementById('dbe-alertas-sub').textContent = 'Registros en base de datos';
 
       if (data) {
         const criticos = data.filter(r => r.severity === 'CRÍTICA');
-        const montoTotal = criticos.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
-        document.getElementById('dbe-monto').textContent = 'L ' + (montoTotal >= 1e9
-          ? (montoTotal/1e9).toFixed(1) + 'B'
-          : (montoTotal >= 1e6 ? (montoTotal/1e6).toFixed(0) + 'M' : montoTotal.toLocaleString('es-HN')));
+        const montoTotal = criticos.reduce((s, r) => s + (parseFloat(r.monto_contrato) || 0), 0);
+        document.getElementById('dbe-monto').textContent = montoTotal >= 1e9
+          ? 'L ' + (montoTotal/1e9).toFixed(1) + 'B'
+          : montoTotal >= 1e6 ? 'L ' + (montoTotal/1e6).toFixed(0) + 'M' : 'L ' + montoTotal.toLocaleString('es-HN');
 
         // Gráfica barras por severidad
-        const sev = {CRÍTICA:0, ALTA:0, MEDIA:0, BAJA:0};
+        const sev = {'CRÍTICA':0,'ALTA':0,'MEDIA':0,'BAJA':0};
         data.forEach(r => { if (sev[r.severity] !== undefined) sev[r.severity]++; });
         renderDbeBarChart(sev);
       }
     });
 
     // KPI investigaciones
-    db.from('investigaciones').select('folio,entidad,monto_involucrado,estado').order('monto_involucrado', {ascending:false}).then(({ data }) => {
+    db.from('investigaciones').select('folio,entidad,monto,estado').order('monto', {ascending:false}).then(({ data }) => {
       if (!data) return;
       document.getElementById('dbe-investigaciones').textContent = data.length;
       document.getElementById('dbe-inv-sub').textContent = 'SEN-INV-2026';
 
       const statusColor = { 'Activa':'var(--electric)', 'Referida':'var(--amber)', 'Cerrada':'var(--green)', 'Nuevo':'var(--text-dim)' };
       let rows = data.map(inv => {
-        const monto = parseFloat(inv.monto_involucrado) || 0;
+        const monto = parseFloat(inv.monto) || 0;
         const montoFmt = monto >= 1e9 ? 'L '+(monto/1e9).toFixed(2)+'B' : monto >= 1e6 ? 'L '+(monto/1e6).toFixed(0)+'M' : 'L '+monto.toLocaleString('es-HN');
         const col = statusColor[inv.estado] || 'var(--text-dim)';
         return `<tr style="border-bottom:1px solid rgba(255,255,255,0.03);">

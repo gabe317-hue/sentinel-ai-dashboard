@@ -1942,7 +1942,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">The Prieto Group</span>
       <span class="login-inst-tag">·</span>
-      <span class="login-inst-tag">© Sentinel-AI v1.74</span>
+      <span class="login-inst-tag">© Sentinel-AI v1.75</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
@@ -1959,7 +1959,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.74 — HND</div>
+    <div class="logo-version">v1.75 — HND</div>
   </div>
 
   <div class="nav">
@@ -2065,7 +2065,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-logo">SENTINEL<span>·</span>AI</div>
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
-        <span class="po-badge electric">v1.74 · 2026</span>
+        <span class="po-badge electric">v1.75 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
         <button onclick="hidePortal()" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Ver Contratos</button>
@@ -8188,18 +8188,25 @@ async function loadInvestigacionesDB() {
     const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(1)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
     const TOP = 3;
 
+    const estadoStyles = {
+      'Nuevo':    'background:rgba(255,171,0,0.15);color:var(--amber)',
+      'Activa':   'background:var(--green-dim);color:var(--green)',
+      'Referida': 'background:rgba(0,200,255,0.12);color:var(--electric)',
+      'Cerrada':  'background:rgba(255,255,255,0.06);color:var(--text-dim)'
+    };
     const renderRow = r => {
-      const esNuevo    = r.estado === 'Nuevo';
-      const statusBg   = esNuevo ? 'background:rgba(255,171,0,0.15);color:var(--amber)' : 'background:var(--green-dim);color:var(--green)';
+      const statusBg   = estadoStyles[r.estado] || estadoStyles['Activa'];
       const folioCorto = r.folio.replace('SEN-INV-2026-','SEN-INV-');
       const montoStr   = r.monto ? fmtL(r.monto) : '';
       const invId      = r.folio.replace('SEN-INV-2026-','inv-').replace('SEN-INV-','inv-').toLowerCase();
-      return `<div class="exec-inv-row" onclick="tryExecuteInvestigacionPDF('${invId}')" style="${esNuevo?'border-left:2px solid var(--amber);padding-left:8px;':''}">
-        <span class="exec-inv-id">${folioCorto}</span>
-        <span class="exec-inv-name" style="flex:1;">${r.proveedor}${r.entidad?' · '+r.entidad:''}</span>
+      const borderStyle = r.estado==='Nuevo' ? 'border-left:2px solid var(--amber);padding-left:8px;' : '';
+      return `<div class="exec-inv-row" style="${borderStyle}">
+        <span class="exec-inv-id" onclick="tryExecuteInvestigacionPDF('${invId}')" style="cursor:pointer;">${folioCorto}</span>
+        <span class="exec-inv-name" style="flex:1;cursor:pointer;" onclick="tryExecuteInvestigacionPDF('${invId}')">${r.proveedor}${r.entidad?' · '+r.entidad:''}</span>
         ${montoStr ? `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--electric);margin-right:4px;">${montoStr}</span>` : ''}
-        <span class="exec-inv-status" style="${statusBg}">${r.estado}</span>
-        <span style="color:var(--text-dim);font-size:14px;margin-left:4px;">›</span>
+        <span class="exec-inv-status" style="${statusBg};cursor:pointer;position:relative;"
+          onclick="event.stopPropagation();changeInvEstado('${r.folio}', this)"
+          title="Cambiar estado">${r.estado} ▾</span>
       </div>`;
     };
 
@@ -8221,6 +8228,39 @@ async function loadInvestigacionesDB() {
 
   } catch(e) {
     if (list) list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;padding:8px;">Error cargando investigaciones.</div>';
+  }
+}
+
+async function changeInvEstado(folio, el) {
+  // Remove any existing dropdown
+  document.querySelectorAll('.inv-estado-drop').forEach(d => d.remove());
+
+  const estados = ['Nuevo','Activa','Referida','Cerrada'];
+  const colors  = { Nuevo:'var(--amber)', Activa:'var(--green)', Referida:'var(--electric)', Cerrada:'var(--text-dim)' };
+
+  const drop = document.createElement('div');
+  drop.className = 'inv-estado-drop';
+  drop.style.cssText = 'position:absolute;right:0;top:100%;z-index:9999;background:#0d1f35;border:1px solid rgba(255,255,255,0.15);border-radius:8px;overflow:hidden;min-width:120px;box-shadow:0 8px 24px rgba(0,0,0,0.5);';
+  drop.innerHTML = estados.map(e =>
+    `<div onclick="setInvEstado('${folio}','${e}',this.closest('.inv-estado-drop'))"
+      style="padding:8px 14px;font-size:11px;font-weight:700;color:${colors[e]};cursor:pointer;transition:background .15s;"
+      onmouseover="this.style.background='rgba(255,255,255,0.07)'"
+      onmouseout="this.style.background=''">${e}</div>`
+  ).join('');
+
+  el.style.position = 'relative';
+  el.appendChild(drop);
+  setTimeout(() => document.addEventListener('click', () => drop.remove(), { once: true }), 10);
+}
+
+async function setInvEstado(folio, nuevoEstado, drop) {
+  if (drop) drop.remove();
+  try {
+    const { error } = await db.from('investigaciones').update({ estado: nuevoEstado }).eq('folio', folio);
+    if (error) throw error;
+    await loadInvestigacionesDB();
+  } catch(e) {
+    alert('Error al actualizar estado: ' + e.message);
   }
 }
 

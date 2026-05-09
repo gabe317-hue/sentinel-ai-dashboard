@@ -1973,7 +1973,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">The Prieto Group</span>
       <span class="login-inst-tag">·</span>
-      <span class="login-inst-tag">© Sentinel-AI v1.71</span>
+      <span class="login-inst-tag">© Sentinel-AI v1.74</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
@@ -1990,7 +1990,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.71 — HND</div>
+    <div class="logo-version">v1.74 — HND</div>
   </div>
 
   <div class="nav">
@@ -2100,8 +2100,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-logo">SENTINEL<span>·</span>AI</div>
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
-        <span class="po-status-pill"><span class="po-status-dot"></span>Sistema Activo</span>
-        <span class="po-badge electric">v1.71 · 2026</span>
+        <span class="po-badge electric">v1.74 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
         <button onclick="hidePortal()" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Ver Contratos</button>
@@ -2120,21 +2119,21 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
       <!-- métricas siempre visibles -->
       <div class="exec-metrics" style="grid-template-columns: repeat(4,1fr);">
-        <div class="exec-metric">
+        <div class="exec-metric" onclick="poGo(()=>{showContratosView();setTimeout(()=>{document.getElementById('filter-severity')&&(document.getElementById('filter-severity').value='CRITICA',applyFilters())},400)})" style="cursor:pointer;" title="Ver contratos críticos" onmouseover="this.style.background='rgba(255,61,87,0.08)'" onmouseout="this.style.background=''">
           <div class="exec-metric-val v-red" id="exec-m-criticos">—</div>
-          <div class="exec-metric-label">Contratos críticos</div>
+          <div class="exec-metric-label">Contratos críticos ›</div>
         </div>
-        <div class="exec-metric">
+        <div class="exec-metric" onclick="poGo(()=>{showContratosView();setTimeout(()=>{document.getElementById('filter-severity')&&(document.getElementById('filter-severity').value='CRITICA',applyFilters())},400)})" style="cursor:pointer;" title="Ver monto expuesto" onmouseover="this.style.background='rgba(255,171,0,0.08)'" onmouseout="this.style.background=''">
           <div class="exec-metric-val v-amber" id="exec-m-monto">—</div>
-          <div class="exec-metric-label">Monto expuesto</div>
+          <div class="exec-metric-label">Monto expuesto ›</div>
         </div>
-        <div class="exec-metric">
+        <div class="exec-metric" onclick="poGo(()=>executePlaybookQuery('sobrepresupuesto-sefin'))" style="cursor:pointer;" title="Ver sobrepresupuesto" onmouseover="this.style.background='rgba(255,171,0,0.08)'" onmouseout="this.style.background=''">
           <div class="exec-metric-val v-amber" id="exec-m-sobre">—</div>
-          <div class="exec-metric-label">Sobrepresupuesto</div>
+          <div class="exec-metric-label">Sobrepresupuesto ›</div>
         </div>
-        <div class="exec-metric">
+        <div class="exec-metric" onclick="poGo(showInvestigacionesPanel||showCandidatosPanel)" style="cursor:pointer;" title="Ver investigaciones activas" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background=''">
           <div class="exec-metric-val v-text" id="exec-m-inv">8</div>
-          <div class="exec-metric-label">Investigaciones activas</div>
+          <div class="exec-metric-label">Investigaciones activas ›</div>
         </div>
       </div>
 
@@ -2312,8 +2311,8 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
             <span class="po-item-icon">📥</span><span class="po-item-label">Panel de Ingesta</span><span class="po-item-tag tag-l">Live</span><span class="po-arrow">›</span>
           </button>
           <div class="po-divider"></div>
-          <button class="po-item" onclick="hidePortal()">
-            <span class="po-item-icon">🏠</span><span class="po-item-label">Entrar al Dashboard</span><span class="po-arrow">›</span>
+          <button class="po-item" onclick="poGo(showModuloF)">
+            <span class="po-item-icon">📢</span><span class="po-item-label">Denuncia Ciudadana</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="doLogout()" style="color:var(--red);">
             <span class="po-item-icon">🔒</span><span class="po-item-label">Cerrar Sesión</span>
@@ -2349,7 +2348,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-ind"><span class="po-ind-lbl">Riesgo Alto</span><span class="po-ind-val amber" id="po-ind-alto">—</span></div>
       <div class="po-ind"><span class="po-ind-lbl">Listas Internacionales</span><span class="po-ind-val purple" id="po-ind-intl">—</span></div>
       <div class="po-ind"><span class="po-ind-lbl">Total Monitoreado</span><span class="po-ind-val blue" id="po-ind-total">—</span></div>
-      <div class="po-ind"><span class="po-ind-lbl">Riesgo Sobrepresupuesto</span><span class="po-ind-val amber" id="po-ind-sob">—</span></div>
+      <div class="po-ind"><span class="po-ind-lbl">Sobrepresupuesto</span><span class="po-ind-val amber" id="po-ind-sob">—</span></div>
       <div class="po-ind"><span class="po-ind-lbl">Casos Activos</span><span class="po-ind-val red" id="po-ind-casos">—</span></div>
       <div class="po-ind"><span class="po-ind-dot green"></span><span class="po-ind-lbl">Estado</span><span class="po-ind-val green">Operativo</span></div>
     </div>
@@ -2551,6 +2550,31 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="exec-card-sub">≥2 patrones · ≥L 10M acumulado</div>
         <div class="exec-card-note">▸ Clic para ver ranking →</div>
       </div>
+
+      <!-- KPI: Proveedores en Lista Negra -->
+      <div class="exec-card exec-card-purple" onclick="showListasPanel()" style="cursor:pointer;" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor=''">
+        <div class="exec-card-label">Proveedores en Lista Negra</div>
+        <div class="exec-card-value" id="exec-lista-negra">—</div>
+        <div class="exec-card-sub">Engel + OFAC-SDN · EE.UU.</div>
+        <div class="exec-card-note">▸ Sancionados internacionalmente</div>
+      </div>
+
+      <!-- KPI: Contratos Sin Licitación -->
+      <div class="exec-card exec-card-orange" onclick="executePlaybookQuery('contratacion-directa')" style="cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor=''">
+        <div class="exec-card-label">Contratos Sin Licitación</div>
+        <div class="exec-card-value" id="exec-sin-licit">145</div>
+        <div class="exec-card-sub">ONCAE directos · 2025–2026</div>
+        <div class="exec-card-note">▸ L 6,253M sin proceso competitivo</div>
+      </div>
+
+      <!-- KPI: Cobertura Presupuestal -->
+      <div class="exec-card exec-card-green">
+        <div class="exec-card-label">Cobertura Presupuestal</div>
+        <div class="exec-card-value" style="color:var(--green);" id="exec-cobertura">9.7%</div>
+        <div class="exec-card-sub">del Presupuesto Gral. 2024 (L 309B)</div>
+        <div class="exec-card-note">▸ Contratos monitoreados vs total nación</div>
+      </div>
+
     </div>
     <!-- P4 — Score de Riesgo Institucional (moved above P5 for visibility) -->
     <div class="exec-section-title">🏛️ Puntaje de Riesgo Institucional — Top 10 Entidades</div>
@@ -14500,6 +14524,8 @@ function renderEjecutiva() {
   document.getElementById('exec-altos-monto').textContent    = fmtL(sumMonto(altos));
   document.getElementById('exec-ofac').textContent           = ofac.length.toLocaleString();
   document.getElementById('exec-engel').textContent          = _engelMatchedIds.size.toLocaleString();
+  const listaNegra = new Set([...ofac.map(a=>a.id), ..._engelMatchedIds]);
+  document.getElementById('exec-lista-negra').textContent    = listaNegra.size.toLocaleString();
   document.getElementById('exec-total').textContent          = alerts.length.toLocaleString();
   document.getElementById('exec-total-monto').textContent    = fmtL(sumMonto(alerts));
   document.getElementById('exec-sobrecosto').textContent     = sobrecosto.length.toLocaleString();

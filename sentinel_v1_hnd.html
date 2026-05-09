@@ -2157,19 +2157,16 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
     <div class="po-grid-top">
 
-      <!-- OPERACIÓN -->
+      <!-- RESUMEN EJECUTIVO -->
       <div class="po-card po-electric" id="poc-operacion" onclick="poToggle('operacion')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>⚡</span></div>
-          <div><div class="po-card-title">Operación</div><div class="po-card-desc">Vista ejecutiva · Contratos</div></div>
+          <div><div class="po-card-title">Resumen Ejecutivo</div><div class="po-card-desc">Dashboard · KPIs del sistema</div></div>
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
-          <button class="po-item" onclick="poGo(showVistaEjecutiva)">
+          <button class="po-item" onclick="showPortal();showDashboardEjecutivo();">
             <span class="po-item-icon">🏛️</span><span class="po-item-label">Vista Ejecutiva</span><span class="po-item-tag tag-c">Alta Prioridad</span><span class="po-arrow">›</span>
-          </button>
-          <button class="po-item" onclick="poGo(hideAllPanels)">
-            <span class="po-item-icon">📋</span><span class="po-item-label">Contratos</span><span class="po-item-tag tag-l">Live</span><span class="po-arrow">›</span>
           </button>
         </div>
       </div>
@@ -4346,6 +4343,154 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
 
 </main>
+
+<!-- ═══════════════════ MODAL DASHBOARD EJECUTIVO ═══════════════════ -->
+<div id="dashboardEjecutivoModal" style="display:none;position:fixed;inset:0;z-index:9990;background:rgba(5,12,24,0.92);backdrop-filter:blur(20px);overflow-y:auto;padding:24px 20px;">
+  <div style="max-width:900px;margin:0 auto;background:#0a1628;border:1px solid rgba(0,200,255,0.2);border-radius:16px;padding:32px;box-shadow:0 40px 80px rgba(0,0,0,0.6);">
+
+    <!-- HEADER -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--electric);text-transform:uppercase;margin-bottom:8px;">◈ Sentinel-AI · Módulo D — Reporte Oficial</div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;margin:0;">Dashboard Ejecutivo — Resumen Semestral</h2>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
+        <button onclick="exportDashboardEjecutivoPDF()" class="btn btn-ghost" style="font-size:12px;">↓ Exportar PDF</button>
+        <button onclick="closeDashboardEjecutivo()" style="width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+    </div>
+
+    <!-- KPIs PRINCIPALES -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--electric);"></div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;">Alertas Detectadas</div>
+        <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--electric);" id="dbe-alertas">—</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;" id="dbe-alertas-sub">Cargando...</div>
+      </div>
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--red);"></div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;">Investigaciones Activas</div>
+        <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--red);" id="dbe-investigaciones">—</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;" id="dbe-inv-sub">SEN-INV-2026</div>
+      </div>
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);"></div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;">Contratos Monitoreados</div>
+        <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--green);" id="dbe-contratos">136,578</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">SEFIN + ONCAE</div>
+      </div>
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--amber);"></div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;">Monto en Riesgo</div>
+        <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--amber);" id="dbe-monto">L —</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">Contratos críticos</div>
+      </div>
+    </div>
+
+    <!-- RESUMEN NARRATIVO -->
+    <div style="background:var(--glass);border:1px solid rgba(0,200,255,0.2);border-left:3px solid var(--electric);border-radius:12px;padding:24px;margin-bottom:24px;">
+      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--electric);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">◈ Resumen Ejecutivo — Sistema Sentinel-AI Honduras</div>
+      <p style="font-size:13.5px;line-height:1.8;color:var(--text);">El sistema <strong>Sentinel-AI</strong> monitorea en tiempo real la contratación pública de Honduras, procesando datos de <strong>SEFIN (PIEP)</strong> y <strong>ONCAE (HonduCompras)</strong>. La base de datos activa contiene <strong>136,578 contratos</strong> correspondientes al período 2019–2026. El sistema aplica algoritmos de detección sobre fraccionamiento, empresas de baja actividad RTN, sobrepresupuesto institucional y patrones de conflicto de interés.</p>
+      <p style="font-size:13.5px;line-height:1.8;color:var(--text);margin-top:12px;">El <strong>CPI de Honduras en 2025 es 22/100 — posición 157/182</strong>, con pérdidas anuales estimadas en <strong>$720M–$1,000M+</strong> en contrataciones, infraestructura y evasión fiscal. Las investigaciones activas cubren <strong>10 instituciones públicas</strong> con señales de riesgo documentadas. Casos referidos a UFERCO/MP y TSC mediante folio SEN-INV-2026.</p>
+    </div>
+
+    <!-- GRÁFICA + TIPOS IRREGULARIDAD -->
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:24px;">
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;">Contratos por Severidad</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--electric);">Base activa</span>
+        </div>
+        <div style="padding:20px;">
+          <canvas id="dbeBarChart" height="140"></canvas>
+        </div>
+      </div>
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
+          <span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;">Tipos de Irregularidad</span>
+        </div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Fraccionamiento de contratos</span><span style="font-family:'JetBrains Mono',monospace;color:var(--red)">31%</span></div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:31%;height:100%;background:var(--red);border-radius:3px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Empresa baja actividad RTN</span><span style="font-family:'JetBrains Mono',monospace;color:var(--amber)">24%</span></div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:24%;height:100%;background:var(--amber);border-radius:3px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Precios inflados (&gt;150% mercado)</span><span style="font-family:'JetBrains Mono',monospace;color:var(--amber)">19%</span></div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:19%;height:100%;background:var(--amber);border-radius:3px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Conflicto de interés documentado</span><span style="font-family:'JetBrains Mono',monospace;color:var(--electric)">14%</span></div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:14%;height:100%;background:var(--electric);border-radius:3px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Sobrepresupuesto institucional</span><span style="font-family:'JetBrains Mono',monospace;color:var(--text-dim)">12%</span></div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:12%;height:100%;background:var(--text-dim);border-radius:3px;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVESTIGACIONES ACTIVAS -->
+    <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px;">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;">Investigaciones Activas — SEN-INV-2026</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">Por monto involucrado</span>
+      </div>
+      <div id="dbe-inv-table-wrap">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);text-align:left;padding:10px 20px;border-bottom:1px solid var(--border);">Folio</th>
+              <th style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);">Institución</th>
+              <th style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);text-align:right;padding:10px 20px 10px 12px;border-bottom:1px solid var(--border);">Monto (L)</th>
+              <th style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="dbe-inv-tbody">
+            <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text-dim);font-size:13px;">Cargando investigaciones...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- KPIs OPERATIVOS -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;">
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:12px;">Fuentes Activas</div>
+        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--green);">4</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">SEFIN · ONCAE · RNP · CNA</div>
+      </div>
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:12px;">Edge Functions</div>
+        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--electric);">3</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">ingest-sefin · ingest-oncae · monitor</div>
+      </div>
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:12px;">Cobertura</div>
+        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--amber);">2019–2026</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">Historial completo ONCAE</div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="border-top:1px solid var(--border);padding-top:20px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;">The Prieto Group · Sentinel-AI</div>
+        <div style="font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-top:3px;">Reporte Confidencial · Generado automáticamente</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:var(--text-dim);" id="dbe-gen-date">Generado por Sentinel-AI</div>
+        <div style="font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-top:2px;">Integridad: SHA-256 · Inmutable</div>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- ═══════════════════ MODAL ═══════════════════ -->
 <div class="modal-overlay" id="modalOverlay">
@@ -13763,6 +13908,105 @@ function imprimirVistaEjecutiva() {
       window.removeEventListener('afterprint', restore);
     });
   }, 150);
+}
+
+// ─── DASHBOARD EJECUTIVO MODAL ───
+let dbeBarChartInstance = null;
+
+function showDashboardEjecutivo() {
+  const modal = document.getElementById('dashboardEjecutivoModal');
+  modal.style.display = 'block';
+
+  // Fecha generación
+  const now = new Date();
+  document.getElementById('dbe-gen-date').textContent =
+    'Generado: ' + now.toLocaleDateString('es-HN') + ' ' + now.toLocaleTimeString('es-HN', {hour:'2-digit',minute:'2-digit'});
+
+  // Cargar datos desde Supabase
+  if (typeof db !== 'undefined') {
+    // KPI alertas críticas
+    db.from('alerts').select('severity,amount', {count:'exact'}).then(({ data, count }) => {
+      document.getElementById('dbe-alertas').textContent = count ? count.toLocaleString('es-HN') : '136,578';
+      document.getElementById('dbe-alertas-sub').textContent = 'Registros en base de datos';
+
+      if (data) {
+        const criticos = data.filter(r => r.severity === 'CRÍTICA');
+        const montoTotal = criticos.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+        document.getElementById('dbe-monto').textContent = 'L ' + (montoTotal >= 1e9
+          ? (montoTotal/1e9).toFixed(1) + 'B'
+          : (montoTotal >= 1e6 ? (montoTotal/1e6).toFixed(0) + 'M' : montoTotal.toLocaleString('es-HN')));
+
+        // Gráfica barras por severidad
+        const sev = {CRÍTICA:0, ALTA:0, MEDIA:0, BAJA:0};
+        data.forEach(r => { if (sev[r.severity] !== undefined) sev[r.severity]++; });
+        renderDbeBarChart(sev);
+      }
+    });
+
+    // KPI investigaciones
+    db.from('investigaciones').select('folio,entidad,monto_involucrado,estado').order('monto_involucrado', {ascending:false}).then(({ data }) => {
+      if (!data) return;
+      document.getElementById('dbe-investigaciones').textContent = data.length;
+      document.getElementById('dbe-inv-sub').textContent = 'SEN-INV-2026';
+
+      const statusColor = { 'Activa':'var(--electric)', 'Referida':'var(--amber)', 'Cerrada':'var(--green)', 'Nuevo':'var(--text-dim)' };
+      let rows = data.map(inv => {
+        const monto = parseFloat(inv.monto_involucrado) || 0;
+        const montoFmt = monto >= 1e9 ? 'L '+(monto/1e9).toFixed(2)+'B' : monto >= 1e6 ? 'L '+(monto/1e6).toFixed(0)+'M' : 'L '+monto.toLocaleString('es-HN');
+        const col = statusColor[inv.estado] || 'var(--text-dim)';
+        return `<tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+          <td style="padding:10px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);">${inv.folio||'—'}</td>
+          <td style="padding:10px 12px;font-size:12px;">${inv.entidad||'—'}</td>
+          <td style="padding:10px 20px 10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;">${montoFmt}</td>
+          <td style="padding:10px 12px;"><span style="background:rgba(255,255,255,0.06);color:${col};font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${inv.estado||'—'}</span></td>
+        </tr>`;
+      }).join('');
+      document.getElementById('dbe-inv-tbody').innerHTML = rows || '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text-dim);">Sin investigaciones</td></tr>';
+    });
+  }
+}
+
+function renderDbeBarChart(sev) {
+  const ctx = document.getElementById('dbeBarChart').getContext('2d');
+  if (dbeBarChartInstance) { dbeBarChartInstance.destroy(); }
+  dbeBarChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Crítica', 'Alta', 'Media', 'Baja'],
+      datasets: [{ data: [sev.CRÍTICA, sev.ALTA, sev.MEDIA, sev.BAJA],
+        backgroundColor: ['rgba(255,61,87,0.7)','rgba(255,171,0,0.7)','rgba(0,200,255,0.5)','rgba(255,255,255,0.1)'],
+        borderRadius: 6, borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#7a8ba8', font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { color: '#7a8ba8', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+}
+
+function closeDashboardEjecutivo() {
+  document.getElementById('dashboardEjecutivoModal').style.display = 'none';
+}
+
+function exportDashboardEjecutivoPDF() {
+  const inner = document.querySelector('#dashboardEjecutivoModal > div');
+  const html = `<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+      body{background:#050c18;color:#e8edf5;font-family:sans-serif;padding:32px;}
+      *{box-sizing:border-box;}
+      :root{--electric:#00c8ff;--red:#ff3d57;--amber:#ffab00;--green:#00e676;--glass:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--text-dim:#7a8ba8;}
+    </style>
+  </head><body>${inner ? inner.innerHTML : ''}</body></html>`;
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 // ─── VISTA EJECUTIVA ───

@@ -17531,6 +17531,10 @@ function showModuloFPanel() {
 function hideModuloFPanel() {
   document.getElementById('moduloFPanel').classList.remove('open');
   document.getElementById('nav-modulof').classList.remove('active');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+  document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
 }
 
 // ── Panel show/hide ───────────────────────────────────────────────────────

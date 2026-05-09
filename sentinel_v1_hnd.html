@@ -2068,6 +2068,9 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">🔄</span> Ingesta
         <span class="nav-chip" style="background:rgba(0,230,118,0.12);color:var(--green);border-color:rgba(0,230,118,0.3);">LIVE</span>
       </button>
+      <button class="nav-item" onclick="showPortal()" style="color:var(--red);border-color:rgba(255,61,87,0.2);">
+        <span class="nav-icon">⊞</span> Dashboard
+      </button>
       <a class="nav-item" href="index.html">
         <span class="nav-icon">🏠</span> Inicio
       </a>
@@ -2103,7 +2106,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="po-badge electric">v1.71 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
-        <button onclick="showPortal()" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Dashboard</button>
       </div>
     </div>
 
@@ -17457,13 +17459,7 @@ function renderMatchBar(title, summary) {
 // UI estática v1.0 (S73). Datos mock — conexión Supabase en S74+.
 // ══════════════════════════════════════════════════════════════════
 
-const MF_DENUNCIAS_MOCK = [
-  { id:'DEN-2026-0147', canal:'WEB',      resumen:'Contrato Min. Salud adjudicado sin licitación a empresa familiar de funcionario', score:91, corrobora:'✓ HonduCompras', accion:'escalar' },
-  { id:'DEN-2026-0146', canal:'WhatsApp', resumen:'Funcionario SOPTRAVI recibe pagos en efectivo de proveedor de maquinaria',         score:84, corrobora:'✓ TSC + SIAFI',    accion:'escalar' },
-  { id:'DEN-2026-0145', canal:'Email',    resumen:'Alcaldía SPS — obras facturadas y nunca ejecutadas, zona norte 2025',              score:78, corrobora:'~ HonduCompras',  accion:'investigar' },
-  { id:'DEN-2026-0144', canal:'WEB',      resumen:'Red de proveedores coordinados en licitaciones ENEE — 3 empresas, mismos socios',  score:76, corrobora:'✓ RNP + HC',       accion:'investigar' },
-  { id:'DEN-2026-0143', canal:'WhatsApp', resumen:'Denuncia genérica sin nombre ni institución — baja especificidad',                 score:22, corrobora:'— Sin cruce',     accion:'archivar' },
-];
+// MF_DENUNCIAS_MOCK eliminado — datos reales desde Supabase tabla `denuncias`
 
 const MF_CANAL_COLORS = {
   'WEB':      { bg:'var(--purple-dim)', color:'var(--purple)',   border:'rgba(168,85,247,0.3)' },
@@ -17478,34 +17474,36 @@ function mfScoreBadge(score) {
 }
 
 function mfAccionBtn(d) {
-  if (d.accion === 'escalar')     return `<button class="btn-mp" style="background:rgba(168,85,247,0.15);color:var(--purple);border-color:rgba(168,85,247,0.35);">📤 PGR</button>`;
-  if (d.accion === 'investigar')  return `<span class="severity alta" style="cursor:default;">Investigar</span>`;
+  if (d.accion === 'escalar')    return `<button class="btn-mp" style="background:rgba(168,85,247,0.15);color:var(--purple);border-color:rgba(168,85,247,0.35);">📤 PGR</button>`;
+  if (d.accion === 'investigar') return `<span class="severity alta" style="cursor:default;">Investigar</span>`;
   return `<span class="severity baja" style="cursor:default;">Archivar</span>`;
 }
 
-function renderModuloF() {
-  const denuncias = MF_DENUNCIAS_MOCK;
-  const total     = denuncias.length;
-  const alta      = denuncias.filter(d => d.score >= 75).length;
-  const inv       = denuncias.filter(d => d.accion === 'investigar').length;
-  const alertas   = denuncias.filter(d => d.accion === 'escalar').length;
+function mfRenderTabla(denuncias) {
+  const total = denuncias.length || 1;
+  const alta  = denuncias.filter(d => d.score_ia >= 75).length;
+  const inv   = denuncias.filter(d => d.accion === 'investigar').length;
+  const esc   = denuncias.filter(d => d.accion === 'escalar').length;
 
-  document.getElementById('mf-stat-total').textContent   = total;
-  document.getElementById('mf-stat-hoy').textContent     = '↑ +' + Math.min(alta, total) + ' hoy';
+  document.getElementById('mf-stat-total').textContent   = denuncias.length;
+  document.getElementById('mf-stat-hoy').textContent     = '↑ +' + alta + ' alta credibilidad';
   document.getElementById('mf-stat-alta').textContent    = alta;
   document.getElementById('mf-stat-inv').textContent     = inv;
-  document.getElementById('mf-stat-alertas').textContent = alertas;
+  document.getElementById('mf-stat-alertas').textContent = esc;
 
-  // Tabla triage
   const tbody = document.getElementById('mf-triage-tbody');
+  if (!denuncias.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Sin denuncias registradas</td></tr>';
+    return;
+  }
   tbody.innerHTML = denuncias.map(d => {
     const c = MF_CANAL_COLORS[d.canal] || MF_CANAL_COLORS['WEB'];
     return `<tr>
-      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${d.id}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${d.folio}</td>
       <td><span style="font-size:10px;background:${c.bg};color:${c.color};border:1px solid ${c.border};padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${d.canal}</span></td>
       <td style="font-size:12px;">${d.resumen}</td>
-      <td>${mfScoreBadge(d.score)}</td>
-      <td style="font-size:11px;font-weight:600;color:${d.score>=75?'var(--green)':'var(--amber)'};">${d.corrobora}</td>
+      <td>${mfScoreBadge(d.score_ia)}</td>
+      <td style="font-size:11px;font-weight:600;color:${d.score_ia>=75?'var(--green)':'var(--amber)'};">${d.corrobora_bd}</td>
       <td>${mfAccionBtn(d)}</td>
     </tr>`;
   }).join('');
@@ -17525,6 +17523,23 @@ function renderModuloF() {
     document.getElementById('mf-bar-wa').style.width    = pctWa + '%';
     document.getElementById('mf-bar-email').style.width = pctE  + '%';
   }, 100);
+}
+
+async function renderModuloF() {
+  const tbody = document.getElementById('mf-triage-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Cargando...</td></tr>';
+  try {
+    const { data, error } = await db
+      .from('denuncias')
+      .select('*')
+      .order('creado_en', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    mfRenderTabla(data || []);
+  } catch(e) {
+    console.error('Módulo F load error:', e.message);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red);padding:20px;font-size:12px;">Error cargando denuncias — ' + e.message + '</td></tr>';
+  }
 }
 
 function showModuloFPanel() {
@@ -17616,25 +17631,42 @@ function mfSelSeveridad(sev, el) {
   el.style.boxShadow = '0 0 0 2px rgba(168,85,247,0.5)';
 }
 
-function mfRegistrarDenuncia() {
+async function mfRegistrarDenuncia() {
   const desc    = document.getElementById('mf-nd-desc').value.trim();
   const canal   = document.getElementById('mf-nd-canal').value;
   const entidad = document.getElementById('mf-nd-entidad').value.trim();
+  const monto   = parseFloat(document.getElementById('mf-nd-monto').value) || null;
   if (!desc || !canal || !entidad || !_mfSevSeleccionada) {
     alert('Completa todos los campos obligatorios (*)'); return;
   }
   const scoreMap = { baja: 22, media: 62, alta: 85 };
-  const score    = scoreMap[_mfSevSeleccionada];
-  const newId    = 'DEN-2026-0' + (148 + MF_DENUNCIAS_MOCK.length);
-  const accion   = score >= 75 ? 'escalar' : score >= 50 ? 'investigar' : 'archivar';
-  MF_DENUNCIAS_MOCK.unshift({ id: newId, canal, resumen: desc.substring(0,80) + (desc.length>80?'...':''), score, corrobora:'— Pendiente', accion });
-  document.getElementById('mfNuevaDenunciaModal').remove();
-  _mfSevSeleccionada = '';
-  renderModuloF();
+  const score_ia = scoreMap[_mfSevSeleccionada];
+  const accion   = score_ia >= 75 ? 'escalar' : score_ia >= 50 ? 'investigar' : 'archivar';
+
+  const btn = document.querySelector('#mfNuevaDenunciaModal button[onclick="mfRegistrarDenuncia()"]');
+  if (btn) { btn.textContent = 'Registrando...'; btn.disabled = true; }
+
+  try {
+    const { error } = await db.from('denuncias').insert({
+      canal, resumen: desc, entidad, monto_est: monto,
+      score_ia, accion, estado: accion === 'escalar' ? 'escalado' : accion === 'investigar' ? 'en_revision' : 'archivado'
+    });
+    if (error) throw error;
+    document.getElementById('mfNuevaDenunciaModal').remove();
+    _mfSevSeleccionada = '';
+    renderModuloF();
+  } catch(e) {
+    alert('Error al registrar: ' + e.message);
+    if (btn) { btn.textContent = '📡 Registrar Denuncia'; btn.disabled = false; }
+  }
 }
 
-function mfExportarPDF() {
-  const denuncias = MF_DENUNCIAS_MOCK;
+async function mfExportarPDF() {
+  const { data, error } = await db.from('denuncias').select('*').order('creado_en', { ascending: false }).limit(50);
+  if (error) { alert('Error cargando datos: ' + error.message); return; }
+  const denuncias = data || [];
+  // Normalizar campos para el PDF (score_ia → score, folio → id)
+  denuncias.forEach(d => { d.score = d.score_ia; d.id = d.folio; });
   const total  = denuncias.length;
   const alta   = denuncias.filter(d => d.score >= 75).length;
   const inv    = denuncias.filter(d => d.accion === 'investigar').length;

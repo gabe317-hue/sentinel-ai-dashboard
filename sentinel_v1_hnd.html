@@ -16201,6 +16201,32 @@ const INVESTIGATIONS_EXEC = [
       const e = (a.entity_name||'').toUpperCase();
       return e.includes('PLANIF') || e.includes('SEPLAN') || e.includes('SPE');
     }
+  },
+  {
+    id: 'inv-009', folio: 'SEN-INV-2026-009', estado: 'Nuevo',
+    titulo: 'SEGUROS ATLÁNTIDA — Concentración seguros Estado',
+    entidad: 'Unidad Central | CICESCT | Unidad Ejecutora 01',
+    actores: ['SEGUROS ATLANTIDA S.A.'],
+    patrones: ['CONCENTRACION_PROVEEDOR', 'ADJUDICACION_DIRECTA'],
+    hallazgo: 'SEGUROS ATLÁNTIDA concentra contratos de seguros del Estado por L 5,806M. Adjudicación directa recurrente en múltiples unidades ejecutoras sin proceso competitivo documentado.',
+    recomendacion: 'Verificar proceso de licitación. Referir a TSC para auditoría de contratos de seguros públicos.',
+    filtro: a => {
+      const p = (a.proveedor_nombre||a.entity_name||'').toUpperCase();
+      return p.includes('SEGUROS ATLANTIDA') || p.includes('ATLANTIDA');
+    }
+  },
+  {
+    id: 'inv-010', folio: 'SEN-INV-2026-010', estado: 'Nuevo',
+    titulo: 'SESAL/Salud — Contratación Directa Masiva · Cruce CNA',
+    entidad: 'Secretaría de Salud (SESAL) / Secretaría de Salud — Múltiples hospitales y regiones',
+    actores: ['SOLUCIONES INTEGRALES SOLINTSA', 'SOLINT S.A.', 'PRODYLAB', 'HC PHARMA HONDURAS', 'DROGUERIA FARSIMAN', 'DROGUERIA ASTROMEDIC', 'INFRA DE HONDURAS S.A.'],
+    patrones: ['CONTRATACION_DIRECTA_ONCAE', 'COMPRA_EMERGENCIA', 'PROVEEDOR_SIN_HISTORIAL', 'FRACCIONAMIENTO_ONCAE'],
+    hallazgo: 'Cruce BD × Líneas CNA (S78): SESAL registra 135 contratos CRÍTICOS + 209 ALTA en ONCAE. Patrón dominante: contratación directa masiva 2024. SOLINTSA y SOLINT S.A. posible mismo proveedor (entity resolution pendiente) con L 87M en contratos directos 2024. HC PHARMA + FARSIMAN: compra emergencia + proveedor sin historial en medicamentos 2023–2025. Monto total con señales: L 7,871M (SESAL + Salud combinado, 9,685 contratos).',
+    recomendacion: 'Verificar si SOLINTSA y SOLINT S.A. son el mismo proveedor (posible fraccionamiento por nombre). Referir a TSC/MP para auditoría de contratación directa en Salud 2024. Cruzar contra lista de investigaciones activas CNA (140+ líneas sobre administración anterior).',
+    filtro: a => {
+      const e = (a.entity_name||'').toUpperCase();
+      return e.includes('SALUD') || e.includes('SESAL') || e.includes('IHSS') || e.includes('HOSPITAL');
+    }
   }
 ];
 

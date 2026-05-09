@@ -1112,6 +1112,11 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 }
 .login-shield { font-size: 32px; text-align: center; margin-bottom: 12px; }
 
+/* ─── MÓDULO F NAV ITEM ─── */
+.nav-item.mod-f { color: var(--purple); }
+.nav-item.mod-f:hover { background: var(--purple-dim); color: var(--purple); }
+.nav-item.mod-f.active { background: var(--purple-dim); color: var(--purple); border-color: rgba(168,85,247,0.25); }
+
 /* ─── LOGOUT NAV ITEM ─── */
 .nav-item.nav-logout {
   color: rgba(255,61,87,0.6);
@@ -2030,6 +2035,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </button>
       <button class="nav-item" id="nav-timeline" onclick="showTimelinePanel()">
         <span class="nav-icon">📅</span> Cronología
+      </button>
+      <button class="nav-item mod-f" id="nav-modulof" onclick="showModuloFPanel()">
+        <span class="nav-icon">📡</span> Canal Denuncias
+        <span class="nav-chip" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(168,85,247,0.3);">F</span>
       </button>
       <button class="nav-item" id="nav-news" onclick="showNewsPanel()">
         <span class="nav-icon">📰</span> Noticias
@@ -4169,6 +4178,113 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     </div><!-- /tl-prov-section -->
 
   </div>
+
+  <!-- ═══════════════════ MÓDULO F — CANAL DE INTEGRIDAD CIUDADANA ════════════════════ -->
+  <div class="fuente-panel" id="moduloFPanel">
+    <button class="fuente-back" onclick="hideModuloFPanel()">← Contratos</button>
+
+    <!-- Header banner -->
+    <div style="background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.25);border-left:3px solid var(--purple);border-radius:12px;padding:16px 22px;margin-bottom:20px;display:flex;align-items:flex-start;gap:16px;">
+      <div style="font-size:22px;flex-shrink:0;">📡</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--purple);margin-bottom:6px;">Módulo F — Canal de Integridad Ciudadana</div>
+        <p style="font-size:12px;color:var(--text-dim);line-height:1.7;margin:0;">Los algoritmos detectan anomalías en bases de datos — pero la corrupción más sofisticada <strong style="color:var(--text);">no deja rastro digital</strong>. Acuerdos verbales, pagos en efectivo y redes de complicidad son invisibles para cualquier motor analítico. El Canal de Integridad captura esa inteligencia humana y la valida con IA antes de integrarla al sistema. Alineado con <strong style="color:var(--text);">Decreto 54-2015 · Ley de Protección al Denunciante</strong>.</p>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-card purple"><div class="stat-label">Denuncias Recibidas</div><div class="stat-value" id="mf-stat-total">—</div><div class="stat-delta up" style="color:var(--purple);" id="mf-stat-hoy"></div><div class="stat-icon">📡</div></div>
+      <div class="stat-card red"><div class="stat-label">Alta Credibilidad (&gt;75)</div><div class="stat-value" id="mf-stat-alta">—</div><div class="stat-delta up">Requieren acción</div><div class="stat-icon">⚠</div></div>
+      <div class="stat-card amber"><div class="stat-label">En Investigación</div><div class="stat-value" id="mf-stat-inv">—</div><div class="stat-delta">Cruzadas con BD activa</div><div class="stat-icon">◈</div></div>
+      <div class="stat-card green"><div class="stat-label">Alertas Generadas</div><div class="stat-value" id="mf-stat-alertas">—</div><div class="stat-delta">Desde denuncias Módulo F</div><div class="stat-icon">✓</div></div>
+    </div>
+
+    <!-- Main grid: triage table + right column -->
+    <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:16px;margin-bottom:16px;">
+
+      <!-- Tabla triage -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Denuncias Entrantes — Triage IA</span>
+          <span class="card-badge" style="color:var(--purple);border-color:rgba(168,85,247,0.3);background:var(--purple-dim);" id="mf-canal-status">● Canal Activo</span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="alert-table">
+            <thead>
+              <tr><th>ID</th><th>Canal</th><th>Resumen</th><th>Score IA</th><th>Corrobora BD</th><th>Acción</th></tr>
+            </thead>
+            <tbody id="mf-triage-tbody">
+              <tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Cargando denuncias...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Columna derecha -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Motor IA -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Motor de Validación IA — Score 0–100</span></div>
+          <div class="card-body">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;">5 dimensiones ponderadas por el motor de triage:</div>
+            <div style="display:flex;flex-direction:column;gap:11px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>Especificidad de la denuncia</span><span style="font-family:'JetBrains Mono',monospace;color:var(--purple);">30%</span></div>
+                <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="height:100%;width:30%;background:var(--purple);border-radius:3px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>Corroboración en bases de datos</span><span style="font-family:'JetBrains Mono',monospace;color:var(--electric);">25%</span></div>
+                <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="height:100%;width:25%;background:var(--electric);border-radius:3px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>Tipo y posición de la fuente</span><span style="font-family:'JetBrains Mono',monospace;color:var(--amber);">20%</span></div>
+                <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="height:100%;width:20%;background:var(--amber);border-radius:3px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>Credibilidad lingüística (NLP)</span><span style="font-family:'JetBrains Mono',monospace;color:var(--green);">15%</span></div>
+                <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="height:100%;width:15%;background:var(--green);border-radius:3px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span>Detección de duplicados</span><span style="font-family:'JetBrains Mono',monospace;color:var(--text-dim);">10%</span></div>
+                <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="height:100%;width:10%;background:var(--text-dim);border-radius:3px;"></div></div>
+              </div>
+            </div>
+            <div style="margin-top:14px;padding:9px 12px;background:var(--purple-dim);border:1px solid rgba(168,85,247,0.2);border-radius:8px;font-size:11px;color:var(--text-dim);">
+              Score ≥ 75 → <strong style="color:var(--red);">Escalar al Procurador</strong> · Score 50–74 → <strong style="color:var(--amber);">Investigar</strong> · Score &lt; 50 → Archivar
+            </div>
+          </div>
+        </div>
+
+        <!-- Canales de entrada -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Denuncias por Canal de Entrada</span></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:10px;" id="mf-canales-breakdown">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--purple);font-weight:600;">🌐 Portal Web</span><span style="font-family:'JetBrains Mono',monospace;" id="mf-web-pct">— · —</span></div>
+                <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div id="mf-bar-web" style="height:100%;width:0%;background:var(--purple);border-radius:3px;transition:width 0.8s ease;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--green);font-weight:600;">📱 WhatsApp Business</span><span style="font-family:'JetBrains Mono',monospace;" id="mf-wa-pct">— · —</span></div>
+                <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div id="mf-bar-wa" style="height:100%;width:0%;background:var(--green);border-radius:3px;transition:width 0.8s ease;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--electric);font-weight:600;">✉ Email Encriptado</span><span style="font-family:'JetBrains Mono',monospace;" id="mf-email-pct">— · —</span></div>
+                <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div id="mf-bar-email" style="height:100%;width:0%;background:var(--electric);border-radius:3px;transition:width 0.8s ease;"></div></div>
+              </div>
+            </div>
+            <div style="margin-top:12px;padding:8px 10px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.18);border-radius:7px;font-size:10px;color:var(--text-dim);line-height:1.6;">
+              🔒 Anonimización automática en todos los canales · Sin retención de IP ni metadata · Decreto 54-2015
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- ════════════════════════════════════════════════════════════ -->
 
   <!-- NEWS PANEL (migrado de mvp.html) -->
   <div class="fuente-panel" id="newsPanel">
@@ -7064,7 +7180,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','candidatosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','scannerPanel','ingestPanel','busquedaBDPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','casosPanel','candidatosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -17326,6 +17442,95 @@ function renderMatchBar(title, summary) {
   </div>`;
 
   return recentBar + allBar;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MÓDULO F — Canal de Integridad Ciudadana
+// UI estática v1.0 (S73). Datos mock — conexión Supabase en S74+.
+// ══════════════════════════════════════════════════════════════════
+
+const MF_DENUNCIAS_MOCK = [
+  { id:'DEN-2026-0147', canal:'WEB',      resumen:'Contrato Min. Salud adjudicado sin licitación a empresa familiar de funcionario', score:91, corrobora:'✓ HonduCompras', accion:'escalar' },
+  { id:'DEN-2026-0146', canal:'WhatsApp', resumen:'Funcionario SOPTRAVI recibe pagos en efectivo de proveedor de maquinaria',         score:84, corrobora:'✓ TSC + SIAFI',    accion:'escalar' },
+  { id:'DEN-2026-0145', canal:'Email',    resumen:'Alcaldía SPS — obras facturadas y nunca ejecutadas, zona norte 2025',              score:78, corrobora:'~ HonduCompras',  accion:'investigar' },
+  { id:'DEN-2026-0144', canal:'WEB',      resumen:'Red de proveedores coordinados en licitaciones ENEE — 3 empresas, mismos socios',  score:76, corrobora:'✓ RNP + HC',       accion:'investigar' },
+  { id:'DEN-2026-0143', canal:'WhatsApp', resumen:'Denuncia genérica sin nombre ni institución — baja especificidad',                 score:22, corrobora:'— Sin cruce',     accion:'archivar' },
+];
+
+const MF_CANAL_COLORS = {
+  'WEB':      { bg:'var(--purple-dim)', color:'var(--purple)',   border:'rgba(168,85,247,0.3)' },
+  'WhatsApp': { bg:'var(--green-dim)',  color:'var(--green)',    border:'rgba(0,230,118,0.3)' },
+  'Email':    { bg:'var(--electric-dim)', color:'var(--electric)', border:'rgba(0,200,255,0.3)' },
+};
+
+function mfScoreBadge(score) {
+  if (score >= 75) return `<span class="severity critica">● ${score}/100</span>`;
+  if (score >= 50) return `<span class="severity alta">● ${score}/100</span>`;
+  return `<span class="severity baja">● ${score}/100</span>`;
+}
+
+function mfAccionBtn(d) {
+  if (d.accion === 'escalar')     return `<button class="btn-mp" style="background:rgba(168,85,247,0.15);color:var(--purple);border-color:rgba(168,85,247,0.35);">📤 PGR</button>`;
+  if (d.accion === 'investigar')  return `<span class="severity alta" style="cursor:default;">Investigar</span>`;
+  return `<span class="severity baja" style="cursor:default;">Archivar</span>`;
+}
+
+function renderModuloF() {
+  const denuncias = MF_DENUNCIAS_MOCK;
+  const total     = denuncias.length;
+  const alta      = denuncias.filter(d => d.score >= 75).length;
+  const inv       = denuncias.filter(d => d.accion === 'investigar').length;
+  const alertas   = denuncias.filter(d => d.accion === 'escalar').length;
+
+  document.getElementById('mf-stat-total').textContent   = total;
+  document.getElementById('mf-stat-hoy').textContent     = '↑ +' + Math.min(alta, total) + ' hoy';
+  document.getElementById('mf-stat-alta').textContent    = alta;
+  document.getElementById('mf-stat-inv').textContent     = inv;
+  document.getElementById('mf-stat-alertas').textContent = alertas;
+
+  // Tabla triage
+  const tbody = document.getElementById('mf-triage-tbody');
+  tbody.innerHTML = denuncias.map(d => {
+    const c = MF_CANAL_COLORS[d.canal] || MF_CANAL_COLORS['WEB'];
+    return `<tr>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${d.id}</td>
+      <td><span style="font-size:10px;background:${c.bg};color:${c.color};border:1px solid ${c.border};padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${d.canal}</span></td>
+      <td style="font-size:12px;">${d.resumen}</td>
+      <td>${mfScoreBadge(d.score)}</td>
+      <td style="font-size:11px;font-weight:600;color:${d.score>=75?'var(--green)':'var(--amber)'};">${d.corrobora}</td>
+      <td>${mfAccionBtn(d)}</td>
+    </tr>`;
+  }).join('');
+
+  // Barras canales
+  const web   = denuncias.filter(d => d.canal === 'WEB').length;
+  const wa    = denuncias.filter(d => d.canal === 'WhatsApp').length;
+  const email = denuncias.filter(d => d.canal === 'Email').length;
+  const pctW  = Math.round(web/total*100);
+  const pctWa = Math.round(wa/total*100);
+  const pctE  = Math.round(email/total*100);
+  document.getElementById('mf-web-pct').textContent   = web   + ' · ' + pctW  + '%';
+  document.getElementById('mf-wa-pct').textContent    = wa    + ' · ' + pctWa + '%';
+  document.getElementById('mf-email-pct').textContent = email + ' · ' + pctE  + '%';
+  setTimeout(() => {
+    document.getElementById('mf-bar-web').style.width   = pctW  + '%';
+    document.getElementById('mf-bar-wa').style.width    = pctWa + '%';
+    document.getElementById('mf-bar-email').style.width = pctE  + '%';
+  }, 100);
+}
+
+function showModuloFPanel() {
+  _closeAllFuentePanels();
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-modulof').classList.add('active');
+  document.getElementById('moduloFPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderModuloF();
+}
+
+function hideModuloFPanel() {
+  document.getElementById('moduloFPanel').classList.remove('open');
+  document.getElementById('nav-modulof').classList.remove('active');
 }
 
 // ── Panel show/hide ───────────────────────────────────────────────────────

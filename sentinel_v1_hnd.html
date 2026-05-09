@@ -14001,6 +14001,16 @@ function exportDashboardEjecutivoPDF() {
   const headerDiv = clone.querySelector('div:first-child');
   if (headerDiv) headerDiv.remove();
 
+  // Reemplazar canvas con imagen base64
+  const liveCanvas = document.getElementById('dbeBarChart');
+  const cloneCanvas = clone.querySelector('#dbeBarChart');
+  if (liveCanvas && cloneCanvas) {
+    const img = document.createElement('img');
+    img.src = liveCanvas.toDataURL('image/png');
+    img.style.cssText = 'width:100%;max-height:200px;object-fit:contain;background:#fff;border-radius:6px;';
+    cloneCanvas.parentNode.replaceChild(img, cloneCanvas);
+  }
+
   const html = `<!DOCTYPE html><html><head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">

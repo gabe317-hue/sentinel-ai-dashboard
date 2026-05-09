@@ -2103,6 +2103,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="po-badge electric">v1.71 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
+        <button onclick="showPortal()" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Dashboard</button>
       </div>
     </div>
 
@@ -2420,6 +2421,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="ticker-item">ENEE — Pérdidas L46,000M · Caso #2025-0391 <span class="up">↑ Investigación activa</span></span>
         <span class="ticker-item">CPI 2025: Honduras 22/100 — Posición 157/182 · Pérdidas estimadas $720M–$1,000M+ anuales</span>
         <span class="ticker-item">Puntaje promedio proveedores: <span>62.4/100</span></span>
+        <span class="ticker-item">Módulo F — Canal Integridad Ciudadana <span class="up">↑ 8 denuncias hoy · 3 alta credibilidad escaladas</span></span>
         <span class="ticker-item">HonduCompras <span class="up">↑ 3 nuevas anomalías</span></span>
         <span class="ticker-item">SIAFI <span>— Monitoreo activo</span></span>
         <span class="ticker-item">TSC Auditores <span class="down">✓ Sin irregularidades</span></span>
@@ -4181,7 +4183,13 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
   <!-- ═══════════════════ MÓDULO F — CANAL DE INTEGRIDAD CIUDADANA ════════════════════ -->
   <div class="fuente-panel" id="moduloFPanel">
-    <button class="fuente-back" onclick="hideModuloFPanel()">← Contratos</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <button class="fuente-back" style="margin-bottom:0;" onclick="hideModuloFPanel()">← Contratos</button>
+      <div style="display:flex;gap:8px;">
+        <button onclick="mfExportarPDF()" style="background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-dim)'">↓ Exportar PDF</button>
+        <button onclick="mfAbrirNuevaDenuncia()" style="background:rgba(168,85,247,0.15);color:var(--purple);border:1px solid rgba(168,85,247,0.35);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;">+ Nueva Denuncia</button>
+      </div>
+    </div>
 
     <!-- Header banner -->
     <div style="background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.25);border-left:3px solid var(--purple);border-radius:12px;padding:16px 22px;margin-bottom:20px;display:flex;align-items:flex-start;gap:16px;">
@@ -17535,6 +17543,147 @@ function hideModuloFPanel() {
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
   document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
+}
+
+function mfAbrirNuevaDenuncia() {
+  const existing = document.getElementById('mfNuevaDenunciaModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'mfNuevaDenunciaModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease;';
+  modal.innerHTML = `
+    <div style="background:#0d1b2e;border:1px solid rgba(168,85,247,0.3);border-radius:16px;width:540px;max-width:95vw;padding:28px;box-shadow:0 0 60px rgba(168,85,247,0.1),0 24px 48px rgba(0,0,0,0.5);animation:slideUp 0.25s ease;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--purple);letter-spacing:0.5px;">📡 Nueva Denuncia Ciudadana</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Canal de Integridad · Decreto 54-2015 · Anonimato garantizado</div>
+        </div>
+        <button onclick="document.getElementById('mfNuevaDenunciaModal').remove()" style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-dim);cursor:pointer;font-size:16px;">✕</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div style="grid-column:1/-1;">
+          <label style="font-size:11px;color:var(--text-dim);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px;">Descripción de la Denuncia *</label>
+          <textarea id="mf-nd-desc" rows="3" placeholder="Describa con detalle la irregularidad: entidad, funcionarios, fechas, montos..." style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;resize:vertical;" onfocus="this.style.borderColor='rgba(168,85,247,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--text-dim);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px;">Canal de Entrada *</label>
+          <select id="mf-nd-canal" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;" onfocus="this.style.borderColor='rgba(168,85,247,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+            <option value="" style="background:#0d1b2e;">Seleccionar...</option>
+            <option style="background:#0d1b2e;">WEB</option>
+            <option style="background:#0d1b2e;">WhatsApp</option>
+            <option style="background:#0d1b2e;">Email</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--text-dim);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px;">Entidad Involucrada *</label>
+          <input id="mf-nd-entidad" placeholder="Ej: Secretaría de Salud, ENEE..." style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;" onfocus="this.style.borderColor='rgba(168,85,247,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"/>
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--text-dim);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:6px;">Monto Estimado (L)</label>
+          <input id="mf-nd-monto" type="number" placeholder="0" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" onfocus="this.style.borderColor='rgba(168,85,247,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"/>
+        </div>
+        <div style="grid-column:1/-1;">
+          <label style="font-size:11px;color:var(--text-dim);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:8px;">Score IA Inicial *</label>
+          <div style="display:flex;gap:8px;">
+            <div onclick="mfSelSeveridad('baja',this)" data-sev="baja" style="flex:1;padding:9px 6px;border-radius:8px;border:1px solid rgba(122,139,168,0.3);background:rgba(122,139,168,0.06);text-align:center;font-size:11px;font-weight:700;color:var(--text-dim);cursor:pointer;transition:all 0.15s;">● BAJA &lt;50</div>
+            <div onclick="mfSelSeveridad('media',this)" data-sev="media" style="flex:1;padding:9px 6px;border-radius:8px;border:1px solid rgba(255,171,0,0.3);background:rgba(255,171,0,0.06);text-align:center;font-size:11px;font-weight:700;color:var(--amber);cursor:pointer;transition:all 0.15s;">● MEDIA 50–74</div>
+            <div onclick="mfSelSeveridad('alta',this)" data-sev="alta" style="flex:1;padding:9px 6px;border-radius:8px;border:1px solid rgba(255,61,87,0.3);background:rgba(255,61,87,0.06);text-align:center;font-size:11px;font-weight:700;color:var(--red);cursor:pointer;transition:all 0.15s;">● ALTA ≥75</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);border-radius:8px;padding:10px 14px;margin-bottom:20px;font-size:11px;color:var(--text-dim);line-height:1.6;">
+        🔒 Anonimización automática · Sin retención de IP ni metadata · Protegido bajo Decreto 54-2015 · La denuncia será validada por el motor IA antes de escalar.
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('mfNuevaDenunciaModal').remove()" style="flex:1;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
+        <button onclick="mfRegistrarDenuncia()" style="flex:2;padding:12px;background:linear-gradient(135deg,rgba(168,85,247,0.8),rgba(124,58,237,0.9));border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">📡 Registrar Denuncia</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  setTimeout(() => document.getElementById('mf-nd-desc') && document.getElementById('mf-nd-desc').focus(), 100);
+}
+
+let _mfSevSeleccionada = '';
+function mfSelSeveridad(sev, el) {
+  _mfSevSeleccionada = sev;
+  document.querySelectorAll('#mfNuevaDenunciaModal [data-sev]').forEach(b => b.style.opacity = '0.4');
+  el.style.opacity = '1';
+  el.style.boxShadow = '0 0 0 2px rgba(168,85,247,0.5)';
+}
+
+function mfRegistrarDenuncia() {
+  const desc    = document.getElementById('mf-nd-desc').value.trim();
+  const canal   = document.getElementById('mf-nd-canal').value;
+  const entidad = document.getElementById('mf-nd-entidad').value.trim();
+  if (!desc || !canal || !entidad || !_mfSevSeleccionada) {
+    alert('Completa todos los campos obligatorios (*)'); return;
+  }
+  const scoreMap = { baja: 22, media: 62, alta: 85 };
+  const score    = scoreMap[_mfSevSeleccionada];
+  const newId    = 'DEN-2026-0' + (148 + MF_DENUNCIAS_MOCK.length);
+  const accion   = score >= 75 ? 'escalar' : score >= 50 ? 'investigar' : 'archivar';
+  MF_DENUNCIAS_MOCK.unshift({ id: newId, canal, resumen: desc.substring(0,80) + (desc.length>80?'...':''), score, corrobora:'— Pendiente', accion });
+  document.getElementById('mfNuevaDenunciaModal').remove();
+  _mfSevSeleccionada = '';
+  renderModuloF();
+}
+
+function mfExportarPDF() {
+  const denuncias = MF_DENUNCIAS_MOCK;
+  const total  = denuncias.length;
+  const alta   = denuncias.filter(d => d.score >= 75).length;
+  const inv    = denuncias.filter(d => d.accion === 'investigar').length;
+  const esc    = denuncias.filter(d => d.accion === 'escalar').length;
+  const fecha  = new Date().toLocaleDateString('es-HN', { day:'2-digit', month:'long', year:'numeric' });
+  const filas  = denuncias.map(d => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px;">${d.id}</td>
+      <td><span style="background:#f3e8ff;color:#7c3aed;padding:2px 8px;border-radius:4px;font-size:10px;">${d.canal}</span></td>
+      <td style="font-size:12px;">${d.resumen}</td>
+      <td style="font-family:monospace;font-weight:700;color:${d.score>=75?'#dc2626':d.score>=50?'#d97706':'#6b7280'};">${d.score}/100</td>
+      <td style="font-size:11px;">${d.corrobora}</td>
+      <td style="font-weight:600;color:${d.accion==='escalar'?'#7c3aed':d.accion==='investigar'?'#d97706':'#6b7280'};">${d.accion==='escalar'?'Escalar PGR':d.accion==='investigar'?'Investigar':'Archivar'}</td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Módulo F — Canal de Integridad Ciudadana</title>
+  <style>
+    body{font-family:'Segoe UI',sans-serif;color:#1a1a2e;margin:40px;background:#fff;}
+    h1{font-size:20px;color:#7c3aed;margin-bottom:4px;}
+    .sub{font-size:12px;color:#6b7280;margin-bottom:24px;}
+    .kpis{display:flex;gap:16px;margin-bottom:24px;}
+    .kpi{flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;text-align:center;}
+    .kpi-val{font-size:28px;font-weight:700;color:#7c3aed;}
+    .kpi-lbl{font-size:11px;color:#6b7280;margin-top:4px;}
+    table{width:100%;border-collapse:collapse;font-size:12px;}
+    th{background:#f5f3ff;color:#7c3aed;padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
+    td{padding:8px 10px;border-bottom:1px solid #f3f4f6;}
+    tr:hover td{background:#fafafa;}
+    .footer{margin-top:24px;font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px;}
+  </style></head><body>
+  <h1>📡 Módulo F — Canal de Integridad Ciudadana</h1>
+  <div class="sub">Reporte generado: ${fecha} · Sistema Sentinel AI · Decreto 54-2015</div>
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-val">${total}</div><div class="kpi-lbl">Denuncias Recibidas</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#dc2626;">${alta}</div><div class="kpi-lbl">Alta Credibilidad &gt;75</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#d97706;">${inv}</div><div class="kpi-lbl">En Investigación</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#16a34a;">${esc}</div><div class="kpi-lbl">Escaladas al PGR</div></div>
+  </div>
+  <table><thead><tr><th>ID</th><th>Canal</th><th>Resumen</th><th>Score IA</th><th>Corrobora BD</th><th>Acción</th></tr></thead>
+  <tbody>${filas}</tbody></table>
+  <div class="footer">🔒 Información confidencial · Anonimización automática aplicada · Sin retención de IP · Sentinel AI — The Prieto Group</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(html);
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 // ── Panel show/hide ───────────────────────────────────────────────────────

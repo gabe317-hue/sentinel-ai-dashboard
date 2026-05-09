@@ -2119,21 +2119,21 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
       <!-- métricas siempre visibles -->
       <div class="exec-metrics" style="grid-template-columns: repeat(4,1fr);">
-        <div class="exec-metric" onclick="poGo(()=>{showContratosView();setTimeout(()=>{document.getElementById('filter-severity')&&(document.getElementById('filter-severity').value='CRITICA',applyFilters())},400)})" style="cursor:pointer;" title="Ver contratos críticos" onmouseover="this.style.background='rgba(255,61,87,0.08)'" onmouseout="this.style.background=''">
+        <div class="exec-metric">
           <div class="exec-metric-val v-red" id="exec-m-criticos">—</div>
-          <div class="exec-metric-label">Contratos críticos ›</div>
+          <div class="exec-metric-label">Contratos críticos</div>
         </div>
-        <div class="exec-metric" onclick="poGo(()=>{showContratosView();setTimeout(()=>{document.getElementById('filter-severity')&&(document.getElementById('filter-severity').value='CRITICA',applyFilters())},400)})" style="cursor:pointer;" title="Ver monto expuesto" onmouseover="this.style.background='rgba(255,171,0,0.08)'" onmouseout="this.style.background=''">
+        <div class="exec-metric">
           <div class="exec-metric-val v-amber" id="exec-m-monto">—</div>
-          <div class="exec-metric-label">Monto expuesto ›</div>
+          <div class="exec-metric-label">Monto expuesto</div>
         </div>
-        <div class="exec-metric" onclick="poGo(()=>executePlaybookQuery('sobrepresupuesto-sefin'))" style="cursor:pointer;" title="Ver sobrepresupuesto" onmouseover="this.style.background='rgba(255,171,0,0.08)'" onmouseout="this.style.background=''">
+        <div class="exec-metric">
           <div class="exec-metric-val v-amber" id="exec-m-sobre">—</div>
-          <div class="exec-metric-label">Sobrepresupuesto ›</div>
+          <div class="exec-metric-label">Sobrepresupuesto</div>
         </div>
-        <div class="exec-metric" onclick="poGo(showInvestigacionesPanel||showCandidatosPanel)" style="cursor:pointer;" title="Ver investigaciones activas" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background=''">
+        <div class="exec-metric">
           <div class="exec-metric-val v-text" id="exec-m-inv">8</div>
-          <div class="exec-metric-label">Investigaciones activas ›</div>
+          <div class="exec-metric-label">Investigaciones activas</div>
         </div>
       </div>
 
@@ -12295,10 +12295,17 @@ function poUpdateIndicators() {
     if (!data.length) return;
     const crit  = data.filter(a => a.severity === 'CRÍTICA').length;
     const alto  = data.filter(a => a.severity === 'ALTA').length;
-    const sob   = data.filter(a => a.tags && a.tags.includes('SOBRECOSTO')).length;
+    const sob   = data.filter(a => {
+      const mc = Number(a.monto_contrato||0);
+      const budget = Number(a.budget_amount||0);
+      const hasSEFIN = mc > 0 && budget > mc * 1.15;
+      const hasPattern = a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SOBRECOSTO'));
+      return hasSEFIN || hasPattern;
+    }).length;
     const engel = data.filter(a => a.tags && a.tags.includes('LISTA_ENGEL')).length;
     const ofac  = data.filter(a => a.tags && a.tags.includes('PROVEEDOR_SANCIONADO')).length;
-    const casos = data.filter(a => a.tags && a.tags.includes('CASO_ACTIVO')).length;
+    const casosEl = document.getElementById('exec-casos-count');
+    const casos = casosEl ? parseInt(casosEl.textContent) || 0 : 0;
     document.getElementById('po-ind-crit').textContent  = crit.toLocaleString('es-HN');
     document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
     document.getElementById('po-ind-intl').textContent  = (engel + ofac).toLocaleString('es-HN');

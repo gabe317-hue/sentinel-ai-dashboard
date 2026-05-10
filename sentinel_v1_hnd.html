@@ -7024,7 +7024,8 @@ function _closeAllFuentePanels() {
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
   document.getElementById('vistaEjecutiva').style.display = 'none';
-  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
+  document.getElementById('risk-band')       && (document.getElementById('risk-band').style.display = 'none');
+  document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = 'none');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = 'none');
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -12672,7 +12673,8 @@ function hideAuditPanel() {
   document.getElementById('auditPanel').classList.remove('open');
   document.getElementById('nav-audit').classList.remove('active');
   if (_auditClockInterval) { clearInterval(_auditClockInterval); _auditClockInterval = null; }
-  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.getElementById('risk-band')       && (document.getElementById('risk-band').style.display = '');
+  document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = '');
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
   document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');

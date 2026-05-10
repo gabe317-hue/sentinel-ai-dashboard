@@ -2994,7 +2994,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:6px 14px;">🌙 <span id="audit-clock">--:--:--</span> TGU</div>
         <button onclick="exportAuditoriaPDF()" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:var(--glass);color:var(--text);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">↓ Exportar</button>
-        <button onclick="alert('Función disponible con RLS/Auth activo (S76).')" style="padding:7px 16px;border-radius:8px;border:none;background:var(--electric);color:#000;font-size:11px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s;">+ Nueva Alerta</button>
       </div>
     </div>
 
@@ -12665,6 +12664,7 @@ function showAuditPanel() {
   _closeAllFuentePanels();
   document.getElementById('nav-audit').classList.add('active');
   document.getElementById('auditPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   initAuditoriaPanel();
 }
 

@@ -3044,8 +3044,8 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);">Log de Eventos del Sistema</div>
           <span style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.25);border-radius:20px;padding:3px 12px;font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;">Tiempo real · Inmutable</span>
         </div>
-        <div style="display:grid;grid-template-columns:100px 110px 130px 1fr 80px;gap:6px;padding:6px 4px 8px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--text-dim);">
-          <span>TIMESTAMP</span><span>ACTOR / FUENTE</span><span>ACCIÓN</span><span>OBJETO</span><span>IP</span>
+        <div style="display:grid;grid-template-columns:95px 90px 120px 120px 1fr 75px;gap:6px;padding:6px 4px 8px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--text-dim);">
+          <span>TIMESTAMP</span><span>USUARIO</span><span>FUENTE</span><span>ACCIÓN</span><span>OBJETO</span><span>IP</span>
         </div>
         <div id="audit-log-rows"></div>
       </div>
@@ -12684,9 +12684,9 @@ function hideAuditPanel() {
 let _auditClockInterval = null;
 
 // Helper: insertar evento en audit_log desde el cliente
-async function logAuditEvent(accion, objeto, eventType = 'sistema', usuario = 'Sistema Sentinel') {
+async function logAuditEvent(accion, objeto, eventType = 'sistema', usuario = 'Usuario', fuente = 'Cliente Web') {
   try {
-    await db.from('audit_log').insert({ usuario, accion, objeto, event_type: eventType, ip: '10.0.1.1' });
+    await db.from('audit_log').insert({ usuario, fuente, accion, objeto, event_type: eventType, ip: '10.0.1.1' });
   } catch(e) { console.warn('logAuditEvent:', e.message); }
 }
 
@@ -12782,9 +12782,10 @@ async function initAuditoriaPanel() {
       } else {
         logEl.innerHTML = rows.map(e => {
           const color = auditAccionColor(e.accion);
-          return `<div style="display:grid;grid-template-columns:100px 130px 140px 1fr 80px;gap:6px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;align-items:start;">
+          return `<div style="display:grid;grid-template-columns:95px 90px 120px 120px 1fr 75px;gap:6px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;align-items:start;">
             <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${fmtAuditTs(e.evento_ts)}</span>
             <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${e.usuario||''}">${e.usuario||'—'}</span>
+            <span style="color:var(--text-dim);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${e.fuente||''}">${e.fuente||'—'}</span>
             <span style="color:${color};font-family:'JetBrains Mono',monospace;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.accion||'—'}</span>
             <span style="color:var(--text-dim);font-size:11px;line-height:1.4;">${e.objeto||'—'}</span>
             <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.ip||'—'}</span>

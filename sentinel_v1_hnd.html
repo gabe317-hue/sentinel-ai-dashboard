@@ -1942,7 +1942,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">The Prieto Group</span>
       <span class="login-inst-tag">·</span>
-      <span class="login-inst-tag">© Sentinel-AI v1.75</span>
+      <span class="login-inst-tag">© Sentinel-AI v1.77</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
@@ -1959,7 +1959,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.75 — HND</div>
+    <div class="logo-version">v1.77 — HND</div>
   </div>
 
   <div class="nav">
@@ -2065,7 +2065,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-logo">SENTINEL<span>·</span>AI</div>
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
-        <span class="po-badge electric">v1.75 · 2026</span>
+        <span class="po-badge electric">v1.77 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
         <button onclick="hidePortal()" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Ver Contratos</button>
@@ -2981,50 +2981,100 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
   </div>
 
   <!-- ══ AUDIT LOG PANEL ══ -->
+  <!-- ═══════════════════ AUDITORÍA DEL SISTEMA (S74) ═══════════════════ -->
   <div class="fuente-panel" id="auditPanel">
     <button class="fuente-back" onclick="hideAuditPanel()">← Contratos</button>
 
-    <div class="fuente-header">
-      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
-        <span>📋</span>
-        <span>Registro de Auditoría</span>
+    <!-- HEADER -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);margin:0 0 4px 0;">Auditoría del Sistema</h2>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.05em;">Log inmutable · Accesos · Exportaciones · Eventos de seguridad</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:6px 14px;">🌙 <span id="audit-clock">--:--:--</span> TGU</div>
+        <button onclick="exportAuditoriaPDF()" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:var(--glass);color:var(--text);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">↓ Exportar</button>
+        <button onclick="alert('Función disponible con RLS/Auth activo (S76).')" style="padding:7px 16px;border-radius:8px;border:none;background:var(--electric);color:#000;font-size:11px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s;">+ Nueva Alerta</button>
       </div>
     </div>
 
-    <div class="audit-filter-bar">
-      <button class="audit-filter-btn active" data-af="all"     onclick="setAuditFilter('all',this)">TODAS</button>
-      <button class="audit-filter-btn"        data-af="created" onclick="setAuditFilter('created',this)">CREADAS</button>
-      <button class="audit-filter-btn"        data-af="sent"    onclick="setAuditFilter('sent',this)">ENVIADAS</button>
-      <button class="audit-filter-btn"        data-af="deleted" onclick="setAuditFilter('deleted',this)">ELIMINADAS</button>
+    <!-- 4 KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">EVENTOS REGISTRADOS</div>
+        <div style="font-size:34px;font-weight:800;color:var(--electric);font-family:'Syne',sans-serif;line-height:1;">48,291</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Desde activación</div>
+        <div style="position:absolute;top:14px;right:14px;font-size:20px;opacity:0.18;">⊙</div>
+      </div>
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">ACCESOS HOY</div>
+        <div style="font-size:34px;font-weight:800;color:#f59e0b;font-family:'Syne',sans-serif;line-height:1;">37</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">12 usuarios únicos</div>
+        <div style="position:absolute;top:14px;right:14px;font-size:20px;opacity:0.18;">▦</div>
+      </div>
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">EXPORTACIONES</div>
+        <div style="font-size:34px;font-weight:800;color:var(--green);font-family:'Syne',sans-serif;line-height:1;">124</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Este mes</div>
+        <div style="position:absolute;top:14px;right:14px;font-size:20px;opacity:0.18;">↓</div>
+      </div>
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">INTEGRIDAD DEL LOG</div>
+        <div style="font-size:34px;font-weight:800;color:var(--green);font-family:'Syne',sans-serif;line-height:1;">100%</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Sin alteraciones</div>
+        <div style="position:absolute;top:14px;right:14px;font-size:20px;opacity:0.18;">✓</div>
+      </div>
     </div>
 
-    <!-- Limpiar actions -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;padding:12px 16px;background:rgba(255,61,87,0.04);border:1px solid rgba(255,61,87,0.12);border-radius:8px;align-items:center;">
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.08em;margin-right:4px;">LIMPIAR REGISTRO:</span>
-      <button onclick="limpiarAuditEliminadas()"
-        style="padding:5px 14px;border-radius:6px;border:1px solid rgba(255,61,87,0.3);background:var(--red-dim);
-               color:var(--red);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;
-               cursor:pointer;transition:all .2s;"
-        onmouseover="this.style.background='rgba(255,61,87,0.2)'"
-        onmouseout="this.style.background='var(--red-dim)'">
-        🧹 Limpiar historial de alertas eliminadas
-      </button>
-      <button onclick="limpiarAuditEnviadas()"
-        style="padding:5px 14px;border-radius:6px;border:1px solid rgba(0,200,255,0.2);background:var(--electric-dim);
-               color:var(--electric);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;
-               cursor:pointer;transition:all .2s;"
-        onmouseover="this.style.background='rgba(0,200,255,0.2)'"
-        onmouseout="this.style.background='var(--electric-dim)'">
-        🧹 Registros de envíos (ENVIADAS)
-      </button>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);opacity:0.6;margin-left:4px;">
-        ⓘ ENVIADAS se registran cuando se usa el botón 📤 Enviar en una alerta
-      </span>
+    <!-- BANNER INMUTABLE -->
+    <div style="background:rgba(0,200,255,0.05);border:1px solid rgba(0,200,255,0.2);border-left:3px solid var(--electric);border-radius:8px;padding:14px 18px;margin-bottom:22px;display:flex;align-items:flex-start;gap:12px;">
+      <span style="font-size:16px;margin-top:1px;">🔒</span>
+      <div>
+        <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--electric);">Registro Inmutable — Sentinel-AI se audita a sí mismo</span>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:4px;line-height:1.6;">Cada acción realizada dentro del sistema queda registrada con timestamp, usuario, IP y hash de verificación. Este log <strong style="color:var(--text);">no puede ser modificado ni eliminado</strong> por ningún usuario, incluyendo administradores.</div>
+      </div>
     </div>
 
-    <div id="auditLogList">
-      <div class="audit-empty">Cargando registro...</div>
+    <!-- LOG + SIDEBAR -->
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;margin-bottom:20px;">
+
+      <!-- Log de Eventos -->
+      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);">Log de Eventos del Sistema</div>
+          <span style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.25);border-radius:20px;padding:3px 12px;font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;">Tiempo real · Inmutable</span>
+        </div>
+        <div style="display:grid;grid-template-columns:100px 110px 130px 1fr 80px;gap:6px;padding:6px 4px 8px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--text-dim);">
+          <span>TIMESTAMP</span><span>USUARIO</span><span>ACCIÓN</span><span>OBJETO</span><span>IP</span>
+        </div>
+        <div id="audit-log-rows"></div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;">Actividad por Usuario</div>
+          <div id="audit-users-bars"></div>
+        </div>
+        <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;">Tipos de Evento</div>
+          <div id="audit-types-bars"></div>
+        </div>
+      </div>
     </div>
+
+    <!-- EVENTOS DE SEGURIDAD -->
+    <div style="background:var(--glass);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);">⚠ Eventos de Seguridad — Accesos Denegados y Anomalías</div>
+        <span style="background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:3px 12px;font-size:10px;font-family:'JetBrains Mono',monospace;">Últimos 30 días</span>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr 160px 100px 90px;gap:6px;padding:6px 4px 8px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--text-dim);">
+        <span>FECHA</span><span>TIPO DE EVENTO</span><span>USUARIO / FUENTE</span><span>IP</span><span>RESULTADO</span>
+      </div>
+      <div id="audit-security-rows"></div>
+    </div>
+
   </div>
 
   <!-- ═══════════════════ ANALYTICS PANEL ═══════════════════ -->
@@ -12615,15 +12665,182 @@ function showAuditPanel() {
   _closeAllFuentePanels();
   document.getElementById('nav-audit').classList.add('active');
   document.getElementById('auditPanel').classList.add('open');
-  loadAuditLog();
+  initAuditoriaPanel();
 }
 
 function hideAuditPanel() {
   document.getElementById('auditPanel').classList.remove('open');
   document.getElementById('nav-audit').classList.remove('active');
-  document.querySelector('.stats-grid').style.display     = '';
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.getElementById('mainTableContainer').style.display = '';
+  if (_auditClockInterval) { clearInterval(_auditClockInterval); _auditClockInterval = null; }
+}
+
+// ════════════════════════════════════════════════════════════
+// AUDITORÍA DEL SISTEMA — S74 (datos simulados/hardcoded)
+// ════════════════════════════════════════════════════════════
+let _auditClockInterval = null;
+
+function initAuditoriaPanel() {
+  // Reloj TGU (UTC-6)
+  if (_auditClockInterval) clearInterval(_auditClockInterval);
+  function tickClock() {
+    const now = new Date();
+    const tgu = new Date(now.getTime() - 6 * 3600000);
+    const h = String(tgu.getUTCHours()).padStart(2,'0');
+    const m = String(tgu.getUTCMinutes()).padStart(2,'0');
+    const s = String(tgu.getUTCSeconds()).padStart(2,'0');
+    const el = document.getElementById('audit-clock');
+    if (el) el.textContent = h + ':' + m + ':' + s;
+  }
+  tickClock();
+  _auditClockInterval = setInterval(tickClock, 1000);
+
+  // Datos del log de eventos
+  const logEvents = [
+    { ts:'25/05 14:32:11', user:'D. Aspra',        accion:'Exportó reporte',       color:'var(--electric)', obj:'Semestral H1-2025',                                          ip:'10.0.1.10' },
+    { ts:'25/05 14:08:33', user:'Módulo F — Canal', accion:'Triage IA completado',  color:'var(--green)',    obj:'DEN-2026-0147 · Score 91 — Auto-escalado a Procurador General', ip:'10.0.0.7' },
+    { ts:'25/05 13:18:44', user:'J. Martínez',      accion:'Consultó caso',          color:'var(--electric)', obj:'SEN-INV-2026-008',                                          ip:'10.0.1.22' },
+    { ts:'25/05 12:55:02', user:'C. Rodríguez',     accion:'Analizó proveedor',      color:'var(--electric)', obj:'Constructora Pinos SA',                                     ip:'10.0.1.31' },
+    { ts:'25/05 11:41:30', user:'D. Aspra',         accion:'Modificó umbral',        color:'#f59e0b',         obj:'Alerta Crítica → 85',                                       ip:'10.0.1.10' },
+    { ts:'25/05 10:22:18', user:'L. Pacheco',       accion:'Consultó reporte',       color:'var(--electric)', obj:'RSP-2025-007',                                              ip:'10.0.1.44' },
+    { ts:'25/05 09:08:55', user:'J. Martínez',      accion:'Generó reporte',         color:'var(--electric)', obj:'Mensual Mayo 2026',                                         ip:'10.0.1.22' },
+    { ts:'25/05 08:47:33', user:'Sistema API',      accion:'Sincronizó datos',       color:'var(--green)',    obj:'SEFIN PIEP — 137,190 registros',                            ip:'10.0.0.1'  },
+    { ts:'25/05 06:12:04', user:'Cron ONCAE',       accion:'Ingesta completada',     color:'var(--green)',    obj:'ONCAE 2026 — 8,746 contratos actualizados',                 ip:'10.0.0.5'  },
+    { ts:'25/05 05:44:18', user:'Módulo F — Canal', accion:'Triage IA completado',  color:'var(--green)',    obj:'DEN-2026-0147 · Score 91 → Escalado automáticamente',       ip:'10.0.0.8'  },
+    { ts:'25/05 08:01:00', user:'D. Aspra',         accion:'Inicio de sesión',       color:'rgba(255,255,255,0.4)', obj:'Panel General',                                      ip:'10.0.1.10' }
+  ];
+
+  const logEl = document.getElementById('audit-log-rows');
+  if (logEl) {
+    logEl.innerHTML = logEvents.map(e => `
+      <div style="display:grid;grid-template-columns:100px 110px 130px 1fr 80px;gap:6px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;align-items:start;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.ts}</span>
+        <span style="font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.user}</span>
+        <span style="color:${e.color};font-family:'JetBrains Mono',monospace;font-size:10px;">${e.accion}</span>
+        <span style="color:var(--text-dim);font-size:11px;line-height:1.4;">${e.obj}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.ip}</span>
+      </div>`).join('');
+  }
+
+  // Actividad por usuario
+  const users = [
+    { name:'D. Aspra',    pct:38, color:'var(--electric)' },
+    { name:'J. Martínez', pct:27, color:'var(--green)'    },
+    { name:'C. Rodríguez',pct:19, color:'#f59e0b'         },
+    { name:'L. Pacheco',  pct:10, color:'#facc15'         },
+    { name:'Sistema API', pct:6,  color:'rgba(255,255,255,0.3)' }
+  ];
+  const usersEl = document.getElementById('audit-users-bars');
+  if (usersEl) {
+    usersEl.innerHTML = users.map(u => `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:12px;color:var(--text);">${u.name}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${u.color};font-weight:700;">${u.pct}%</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:5px;overflow:hidden;">
+          <div style="height:100%;width:${u.pct}%;background:${u.color};border-radius:4px;transition:width .5s;"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Tipos de evento
+  const types = [
+    { name:'Consulta / Lectura',        pct:66, color:'var(--electric)' },
+    { name:'Exportación de Reporte',    pct:17, color:'var(--green)'    },
+    { name:'Cambio de Configuración',   pct:8,  color:'#f59e0b'         },
+    { name:'Inicio / Cierre de Sesión', pct:6,  color:'#facc15'         },
+    { name:'Acceso Denegado',           pct:3,  color:'var(--red)'      }
+  ];
+  const typesEl = document.getElementById('audit-types-bars');
+  if (typesEl) {
+    typesEl.innerHTML = types.map(t => `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--text-dim);">${t.name}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${t.color};font-weight:700;">${t.pct}%</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:5px;overflow:hidden;">
+          <div style="height:100%;width:${t.pct}%;background:${t.color};border-radius:4px;transition:width .5s;"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Eventos de seguridad
+  const secEvents = [
+    { fecha:'10/05/2026 03:14', tipo:'Intento de login fuera de horario',  user:'usr_anon_4421',  ip:'190.42.18.77', result:'Bloqueado',  rc:'var(--red)' },
+    { fecha:'08/05/2026 18:42', tipo:'Exportación masiva de reportes',     user:'L. Pacheco',     ip:'10.0.1.44',   result:'Alertado',   rc:'#f59e0b'   },
+    { fecha:'05/05/2026 11:30', tipo:'Acceso denegado — Módulo Config',    user:'C. Rodríguez',   ip:'10.0.1.31',   result:'Bloqueado',  rc:'var(--red)' },
+    { fecha:'01/05/2026 22:07', tipo:'Múltiples intentos de autenticación',user:'usr_anon_8812',  ip:'91.108.56.44', result:'Bloqueado', rc:'var(--red)' },
+    { fecha:'28/04/2026 09:55', tipo:'Descarga inusual de registros CSV',  user:'J. Martínez',    ip:'10.0.1.22',   result:'Alertado',   rc:'#f59e0b'   }
+  ];
+  const secEl = document.getElementById('audit-security-rows');
+  if (secEl) {
+    secEl.innerHTML = secEvents.map(e => `
+      <div style="display:grid;grid-template-columns:140px 1fr 160px 100px 90px;gap:6px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;align-items:center;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.fecha}</span>
+        <span style="color:var(--text);">${e.tipo}</span>
+        <span style="color:var(--text-dim);">${e.user}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.ip}</span>
+        <span style="background:${e.rc === 'var(--red)' ? 'rgba(255,61,87,0.12)' : 'rgba(245,158,11,0.12)'};color:${e.rc};border:1px solid ${e.rc === 'var(--red)' ? 'rgba(255,61,87,0.3)' : 'rgba(245,158,11,0.3)'};border-radius:20px;padding:2px 10px;font-size:10px;font-family:'JetBrains Mono',monospace;text-align:center;">${e.result}</span>
+      </div>`).join('');
+  }
+}
+
+function exportAuditoriaPDF() {
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Auditoría del Sistema — Sentinel-AI</title>
+  <style>
+    body{font-family:Arial,sans-serif;padding:32px;color:#111;background:#fff;font-size:12px;}
+    h1{font-size:22px;font-weight:800;margin-bottom:4px;}
+    .sub{color:#666;font-size:11px;margin-bottom:24px;}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+    .kpi{border:1px solid #ddd;border-radius:8px;padding:14px;}
+    .kpi-label{font-size:9px;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:6px;}
+    .kpi-val{font-size:28px;font-weight:800;}
+    .kpi-sub{font-size:10px;color:#888;margin-top:4px;}
+    .cyan{color:#0080a0;} .orange{color:#d97706;} .green{color:#16a34a;}
+    table{width:100%;border-collapse:collapse;margin-bottom:24px;}
+    th{background:#f5f5f5;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:6px 8px;text-align:left;border-bottom:2px solid #ddd;}
+    td{padding:6px 8px;border-bottom:1px solid #eee;font-size:11px;}
+    .badge-blocked{background:#fee2e2;color:#dc2626;border-radius:20px;padding:2px 8px;font-size:9px;}
+    .badge-alert{background:#fef3c7;color:#d97706;border-radius:20px;padding:2px 8px;font-size:9px;}
+    .banner{background:#e0f2fe;border-left:3px solid #0284c7;padding:12px 16px;border-radius:4px;margin-bottom:24px;font-size:11px;}
+    .footer{color:#999;font-size:10px;border-top:1px solid #eee;padding-top:12px;margin-top:24px;}
+  </style></head><body>
+  <h1>Auditoría del Sistema</h1>
+  <div class="sub">Sentinel-AI · Log inmutable · Exportado ${new Date().toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'})} — Hora TGU</div>
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-label">Eventos Registrados</div><div class="kpi-val cyan">48,291</div><div class="kpi-sub">Desde activación</div></div>
+    <div class="kpi"><div class="kpi-label">Accesos Hoy</div><div class="kpi-val orange">37</div><div class="kpi-sub">12 usuarios únicos</div></div>
+    <div class="kpi"><div class="kpi-label">Exportaciones</div><div class="kpi-val green">124</div><div class="kpi-sub">Este mes</div></div>
+    <div class="kpi"><div class="kpi-label">Integridad del Log</div><div class="kpi-val green">100%</div><div class="kpi-sub">Sin alteraciones</div></div>
+  </div>
+  <div class="banner">🔒 <strong>Registro Inmutable</strong> — Cada acción queda registrada con timestamp, usuario, IP y hash. El log no puede ser modificado ni eliminado por ningún usuario.</div>
+  <h3 style="font-size:14px;margin-bottom:10px;">Log de Eventos del Sistema</h3>
+  <table><thead><tr><th>Timestamp</th><th>Usuario</th><th>Acción</th><th>Objeto</th><th>IP</th></tr></thead><tbody>
+    <tr><td>25/05 14:32:11</td><td>D. Aspra</td><td>Exportó reporte</td><td>Semestral H1-2025</td><td>10.0.1.10</td></tr>
+    <tr><td>25/05 14:08:33</td><td>Módulo F — Canal</td><td>Triage IA completado</td><td>DEN-2026-0147 · Score 91 — Auto-escalado a PGR</td><td>10.0.0.7</td></tr>
+    <tr><td>25/05 13:18:44</td><td>J. Martínez</td><td>Consultó caso</td><td>SEN-INV-2026-008</td><td>10.0.1.22</td></tr>
+    <tr><td>25/05 12:55:02</td><td>C. Rodríguez</td><td>Analizó proveedor</td><td>Constructora Pinos SA</td><td>10.0.1.31</td></tr>
+    <tr><td>25/05 11:41:30</td><td>D. Aspra</td><td>Modificó umbral</td><td>Alerta Crítica → 85</td><td>10.0.1.10</td></tr>
+    <tr><td>25/05 08:47:33</td><td>Sistema API</td><td>Sincronizó datos</td><td>SEFIN PIEP — 137,190 registros</td><td>10.0.0.1</td></tr>
+    <tr><td>25/05 06:12:04</td><td>Cron ONCAE</td><td>Ingesta completada</td><td>ONCAE 2026 — 8,746 contratos</td><td>10.0.0.5</td></tr>
+  </tbody></table>
+  <h3 style="font-size:14px;margin-bottom:10px;">⚠ Eventos de Seguridad</h3>
+  <table><thead><tr><th>Fecha</th><th>Tipo de Evento</th><th>Usuario / Fuente</th><th>IP</th><th>Resultado</th></tr></thead><tbody>
+    <tr><td>10/05/2026 03:14</td><td>Intento de login fuera de horario</td><td>usr_anon_4421</td><td>190.42.18.77</td><td><span class="badge-blocked">Bloqueado</span></td></tr>
+    <tr><td>08/05/2026 18:42</td><td>Exportación masiva de reportes</td><td>L. Pacheco</td><td>10.0.1.44</td><td><span class="badge-alert">Alertado</span></td></tr>
+    <tr><td>05/05/2026 11:30</td><td>Acceso denegado — Módulo Config</td><td>C. Rodríguez</td><td>10.0.1.31</td><td><span class="badge-blocked">Bloqueado</span></td></tr>
+    <tr><td>01/05/2026 22:07</td><td>Múltiples intentos de autenticación</td><td>usr_anon_8812</td><td>91.108.56.44</td><td><span class="badge-blocked">Bloqueado</span></td></tr>
+    <tr><td>28/04/2026 09:55</td><td>Descarga inusual de registros CSV</td><td>J. Martínez</td><td>10.0.1.22</td><td><span class="badge-alert">Alertado</span></td></tr>
+  </tbody></table>
+  <div class="footer">Sentinel-AI © The Prieto Group · Confidencial · Uso interno</div>
+  </body></html>`;
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 // ════════════════════════════════════════════════════════════

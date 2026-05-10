@@ -2205,7 +2205,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
-          <button class="po-item" onclick="poGo(showTimelinePanel)">
+          <button class="po-item" onclick="poGo(() => showTimelinePanel('portal'))">
             <span class="po-item-icon">🕐</span><span class="po-item-label">Cronología</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showNewsPanel)">
@@ -9181,10 +9181,20 @@ function exportProvPDF() {
   pw.addEventListener('load', () => pw.focus());
 }
 
-function showTimelinePanel() {
+function showTimelinePanel(origin) {
   _closeAllFuentePanels();
   document.getElementById('nav-timeline').classList.add('active');
   document.getElementById('timelinePanel').classList.add('open');
+  const backBtn = document.querySelector('#timelinePanel .fuente-back');
+  if (backBtn) {
+    if (origin === 'portal') {
+      backBtn.textContent = '← Portal';
+      backBtn.onclick = () => { document.getElementById('timelinePanel').classList.remove('open'); showPortal(); };
+    } else {
+      backBtn.textContent = '← Contratos';
+      backBtn.onclick = () => hideTimelinePanel();
+    }
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
   setTimeout(() => {
     if (!allAlerts || allAlerts.length === 0) return;

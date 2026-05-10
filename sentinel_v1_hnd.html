@@ -12684,6 +12684,7 @@ function hideAuditPanel() {
 // AUDITORÍA DEL SISTEMA — S74 (datos en vivo desde Supabase)
 // ════════════════════════════════════════════════════════════
 let _auditClockInterval = null;
+let _auditDataCache = { events: [], total: 0, hoy: 0, exportaciones: 0 };
 
 // Helper: insertar evento en audit_log desde el cliente
 async function logAuditEvent(accion, objeto, eventType = 'sistema', usuario = 'Usuario', fuente = 'Cliente Web') {
@@ -12748,6 +12749,9 @@ async function initAuditoriaPanel() {
 
     if (error) throw error;
 
+    // Guardar en cache para export PDF
+    _auditDataCache.events = allEvents;
+
     // ── KPIs ──
     const total = allEvents.length;
 
@@ -12768,6 +12772,11 @@ async function initAuditoriaPanel() {
       const tsTGU = new Date(ts.getTime() - 6 * 3600000);
       return e.event_type === 'exportacion' && tsTGU.toISOString().slice(0,7) === mesActual;
     }).length;
+
+    // Guardar KPIs en cache
+    _auditDataCache.total = total;
+    _auditDataCache.hoy   = hoy_count;
+    _auditDataCache.exportaciones = exp_count;
 
     // Actualizar KPIs
     const kpiEl = id => document.getElementById(id);
@@ -12876,6 +12885,27 @@ async function initAuditoriaPanel() {
 async function exportAuditoriaPDF() {
   await logAuditEvent('Exportó reporte', 'Auditoría del Sistema — PDF', 'exportacion', 'Usuario');
 
+  const { events, total, hoy, exportaciones } = _auditDataCache;
+  const fechaExport = new Date().toLocaleDateString('es-HN', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+  const logRows = events.slice(0, 30).map(e => `
+    <tr>
+      <td>${fmtAuditTs(e.evento_ts)}</td>
+      <td>${e.usuario||'—'}</td>
+      <td>${e.fuente||'—'}</td>
+      <td>${e.accion||'—'}</td>
+      <td>${e.objeto||'—'}</td>
+      <td>${e.ip||'—'}</td>
+    </tr>`).join('');
+
+  const secRows = events.filter(e => e.event_type === 'seguridad').map(e => {
+    const isBlock = (e.accion||'').toLowerCase().includes('bloqueado') || (e.objeto||'').toLowerCase().includes('bloqueado');
+    const badge = isBlock
+      ? '<span class="badge-blocked">Bloqueado</span>'
+      : '<span class="badge-alert">Alertado</span>';
+    return `<tr><td>${fmtAuditTs(e.evento_ts)}</td><td>${e.accion||'—'}</td><td>${e.usuario||'—'} / ${e.fuente||'—'}</td><td>${e.ip||'—'}</td><td>${badge}</td></tr>`;
+  }).join('') || '<tr><td colspan="5" style="color:#999;">Sin eventos de seguridad registrados.</td></tr>';
+
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Auditoría del Sistema — Sentinel-AI</title>
   <style>
@@ -12897,34 +12927,23 @@ async function exportAuditoriaPDF() {
     .footer{color:#999;font-size:10px;border-top:1px solid #eee;padding-top:12px;margin-top:24px;}
   </style></head><body>
   <h1>Auditoría del Sistema</h1>
-  <div class="sub">Sentinel-AI · Log inmutable · Exportado ${new Date().toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'})} — Hora TGU</div>
+  <div class="sub">Sentinel-AI · Log inmutable · Exportado ${fechaExport} — Hora TGU</div>
   <div class="kpis">
-    <div class="kpi"><div class="kpi-label">Eventos Registrados</div><div class="kpi-val cyan">48,291</div><div class="kpi-sub">Desde activación</div></div>
-    <div class="kpi"><div class="kpi-label">Accesos Hoy</div><div class="kpi-val orange">37</div><div class="kpi-sub">12 usuarios únicos</div></div>
-    <div class="kpi"><div class="kpi-label">Exportaciones</div><div class="kpi-val green">124</div><div class="kpi-sub">Este mes</div></div>
+    <div class="kpi"><div class="kpi-label">Eventos Registrados</div><div class="kpi-val cyan">${total.toLocaleString()}</div><div class="kpi-sub">Desde activación</div></div>
+    <div class="kpi"><div class="kpi-label">Eventos Hoy</div><div class="kpi-val orange">${hoy}</div><div class="kpi-sub">Hora TGU</div></div>
+    <div class="kpi"><div class="kpi-label">Exportaciones</div><div class="kpi-val green">${exportaciones}</div><div class="kpi-sub">Este mes</div></div>
     <div class="kpi"><div class="kpi-label">Integridad del Log</div><div class="kpi-val green">100%</div><div class="kpi-sub">Sin alteraciones</div></div>
   </div>
   <div class="banner">🔒 <strong>Registro Inmutable</strong> — Cada acción queda registrada con timestamp, usuario, IP y hash. El log no puede ser modificado ni eliminado por ningún usuario.</div>
   <h3 style="font-size:14px;margin-bottom:10px;">Log de Eventos del Sistema</h3>
-  <table><thead><tr><th>Timestamp</th><th>Usuario</th><th>Acción</th><th>Objeto</th><th>IP</th></tr></thead><tbody>
-    <tr><td>25/05 14:32:11</td><td>D. Aspra</td><td>Exportó reporte</td><td>Semestral H1-2025</td><td>10.0.1.10</td></tr>
-    <tr><td>25/05 14:08:33</td><td>Módulo F — Canal</td><td>Triage IA completado</td><td>DEN-2026-0147 · Score 91 — Auto-escalado a PGR</td><td>10.0.0.7</td></tr>
-    <tr><td>25/05 13:18:44</td><td>J. Martínez</td><td>Consultó caso</td><td>SEN-INV-2026-008</td><td>10.0.1.22</td></tr>
-    <tr><td>25/05 12:55:02</td><td>C. Rodríguez</td><td>Analizó proveedor</td><td>Constructora Pinos SA</td><td>10.0.1.31</td></tr>
-    <tr><td>25/05 11:41:30</td><td>D. Aspra</td><td>Modificó umbral</td><td>Alerta Crítica → 85</td><td>10.0.1.10</td></tr>
-    <tr><td>25/05 08:47:33</td><td>Sistema API</td><td>Sincronizó datos</td><td>SEFIN PIEP — 137,190 registros</td><td>10.0.0.1</td></tr>
-    <tr><td>25/05 06:12:04</td><td>Cron ONCAE</td><td>Ingesta completada</td><td>ONCAE 2026 — 8,746 contratos</td><td>10.0.0.5</td></tr>
-  </tbody></table>
+  <table><thead><tr><th>Timestamp</th><th>Usuario</th><th>Fuente</th><th>Acción</th><th>Objeto</th><th>IP</th></tr></thead>
+  <tbody>${logRows}</tbody></table>
   <h3 style="font-size:14px;margin-bottom:10px;">⚠ Eventos de Seguridad</h3>
-  <table><thead><tr><th>Fecha</th><th>Tipo de Evento</th><th>Usuario / Fuente</th><th>IP</th><th>Resultado</th></tr></thead><tbody>
-    <tr><td>10/05/2026 03:14</td><td>Intento de login fuera de horario</td><td>usr_anon_4421</td><td>190.42.18.77</td><td><span class="badge-blocked">Bloqueado</span></td></tr>
-    <tr><td>08/05/2026 18:42</td><td>Exportación masiva de reportes</td><td>L. Pacheco</td><td>10.0.1.44</td><td><span class="badge-alert">Alertado</span></td></tr>
-    <tr><td>05/05/2026 11:30</td><td>Acceso denegado — Módulo Config</td><td>C. Rodríguez</td><td>10.0.1.31</td><td><span class="badge-blocked">Bloqueado</span></td></tr>
-    <tr><td>01/05/2026 22:07</td><td>Múltiples intentos de autenticación</td><td>usr_anon_8812</td><td>91.108.56.44</td><td><span class="badge-blocked">Bloqueado</span></td></tr>
-    <tr><td>28/04/2026 09:55</td><td>Descarga inusual de registros CSV</td><td>J. Martínez</td><td>10.0.1.22</td><td><span class="badge-alert">Alertado</span></td></tr>
-  </tbody></table>
+  <table><thead><tr><th>Fecha</th><th>Tipo de Evento</th><th>Usuario / Fuente</th><th>IP</th><th>Resultado</th></tr></thead>
+  <tbody>${secRows}</tbody></table>
   <div class="footer">Sentinel-AI © The Prieto Group · Confidencial · Uso interno</div>
   </body></html>`;
+
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
   pw.document.write(addPrintBtn(html));

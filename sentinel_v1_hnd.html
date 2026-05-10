@@ -4352,7 +4352,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border);">
       <div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--electric);text-transform:uppercase;margin-bottom:8px;">◈ Sentinel-AI · Módulo D — Reporte Oficial</div>
-        <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;margin:0;">Dashboard Ejecutivo — Resumen Semestral</h2>
+        <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;margin:0;">Dashboard Ejecutivo — Resumen del Sistema</h2>
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
         <button onclick="exportDashboardEjecutivoPDF()" class="btn btn-ghost" style="font-size:12px;">↓ Exportar PDF</button>
@@ -4365,25 +4365,25 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--electric);"></div>
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;">Alertas Detectadas</div>
-        <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--electric);" id="dbe-alertas">—</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--electric);" id="dbe-alertas">—</div>
         <div style="font-size:12px;color:var(--text-dim);margin-top:6px;" id="dbe-alertas-sub">Cargando...</div>
       </div>
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--red);"></div>
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;">Investigaciones Activas</div>
-        <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--red);" id="dbe-investigaciones">—</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--red);" id="dbe-investigaciones">—</div>
         <div style="font-size:12px;color:var(--text-dim);margin-top:6px;" id="dbe-inv-sub">SEN-INV-2026</div>
       </div>
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);"></div>
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;">Contratos Monitoreados</div>
-        <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--green);" id="dbe-contratos">136,578</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--green);" id="dbe-contratos">136,578</div>
         <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">SEFIN + ONCAE</div>
       </div>
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--amber);"></div>
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;">Monto en Riesgo</div>
-        <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--amber);" id="dbe-monto">L —</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--amber);" id="dbe-monto">L —</div>
         <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">Contratos críticos</div>
       </div>
     </div>
@@ -13916,67 +13916,70 @@ let dbeBarChartInstance = null;
 function showDashboardEjecutivo() {
   const modal = document.getElementById('dashboardEjecutivoModal');
   modal.style.display = 'block';
-
-  // Fecha generación
   const now = new Date();
   document.getElementById('dbe-gen-date').textContent =
     'Generado: ' + now.toLocaleDateString('es-HN') + ' ' + now.toLocaleTimeString('es-HN', {hour:'2-digit',minute:'2-digit'});
+  if (typeof db === 'undefined') return;
 
-  // Cargar datos desde Supabase
-  if (typeof db !== 'undefined') {
-    // KPI total + severidad + monto críticos
-    db.from('alerts').select('severity,monto_contrato', {count:'exact'}).then(({ data, count }) => {
-      document.getElementById('dbe-alertas').textContent = count ? count.toLocaleString('es-HN') : '—';
-      document.getElementById('dbe-alertas-sub').textContent = 'Registros en base de datos';
+  const fmtM = v => v >= 1e9 ? 'L ' + (v/1e9).toFixed(1) + 'B' : v >= 1e6 ? 'L ' + (v/1e6).toFixed(0) + 'M' : 'L ' + v.toLocaleString('es-HN');
+  const hoy = now.toLocaleDateString('es-HN', {day:'numeric', month:'long', year:'numeric'});
 
-      if (data) {
-        const criticos = data.filter(r => r.severity === 'CRÍTICA');
-        const montoTotal = criticos.reduce((s, r) => s + (parseFloat(r.monto_contrato) || 0), 0);
-        document.getElementById('dbe-monto').textContent = montoTotal >= 1e9
-          ? 'L ' + (montoTotal/1e9).toFixed(1) + 'B'
-          : montoTotal >= 1e6 ? 'L ' + (montoTotal/1e6).toFixed(0) + 'M' : 'L ' + montoTotal.toLocaleString('es-HN');
+  // 1 — Total contratos
+  db.from('alerts').select('*', {count:'exact', head:true}).then(({ count }) => {
+    const totalFmt = count ? count.toLocaleString('es-HN') : '—';
+    document.getElementById('dbe-alertas').textContent = totalFmt;
+    document.getElementById('dbe-alertas-sub').textContent = 'Registros en base de datos';
 
-        // Gráfica barras por severidad
-        const sev = {'CRÍTICA':0,'ALTA':0,'MEDIA':0,'BAJA':0};
-        data.forEach(r => { if (sev[r.severity] !== undefined) sev[r.severity]++; });
-        renderDbeBarChart(sev);
+    // 2 — Conteo por severidad + monto críticos en paralelo
+    Promise.all([
+      db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','CRÍTICA'),
+      db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','ALTA'),
+      db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','MEDIA'),
+      db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','BAJA'),
+      db.from('alerts').select('monto_contrato').eq('severity','CRÍTICA').limit(2000)
+    ]).then(([crit, alta, media, baja, montoRes]) => {
+      const sev = {
+        'CRÍTICA': crit.count || 0,
+        'ALTA':    alta.count || 0,
+        'MEDIA':   media.count || 0,
+        'BAJA':    baja.count || 0
+      };
+      const montoData = montoRes.data || [];
+      const montoTotal = montoData.reduce((s, r) => s + (parseFloat(r.monto_contrato) || 0), 0);
 
-        // Narrativo dinámico
-        const totalFmt = count ? count.toLocaleString('es-HN') : '137,190';
-        const criticosFmt = criticos.length.toLocaleString('es-HN');
-        const montoFmtN = montoTotal >= 1e9 ? (montoTotal/1e9).toFixed(1)+'B' : (montoTotal/1e6).toFixed(0)+'M';
-        const hoy = new Date().toLocaleDateString('es-HN', {day:'numeric',month:'long',year:'numeric'});
-        document.getElementById('dbe-narrativo-1').innerHTML =
-          `Al <strong>${hoy}</strong>, el sistema <strong>Sentinel-AI</strong> monitorea <strong>${totalFmt} contratos</strong> de contratación pública, procesando datos de <strong>SEFIN (PIEP)</strong> y <strong>ONCAE (HonduCompras)</strong> para el período 2019–2026. Se han identificado <strong>${criticosFmt} contratos de severidad CRÍTICA</strong> con un monto acumulado expuesto de <strong>L ${montoFmtN}</strong>. Distribución de señales: ${sev['CRÍTICA'].toLocaleString()} críticos · ${sev['ALTA'].toLocaleString()} altos · ${sev['MEDIA'].toLocaleString()} medios · ${sev['BAJA'].toLocaleString()} bajos.`;
-      }
+      document.getElementById('dbe-monto').textContent = fmtM(montoTotal);
+      renderDbeBarChart(sev);
+
+      const montoFmtN = montoTotal >= 1e9 ? (montoTotal/1e9).toFixed(1)+'B' : (montoTotal/1e6).toFixed(0)+'M';
+      document.getElementById('dbe-narrativo-1').innerHTML =
+        `Al <strong>${hoy}</strong>, Sentinel-AI monitorea <strong>${totalFmt} contratos</strong> de contratación pública (SEFIN PIEP + ONCAE HonduCompras, período 2019–2026). Se identificaron <strong>${sev['CRÍTICA'].toLocaleString()} contratos CRÍTICOS</strong> con monto expuesto de <strong>L ${montoFmtN}</strong>. Distribución: ${sev['CRÍTICA'].toLocaleString()} críticos · ${sev['ALTA'].toLocaleString()} altos · ${sev['MEDIA'].toLocaleString()} medios · ${sev['BAJA'].toLocaleString()} bajos.`;
     });
+  });
 
-    // KPI investigaciones
-    db.from('investigaciones').select('folio,entidad,monto,estado').order('monto', {ascending:false}).then(({ data }) => {
-      if (!data) return;
-      document.getElementById('dbe-investigaciones').textContent = data.length;
-      document.getElementById('dbe-inv-sub').textContent = 'SEN-INV-2026';
-      const referidas = data.filter(r => r.estado === 'Referida').length;
-      const montoInvTotal = data.reduce((s,r) => s+(parseFloat(r.monto)||0), 0);
-      const montoInvFmt = montoInvTotal >= 1e9 ? (montoInvTotal/1e9).toFixed(2)+'B' : (montoInvTotal/1e6).toFixed(0)+'M';
-      document.getElementById('dbe-narrativo-2').innerHTML =
-        `El sistema mantiene <strong>${data.length} investigaciones activas</strong> bajo folio SEN-INV-2026, con un monto total involucrado de <strong>L ${montoInvFmt}</strong>. ${referidas > 0 ? `<strong>${referidas} casos han sido referidos formalmente</strong> a UFERCO/MP o TSC.` : 'Los casos están en etapa de análisis y documentación.'} El <strong>CPI de Honduras 2025 es 22/100 — posición 157/182</strong>, con pérdidas anuales estimadas en <strong>$720M–$1,000M+</strong> en contrataciones públicas.`;
+  // 3 — Investigaciones
+  db.from('investigaciones').select('folio,entidad,monto,estado').order('monto', {ascending:false}).then(({ data }) => {
+    if (!data) return;
+    document.getElementById('dbe-investigaciones').textContent = data.length;
+    document.getElementById('dbe-inv-sub').textContent = 'SEN-INV-2026';
 
-      const statusColor = { 'Activa':'var(--electric)', 'Referida':'var(--amber)', 'Cerrada':'var(--green)', 'Nuevo':'var(--text-dim)' };
-      let rows = data.map(inv => {
-        const monto = parseFloat(inv.monto) || 0;
-        const montoFmt = monto >= 1e9 ? 'L '+(monto/1e9).toFixed(2)+'B' : monto >= 1e6 ? 'L '+(monto/1e6).toFixed(0)+'M' : 'L '+monto.toLocaleString('es-HN');
-        const col = statusColor[inv.estado] || 'var(--text-dim)';
-        return `<tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
-          <td style="padding:10px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);">${inv.folio||'—'}</td>
-          <td style="padding:10px 12px;font-size:12px;">${inv.entidad||'—'}</td>
-          <td style="padding:10px 20px 10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;">${montoFmt}</td>
-          <td style="padding:10px 12px;"><span style="background:rgba(255,255,255,0.06);color:${col};font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${inv.estado||'—'}</span></td>
-        </tr>`;
-      }).join('');
-      document.getElementById('dbe-inv-tbody').innerHTML = rows || '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text-dim);">Sin investigaciones</td></tr>';
-    });
-  }
+    const referidas = data.filter(r => r.estado === 'Referida').length;
+    const montoInvTotal = data.reduce((s, r) => s + (parseFloat(r.monto) || 0), 0);
+    const montoInvFmt = montoInvTotal >= 1e9 ? (montoInvTotal/1e9).toFixed(2)+'B' : (montoInvTotal/1e6).toFixed(0)+'M';
+    document.getElementById('dbe-narrativo-2').innerHTML =
+      `El sistema mantiene <strong>${data.length} investigaciones activas</strong> (SEN-INV-2026) con monto total involucrado de <strong>L ${montoInvFmt}</strong>. ${referidas > 0 ? `<strong>${referidas} casos referidos formalmente</strong> a UFERCO/MP o TSC.` : 'Casos en etapa de análisis y documentación.'} CPI Honduras 2025: <strong>22/100 — posición 157/182</strong>. Pérdidas anuales estimadas: <strong>$720M–$1,000M+</strong>.`;
+
+    const statusColor = {'Activa':'var(--electric)','Referida':'var(--amber)','Cerrada':'var(--green)','Nuevo':'var(--text-dim)'};
+    document.getElementById('dbe-inv-tbody').innerHTML = data.map(inv => {
+      const monto = parseFloat(inv.monto) || 0;
+      const col = statusColor[inv.estado] || 'var(--text-dim)';
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+        <td style="padding:10px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);">${inv.folio||'—'}</td>
+        <td style="padding:10px 12px;font-size:12px;">${inv.entidad||'—'}</td>
+        <td style="padding:10px 20px 10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;">${fmtM(monto)}</td>
+        <td style="padding:10px 12px;"><span style="background:rgba(255,255,255,0.06);color:${col};font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${inv.estado||'—'}</span></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text-dim);">Sin investigaciones</td></tr>';
+  });
 }
 
 function renderDbeBarChart(sev) {
@@ -14046,7 +14049,7 @@ function exportDashboardEjecutivoPDF() {
   </head><body>
     <div style="margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #0066cc;">
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;color:#0066cc;text-transform:uppercase;margin-bottom:6px;">◈ Sentinel-AI · Módulo D — Reporte Oficial</div>
-      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#1a202c;">Dashboard Ejecutivo — Resumen del Sistema</div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#1a202c;">Dashboard Ejecutivo — Resumen del Sistema Sentinel-AI</div>
       <div style="font-size:10px;color:#6b7280;margin-top:4px;">Generado: ${fechaPDF} &nbsp;·&nbsp; Confidencial · The Prieto Group</div>
     </div>
     ${clone.innerHTML}

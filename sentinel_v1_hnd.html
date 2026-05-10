@@ -14022,6 +14022,7 @@ function exportDashboardEjecutivoPDF() {
       table{width:100%;border-collapse:collapse;}
       th,td{border-bottom:1px solid #dde1e7;}
       canvas{max-width:100%;}
+      @media print { .no-print { display:none !important; } }
     </style>
   </head><body>${clone.innerHTML}</body></html>`;
   const pw = window.open('', '_blank', 'width=1100,height=800');

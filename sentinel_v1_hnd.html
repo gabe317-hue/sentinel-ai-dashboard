@@ -4391,8 +4391,8 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <!-- RESUMEN NARRATIVO -->
     <div style="background:var(--glass);border:1px solid rgba(0,200,255,0.2);border-left:3px solid var(--electric);border-radius:12px;padding:24px;margin-bottom:24px;">
       <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--electric);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">◈ Resumen Ejecutivo — Sistema Sentinel-AI Honduras</div>
-      <p style="font-size:13.5px;line-height:1.8;color:var(--text);">El sistema <strong>Sentinel-AI</strong> monitorea en tiempo real la contratación pública de Honduras, procesando datos de <strong>SEFIN (PIEP)</strong> y <strong>ONCAE (HonduCompras)</strong>. La base de datos activa contiene <strong>136,578 contratos</strong> correspondientes al período 2019–2026. El sistema aplica algoritmos de detección sobre fraccionamiento, empresas de baja actividad RTN, sobrepresupuesto institucional y patrones de conflicto de interés.</p>
-      <p style="font-size:13.5px;line-height:1.8;color:var(--text);margin-top:12px;">El <strong>CPI de Honduras en 2025 es 22/100 — posición 157/182</strong>, con pérdidas anuales estimadas en <strong>$720M–$1,000M+</strong> en contrataciones, infraestructura y evasión fiscal. Las investigaciones activas cubren <strong>10 instituciones públicas</strong> con señales de riesgo documentadas. Casos referidos a UFERCO/MP y TSC mediante folio SEN-INV-2026.</p>
+      <p id="dbe-narrativo-1" style="font-size:13.5px;line-height:1.8;color:var(--text);">Cargando datos del sistema...</p>
+      <p id="dbe-narrativo-2" style="font-size:13.5px;line-height:1.8;color:var(--text);margin-top:12px;"></p>
     </div>
 
     <!-- GRÁFICA + TIPOS IRREGULARIDAD -->
@@ -13940,6 +13940,14 @@ function showDashboardEjecutivo() {
         const sev = {'CRÍTICA':0,'ALTA':0,'MEDIA':0,'BAJA':0};
         data.forEach(r => { if (sev[r.severity] !== undefined) sev[r.severity]++; });
         renderDbeBarChart(sev);
+
+        // Narrativo dinámico
+        const totalFmt = count ? count.toLocaleString('es-HN') : '137,190';
+        const criticosFmt = criticos.length.toLocaleString('es-HN');
+        const montoFmtN = montoTotal >= 1e9 ? (montoTotal/1e9).toFixed(1)+'B' : (montoTotal/1e6).toFixed(0)+'M';
+        const hoy = new Date().toLocaleDateString('es-HN', {day:'numeric',month:'long',year:'numeric'});
+        document.getElementById('dbe-narrativo-1').innerHTML =
+          `Al <strong>${hoy}</strong>, el sistema <strong>Sentinel-AI</strong> monitorea <strong>${totalFmt} contratos</strong> de contratación pública, procesando datos de <strong>SEFIN (PIEP)</strong> y <strong>ONCAE (HonduCompras)</strong> para el período 2019–2026. Se han identificado <strong>${criticosFmt} contratos de severidad CRÍTICA</strong> con un monto acumulado expuesto de <strong>L ${montoFmtN}</strong>. Distribución de señales: ${sev['CRÍTICA'].toLocaleString()} críticos · ${sev['ALTA'].toLocaleString()} altos · ${sev['MEDIA'].toLocaleString()} medios · ${sev['BAJA'].toLocaleString()} bajos.`;
       }
     });
 
@@ -13948,6 +13956,11 @@ function showDashboardEjecutivo() {
       if (!data) return;
       document.getElementById('dbe-investigaciones').textContent = data.length;
       document.getElementById('dbe-inv-sub').textContent = 'SEN-INV-2026';
+      const referidas = data.filter(r => r.estado === 'Referida').length;
+      const montoInvTotal = data.reduce((s,r) => s+(parseFloat(r.monto)||0), 0);
+      const montoInvFmt = montoInvTotal >= 1e9 ? (montoInvTotal/1e9).toFixed(2)+'B' : (montoInvTotal/1e6).toFixed(0)+'M';
+      document.getElementById('dbe-narrativo-2').innerHTML =
+        `El sistema mantiene <strong>${data.length} investigaciones activas</strong> bajo folio SEN-INV-2026, con un monto total involucrado de <strong>L ${montoInvFmt}</strong>. ${referidas > 0 ? `<strong>${referidas} casos han sido referidos formalmente</strong> a UFERCO/MP o TSC.` : 'Los casos están en etapa de análisis y documentación.'} El <strong>CPI de Honduras 2025 es 22/100 — posición 157/182</strong>, con pérdidas anuales estimadas en <strong>$720M–$1,000M+</strong> en contrataciones públicas.`;
 
       const statusColor = { 'Activa':'var(--electric)', 'Referida':'var(--amber)', 'Cerrada':'var(--green)', 'Nuevo':'var(--text-dim)' };
       let rows = data.map(inv => {
@@ -14011,20 +14024,33 @@ function exportDashboardEjecutivoPDF() {
     cloneCanvas.parentNode.replaceChild(img, cloneCanvas);
   }
 
+  const fechaPDF = new Date().toLocaleDateString('es-HN', {day:'numeric',month:'long',year:'numeric'});
   const html = `<!DOCTYPE html><html><head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
       *{box-sizing:border-box;margin:0;padding:0;}
-      body{background:#ffffff;color:#1a202c;font-family:'Helvetica Neue',Arial,sans-serif;padding:32px;font-size:13px;}
+      body{background:#ffffff;color:#1a202c;font-family:'Helvetica Neue',Arial,sans-serif;padding:32px;font-size:11px;}
       :root{--electric:#0066cc;--red:#cc0000;--amber:#cc7700;--green:#007700;--glass:#f7f8fa;--border:#dde1e7;--text-dim:#6b7280;}
-      h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#1a202c;margin-bottom:4px;}
       table{width:100%;border-collapse:collapse;}
-      th,td{border-bottom:1px solid #dde1e7;}
-      canvas{max-width:100%;}
+      th,td{border-bottom:1px solid #dde1e7;padding:6px 10px;}
+      /* KPI cards — reducir 20% */
+      [style*="font-size:34px"]{font-size:27px !important;}
+      [style*="font-size:28px"]{font-size:22px !important;}
+      [style*="font-size:13.5px"]{font-size:11px !important;}
+      [style*="font-size:13px"]{font-size:11px !important;}
+      [style*="font-size:12px"]{font-size:10px !important;}
+      [style*="font-size:14px"]{font-size:12px !important;}
       @media print { .no-print { display:none !important; } }
     </style>
-  </head><body>${clone.innerHTML}</body></html>`;
+  </head><body>
+    <div style="margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #0066cc;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;color:#0066cc;text-transform:uppercase;margin-bottom:6px;">◈ Sentinel-AI · Módulo D — Reporte Oficial</div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#1a202c;">Dashboard Ejecutivo — Resumen del Sistema</div>
+      <div style="font-size:10px;color:#6b7280;margin-top:4px;">Generado: ${fechaPDF} &nbsp;·&nbsp; Confidencial · The Prieto Group</div>
+    </div>
+    ${clone.innerHTML}
+  </body></html>`;
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
   pw.document.write(addPrintBtn(html));

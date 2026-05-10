@@ -3002,19 +3002,19 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">EVENTOS REGISTRADOS</div>
-        <div style="font-size:34px;font-weight:800;color:var(--electric);font-family:'Syne',sans-serif;line-height:1;">48,291</div>
+        <div id="audit-kpi-total" style="font-size:34px;font-weight:800;color:var(--electric);font-family:'Syne',sans-serif;line-height:1;">…</div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Desde activación</div>
         <div style="position:absolute;top:14px;right:14px;font-size:20px;opacity:0.18;">⊙</div>
       </div>
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">ACCESOS HOY</div>
-        <div style="font-size:34px;font-weight:800;color:#f59e0b;font-family:'Syne',sans-serif;line-height:1;">37</div>
-        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">12 usuarios únicos</div>
+        <div id="audit-kpi-hoy" style="font-size:34px;font-weight:800;color:#f59e0b;font-family:'Syne',sans-serif;line-height:1;">…</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Eventos hoy (TGU)</div>
         <div style="position:absolute;top:14px;right:14px;font-size:20px;opacity:0.18;">▦</div>
       </div>
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">EXPORTACIONES</div>
-        <div style="font-size:34px;font-weight:800;color:var(--green);font-family:'Syne',sans-serif;line-height:1;">124</div>
+        <div id="audit-kpi-export" style="font-size:34px;font-weight:800;color:var(--green);font-family:'Syne',sans-serif;line-height:1;">…</div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Este mes</div>
         <div style="position:absolute;top:14px;right:14px;font-size:20px;opacity:0.18;">↓</div>
       </div>
@@ -12672,15 +12672,55 @@ function hideAuditPanel() {
   document.getElementById('auditPanel').classList.remove('open');
   document.getElementById('nav-audit').classList.remove('active');
   if (_auditClockInterval) { clearInterval(_auditClockInterval); _auditClockInterval = null; }
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+  document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
 }
 
 // ════════════════════════════════════════════════════════════
-// AUDITORÍA DEL SISTEMA — S74 (datos simulados/hardcoded)
+// AUDITORÍA DEL SISTEMA — S74 (datos en vivo desde Supabase)
 // ════════════════════════════════════════════════════════════
 let _auditClockInterval = null;
 
-function initAuditoriaPanel() {
-  // Reloj TGU (UTC-6)
+// Helper: insertar evento en audit_log desde el cliente
+async function logAuditEvent(accion, objeto, eventType = 'sistema', usuario = 'Sistema Sentinel') {
+  try {
+    await db.from('audit_log').insert({ usuario, accion, objeto, event_type: eventType, ip: '10.0.1.1' });
+  } catch(e) { console.warn('logAuditEvent:', e.message); }
+}
+
+// Helper: formato timestamp TGU
+function fmtAuditTs(isoStr) {
+  if (!isoStr) return '—';
+  const d = new Date(isoStr);
+  const tgu = new Date(d.getTime() - 6 * 3600000);
+  const dd = String(tgu.getUTCDate()).padStart(2,'0');
+  const mo = String(tgu.getUTCMonth()+1).padStart(2,'0');
+  const hh = String(tgu.getUTCHours()).padStart(2,'0');
+  const mm = String(tgu.getUTCMinutes()).padStart(2,'0');
+  return `${dd}/${mo} ${hh}:${mm}`;
+}
+
+// Colores por acción
+function auditAccionColor(accion) {
+  if (!accion) return 'var(--text-dim)';
+  const a = accion.toLowerCase();
+  if (a.includes('ingesta') || a.includes('sincron') || a.includes('completad') || a.includes('denuncia')) return 'var(--green)';
+  if (a.includes('alerta') || a.includes('exporta') || a.includes('generó') || a.includes('investigación')) return 'var(--electric)';
+  if (a.includes('seguridad') || a.includes('denegado') || a.includes('bloqueado')) return 'var(--red)';
+  if (a.includes('monitor') || a.includes('triage') || a.includes('estado')) return '#f59e0b';
+  return 'rgba(255,255,255,0.5)';
+}
+
+// Etiqueta legible para event_type
+function auditTypeLabel(t) {
+  const map = { sistema:'Sistema / Proceso', exportacion:'Exportación', acceso:'Acceso', seguridad:'Seguridad', consulta:'Consulta' };
+  return map[t] || t;
+}
+
+async function initAuditoriaPanel() {
+  // Reloj TGU
   if (_auditClockInterval) clearInterval(_auditClockInterval);
   function tickClock() {
     const now = new Date();
@@ -12694,99 +12734,146 @@ function initAuditoriaPanel() {
   tickClock();
   _auditClockInterval = setInterval(tickClock, 1000);
 
-  // Datos del log de eventos
-  const logEvents = [
-    { ts:'25/05 14:32:11', user:'D. Aspra',        accion:'Exportó reporte',       color:'var(--electric)', obj:'Semestral H1-2025',                                          ip:'10.0.1.10' },
-    { ts:'25/05 14:08:33', user:'Módulo F — Canal', accion:'Triage IA completado',  color:'var(--green)',    obj:'DEN-2026-0147 · Score 91 — Auto-escalado a Procurador General', ip:'10.0.0.7' },
-    { ts:'25/05 13:18:44', user:'J. Martínez',      accion:'Consultó caso',          color:'var(--electric)', obj:'SEN-INV-2026-008',                                          ip:'10.0.1.22' },
-    { ts:'25/05 12:55:02', user:'C. Rodríguez',     accion:'Analizó proveedor',      color:'var(--electric)', obj:'Constructora Pinos SA',                                     ip:'10.0.1.31' },
-    { ts:'25/05 11:41:30', user:'D. Aspra',         accion:'Modificó umbral',        color:'#f59e0b',         obj:'Alerta Crítica → 85',                                       ip:'10.0.1.10' },
-    { ts:'25/05 10:22:18', user:'L. Pacheco',       accion:'Consultó reporte',       color:'var(--electric)', obj:'RSP-2025-007',                                              ip:'10.0.1.44' },
-    { ts:'25/05 09:08:55', user:'J. Martínez',      accion:'Generó reporte',         color:'var(--electric)', obj:'Mensual Mayo 2026',                                         ip:'10.0.1.22' },
-    { ts:'25/05 08:47:33', user:'Sistema API',      accion:'Sincronizó datos',       color:'var(--green)',    obj:'SEFIN PIEP — 137,190 registros',                            ip:'10.0.0.1'  },
-    { ts:'25/05 06:12:04', user:'Cron ONCAE',       accion:'Ingesta completada',     color:'var(--green)',    obj:'ONCAE 2026 — 8,746 contratos actualizados',                 ip:'10.0.0.5'  },
-    { ts:'25/05 05:44:18', user:'Módulo F — Canal', accion:'Triage IA completado',  color:'var(--green)',    obj:'DEN-2026-0147 · Score 91 → Escalado automáticamente',       ip:'10.0.0.8'  },
-    { ts:'25/05 08:01:00', user:'D. Aspra',         accion:'Inicio de sesión',       color:'rgba(255,255,255,0.4)', obj:'Panel General',                                      ip:'10.0.1.10' }
-  ];
+  // Registrar acceso al panel
+  await logAuditEvent('Panel abierto', 'Auditoría del Sistema', 'acceso', 'Usuario');
 
-  const logEl = document.getElementById('audit-log-rows');
-  if (logEl) {
-    logEl.innerHTML = logEvents.map(e => `
-      <div style="display:grid;grid-template-columns:100px 110px 130px 1fr 80px;gap:6px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;align-items:start;">
-        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.ts}</span>
-        <span style="font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.user}</span>
-        <span style="color:${e.color};font-family:'JetBrains Mono',monospace;font-size:10px;">${e.accion}</span>
-        <span style="color:var(--text-dim);font-size:11px;line-height:1.4;">${e.obj}</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.ip}</span>
-      </div>`).join('');
-  }
+  try {
+    // Cargar todos los eventos (máx 200 para aggregaciones)
+    const { data: allEvents, error } = await db
+      .from('audit_log')
+      .select('*')
+      .order('evento_ts', { ascending: false })
+      .limit(200);
 
-  // Actividad por usuario
-  const users = [
-    { name:'D. Aspra',    pct:38, color:'var(--electric)' },
-    { name:'J. Martínez', pct:27, color:'var(--green)'    },
-    { name:'C. Rodríguez',pct:19, color:'#f59e0b'         },
-    { name:'L. Pacheco',  pct:10, color:'#facc15'         },
-    { name:'Sistema API', pct:6,  color:'rgba(255,255,255,0.3)' }
-  ];
-  const usersEl = document.getElementById('audit-users-bars');
-  if (usersEl) {
-    usersEl.innerHTML = users.map(u => `
-      <div style="margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span style="font-size:12px;color:var(--text);">${u.name}</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${u.color};font-weight:700;">${u.pct}%</span>
-        </div>
-        <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:5px;overflow:hidden;">
-          <div style="height:100%;width:${u.pct}%;background:${u.color};border-radius:4px;transition:width .5s;"></div>
-        </div>
-      </div>`).join('');
-  }
+    if (error) throw error;
 
-  // Tipos de evento
-  const types = [
-    { name:'Consulta / Lectura',        pct:66, color:'var(--electric)' },
-    { name:'Exportación de Reporte',    pct:17, color:'var(--green)'    },
-    { name:'Cambio de Configuración',   pct:8,  color:'#f59e0b'         },
-    { name:'Inicio / Cierre de Sesión', pct:6,  color:'#facc15'         },
-    { name:'Acceso Denegado',           pct:3,  color:'var(--red)'      }
-  ];
-  const typesEl = document.getElementById('audit-types-bars');
-  if (typesEl) {
-    typesEl.innerHTML = types.map(t => `
-      <div style="margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span style="font-size:11px;color:var(--text-dim);">${t.name}</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${t.color};font-weight:700;">${t.pct}%</span>
-        </div>
-        <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:5px;overflow:hidden;">
-          <div style="height:100%;width:${t.pct}%;background:${t.color};border-radius:4px;transition:width .5s;"></div>
-        </div>
-      </div>`).join('');
-  }
+    // ── KPIs ──
+    const total = allEvents.length;
 
-  // Eventos de seguridad
-  const secEvents = [
-    { fecha:'10/05/2026 03:14', tipo:'Intento de login fuera de horario',  user:'usr_anon_4421',  ip:'190.42.18.77', result:'Bloqueado',  rc:'var(--red)' },
-    { fecha:'08/05/2026 18:42', tipo:'Exportación masiva de reportes',     user:'L. Pacheco',     ip:'10.0.1.44',   result:'Alertado',   rc:'#f59e0b'   },
-    { fecha:'05/05/2026 11:30', tipo:'Acceso denegado — Módulo Config',    user:'C. Rodríguez',   ip:'10.0.1.31',   result:'Bloqueado',  rc:'var(--red)' },
-    { fecha:'01/05/2026 22:07', tipo:'Múltiples intentos de autenticación',user:'usr_anon_8812',  ip:'91.108.56.44', result:'Bloqueado', rc:'var(--red)' },
-    { fecha:'28/04/2026 09:55', tipo:'Descarga inusual de registros CSV',  user:'J. Martínez',    ip:'10.0.1.22',   result:'Alertado',   rc:'#f59e0b'   }
-  ];
-  const secEl = document.getElementById('audit-security-rows');
-  if (secEl) {
-    secEl.innerHTML = secEvents.map(e => `
-      <div style="display:grid;grid-template-columns:140px 1fr 160px 100px 90px;gap:6px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;align-items:center;">
-        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.fecha}</span>
-        <span style="color:var(--text);">${e.tipo}</span>
-        <span style="color:var(--text-dim);">${e.user}</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.ip}</span>
-        <span style="background:${e.rc === 'var(--red)' ? 'rgba(255,61,87,0.12)' : 'rgba(245,158,11,0.12)'};color:${e.rc};border:1px solid ${e.rc === 'var(--red)' ? 'rgba(255,61,87,0.3)' : 'rgba(245,158,11,0.3)'};border-radius:20px;padding:2px 10px;font-size:10px;font-family:'JetBrains Mono',monospace;text-align:center;">${e.result}</span>
-      </div>`).join('');
+    // Eventos hoy (hora TGU)
+    const hoy = new Date();
+    const hoyTGU = new Date(hoy.getTime() - 6 * 3600000);
+    const hoyStr = hoyTGU.toISOString().slice(0,10);
+    const hoy_count = allEvents.filter(e => {
+      const ts = new Date(e.evento_ts);
+      const tsTGU = new Date(ts.getTime() - 6 * 3600000);
+      return tsTGU.toISOString().slice(0,10) === hoyStr;
+    }).length;
+
+    // Exportaciones este mes
+    const mesActual = hoyTGU.toISOString().slice(0,7);
+    const exp_count = allEvents.filter(e => {
+      const ts = new Date(e.evento_ts);
+      const tsTGU = new Date(ts.getTime() - 6 * 3600000);
+      return e.event_type === 'exportacion' && tsTGU.toISOString().slice(0,7) === mesActual;
+    }).length;
+
+    // Actualizar KPIs
+    const kpiEl = id => document.getElementById(id);
+    if (kpiEl('audit-kpi-total'))  kpiEl('audit-kpi-total').textContent  = total.toLocaleString();
+    if (kpiEl('audit-kpi-hoy'))    kpiEl('audit-kpi-hoy').textContent    = hoy_count;
+    if (kpiEl('audit-kpi-export')) kpiEl('audit-kpi-export').textContent = exp_count;
+
+    // ── Log de eventos (top 20) ──
+    const logEl = document.getElementById('audit-log-rows');
+    if (logEl) {
+      const rows = allEvents.slice(0, 20);
+      if (rows.length === 0) {
+        logEl.innerHTML = '<div style="padding:20px;color:var(--text-dim);font-size:12px;">Sin eventos registrados.</div>';
+      } else {
+        logEl.innerHTML = rows.map(e => {
+          const color = auditAccionColor(e.accion);
+          return `<div style="display:grid;grid-template-columns:100px 130px 140px 1fr 80px;gap:6px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;align-items:start;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${fmtAuditTs(e.evento_ts)}</span>
+            <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${e.usuario||''}">${e.usuario||'—'}</span>
+            <span style="color:${color};font-family:'JetBrains Mono',monospace;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.accion||'—'}</span>
+            <span style="color:var(--text-dim);font-size:11px;line-height:1.4;">${e.objeto||'—'}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.ip||'—'}</span>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    // ── Actividad por usuario (aggregación real) ──
+    const userCounts = {};
+    allEvents.forEach(e => { userCounts[e.usuario] = (userCounts[e.usuario] || 0) + 1; });
+    const usersSorted = Object.entries(userCounts).sort((a,b) => b[1]-a[1]).slice(0,5);
+    const maxUser = usersSorted[0]?.[1] || 1;
+    const userColors = ['var(--electric)','var(--green)','#f59e0b','#facc15','rgba(255,255,255,0.35)'];
+    const usersEl = document.getElementById('audit-users-bars');
+    if (usersEl) {
+      usersEl.innerHTML = usersSorted.map(([name, cnt], i) => {
+        const pct = Math.round((cnt / maxUser) * 100);
+        const color = userColors[i] || 'rgba(255,255,255,0.3)';
+        return `<div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;max-width:160px;" title="${name}">${name}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${color};font-weight:700;">${cnt}</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:5px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${color};border-radius:4px;transition:width .6s;"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Tipos de evento (aggregación real) ──
+    const typeCounts = {};
+    allEvents.forEach(e => { typeCounts[e.event_type] = (typeCounts[e.event_type] || 0) + 1; });
+    const typesSorted = Object.entries(typeCounts).sort((a,b) => b[1]-a[1]);
+    const maxType = typesSorted[0]?.[1] || 1;
+    const typeColors = { sistema:'var(--electric)', exportacion:'var(--green)', acceso:'#f59e0b', consulta:'#facc15', seguridad:'var(--red)' };
+    const typesEl = document.getElementById('audit-types-bars');
+    if (typesEl) {
+      typesEl.innerHTML = typesSorted.map(([type, cnt]) => {
+        const pct = Math.round((cnt / maxType) * 100);
+        const color = typeColors[type] || 'rgba(255,255,255,0.3)';
+        return `<div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:11px;color:var(--text-dim);">${auditTypeLabel(type)}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${color};font-weight:700;">${cnt}</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:5px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${color};border-radius:4px;transition:width .6s;"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Eventos de seguridad ──
+    const secEvents = allEvents.filter(e => e.event_type === 'seguridad');
+    const secEl = document.getElementById('audit-security-rows');
+    if (secEl) {
+      if (secEvents.length === 0) {
+        secEl.innerHTML = '<div style="padding:16px 4px;color:var(--text-dim);font-size:12px;">Sin eventos de seguridad registrados.</div>';
+      } else {
+        secEl.innerHTML = secEvents.map(e => {
+          const isBlock = (e.accion||'').toLowerCase().includes('bloqueado') || (e.objeto||'').toLowerCase().includes('bloqueado');
+          const rc = isBlock ? 'var(--red)' : '#f59e0b';
+          const rbg = isBlock ? 'rgba(255,61,87,0.12)' : 'rgba(245,158,11,0.12)';
+          const rbr = isBlock ? 'rgba(255,61,87,0.3)'  : 'rgba(245,158,11,0.3)';
+          const label = isBlock ? 'Bloqueado' : 'Alertado';
+          return `<div style="display:grid;grid-template-columns:140px 1fr 160px 100px 90px;gap:6px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;align-items:center;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${fmtAuditTs(e.evento_ts)}</span>
+            <span style="color:var(--text);">${e.accion||'—'}</span>
+            <span style="color:var(--text-dim);">${e.usuario||'—'}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${e.ip||'—'}</span>
+            <span style="background:${rbg};color:${rc};border:1px solid ${rbr};border-radius:20px;padding:2px 10px;font-size:10px;font-family:'JetBrains Mono',monospace;text-align:center;">${label}</span>
+          </div>`;
+        }).join('');
+      }
+    }
+
+  } catch(err) {
+    console.error('Auditoría load error:', err.message);
+    const logEl = document.getElementById('audit-log-rows');
+    if (logEl) logEl.innerHTML = `<div style="padding:20px;color:var(--red);font-size:12px;">Error cargando datos: ${err.message}</div>`;
   }
 }
 
-function exportAuditoriaPDF() {
+async function exportAuditoriaPDF() {
+  await logAuditEvent('Exportó reporte', 'Auditoría del Sistema — PDF', 'exportacion', 'Usuario');
+
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Auditoría del Sistema — Sentinel-AI</title>
   <style>

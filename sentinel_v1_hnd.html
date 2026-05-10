@@ -3045,7 +3045,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <span style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.25);border-radius:20px;padding:3px 12px;font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;">Tiempo real · Inmutable</span>
         </div>
         <div style="display:grid;grid-template-columns:100px 110px 130px 1fr 80px;gap:6px;padding:6px 4px 8px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--text-dim);">
-          <span>TIMESTAMP</span><span>USUARIO</span><span>ACCIÓN</span><span>OBJETO</span><span>IP</span>
+          <span>TIMESTAMP</span><span>ACTOR / FUENTE</span><span>ACCIÓN</span><span>OBJETO</span><span>IP</span>
         </div>
         <div id="audit-log-rows"></div>
       </div>
@@ -12734,8 +12734,7 @@ async function initAuditoriaPanel() {
   tickClock();
   _auditClockInterval = setInterval(tickClock, 1000);
 
-  // Registrar acceso al panel
-  await logAuditEvent('Panel abierto', 'Auditoría del Sistema', 'acceso', 'Usuario');
+  // Acceso al panel — sin log hasta S76 (auth real)
 
   try {
     // Cargar todos los eventos (máx 200 para aggregaciones)

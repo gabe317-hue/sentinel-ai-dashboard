@@ -2065,8 +2065,9 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-logo">SENTINEL<span>·</span>AI</div>
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
-        <span class="po-badge electric">v1.77 · 2026</span>
+        <span class="po-badge electric">v1.81 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
+        <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
         <button onclick="hidePortal()" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Ver Contratos</button>
       </div>
@@ -12391,6 +12392,29 @@ function poUpdateIndicators() {
     document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
     document.getElementById('po-ind-total').textContent = data.length.toLocaleString('es-HN');
     document.getElementById('po-db-badge').textContent  = data.length.toLocaleString('es-HN') + ' contratos monitoreados';
+
+    // Delta counter — compara contra último conteo guardado
+    try {
+      const LS_COUNT = 'sentinel_prev_count';
+      const LS_DATE  = 'sentinel_prev_date';
+      const prevCount = parseInt(localStorage.getItem(LS_COUNT) || '0', 10);
+      const prevDate  = localStorage.getItem(LS_DATE) || '';
+      const curCount  = data.length;
+      const deltaBadge = document.getElementById('po-delta-badge');
+      if (prevCount > 0 && curCount > prevCount && deltaBadge) {
+        const delta = curCount - prevCount;
+        const fmtPrev = prevDate ? new Date(prevDate).toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+        deltaBadge.textContent = `▲ +${delta.toLocaleString('es-HN')} nuevos desde ${fmtPrev}`;
+        deltaBadge.style.display = 'inline-block';
+      } else if (deltaBadge) {
+        deltaBadge.style.display = 'none';
+      }
+      // Actualizar localStorage solo si el conteo cambió
+      if (curCount !== prevCount) {
+        localStorage.setItem(LS_COUNT, curCount);
+        localStorage.setItem(LS_DATE, new Date().toISOString());
+      }
+    } catch(lsErr) { /* localStorage no disponible */ }
   } catch(e) { /* silent */ }
 }
 

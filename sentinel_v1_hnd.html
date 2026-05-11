@@ -3110,7 +3110,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
       <!-- Pattern breakdown table — rows are clickable -->
       <div style="margin-bottom:28px;">
-        <div class="fuente-title" style="font-size:13px;margin-bottom:6px;color:var(--text-dim);letter-spacing:.08em;">EXPOSICIÓN POR PATRÓN DE FRAUDE</div>
+        <div class="fuente-title" style="font-size:13px;margin-bottom:6px;color:var(--text-dim);letter-spacing:.08em;">EXPOSICIÓN POR PATRÓN DE RIESGO</div>
         <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;opacity:0.7;">Haz clic en un patrón para ver el reporte detallado con gráfica de evolución mensual.</div>
         <div style="overflow-x:auto;">
           <table class="alert-table" id="analyticsPatternTable">
@@ -4176,7 +4176,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           </div>
         </div>
         <div style="font-size:11px;color:var(--text-dim);line-height:1.6;padding:10px;border-radius:8px;background:rgba(0,200,255,0.04);border:1px solid rgba(0,200,255,0.08);">
-          ℹ️ La ingesta descarga el archivo HC1_datos_{año}.json desde ONCAE, aplica detección de patrones de fraude y actualiza la base de datos. Tiempo estimado: 60–90 segundos.
+          ℹ️ La ingesta descarga el archivo HC1_datos_{año}.json desde ONCAE, aplica detección de patrones de riesgo y actualiza la base de datos. Tiempo estimado: 60–90 segundos.
         </div>
         <button id="ingestRunBtn" onclick="runIngest()" style="margin-top:16px;width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--green),#00b862);color:#001a0d;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.04em;transition:opacity .2s;">
           🔄 Iniciar Actualización ONCAE
@@ -6978,7 +6978,7 @@ ${sobrecostoHtml}
 </table>
 
 <div class="footer">
-  <span>Sentinel-AI Honduras · Sistema de Detección de Fraude en Compras Públicas</span>
+  <span>Sentinel-AI Honduras · Sistema de Análisis de Riesgo en Contratación Pública</span>
   <span>CONFIDENCIAL — Uso interno</span>
 </div>
 </body>
@@ -8718,7 +8718,7 @@ ${concentrationRows ? `<div style="background:#fdecea;border:2px solid #e74c3c;b
 <div class="header-band">
   <div>
     <div class="header-logo">⚡ SENTINEL-AI</div>
-    <div style="color:#ccc;font-family:Arial,sans-serif;font-size:10px;margin-top:4px;">Sistema de Detección de Fraude en Contratación Pública · Honduras</div>
+    <div style="color:#ccc;font-family:Arial,sans-serif;font-size:10px;margin-top:4px;">Sistema de Análisis de Riesgo en Contratación Pública · Honduras</div>
   </div>
   <div class="header-folio">${memoFolio}<br>${hoy}</div>
 </div>
@@ -8861,7 +8861,7 @@ ${anomaliasSection}
 ${sorted.length > 25 ? `<p style="font-size:9pt;color:#555;font-style:italic;margin:12px 0;padding:10px 14px;background:#f5f5f0;border-left:3px solid #c0392b;border-radius:0 4px 4px 0;">📋 Este anexo incluye los <strong>25 contratos de mayor monto</strong> (Pareto). El listado completo de <strong>${sorted.length} contratos</strong> está disponible como documento separado — use el botón <strong>"📋 Lista Completa"</strong> en el panel de Investigaciones.</p>` : ''}
 
 <div class="footer">
-  <div><strong>Sentinel-AI</strong> · The Prieto Group<br>Sistema de Detección de Fraude en Contratación Pública · Honduras</div>
+  <div><strong>Sentinel-AI</strong> · The Prieto Group<br>Sistema de Análisis de Riesgo en Contratación Pública · Honduras</div>
   <div style="text-align:right;">${memoFolio}<br>${hoy} · CONFIDENCIAL</div>
 </div>
 
@@ -8987,7 +8987,7 @@ async function exportarListaCompleta(folio, entidad) {
   ${rows || '<tr><td colspan="6" style="padding:16px;text-align:center;color:#999;">Sin datos disponibles</td></tr>'}
 </table>
 <div class="footer">
-  <div><strong>Sentinel-AI</strong> · The Prieto Group · Sistema de Detección de Fraude en Contratación Pública · Honduras</div>
+  <div><strong>Sentinel-AI</strong> · The Prieto Group · Sistema de Análisis de Riesgo en Contratación Pública · Honduras</div>
   <div style="text-align:right;">${folio} · ${hoy} · CONFIDENCIAL</div>
 </div>
 </div>
@@ -11569,7 +11569,7 @@ function exportAnalyticsPDF(mode) {
     <div class="stat-box"><div class="stat-val" style="color:#c0392b;">${criticos.length.toLocaleString()}</div><div class="stat-lbl">Críticos</div></div>
     <div class="stat-box"><div class="stat-val">${fmtL(totalMonto)}</div><div class="stat-lbl">Monto Total</div></div>
   </div>
-  <h2>Exposición por Patrón de Fraude${mode==='pareto'?' (top 80% del monto)':''}</h2>
+  <h2>Exposición por Patrón de Riesgo${mode==='pareto'?' (top 80% del monto)':''}</h2>
   <table><thead><tr><th>Patrón</th><th style="text-align:right;">Contratos</th><th style="text-align:right;">% del Total</th><th style="text-align:right;">Monto (L.)</th><th style="text-align:right;">Acumulado</th></tr></thead>
   <tbody>${patRows}</tbody></table>
   <h2>Top Entidades Compradoras${mode==='pareto'?' — Top 10':' — Top 20'}</h2>
@@ -16147,7 +16147,7 @@ function exportRedFlagPDF() {
   </div>
   ${sinCoincidencias}
   <div class="footer">
-    <span>Sistema Sentinel — Detección de Fraude en Contratación Pública</span>
+    <span>Sistema Sentinel — Análisis de Riesgo en Contratación Pública</span>
     <span>${folio} · ${ds}</span>
   </div>
   <div class="classification">USO INTERNO — SISTEMA SENTINEL · CONFIDENCIAL</div>

@@ -4758,7 +4758,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
       <div style="background:var(--glass);border-radius:10px;padding:12px;">
         <div style="font-size:9px;color:var(--text-dim);letter-spacing:.07em;margin-bottom:4px;">INSTITUCIÓN</div>
-        <div style="font-size:11px;color:var(--text);" id="bd-entidad">—</div>
+        <div style="font-size:11px;color:var(--text);" id="bdd-entidad">—</div>
       </div>
       <div style="background:var(--glass);border-radius:10px;padding:12px;">
         <div style="font-size:9px;color:var(--text-dim);letter-spacing:.07em;margin-bottom:4px;">REGLA DETECTORA</div>
@@ -8605,7 +8605,7 @@ async function showBorradorDetalle(folio) {
   document.getElementById('bd-folio').textContent = folio;
   document.getElementById('bd-proveedor').textContent = 'Cargando…';
   document.getElementById('bd-monto').textContent = '—';
-  document.getElementById('bd-entidad').textContent = '—';
+  document.getElementById('bdd-entidad').textContent = '—';
   document.getElementById('bd-regla').textContent = '—';
   document.getElementById('bd-notas').textContent = '—';
   document.getElementById('bd-sefin-result').style.display = 'none';
@@ -8635,7 +8635,18 @@ async function showBorradorDetalle(folio) {
 
   document.getElementById('bd-proveedor').textContent = data.proveedor || '—';
   document.getElementById('bd-monto').textContent = fmtL(data.monto);
-  document.getElementById('bd-entidad').textContent = data.entidad || '—';
+  // Fallback a alerts.entity_name si investigaciones.entidad está vacío
+  if (data.entidad) {
+    document.getElementById('bdd-entidad').textContent = data.entidad;
+  } else {
+    const { data: alertEnt } = await db.from('alerts')
+      .select('entity_name')
+      .ilike('proveedor_nombre', `%${(data.proveedor||'').split(' ')[0]}%`)
+      .not('entity_name','is',null)
+      .order('monto',{ascending:false}).limit(1);
+    document.getElementById('bdd-entidad').textContent = (alertEnt?.[0]?.entity_name) || '—';
+    if (alertEnt?.[0]?.entity_name && _borradorActual) _borradorActual.entidad = alertEnt[0].entity_name;
+  }
   document.getElementById('bd-regla').innerHTML = `<span style="color:${rd.color}">${rd.label}</span>`;
   document.getElementById('bd-notas').textContent = data.notas || '—';
 

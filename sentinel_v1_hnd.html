@@ -2116,6 +2116,15 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando candidatos…</div>
         </div>
 
+        <!-- ── S89-B: Detecciones Automáticas ── -->
+        <div class="exec-section-hd" style="cursor:default;">
+          🤖 &nbsp;Detecciones Automáticas
+          <span class="exec-section-badge" id="auto-inv-badge" style="background:rgba(138,43,226,0.18);color:#a78bfa;">cargando…</span>
+        </div>
+        <div id="auto-inv-list">
+          <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
+        </div>
+
         <div class="exec-section-hd">
           🗂 &nbsp;Investigaciones activas
           <span class="exec-section-badge" id="exec-inv-badge" style="background:var(--red-dim);color:var(--red);">cargando…</span>
@@ -4841,6 +4850,7 @@ async function loadAlerts() {
     loadRedFlagsFromSupabase(); // S64 — merge activo=true records from Supabase
     renderCandidatosDetectados(); // Populate nav chip count on load
     loadInvestigacionesDB();      // S69 — cargar investigaciones desde Supabase
+    loadBorradoresAuto();         // S89-B — detecciones automáticas pendientes
     setStatus('connected');
     hideError();
     render();
@@ -8400,6 +8410,7 @@ async function loadInvestigacionesDB() {
     const { data, error } = await db
       .from('investigaciones')
       .select('folio,proveedor,entidad,monto,estado,destino_referido,fecha_referido,origen')
+      .not('estado', 'in', '("Borrador-Auto","Descartado")')
       .order('id', { ascending: false })
       .limit(20);
 
@@ -8461,6 +8472,85 @@ async function loadInvestigacionesDB() {
   } catch(e) {
     if (list) list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;padding:8px;">Error cargando investigaciones.</div>';
   }
+}
+
+// ── S89-B: Detecciones Automáticas ───────────────────────────────────────────
+async function loadBorradoresAuto() {
+  const list  = document.getElementById('auto-inv-list');
+  const badge = document.getElementById('auto-inv-badge');
+  if (!list) return;
+
+  try {
+    const { data, error } = await db
+      .from('investigaciones')
+      .select('folio,proveedor,entidad,monto,origen,patrones,notas')
+      .eq('estado', 'Borrador-Auto')
+      .order('monto', { ascending: false })
+      .limit(60);
+
+    if (error || !data) throw error;
+
+    if (badge) badge.textContent = `${data.length} pendiente${data.length!==1?'s':''}`;
+
+    if (!data.length) {
+      list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Sin borradores pendientes.</div>';
+      return;
+    }
+
+    const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(1)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
+
+    const reglaBadge = origen => {
+      const r = (origen||'').replace('AUTO-INVESTIGADOR-','');
+      const cols = { R1:'rgba(255,61,87,0.2);color:var(--red)', R2:'rgba(255,171,0,0.18);color:var(--amber)', R4:'rgba(0,200,255,0.15);color:var(--electric)', R5:'rgba(138,43,226,0.22);color:#a78bfa' };
+      const css = cols[r] || 'rgba(255,255,255,0.08);color:var(--text-dim)';
+      return `<span style="background:${css};font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 5px;border-radius:4px;font-weight:700;flex-shrink:0;">${r}</span>`;
+    };
+
+    const TOP = 5;
+    const renderRow = r => {
+      const provEsc  = (r.proveedor||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const folioEsc = (r.folio||'').replace(/'/g,"\\'");
+      const notaTip  = (r.notas||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+      return `<div style="display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);" title="${notaTip}">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-dim);flex-shrink:0;">${r.folio}</span>
+        <span style="flex:1;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);">${r.proveedor||'—'}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--electric);flex-shrink:0;">${fmtL(r.monto)}</span>
+        ${reglaBadge(r.origen)}
+        <button onclick="event.stopPropagation();aprobarBorrador('${folioEsc}')" style="background:rgba(0,200,100,0.15);border:1px solid rgba(0,200,100,0.3);color:#4ade80;font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:4px;cursor:pointer;flex-shrink:0;" title="Aprobar → Investigación Activa">✓</button>
+        <button onclick="event.stopPropagation();descartarBorrador('${folioEsc}','${provEsc}')" style="background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.25);color:var(--red);font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:4px;cursor:pointer;flex-shrink:0;" title="Descartar">✕</button>
+      </div>`;
+    };
+
+    const topRows   = data.slice(0, TOP).map(renderRow).join('');
+    const extraRows = data.slice(TOP).map(renderRow).join('');
+    const hasExtra  = data.length > TOP;
+
+    list.innerHTML = topRows
+      + (hasExtra ? `<div id="auto-inv-extra" style="display:none;">${extraRows}</div>
+        <div class="exec-more" id="auto-inv-more-btn"
+          onclick="(function(){var x=document.getElementById('auto-inv-extra'),b=document.getElementById('auto-inv-more-btn');var open=x.style.display==='none';x.style.display=open?'block':'none';b.textContent=open?'▲ mostrar menos':'+ ${data.length - TOP} más borradores ›';})()">
+          + ${data.length - TOP} más borradores ›
+        </div>` : '');
+
+  } catch(e) {
+    if (list) list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;padding:8px;">Error cargando borradores.</div>';
+  }
+}
+
+async function aprobarBorrador(folio) {
+  if (!confirm(`¿Aprobar ${folio} como investigación activa?\n\nEl caso pasará a la lista de Investigaciones Activas.`)) return;
+  const { error } = await db.from('investigaciones').update({ estado: 'Activa' }).eq('folio', folio);
+  if (error) { alert('Error al aprobar: ' + error.message); return; }
+  await Promise.all([loadBorradoresAuto(), loadInvestigacionesDB()]);
+}
+
+async function descartarBorrador(folio, proveedor) {
+  const razon = prompt(`Razón para descartar ${folio}\n${proveedor}\n\n(Dejar en blanco para cancelar)`);
+  if (razon === null || razon.trim() === '') return;
+  const notasVal = `[DESCARTADO] ${razon}`;
+  const { error } = await db.from('investigaciones').update({ estado: 'Descartado', notas: notasVal }).eq('folio', folio);
+  if (error) { alert('Error al descartar: ' + error.message); return; }
+  await loadBorradoresAuto();
 }
 
 async function changeInvEstado(folio, el) {

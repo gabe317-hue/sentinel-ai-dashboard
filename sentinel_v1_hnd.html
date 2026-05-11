@@ -8684,12 +8684,49 @@ async function verificarContraSEFIN() {
   }
 
   try {
-    const { data: sefin } = await db
+    // Paso 1: obtener año real del contrato desde tabla alerts
+    const proveedor = (_borradorActual.proveedor || '').trim();
+    let anoContrato = null;
+    const { data: alertMatch } = await db
+      .from('alerts')
+      .select('fecha_contrato')
+      .ilike('proveedor_nombre', `%${proveedor.split(' ')[0]}%`)
+      .not('fecha_contrato', 'is', null)
+      .order('monto', { ascending: false })
+      .limit(1);
+    if (alertMatch && alertMatch.length && alertMatch[0].fecha_contrato) {
+      anoContrato = alertMatch[0].fecha_contrato.substring(0, 4); // "2025"
+    }
+
+    // Paso 2: buscar SEFIN del año del contrato; fallback al más reciente
+    let sefinQuery = db
       .from('sefin_presupuesto')
       .select('institucion_nombre,aprobado,vigente,ejecucion_acumulada,ejecucion_procurement,periodo')
-      .ilike('institucion_nombre', `%${keyword}%`)
-      .order('periodo', { ascending: false })
-      .limit(1);
+      .ilike('institucion_nombre', `%${keyword}%`);
+
+    let yearNote = '';
+    if (anoContrato) {
+      // Intentar año exacto del contrato
+      const { data: sefinYear } = await sefinQuery.like('periodo', `${anoContrato}%`).order('periodo', { ascending: false }).limit(1);
+      if (sefinYear && sefinYear.length) {
+        var sefin = sefinYear;
+        yearNote = `Presupuesto del año del contrato (${anoContrato}) ✅`;
+      } else {
+        // Fallback: más reciente disponible
+        const { data: sefinFallback } = await db
+          .from('sefin_presupuesto')
+          .select('institucion_nombre,aprobado,vigente,ejecucion_acumulada,ejecucion_procurement,periodo')
+          .ilike('institucion_nombre', `%${keyword}%`)
+          .order('periodo', { ascending: false })
+          .limit(1);
+        var sefin = sefinFallback;
+        yearNote = `⚠️ Sin datos SEFIN para ${anoContrato} — usando período más reciente disponible como referencia`;
+      }
+    } else {
+      const { data: sefinLatest } = await sefinQuery.order('periodo', { ascending: false }).limit(1);
+      var sefin = sefinLatest;
+      yearNote = '⚠️ Año del contrato no determinado — usando período más reciente como referencia';
+    }
 
     if (!sefin || !sefin.length) {
       result.innerHTML = `<div style="color:var(--text-dim);font-size:11px;">Sin datos SEFIN para "<strong>${entidad}</strong>". Verificar manualmente.</div>`;
@@ -8728,7 +8765,7 @@ async function verificarContraSEFIN() {
         <div><div style="font-size:9px;color:var(--text-dim);margin-bottom:3px;">EJEC. PROCUREMENT</div><div style="font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text);">${fmtL(procurement)}</div></div>
       </div>
       <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;font-size:11px;font-weight:600;color:${vColor};line-height:1.5;">${verdict}</div>
-      <div style="margin-top:6px;font-size:9px;color:var(--text-dim);">Período SEFIN: ${s.periodo} · Fuente: SEFIN-PIEP</div>`;
+      <div style="margin-top:6px;font-size:9px;color:var(--text-dim);">Período SEFIN: ${s.periodo} · ${yearNote} · Fuente: SEFIN-PIEP</div>`;
 
   } catch(e) {
     result.innerHTML = '<div style="color:var(--red);font-size:11px;">Error al consultar SEFIN: ' + (e.message||e) + '</div>';

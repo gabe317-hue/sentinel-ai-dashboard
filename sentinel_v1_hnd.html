@@ -5910,12 +5910,19 @@ function showVendorPanel(vendorName) {
   document.getElementById('ep-monto-pagado').textContent   = 'Sin datos';
   const difEl = document.getElementById('ep-diferencia');
   const lblEl = document.getElementById('ep-diferencia-lbl');
-  difEl.textContent = entities.length > 0 ? entities.join(', ') : '—';
-  difEl.className   = 'ep-fin-val';
+  // Mostrar conteo + primeras 3 entidades abreviadas, resto en tooltip
+  if (entities.length > 0) {
+    const preview = entities.slice(0,3).join(', ') + (entities.length > 3 ? ` +${entities.length-3} más` : '');
+    difEl.innerHTML = `<span style="font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;">${entities.length}</span><br><span style="font-size:10px;color:var(--text-dim);font-family:Arial,sans-serif;font-weight:400;">${preview}</span>`;
+    difEl.title = entities.join('\n');
+  } else {
+    difEl.textContent = '—';
+  }
+  difEl.className        = 'ep-fin-val';
   difEl.style.whiteSpace = 'normal';
   difEl.style.overflow   = 'visible';
-  difEl.style.fontSize   = '11px';
-  difEl.style.lineHeight = '1.5';
+  difEl.style.lineHeight = '1.4';
+  difEl.style.fontSize   = 'unset';
   lblEl.textContent = 'Entidades contratantes';
 
   const sevColor = s => {

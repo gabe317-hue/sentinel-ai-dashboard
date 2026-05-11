@@ -7090,10 +7090,11 @@ function renderCandidatosDetectados() {
   alerts.forEach(a => {
     const prov = getProveedor(a);
     if (prov === '—' || !prov) return;
-    if (!provMap[prov]) provMap[prov] = { monto: 0, patrones: new Set(), contratos: 0, entidades: new Set(), severidades: { critica:0, alta:0, media:0 } };
+    if (!provMap[prov]) provMap[prov] = { monto: 0, patrones: new Set(), contratos: 0, entidades: new Set(), severidades: { critica:0, alta:0, media:0 }, sources: new Set() };
     const pm = provMap[prov];
     pm.monto     += Number(a.monto_contrato || 0);
     pm.contratos += 1;
+    pm.sources.add(a.data_source || '');
     (a.entity_name || parseDescField(a.description, 'Entidad compradora') || '').split(',').forEach(e => { if (e.trim()) pm.entidades.add(e.trim()); });
     (a.patterns || '').split(',').filter(Boolean).forEach(p => pm.patrones.add(p.trim()));
     const sev = (a.severity || a.risk_level || '').toLowerCase();
@@ -7103,9 +7104,14 @@ function renderCandidatosDetectados() {
   });
 
   // Filtrar: ≥2 patrones únicos Y monto ≥ L10M
+  // Excluir proveedores cuyos contratos provienen SOLO de SEFIN EDCA/PIEP:
+  // esos son pagos bajo PPA o contrato marco (energía, combustible) — no procurement ONCAE.
+  const isSEFINOnly = (sources) => [...sources].every(s =>
+    s.includes('EDCA-SEFIN') || s.includes('SEFIN-CSV') || s.includes('SEFIN_F') || s === ''
+  );
   const MONTO_MIN = 10_000_000;
   const candidatos = Object.entries(provMap)
-    .filter(([, d]) => d.patrones.size >= 2 && d.monto >= MONTO_MIN)
+    .filter(([, d]) => d.patrones.size >= 2 && d.monto >= MONTO_MIN && !isSEFINOnly(d.sources))
     .sort((a, b) => b[1].monto - a[1].monto);
 
   if (badge) badge.textContent = candidatos.length;
@@ -8609,6 +8615,44 @@ async function generarMemoPGR(folio, entidad) {
       </tr>`;
     }).join('');
 
+    // 5B. Anomalías de modalidad y concentración (regla general — IP protegido)
+    const getMetodo = desc => { const m = (desc||'').match(/Método:\s*([^\n]+)/i); return m ? m[1].trim() : '—'; };
+    const isCompraDirecta = desc => { const d = (desc||'').toLowerCase(); return d.includes('compra menor') || d.includes('compra directa') || d.includes('contratación directa'); };
+
+    // Regla 1: Compra Menor/Directa con monto anómalo (universal, cualquier rubro)
+    const cmAnomalies = alerts.filter(a => isCompraDirecta(a.description) && Number(a.monto_contrato||0) > 100_000_000);
+
+    // Regla 2: Concentración — proveedor único con >60% del monto total de la entidad
+    const vendorTotals = {};
+    alerts.forEach(a => {
+      const p = a.proveedor_nombre || '—';
+      if (p === '—') return;
+      vendorTotals[p] = (vendorTotals[p] || 0) + Number(a.monto_contrato||0);
+    });
+    const concentrationFindings = totalMonto > 0
+      ? Object.entries(vendorTotals).filter(([,m]) => m/totalMonto > 0.60).sort((a,b) => b[1]-a[1])
+      : [];
+
+    const hasAnomalias4B = cmAnomalies.length > 0 || concentrationFindings.length > 0;
+
+    const cmAnomaliesRows = cmAnomalies.map((a,i) => {
+      const prov = a.proveedor_nombre || '—';
+      const monto = Number(a.monto_contrato||0);
+      const metodo = getMetodo(a.description);
+      return `<tr style="background:${i%2===0?'#fff3cd':'#fef9ec'};"><td style="padding:6px 10px;font-size:10px;font-weight:700;">${prov}</td><td style="padding:6px 10px;font-size:10px;text-align:right;font-family:monospace;color:#c0392b;font-weight:700;">${fmtL(monto)}</td><td style="padding:6px 10px;font-size:10px;color:#856404;font-weight:600;">${metodo}</td></tr>`;
+    }).join('');
+
+    const concentrationRows = concentrationFindings.map(([prov, monto],i) => {
+      const pct = (monto/totalMonto*100).toFixed(1);
+      return `<tr style="background:${i%2===0?'#fdecea':'#fff'};"><td style="padding:6px 10px;font-size:10px;font-weight:700;">${prov}</td><td style="padding:6px 10px;font-size:10px;text-align:right;font-family:monospace;color:#c0392b;font-weight:700;">${fmtL(monto)}</td><td style="padding:6px 10px;font-size:10px;text-align:right;font-weight:700;color:#c0392b;">${pct}%</td></tr>`;
+    }).join('');
+
+    const anomaliasSection = hasAnomalias4B ? `
+<h2 style="border-left:4px solid #c0392b;padding-left:10px;color:#1a1a2e;font-size:13pt;margin:22px 0 6px 0;">4-B. Anomalías de Modalidad y Concentración</h2>
+<p class="section-p" style="color:#555;font-style:italic;font-size:10pt;">El sistema identificó contratos donde la modalidad de adjudicación utilizada no corresponde al monto contratado, y proveedores con participación desproporcionada en el gasto total de la entidad. Estos hallazgos requieren verificación documental.</p>
+${cmAnomaliesRows ? `<div style="background:#fff3cd;border:2px solid #e0a800;border-radius:6px;padding:10px 14px;margin:12px 0;"><strong style="color:#856404;font-size:10.5pt;">⚠️ Contratos adjudicados sin proceso competitivo con monto fuera de norma</strong><p style="font-size:9.5pt;margin:6px 0 8px 0;color:#555;">Los siguientes contratos fueron adjudicados mediante modalidad directa con montos que exceden los parámetros legales establecidos en la Ley de Contratación del Estado:</p><table><tr><th>Proveedor</th><th style="text-align:right;">Monto Adjudicado</th><th>Modalidad Declarada</th></tr>${cmAnomaliesRows}</table></div>` : ''}
+${concentrationRows ? `<div style="background:#fdecea;border:2px solid #e74c3c;border-radius:6px;padding:10px 14px;margin:12px 0;"><strong style="color:#c0392b;font-size:10.5pt;">⚠️ Concentración extrema del gasto en un proveedor único</strong><p style="font-size:9.5pt;margin:6px 0 8px 0;color:#555;">El siguiente proveedor concentra más del 60% del monto total expuesto de la entidad, lo que indica ausencia de competencia real en el proceso de contratación:</p><table><tr><th>Proveedor</th><th style="text-align:right;">Monto Total</th><th style="text-align:right;">% del Gasto Entidad</th></tr>${concentrationRows}</table></div>` : ''}` : '';
+
     // 6. Construir HTML del memo
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -8731,6 +8775,8 @@ async function generarMemoPGR(folio, entidad) {
   <li><strong>Concentración de adjudicaciones:</strong> Alta proporción del monto total concentrada en pocos proveedores — los 20 principales representan el 74.9% del total expuesto.</li>
   <li><strong>Resolución de identidad de proveedores:</strong> Variantes de nombre en el mismo proveedor sugieren posibles relaciones no declaradas entre adjudicatarios.</li>
 </ul>
+
+${anomaliasSection}
 
 <!-- ── SECCIÓN 5 ── -->
 <h2>5. Pareto — Top 20 Contratos por Monto (${totalMonto>0?((sorted.slice(0,20).reduce((s,a)=>s+(parseFloat(a.monto)||0),0)/totalMonto*100).toFixed(1)):'—'}% del total)</h2>

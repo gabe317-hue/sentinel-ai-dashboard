@@ -2214,6 +2214,9 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <button class="po-item" onclick="poGo(showScannerPanel)">
             <span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-item-tag tag-l">6 patrones</span><span class="po-arrow">›</span>
           </button>
+          <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()" style="border-top:1px solid rgba(255,61,87,0.2);margin-top:4px;">
+            <span class="po-item-icon">📄</span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span>
+          </button>
         </div>
       </div>
 
@@ -8470,6 +8473,34 @@ function tryExecuteInvestigacionPDF(invId) {
 // S86 — MEMORÁNDUM DE ALERTA AL PGR
 // Genera HTML memo + window.print() para imprimir/guardar PDF
 // ════════════════════════════════════════════════════════════
+async function seleccionarInvParaMemo() {
+  try {
+    const { data } = await db.from('investigaciones')
+      .select('folio,entidad,estado')
+      .in('estado', ['Activa','Nuevo','Referida'])
+      .order('id', { ascending: false });
+
+    if (!data || data.length === 0) {
+      alert('No hay investigaciones activas para generar memorándum.');
+      return;
+    }
+
+    if (data.length === 1) {
+      generarMemoPGR(data[0].folio, data[0].entidad);
+      return;
+    }
+
+    // Más de una — mostrar selector simple
+    const lista = data.map((r,i) => `${i+1}. ${r.folio} — ${r.entidad||'Sin entidad'} [${r.estado}]`).join('\n');
+    const resp = prompt(`Seleccione investigación (número 1–${data.length}):\n\n${lista}`);
+    const idx = parseInt(resp) - 1;
+    if (isNaN(idx) || idx < 0 || idx >= data.length) return;
+    generarMemoPGR(data[idx].folio, data[idx].entidad);
+  } catch(e) {
+    alert('Error al cargar investigaciones: ' + (e.message || e));
+  }
+}
+
 async function generarMemoPGR(folio, entidad) {
   const btn = event && event.target;
   if (btn) { btn.textContent = '⏳ Generando…'; btn.disabled = true; }

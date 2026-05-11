@@ -8606,8 +8606,9 @@ async function generarMemoPGR(folio, entidad) {
       </tr>`;
     }).join('');
 
-    // 5. Annexo A — tabla completa
-    const anexoRows = sorted.map((a,i) => {
+    // 5. Anexo A — Top 25 por monto (listado completo via exportarListaCompleta)
+    const top25 = sorted.slice(0, 25);
+    const anexoRows = top25.map((a,i) => {
       const proveedor = a.proveedor_nombre || a.proveedor || '—';
       const fecha = fmtDate(a.fecha_contrato);
       const isPreDecree = a.fecha_contrato && new Date(a.fecha_contrato) < new Date('2024-06-01');
@@ -8843,7 +8844,7 @@ ${anomaliasSection}
 
 <!-- ── ANEXO A ── -->
 <div class="page-break"></div>
-<h2>Anexo A — Lista Completa de Contratos CRÍTICOS (${sorted.length} contratos)</h2>
+<h2>Anexo A — Top 25 Contratos CRÍTICOS por Monto (${Math.min(sorted.length,25)} de ${sorted.length} total)</h2>
 <div class="legend" style="margin-bottom:8px;font-family:Arial,sans-serif;font-size:9pt;color:#856404;background:#fff3cd;padding:6px 10px;border-radius:4px;border:1px solid #e0a800;">
   ⚠️ Filas en amarillo = contrato anterior al Decreto PCM 16-2024 (1 jun 2024) — sin justificación de emergencia verificada
 </div>
@@ -8857,6 +8858,7 @@ ${anomaliasSection}
   </tr>
   ${anexoRows || '<tr><td colspan="5" style="text-align:center;color:#999;">Sin datos</td></tr>'}
 </table>
+${sorted.length > 25 ? `<p style="font-size:9pt;color:#555;font-style:italic;margin:12px 0;padding:10px 14px;background:#f5f5f0;border-left:3px solid #c0392b;border-radius:0 4px 4px 0;">📋 Este anexo incluye los <strong>25 contratos de mayor monto</strong> (Pareto). El listado completo de <strong>${sorted.length} contratos</strong> está disponible como documento separado — use el botón <strong>"📋 Lista Completa"</strong> en el panel de Investigaciones.</p>` : ''}
 
 <div class="footer">
   <div><strong>Sentinel-AI</strong> · The Prieto Group<br>Sistema de Detección de Fraude en Contratación Pública · Honduras</div>
@@ -8881,6 +8883,127 @@ ${anomaliasSection}
     alert('Error al generar el memorándum: ' + (e.message || e));
   } finally {
     if (btn) { btn.textContent = '📄 Memo PGR'; btn.disabled = false; }
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// LISTA COMPLETA — Documento standalone con todos los contratos CRÍTICOS
+// ════════════════════════════════════════════════════════════
+async function exportarListaCompleta(folio, entidad) {
+  const btn = event && event.target;
+  if (btn) { btn.textContent = '⏳ Generando…'; btn.disabled = true; }
+
+  try {
+    const alerts = (window.allAlerts || []).filter(a => {
+      const ent = (a.entidad || a.entity_name || '').toLowerCase();
+      const entQ = entidad.toLowerCase();
+      return ent.includes(entQ) || entQ.includes(ent.split(' ')[0]);
+    });
+    const criticas = alerts.filter(a => (a.severidad||a.severity||'').toUpperCase() === 'CRÍTICA' || (a.severidad||a.severity||'').toUpperCase() === 'CRITICA');
+    const sorted = criticas.sort((a,b) => (parseFloat(b.monto)||0) - (parseFloat(a.monto)||0));
+
+    const fmtL = v => v >= 1e9 ? 'L ' + (v/1e9).toFixed(2) + 'B' : v >= 1e6 ? 'L ' + (v/1e6).toFixed(1) + 'M' : 'L ' + v.toLocaleString('es-HN');
+    const fmtDate = d => { if (!d) return '—'; const x = new Date(d); return isNaN(x)?d:x.toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+    const hoy = new Date().toLocaleDateString('es-HN',{day:'2-digit',month:'long',year:'numeric'});
+    const totalMonto = sorted.reduce((s,a) => s + (parseFloat(a.monto)||0), 0);
+
+    const rows = sorted.map((a,i) => {
+      const proveedor = a.proveedor_nombre || a.proveedor || '—';
+      const fecha = fmtDate(a.fecha_contrato);
+      const isPreDecree = a.fecha_contrato && new Date(a.fecha_contrato) < new Date('2024-06-01');
+      const rowBg = isPreDecree ? '#fff3cd' : (i%2===0?'#f8f9fa':'#ffffff');
+      const flag = isPreDecree ? ' ⚠️' : '';
+      return `<tr style="background:${rowBg};">
+        <td style="padding:5px 8px;font-size:9px;color:#666;text-align:right;">${i+1}</td>
+        <td style="padding:5px 8px;font-size:9px;font-weight:600;">${proveedor}${flag}</td>
+        <td style="padding:5px 8px;font-size:9px;text-align:right;font-family:monospace;">${fmtL(parseFloat(a.monto)||0)}</td>
+        <td style="padding:5px 8px;font-size:9px;text-align:center;">${fecha}</td>
+        <td style="padding:5px 8px;font-size:9px;">${a.tipo_alerta||a.description?.split('|')[0]||'—'}</td>
+        <td style="padding:5px 8px;font-size:9px;text-align:center;">${a.fuente||a.source||'—'}</td>
+      </tr>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Lista Completa CRÍTICOS — ${entidad} — ${folio}</title>
+<style>
+  @media print { .no-print { display:none!important; } body { margin:0; } }
+  body { font-family: Arial, sans-serif; font-size: 10pt; color: #1a1a2e; margin: 0; padding: 0; background: #fff; }
+  .print-btn { position:fixed; top:16px; right:16px; display:flex; gap:10px; z-index:9999; }
+  .btn { padding:10px 20px; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; }
+  .btn-print { background:#c0392b; color:#fff; }
+  .btn-close { background:#6c757d; color:#fff; }
+  .header-band { background:#1a1a2e; color:#fff; padding:16px 24px; display:flex; justify-content:space-between; align-items:center; }
+  .header-logo { font-size:13px; font-weight:700; letter-spacing:2px; color:#e8c44b; }
+  .clasificacion { background:#c0392b; color:#fff; text-align:center; padding:5px; font-size:11px; font-weight:700; letter-spacing:3px; }
+  .page { max-width:210mm; margin:0 auto; padding:20mm 20mm 15mm 20mm; }
+  h1 { font-size:15pt; color:#1a1a2e; margin:16px 0 4px 0; border-bottom:3px solid #c0392b; padding-bottom:6px; }
+  .meta { background:#f5f5f0; padding:10px 14px; border-radius:4px; margin:10px 0; font-size:9.5pt; display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px 16px; }
+  .meta-label { color:#888; font-size:8.5pt; }
+  .meta-val { font-weight:700; }
+  table { width:100%; border-collapse:collapse; margin:10px 0; }
+  th { background:#1a1a2e; color:#fff; padding:6px 8px; text-align:left; font-size:8.5pt; }
+  td { border-bottom:1px solid #e0e0e0; }
+  .footer { border-top:2px solid #1a1a2e; margin-top:20px; padding-top:8px; display:flex; justify-content:space-between; font-size:8.5pt; color:#666; }
+  .legend { font-size:8.5pt; margin:6px 0; color:#856404; background:#fff3cd; padding:5px 10px; border-radius:4px; border:1px solid #e0a800; }
+</style>
+</head>
+<body>
+<div class="no-print print-btn">
+  <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  <button class="btn btn-close" onclick="window.close()">✕ Cerrar</button>
+</div>
+<div class="header-band">
+  <div>
+    <div class="header-logo">⚡ SENTINEL-AI — LISTA COMPLETA EVIDENCIA</div>
+    <div style="color:#ccc;font-size:10px;margin-top:3px;">Ref: ${folio} · ${entidad}</div>
+  </div>
+  <div style="font-family:monospace;font-size:11px;color:#aaa;text-align:right;">${hoy}</div>
+</div>
+<div class="clasificacion">CONFIDENCIAL — DOCUMENTO DE EVIDENCIA — USO RESTRINGIDO</div>
+<div class="page">
+<h1>Lista Completa de Contratos CRÍTICOS — ${entidad}</h1>
+<div class="meta">
+  <div><div class="meta-label">Investigación:</div><div class="meta-val">${folio}</div></div>
+  <div><div class="meta-label">Total contratos CRÍTICOS:</div><div class="meta-val">${sorted.length.toLocaleString('es-HN')}</div></div>
+  <div><div class="meta-label">Monto total expuesto:</div><div class="meta-val" style="color:#c0392b;">${fmtL(totalMonto)}</div></div>
+  <div><div class="meta-label">Generado:</div><div class="meta-val">${hoy}</div></div>
+  <div><div class="meta-label">Fuente:</div><div class="meta-val">ONCAE HonduCompras + SEFIN PIEP</div></div>
+  <div><div class="meta-label">Sistema:</div><div class="meta-val">Sentinel-AI · The Prieto Group</div></div>
+</div>
+<p style="font-size:9pt;color:#555;margin:8px 0;"><em>Este documento es un anexo de evidencia complementario al Memorándum de Alerta al PGR (${folio}). Incluye la lista completa de ${sorted.length} contratos de severidad CRÍTICA ordenados por monto descendente. Para contexto y análisis, referirse al memorándum principal.</em></p>
+<div class="legend">⚠️ Filas en amarillo = contrato anterior al Decreto PCM 16-2024 (1 jun 2024) — sin justificación de emergencia verificada</div>
+<table>
+  <tr>
+    <th style="width:28px;text-align:right;">#</th>
+    <th>Proveedor</th>
+    <th style="text-align:right;">Monto</th>
+    <th style="text-align:center;">Fecha</th>
+    <th>Tipo Alerta</th>
+    <th style="text-align:center;">Fuente</th>
+  </tr>
+  ${rows || '<tr><td colspan="6" style="padding:16px;text-align:center;color:#999;">Sin datos disponibles</td></tr>'}
+</table>
+<div class="footer">
+  <div><strong>Sentinel-AI</strong> · The Prieto Group · Sistema de Detección de Fraude en Contratación Pública · Honduras</div>
+  <div style="text-align:right;">${folio} · ${hoy} · CONFIDENCIAL</div>
+</div>
+</div>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank', 'width=1000,height=800');
+    if (!win) { alert('⚠️ El navegador bloqueó la ventana emergente. Por favor permite ventanas emergentes para este sitio.'); return; }
+    win.document.write(html);
+    win.document.close();
+
+  } catch(e) {
+    console.error('exportarListaCompleta error:', e);
+    alert('Error al generar la lista: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.textContent = '📋 Lista Completa'; btn.disabled = false; }
   }
 }
 
@@ -14731,7 +14854,7 @@ function showDashboardEjecutivo() {
         <td style="padding:10px 12px;font-size:12px;">${inv.entidad||'—'}</td>
         <td style="padding:10px 20px 10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;">${fmtM(monto)}</td>
         <td style="padding:10px 12px;"><span style="background:rgba(255,255,255,0.06);color:${col};font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${inv.estado||'—'}</span></td>
-        <td style="padding:8px 12px;text-align:center;"><button onclick="generarMemoPGR('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(255,61,87,0.12);border:1px solid rgba(255,61,87,0.35);color:var(--red);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(255,61,87,0.25)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'" title="Generar Memorándum de Alerta para el PGR">📄 Memo PGR</button></td>
+        <td style="padding:8px 12px;text-align:center;display:flex;gap:6px;justify-content:center;align-items:center;"><button onclick="generarMemoPGR('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(255,61,87,0.12);border:1px solid rgba(255,61,87,0.35);color:var(--red);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(255,61,87,0.25)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'" title="Generar Memorándum de Alerta para el PGR (top 25 Pareto)">📄 Memo PGR</button><button onclick="exportarListaCompleta('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.3);color:var(--electric);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" title="Exportar lista completa de contratos CRÍTICOS (todos)">📋 Lista Completa</button></td>
       </tr>`;
     }).join('') || '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text-dim);">Sin investigaciones</td></tr>';
   });

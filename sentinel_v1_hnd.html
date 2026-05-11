@@ -2065,7 +2065,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-logo">SENTINEL<span>·</span>AI</div>
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
-        <span class="po-badge electric">v1.82 · 2026</span>
+        <span class="po-badge electric">v1.84 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
@@ -8427,10 +8427,15 @@ async function loadInvestigacionesDB() {
       const montoStr   = r.monto ? fmtL(r.monto) : '';
       const invId      = r.folio.replace('SEN-INV-2026-','inv-').replace('SEN-INV-','inv-').toLowerCase();
       const borderStyle = r.estado==='Nuevo' ? 'border-left:2px solid var(--amber);padding-left:8px;' : '';
+      const entEsc = (r.entidad||'').replace(/'/g,"\\'");
       return `<div class="exec-inv-row" style="${borderStyle}">
         <span class="exec-inv-id" onclick="tryExecuteInvestigacionPDF('${invId}')" style="cursor:pointer;">${folioCorto}</span>
         <span class="exec-inv-name" style="flex:1;cursor:pointer;" onclick="tryExecuteInvestigacionPDF('${invId}')">${r.proveedor}${r.entidad?' · '+r.entidad:''}</span>
         ${montoStr ? `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--electric);margin-right:4px;">${montoStr}</span>` : ''}
+        <span style="display:inline-flex;gap:4px;margin-right:6px;">
+          <button onclick="event.stopPropagation();generarMemoPGR('${r.folio}','${entEsc}')" style="background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.3);color:var(--red);font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:5px;cursor:pointer;" title="Memorándum PGR">📄 Memo</button>
+          <button onclick="event.stopPropagation();exportarListaCompleta('${r.folio}','${entEsc}')" style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.25);color:var(--electric);font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:5px;cursor:pointer;" title="Lista completa contratos">📋 Lista</button>
+        </span>
         <span class="exec-inv-status" style="${statusBg};cursor:pointer;position:relative;"
           onclick="event.stopPropagation();changeInvEstado('${r.folio}', this)"
           title="Cambiar estado">${r.estado} ▾</span>
@@ -16802,6 +16807,20 @@ const INVESTIGATIONS_EXEC = [
     filtro: a => {
       const e = (a.entity_name||'').toUpperCase();
       return e.includes('SALUD') || e.includes('SESAL') || e.includes('IHSS') || e.includes('HOSPITAL');
+    }
+  },
+  {
+    id: 'inv-011', folio: 'SEN-INV-2026-011', estado: 'Activa',
+    titulo: 'CONDEPOR — Seguros Banrural · Compra Menor Ilegal L 1.27B',
+    entidad: 'Comisión Nacional de Deportes, Educación Física y Recreación (CONDEPOR)',
+    actores: ['SEGUROS BANRURAL HONDURAS, S. A.'],
+    patrones: ['COMPRA_MENOR_ANOMALA'],
+    hallazgo: 'CONDEPOR adjudicó póliza de seguros a SEGUROS BANRURAL HONDURAS por L 1,276,130,530 (ene 2025) mediante Compra Menor — modalidad cuyo techo legal es ~L 500K. Monto excede el umbral 2,500× sin justificación normativa. El contrato de seguros institucional de esta escala requería Licitación Pública Nacional o Internacional conforme a la Ley de Contratación del Estado. Segundo contrato en la misma fecha (L 46,989) indica posible fraccionamiento.',
+    recomendacion: 'Solicitar a ONCAE el expediente completo de la adjudicación CM-CONDEPOR-2025. Verificar en RNP capacidad técnica de SEGUROS BANRURAL para póliza institucional de este monto. Referir a TSC para auditoría de contratación directa. Cruzar contra nómina de CONDEPOR para detectar beneficiarios de la póliza.',
+    filtro: a => {
+      const e = (a.entity_name||'').toUpperCase();
+      const p = (a.proveedor_nombre||'').toUpperCase();
+      return e.includes('CONDEPOR') || e.includes('DEPORTES') || p.includes('BANRURAL');
     }
   }
 ];

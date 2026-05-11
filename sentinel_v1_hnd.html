@@ -2065,7 +2065,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-logo">SENTINEL<span>·</span>AI</div>
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
       <div class="po-meta">
-        <span class="po-badge electric">v1.81 · 2026</span>
+        <span class="po-badge electric">v1.82 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
@@ -8675,8 +8675,8 @@ ${concentrationRows ? `<div style="background:#fdecea;border:2px solid #e74c3c;b
     .page-break { page-break-before: always; }
   }
   body { font-family: 'Georgia', serif; font-size: 11pt; color: #1a1a2e; margin: 0; padding: 0; background: #fff; }
-  .print-btn { position:fixed; top:16px; right:16px; display:flex; gap:10px; z-index:9999; }
-  .btn { padding:10px 20px; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:Arial,sans-serif; }
+  .print-btn { position:fixed; bottom:24px; right:24px; display:flex; gap:10px; z-index:9999; }
+  .btn { padding:10px 20px; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:Arial,sans-serif; box-shadow:0 2px 8px rgba(0,0,0,0.25); }
   .btn-print { background:#c0392b; color:#fff; }
   .btn-close { background:#6c757d; color:#fff; }
   .page { max-width:210mm; margin:0 auto; padding:25mm 25mm 20mm 25mm; }
@@ -8932,8 +8932,8 @@ async function exportarListaCompleta(folio, entidad) {
 <style>
   @media print { .no-print { display:none!important; } body { margin:0; } }
   body { font-family: Arial, sans-serif; font-size: 10pt; color: #1a1a2e; margin: 0; padding: 0; background: #fff; }
-  .print-btn { position:fixed; top:16px; right:16px; display:flex; gap:10px; z-index:9999; }
-  .btn { padding:10px 20px; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; }
+  .print-btn { position:fixed; bottom:24px; right:24px; display:flex; gap:10px; z-index:9999; }
+  .btn { padding:10px 20px; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.25); }
   .btn-print { background:#c0392b; color:#fff; }
   .btn-close { background:#6c757d; color:#fff; }
   .header-band { background:#1a1a2e; color:#fff; padding:16px 24px; display:flex; justify-content:space-between; align-items:center; }
@@ -12401,15 +12401,29 @@ function poUpdateIndicators() {
       const prevDate  = localStorage.getItem(LS_DATE) || '';
       const curCount  = data.length;
       const deltaBadge = document.getElementById('po-delta-badge');
-      if (prevCount > 0 && curCount > prevCount && deltaBadge) {
-        const delta = curCount - prevCount;
-        const fmtPrev = prevDate ? new Date(prevDate).toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
-        deltaBadge.textContent = `▲ +${delta.toLocaleString('es-HN')} nuevos desde ${fmtPrev}`;
+      if (deltaBadge) {
+        if (prevCount > 0 && curCount > prevCount) {
+          const delta = curCount - prevCount;
+          const fmtPrev = new Date(prevDate).toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'});
+          deltaBadge.textContent = `▲ +${delta.toLocaleString('es-HN')} nuevos desde ${fmtPrev}`;
+          deltaBadge.style.background = 'rgba(0,200,100,0.15)';
+          deltaBadge.style.color = '#00c864';
+          deltaBadge.style.borderColor = 'rgba(0,200,100,0.35)';
+        } else if (prevCount > 0) {
+          const fmtPrev = new Date(prevDate).toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'});
+          deltaBadge.textContent = `↔ sin cambios desde ${fmtPrev}`;
+          deltaBadge.style.background = 'rgba(255,255,255,0.05)';
+          deltaBadge.style.color = 'var(--text-dim, #666)';
+          deltaBadge.style.borderColor = 'rgba(255,255,255,0.1)';
+        } else {
+          deltaBadge.textContent = '▷ seguimiento activo';
+          deltaBadge.style.background = 'rgba(0,200,255,0.08)';
+          deltaBadge.style.color = 'var(--electric, #00c8ff)';
+          deltaBadge.style.borderColor = 'rgba(0,200,255,0.2)';
+        }
         deltaBadge.style.display = 'inline-block';
-      } else if (deltaBadge) {
-        deltaBadge.style.display = 'none';
       }
-      // Actualizar localStorage solo si el conteo cambió
+      // Actualizar localStorage solo si el conteo cambió (o es primera vez)
       if (curCount !== prevCount) {
         localStorage.setItem(LS_COUNT, curCount);
         localStorage.setItem(LS_DATE, new Date().toISOString());
@@ -14878,7 +14892,7 @@ function showDashboardEjecutivo() {
         <td style="padding:10px 12px;font-size:12px;">${inv.entidad||'—'}</td>
         <td style="padding:10px 20px 10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;">${fmtM(monto)}</td>
         <td style="padding:10px 12px;"><span style="background:rgba(255,255,255,0.06);color:${col};font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${inv.estado||'—'}</span></td>
-        <td style="padding:8px 12px;text-align:center;display:flex;gap:6px;justify-content:center;align-items:center;"><button onclick="generarMemoPGR('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(255,61,87,0.12);border:1px solid rgba(255,61,87,0.35);color:var(--red);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(255,61,87,0.25)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'" title="Generar Memorándum de Alerta para el PGR (top 25 Pareto)">📄 Memo PGR</button><button onclick="exportarListaCompleta('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.3);color:var(--electric);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" title="Exportar lista completa de contratos CRÍTICOS (todos)">📋 Lista Completa</button></td>
+        <td style="padding:8px 12px;text-align:center;white-space:nowrap;"><div style="display:inline-flex;gap:6px;align-items:center;"><button onclick="generarMemoPGR('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(255,61,87,0.12);border:1px solid rgba(255,61,87,0.35);color:var(--red);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(255,61,87,0.25)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'" title="Memorándum PGR — top 25 Pareto">📄 Memo PGR</button><button onclick="exportarListaCompleta('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.3);color:var(--electric);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" title="Lista completa todos los contratos CRÍTICOS">📋 Lista</button></div></td>
       </tr>`;
     }).join('') || '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text-dim);">Sin investigaciones</td></tr>';
   });

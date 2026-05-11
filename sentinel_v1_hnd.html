@@ -4787,6 +4787,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:16px;display:flex;gap:10px;justify-content:flex-end;">
       <button onclick="closeBorradorDetalle()" style="background:var(--glass);border:1px solid var(--border);color:var(--text-dim);font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;">Cerrar</button>
       <button id="bd-btn-descartar" onclick="descartarDesdeModal()" style="background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.3);color:var(--red);font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;">✕ Descartar</button>
+      <button onclick="generarExpedienteBorradorPDF()" style="background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.3);color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;" title="Genera expediente PDF para revisar antes de aprobar">📄 Expediente PDF</button>
       <button id="bd-btn-aprobar" onclick="aprobarDesdeModal()" style="background:rgba(0,200,100,0.15);border:1px solid rgba(0,200,100,0.3);color:#4ade80;font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;">✓ Aprobar → Activa</button>
     </div>
   </div>
@@ -8804,6 +8805,77 @@ async function descartarDesdeModal() {
   if (error) { alert('Error: ' + error.message); return; }
   closeBorradorDetalle();
   await loadBorradoresAuto();
+}
+
+function generarExpedienteBorradorPDF() {
+  if (!_borradorActual) return;
+  const d = _borradorActual;
+  const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
+  const reglaTextos = {
+    'AUTO-INVESTIGADOR-R1': 'R1 — Compra Menor Anómala (monto supera umbral de alerta para modalidad de contratación)',
+    'AUTO-INVESTIGADOR-R2': 'R2 — Cluster CRÍTICOS Institucional (concentración de contratos de alto riesgo en una entidad)',
+    'AUTO-INVESTIGADOR-R4': 'R4 — Pico Reciente de Riesgo (incremento anómalo en período reciente)',
+    'AUTO-INVESTIGADOR-R5': 'R5 — Fraccionamiento Sistemático (múltiples contratos menores que evaden umbrales)',
+  };
+  const reglaDesc = reglaTextos[d.origen] || d.origen || '—';
+  const entidad = document.getElementById('bdd-entidad')?.textContent || d.entidad || '—';
+  const sefinResult = document.getElementById('bd-sefin-result');
+  const sefinHTML = (sefinResult && sefinResult.style.display !== 'none') ? sefinResult.innerHTML : '<p style="color:#888;">No ejecutada — use el botón Verificar antes de generar el expediente.</p>';
+  const fecha = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Expediente ${d.folio}</title>
+<style>
+  body { font-family: 'Arial', sans-serif; max-width: 900px; margin: 40px auto; color: #1a1a2e; font-size: 13px; }
+  h1 { font-size: 20px; color: #0d1b4b; border-bottom: 3px solid #0d1b4b; padding-bottom: 8px; }
+  h2 { font-size: 14px; color: #0d1b4b; border-left: 4px solid #0d1b4b; padding-left: 10px; margin-top: 28px; }
+  .badge { display:inline-block; background:#fee2e2; color:#991b1b; border-radius:6px; padding:3px 10px; font-size:11px; font-weight:700; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0; }
+  .field { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px; }
+  .field-label { font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px; }
+  .field-value { font-size:13px; font-weight:600; color:#0f172a; }
+  .monto { font-size:18px; color:#dc2626; font-family:monospace; }
+  .notas { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:14px; line-height:1.7; white-space:pre-wrap; }
+  .sefin-box { background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:14px; }
+  .footer { margin-top:40px; border-top:1px solid #e2e8f0; padding-top:12px; font-size:10px; color:#94a3b8; }
+  .disclaimer { background:#fef3c7; border:1px solid #fde68a; border-radius:6px; padding:10px 14px; font-size:11px; margin-top:16px; }
+</style></head><body>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;">
+  <div><h1>Expediente de Detección Automática</h1>
+  <span class="badge">BORRADOR — PENDIENTE DE REVISIÓN</span></div>
+  <div style="text-align:right;font-size:11px;color:#64748b;">Sentinel AI · Sistema de Monitoreo<br>${fecha}</div>
+</div>
+
+<h2>Identificación del Caso</h2>
+<div class="grid">
+  <div class="field"><div class="field-label">Folio</div><div class="field-value" style="font-family:monospace;">${d.folio}</div></div>
+  <div class="field"><div class="field-label">Estado</div><div class="field-value">Borrador Automático</div></div>
+  <div class="field"><div class="field-label">Proveedor</div><div class="field-value">${d.proveedor || '—'}</div></div>
+  <div class="field"><div class="field-label">Institución Contratante</div><div class="field-value">${entidad}</div></div>
+  <div class="field"><div class="field-label">Monto Detectado</div><div class="field-value monto">${fmtL(d.monto)}</div></div>
+  <div class="field"><div class="field-label">Regla Detectora</div><div class="field-value">${reglaDesc}</div></div>
+</div>
+
+<h2>Análisis Automático del Sistema</h2>
+<div class="notas">${d.notas || 'Sin notas generadas.'}</div>
+
+<h2>Verificación Presupuestaria SEFIN</h2>
+<div class="sefin-box">${sefinHTML}</div>
+
+<div class="disclaimer">
+  ⚠️ <strong>Este documento es un borrador generado automáticamente.</strong> Los datos provienen del sistema EDCA-SEFIN y están sujetos a verificación. No constituye prueba legal ni debe utilizarse para referir casos a autoridades sin verificación adicional de fuentes primarias (ONCAE, portal HonduCompras, SEFIN-PIEP).
+</div>
+
+<div class="footer">
+  Generado por Sentinel AI · ${fecha} · Folio ${d.folio} · Solo para uso interno de análisis
+</div>
+</body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 async function aprobarBorrador(folio) {

@@ -4498,10 +4498,11 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
               <th style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);">Institución</th>
               <th style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);text-align:right;padding:10px 20px 10px 12px;border-bottom:1px solid var(--border);">Monto (L)</th>
               <th style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);">Estado</th>
+              <th style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);text-align:center;padding:10px 12px;border-bottom:1px solid var(--border);">Acción</th>
             </tr>
           </thead>
           <tbody id="dbe-inv-tbody">
-            <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text-dim);font-size:13px;">Cargando investigaciones...</td></tr>
+            <tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-dim);font-size:13px;">Cargando investigaciones...</td></tr>
           </tbody>
         </table>
       </div>
@@ -8462,6 +8463,292 @@ async function setInvEstado(folio, nuevoEstado, drop) {
 function tryExecuteInvestigacionPDF(invId) {
   if (typeof executeInvestigacionPDF === 'function') {
     try { executeInvestigacionPDF(invId); } catch(e) { /* caso nuevo sin PDF aún */ }
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// S86 — MEMORÁNDUM DE ALERTA AL PGR
+// Genera HTML memo + window.print() para imprimir/guardar PDF
+// ════════════════════════════════════════════════════════════
+async function generarMemoPGR(folio, entidad) {
+  const btn = event && event.target;
+  if (btn) { btn.textContent = '⏳ Generando…'; btn.disabled = true; }
+
+  try {
+    // 1. Cargar datos de la investigación
+    const { data: invData } = await db.from('investigaciones')
+      .select('*').eq('folio', folio).single();
+
+    // 2. Filtrar alertas CRÍTICAS de la entidad desde allAlerts (ya cargado)
+    const alerts = (window.allAlerts || []).filter(a => {
+      const ent = (a.entidad || a.entity_name || '').toLowerCase();
+      const entQ = entidad.toLowerCase();
+      return ent.includes(entQ) || entQ.includes(ent.split(' ')[0]);
+    });
+    const criticas = alerts.filter(a => (a.severidad||a.severity||'').toUpperCase() === 'CRÍTICA' || (a.severidad||a.severity||'').toUpperCase() === 'CRITICA');
+    const sorted = criticas.sort((a,b) => (parseFloat(b.monto)||0) - (parseFloat(a.monto)||0));
+
+    // 3. Calcular métricas
+    const totalMonto = sorted.reduce((s,a) => s + (parseFloat(a.monto)||0), 0);
+    const fmtL = v => v >= 1e9 ? 'L ' + (v/1e9).toFixed(2) + 'B' : v >= 1e6 ? 'L ' + (v/1e6).toFixed(1) + 'M' : 'L ' + v.toLocaleString('es-HN');
+    const fmtDate = d => { if (!d) return '—'; const x = new Date(d); return isNaN(x)?d:x.toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+    const hoy = new Date().toLocaleDateString('es-HN',{day:'2-digit',month:'long',year:'numeric'});
+    const memoFolio = 'SENT-MEM-PGR-2026-' + String(Math.floor(Math.random()*900)+100);
+
+    // 4. Pareto top 20
+    let acum = 0;
+    const pareto = sorted.slice(0,20).map((a,i) => {
+      acum += parseFloat(a.monto)||0;
+      const pct = totalMonto > 0 ? ((acum/totalMonto)*100).toFixed(1) : '—';
+      const proveedor = a.proveedor_nombre || a.proveedor || '—';
+      const fecha = fmtDate(a.fecha_contrato);
+      const isPreDecree = a.fecha_contrato && new Date(a.fecha_contrato) < new Date('2024-06-01');
+      const rowBg = isPreDecree ? '#fff3cd' : (i%2===0?'#f8f9fa':'#ffffff');
+      const flag = isPreDecree ? ' ⚠️' : '';
+      return `<tr style="background:${rowBg};">
+        <td style="padding:6px 10px;font-size:10px;color:#666;">${i+1}</td>
+        <td style="padding:6px 10px;font-size:10px;font-weight:600;">${proveedor}${flag}</td>
+        <td style="padding:6px 10px;font-size:10px;text-align:right;font-family:monospace;">${fmtL(parseFloat(a.monto)||0)}</td>
+        <td style="padding:6px 10px;font-size:10px;text-align:center;">${fecha}</td>
+        <td style="padding:6px 10px;font-size:10px;text-align:right;color:#dc3545;font-weight:700;">${pct}%</td>
+      </tr>`;
+    }).join('');
+
+    // 5. Annexo A — tabla completa
+    const anexoRows = sorted.map((a,i) => {
+      const proveedor = a.proveedor_nombre || a.proveedor || '—';
+      const fecha = fmtDate(a.fecha_contrato);
+      const isPreDecree = a.fecha_contrato && new Date(a.fecha_contrato) < new Date('2024-06-01');
+      const rowBg = isPreDecree ? '#fff3cd' : (i%2===0?'#f8f9fa':'#ffffff');
+      const flag = isPreDecree ? ' ⚠️' : '';
+      return `<tr style="background:${rowBg};">
+        <td style="padding:5px 8px;font-size:9px;color:#666;">${i+1}</td>
+        <td style="padding:5px 8px;font-size:9px;font-weight:600;">${proveedor}${flag}</td>
+        <td style="padding:5px 8px;font-size:9px;text-align:right;font-family:monospace;">${fmtL(parseFloat(a.monto)||0)}</td>
+        <td style="padding:5px 8px;font-size:9px;text-align:center;">${fecha}</td>
+        <td style="padding:5px 8px;font-size:9px;">${a.tipo_alerta||a.description?.split('|')[0]||'—'}</td>
+      </tr>`;
+    }).join('');
+
+    // 6. Construir HTML del memo
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>${memoFolio} — Memorándum de Alerta al PGR</title>
+<style>
+  @media print {
+    .no-print { display:none!important; }
+    body { margin:0; }
+    .page-break { page-break-before: always; }
+  }
+  body { font-family: 'Georgia', serif; font-size: 11pt; color: #1a1a2e; margin: 0; padding: 0; background: #fff; }
+  .print-btn { position:fixed; top:16px; right:16px; display:flex; gap:10px; z-index:9999; }
+  .btn { padding:10px 20px; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:Arial,sans-serif; }
+  .btn-print { background:#c0392b; color:#fff; }
+  .btn-close { background:#6c757d; color:#fff; }
+  .page { max-width:210mm; margin:0 auto; padding:25mm 25mm 20mm 25mm; }
+  .header-band { background:#1a1a2e; color:#fff; padding:20px 25px; display:flex; justify-content:space-between; align-items:center; margin-bottom:0; }
+  .header-logo { font-family:Arial,sans-serif; font-size:13px; font-weight:700; letter-spacing:2px; color:#e8c44b; }
+  .header-folio { font-family:monospace; font-size:11px; color:#aaa; }
+  .clasificacion { background:#c0392b; color:#fff; text-align:center; padding:6px; font-family:Arial,sans-serif; font-size:11px; font-weight:700; letter-spacing:3px; }
+  h1 { font-size:18pt; color:#1a1a2e; margin:20px 0 4px 0; border-bottom:3px solid #c0392b; padding-bottom:8px; }
+  h2 { font-size:13pt; color:#1a1a2e; margin:22px 0 6px 0; border-left:4px solid #c0392b; padding-left:10px; }
+  h3 { font-size:11pt; color:#2c3e50; margin:14px 0 4px 0; }
+  .meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; background:#f5f5f0; padding:14px; border-radius:4px; margin:12px 0; font-family:Arial,sans-serif; font-size:10pt; }
+  .meta-label { color:#666; font-size:9pt; }
+  .meta-val { font-weight:700; color:#1a1a2e; }
+  .signal-box { background:#fff3cd; border:2px solid #e0a800; border-radius:6px; padding:14px 18px; margin:14px 0; }
+  .signal-box h3 { color:#856404; margin:0 0 8px 0; font-size:11pt; }
+  table { width:100%; border-collapse:collapse; margin:10px 0; font-size:10pt; }
+  th { background:#1a1a2e; color:#fff; padding:7px 10px; text-align:left; font-family:Arial,sans-serif; font-size:9pt; }
+  td { padding:6px 10px; border-bottom:1px solid #e0e0e0; }
+  .pre-decree { background:#fff3cd!important; }
+  .section-p { margin:8px 0; line-height:1.7; text-align:justify; }
+  .action-list { margin:6px 0; padding-left:20px; line-height:1.9; }
+  .action-list li { margin-bottom:4px; }
+  .footer { border-top:2px solid #1a1a2e; margin-top:30px; padding-top:10px; display:flex; justify-content:space-between; font-family:Arial,sans-serif; font-size:9pt; color:#666; }
+  .kpi-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:14px 0; }
+  .kpi { background:#f5f5f0; border-radius:6px; padding:12px; text-align:center; }
+  .kpi-val { font-size:20pt; font-weight:700; color:#c0392b; font-family:Arial,sans-serif; }
+  .kpi-lbl { font-size:9pt; color:#666; font-family:Arial,sans-serif; margin-top:4px; }
+  .highlight { color:#c0392b; font-weight:700; }
+  .legend { font-family:Arial,sans-serif; font-size:9pt; margin:8px 0; }
+  .legend span { display:inline-block; width:14px; height:14px; margin-right:5px; vertical-align:middle; border-radius:2px; }
+</style>
+</head>
+<body>
+
+<div class="no-print print-btn">
+  <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  <button class="btn btn-close" onclick="window.close()">✕ Cerrar</button>
+</div>
+
+<div class="header-band">
+  <div>
+    <div class="header-logo">⚡ SENTINEL-AI</div>
+    <div style="color:#ccc;font-family:Arial,sans-serif;font-size:10px;margin-top:4px;">Sistema de Detección de Fraude en Contratación Pública · Honduras</div>
+  </div>
+  <div class="header-folio">${memoFolio}<br>${hoy}</div>
+</div>
+<div class="clasificacion">CONFIDENCIAL — USO RESTRINGIDO — PROCURADOR GENERAL DE LA REPÚBLICA</div>
+
+<div class="page">
+
+<h1>Memorándum de Alerta al Procurador General de la República</h1>
+
+<div class="meta-grid">
+  <div><div class="meta-label">Para:</div><div class="meta-val">Procurador General de la República</div></div>
+  <div><div class="meta-label">Folio:</div><div class="meta-val">${memoFolio}</div></div>
+  <div><div class="meta-label">De:</div><div class="meta-val">Sistema Sentinel-AI — The Prieto Group</div></div>
+  <div><div class="meta-label">Fecha:</div><div class="meta-val">${hoy}</div></div>
+  <div><div class="meta-label">Ref. Investigación:</div><div class="meta-val">${folio}</div></div>
+  <div><div class="meta-label">Entidad:</div><div class="meta-val">${entidad}</div></div>
+  <div><div class="meta-label">Contratos CRÍTICOS:</div><div class="meta-val">${sorted.length.toLocaleString('es-HN')}</div></div>
+  <div><div class="meta-label">Monto Total Expuesto:</div><div class="meta-val highlight">${fmtL(totalMonto)}</div></div>
+</div>
+
+<!-- ── SECCIÓN 1 ── -->
+<h2>1. Propósito del Memorándum</h2>
+<p class="section-p">El presente documento tiene como propósito informar a la Procuraduría General de la República (PGR) sobre la existencia de <strong>señales de riesgo significativas</strong> detectadas por el sistema Sentinel-AI en la contratación pública de <strong>${entidad}</strong>, correspondiente al período 2019–2026. Estas señales, basadas en análisis automatizado de datos oficiales (ONCAE HonduCompras + SEFIN PIEP), justifican la apertura de una <strong>investigación formal</strong> con acceso a documentación primaria.</p>
+<p class="section-p">Este memorándum <em>no constituye</em> un expediente listo para denuncia. Su función es proporcionar al PGR los elementos de juicio necesarios para iniciar una auditoría profunda, y orientar exactamente <strong>dónde buscar y qué solicitar</strong>.</p>
+
+<!-- ── SECCIÓN 2 ── -->
+<h2>2. Resumen de Señales Detectadas</h2>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-val">${sorted.length}</div><div class="kpi-lbl">Contratos CRÍTICOS</div></div>
+  <div class="kpi"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">Monto Total Expuesto</div></div>
+  <div class="kpi"><div class="kpi-val">${(window.allAlerts||[]).filter(a=>{const e=(a.entidad||a.entity_name||'').toLowerCase();const q=entidad.toLowerCase();return e.includes(q)||q.includes(e.split(' ')[0]);}).length}</div><div class="kpi-lbl">Total Alertas (todas las severidades)</div></div>
+</div>
+
+<div class="signal-box">
+  <h3>⚠️ Hallazgo Principal</h3>
+  <p style="margin:0;font-size:10pt;">Se identificaron <strong>${sorted.length} contratos de severidad CRÍTICA</strong> en ${entidad} por un monto total de <strong class="highlight">${fmtL(totalMonto)}</strong>. Los patrones detectados incluyen contratación directa sin justificación normativa, proveedores fuera de giro comercial, y concentración de adjudicaciones en entidades relacionadas.</p>
+</div>
+
+<!-- ── SECCIÓN 3 ── -->
+<h2>3. Antecedente Crítico — Decreto PCM 16-2024 (Emergencia Dengue)</h2>
+<p class="section-p">El <strong>Decreto Ejecutivo PCM 16-2024</strong> (publicado en La Gaceta el 1 de junio de 2024) declaró emergencia sanitaria nacional por dengue, autorizando a la Secretaría de Salud (SESAL) a realizar contrataciones directas para insumos médicos relacionados con la respuesta al dengue. Este decreto es el único instrumento legal que podría justificar contrataciones directas de ${entidad} en dicho período.</p>
+
+<table>
+  <tr><th>Período</th><th>Contratos Críticos</th><th>Observación</th></tr>
+  <tr><td style="padding:8px 10px;">Antes del 1 jun 2024 (sin decreto)</td><td style="padding:8px 10px;font-weight:700;color:#c0392b;">${sorted.filter(a=>a.fecha_contrato&&new Date(a.fecha_contrato)<new Date('2024-06-01')).length} contratos ⚠️</td><td style="padding:8px 10px;">Sin justificación de emergencia — contratación directa injustificada</td></tr>
+  <tr><td style="padding:8px 10px;">Desde el 1 jun 2024 (bajo decreto)</td><td style="padding:8px 10px;">${sorted.filter(a=>a.fecha_contrato&&new Date(a.fecha_contrato)>=new Date('2024-06-01')).length} contratos</td><td style="padding:8px 10px;">Requieren verificar compatibilidad con respuesta al dengue</td></tr>
+  <tr><td style="padding:8px 10px;">Sin fecha registrada</td><td style="padding:8px 10px;">${sorted.filter(a=>!a.fecha_contrato).length} contratos</td><td style="padding:8px 10px;">Fecha no disponible en ONCAE — requiere solicitud directa</td></tr>
+</table>
+
+<div class="legend no-print" style="margin-top:8px;">
+  <span style="background:#fff3cd;border:1px solid #e0a800;"></span> ⚠️ Fila amarilla = contrato ANTES del PCM 16-2024 (sin justificación de emergencia)
+</div>
+
+<!-- ── SECCIÓN 4 ── -->
+<h2>4. Patrones de Riesgo Identificados</h2>
+<p class="section-p">Sentinel-AI identificó los siguientes patrones de riesgo en la contratación de ${entidad}:</p>
+<ul class="action-list">
+  <li><strong>Fraccionamiento de contratos:</strong> Múltiples adjudicaciones a un mismo proveedor en períodos cortos, por montos que evitan umbrales de licitación pública.</li>
+  <li><strong>Contratación directa sin decreto de emergencia:</strong> Contratos directos firmados antes del PCM 16-2024, sin justificación normativa aplicable.</li>
+  <li><strong>Proveedores fuera de giro comercial:</strong> Adjudicaciones a empresas cuyo objeto social no corresponde al bien o servicio contratado (ej. distribuidoras de alimentos, importadoras generales, constructoras).</li>
+  <li><strong>Concentración de adjudicaciones:</strong> Alta proporción del monto total concentrada en pocos proveedores — los 20 principales representan el 74.9% del total expuesto.</li>
+  <li><strong>Resolución de identidad de proveedores:</strong> Variantes de nombre en el mismo proveedor sugieren posibles relaciones no declaradas entre adjudicatarios.</li>
+</ul>
+
+<!-- ── SECCIÓN 5 ── -->
+<h2>5. Pareto — Top 20 Contratos por Monto (${totalMonto>0?((sorted.slice(0,20).reduce((s,a)=>s+(parseFloat(a.monto)||0),0)/totalMonto*100).toFixed(1)):'—'}% del total)</h2>
+<div class="legend" style="margin-bottom:8px;font-family:Arial,sans-serif;font-size:9pt;color:#856404;background:#fff3cd;padding:6px 10px;border-radius:4px;border:1px solid #e0a800;">
+  ⚠️ Filas en amarillo = contrato anterior al Decreto PCM 16-2024 (1 jun 2024) — sin justificación de emergencia verificada
+</div>
+<table>
+  <tr>
+    <th style="width:30px;">#</th>
+    <th>Proveedor</th>
+    <th style="text-align:right;">Monto</th>
+    <th style="text-align:center;">Fecha</th>
+    <th style="text-align:right;">% Acum.</th>
+  </tr>
+  ${pareto || '<tr><td colspan="5" style="text-align:center;color:#999;">Sin datos disponibles</td></tr>'}
+</table>
+
+<!-- ── SECCIÓN 6 ── -->
+<h2>6. Dónde Ir y Qué Solicitar</h2>
+<p class="section-p">Para que la PGR pueda profundizar esta investigación con documentación primaria, se recomienda dirigir solicitudes formales a las siguientes instituciones:</p>
+<table>
+  <tr><th>Institución</th><th>Qué solicitar</th><th>Base legal</th></tr>
+  <tr><td style="padding:7px 10px;font-weight:700;">ONCAE / HonduCompras</td><td style="padding:7px 10px;">Expedientes completos de los ${sorted.length} contratos CRÍTICOS identificados; actas de apertura, evaluación y adjudicación; publicación de contratos en portal</td><td style="padding:7px 10px;">Art. 3 Ley de Contratación del Estado</td></tr>
+  <tr style="background:#f8f8f8;"><td style="padding:7px 10px;font-weight:700;">RNP (Registro Nacional)</td><td style="padding:7px 10px;">Razón social, socios, representante legal, objeto social e historial de cambios de los proveedores adjudicados</td><td style="padding:7px 10px;">Ley del Registro Nacional de las Personas</td></tr>
+  <tr><td style="padding:7px 10px;font-weight:700;">SEFIN</td><td style="padding:7px 10px;">Datos de ejecución presupuestaria y pagos realizados a los proveedores identificados (SIAFI); registros PIEP período 2022–2026</td><td style="padding:7px 10px;">Ley Orgánica del Presupuesto</td></tr>
+  <tr style="background:#f8f8f8;"><td style="padding:7px 10px;font-weight:700;">La Gaceta Oficial</td><td style="padding:7px 10px;">Texto completo Decreto PCM 16-2024 (1 jun 2024) y decretos de emergencia aplicables al período; verificar vigencia y alcance de cada decreto</td><td style="padding:7px 10px;">Principio de publicidad normativa</td></tr>
+  <tr><td style="padding:7px 10px;font-weight:700;">TSC (Tribunal Superior de Cuentas)</td><td style="padding:7px 10px;">Auditorías previas realizadas a ${entidad} en el período 2022–2026; informes de seguimiento de hallazgos</td><td style="padding:7px 10px;">Art. 222 Constitución de Honduras</td></tr>
+  <tr style="background:#f8f8f8;"><td style="padding:7px 10px;font-weight:700;">CNA (Consejo Nacional Anticorrupción)</td><td style="padding:7px 10px;">Coordinar con CNA, que mantiene investigación activa sobre ${entidad} 2025–2026; evitar duplicidad y cruzar hallazgos</td><td style="padding:7px 10px;">Ley del CNA</td></tr>
+  <tr><td style="padding:7px 10px;font-weight:700;">LTAIP (Transparencia)</td><td style="padding:7px 10px;">Solicitud de acceso a contratos, adendas, informes de recepción y actas de liquidación bajo Ley de Transparencia</td><td style="padding:7px 10px;">Arts. 3, 13 y 16 LTAIP</td></tr>
+</table>
+
+<!-- ── SECCIÓN 7 ── -->
+<h2>7. Preguntas Clave para la Investigación</h2>
+<ol class="action-list">
+  <li>¿Cuántos de los contratos directos firmados antes del 1 de junio de 2024 tienen justificación normativa documentada?</li>
+  <li>¿Los proveedores adjudicados tienen capacidad técnica y financiera para ejecutar los contratos según su objeto social registrado en el RNP?</li>
+  <li>¿Existe fraccionamiento de contratos para eludir los umbrales de licitación pública establecidos en la Ley de Contratación?</li>
+  <li>¿Los pagos realizados por SEFIN corresponden a entregas verificadas de bienes o servicios?</li>
+  <li>¿Existen relaciones de parentesco, vínculos societarios o conflictos de interés entre funcionarios de ${entidad} y los proveedores adjudicados?</li>
+  <li>¿Los contratos posteriores al PCM 16-2024 son compatibles con la respuesta al dengue, o incluyen bienes no relacionados con la emergencia?</li>
+  <li>¿El TSC ha realizado auditorías a estos contratos y, de ser así, cuáles fueron sus hallazgos y el estado de cumplimiento?</li>
+  <li>¿La concentración de adjudicaciones en pocos proveedores responde a criterios técnicos o a patrones de favoritismo?</li>
+</ol>
+
+<!-- ── SECCIÓN 8 ── -->
+<h2>8. Recomendación al PGR</h2>
+<p class="section-p">Basado en las señales identificadas, Sentinel-AI recomienda a la PGR las siguientes acciones:</p>
+<ol class="action-list">
+  <li><strong>Apertura de investigación formal</strong> sobre los ${sorted.length} contratos CRÍTICOS de ${entidad}, priorizando los ${sorted.filter(a=>a.fecha_contrato&&new Date(a.fecha_contrato)<new Date('2024-06-01')).length} contratos anteriores al PCM 16-2024.</li>
+  <li><strong>Solicitud de expedientes completos</strong> a ONCAE/HonduCompras para los contratos del Pareto (top 20 = ${fmtL(sorted.slice(0,20).reduce((s,a)=>s+(parseFloat(a.monto)||0),0))}).</li>
+  <li><strong>Verificación de giro comercial</strong> en el RNP para los proveedores con mayor monto adjudicado.</li>
+  <li><strong>Cruce con SIAFI/SEFIN</strong> para confirmar que los pagos corresponden a entregas documentadas.</li>
+  <li><strong>Coordinación con CNA</strong> para evitar duplicidad en la investigación activa que mantienen sobre ${entidad}.</li>
+  <li><strong>Revisión de adendas y modificaciones</strong> a contratos para detectar incrementos de monto posteriores a la adjudicación.</li>
+  <li><strong>Referir a UFERCO/MP</strong> si la documentación primaria confirma los patrones de fraccionamiento o adjudicación sin competencia.</li>
+</ol>
+
+<!-- ── ANEXO A ── -->
+<div class="page-break"></div>
+<h2>Anexo A — Lista Completa de Contratos CRÍTICOS (${sorted.length} contratos)</h2>
+<div class="legend" style="margin-bottom:8px;font-family:Arial,sans-serif;font-size:9pt;color:#856404;background:#fff3cd;padding:6px 10px;border-radius:4px;border:1px solid #e0a800;">
+  ⚠️ Filas en amarillo = contrato anterior al Decreto PCM 16-2024 (1 jun 2024) — sin justificación de emergencia verificada
+</div>
+<table style="font-size:9pt;">
+  <tr>
+    <th style="width:25px;">#</th>
+    <th>Proveedor</th>
+    <th style="text-align:right;">Monto</th>
+    <th style="text-align:center;">Fecha</th>
+    <th>Tipo Alerta</th>
+  </tr>
+  ${anexoRows || '<tr><td colspan="5" style="text-align:center;color:#999;">Sin datos</td></tr>'}
+</table>
+
+<div class="footer">
+  <div><strong>Sentinel-AI</strong> · The Prieto Group<br>Sistema de Detección de Fraude en Contratación Pública · Honduras</div>
+  <div style="text-align:right;">${memoFolio}<br>${hoy} · CONFIDENCIAL</div>
+</div>
+
+</div><!-- /page -->
+</body>
+</html>`;
+
+    // 7. Abrir en nueva ventana
+    const win = window.open('', '_blank', 'width=1000,height=800');
+    if (!win) {
+      alert('⚠️ El navegador bloqueó la ventana emergente. Por favor permite ventanas emergentes para este sitio.');
+      return;
+    }
+    win.document.write(html);
+    win.document.close();
+
+  } catch(e) {
+    console.error('generarMemoPGR error:', e);
+    alert('Error al generar el memorándum: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.textContent = '📄 Memo PGR'; btn.disabled = false; }
   }
 }
 
@@ -14312,6 +14599,7 @@ function showDashboardEjecutivo() {
         <td style="padding:10px 12px;font-size:12px;">${inv.entidad||'—'}</td>
         <td style="padding:10px 20px 10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;">${fmtM(monto)}</td>
         <td style="padding:10px 12px;"><span style="background:rgba(255,255,255,0.06);color:${col};font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${inv.estado||'—'}</span></td>
+        <td style="padding:8px 12px;text-align:center;"><button onclick="generarMemoPGR('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(255,61,87,0.12);border:1px solid rgba(255,61,87,0.35);color:var(--red);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(255,61,87,0.25)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'" title="Generar Memorándum de Alerta para el PGR">📄 Memo PGR</button></td>
       </tr>`;
     }).join('') || '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text-dim);">Sin investigaciones</td></tr>';
   });

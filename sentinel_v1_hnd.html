@@ -4735,6 +4735,63 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
   </div>
 </div>
 
+<!-- ── S90: Modal Detalle Borrador Automático ────────────────────────────── -->
+<div class="modal-overlay" id="borradorDetalleOverlay" onclick="if(event.target===this)closeBorradorDetalle()" style="z-index:1200;">
+  <div class="modal-box" style="max-width:680px;width:94%;max-height:88vh;overflow-y:auto;padding:28px 32px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.08em;margin-bottom:4px;">BORRADOR AUTOMÁTICO</div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#a78bfa;" id="bd-folio">—</div>
+      </div>
+      <button onclick="closeBorradorDetalle()" style="background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;padding:4px;">✕</button>
+    </div>
+
+    <!-- Ficha del caso -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div style="background:var(--glass);border-radius:10px;padding:12px;">
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:.07em;margin-bottom:4px;">PROVEEDOR</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text);" id="bd-proveedor">—</div>
+      </div>
+      <div style="background:var(--glass);border-radius:10px;padding:12px;">
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:.07em;margin-bottom:4px;">MONTO DETECTADO</div>
+        <div style="font-size:14px;font-weight:700;color:var(--electric);font-family:'JetBrains Mono',monospace;" id="bd-monto">—</div>
+      </div>
+      <div style="background:var(--glass);border-radius:10px;padding:12px;">
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:.07em;margin-bottom:4px;">INSTITUCIÓN</div>
+        <div style="font-size:11px;color:var(--text);" id="bd-entidad">—</div>
+      </div>
+      <div style="background:var(--glass);border-radius:10px;padding:12px;">
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:.07em;margin-bottom:4px;">REGLA DETECTORA</div>
+        <div style="font-size:11px;font-weight:700;" id="bd-regla">—</div>
+      </div>
+    </div>
+
+    <!-- Notas completas -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:9px;color:var(--text-dim);letter-spacing:.07em;margin-bottom:6px;">ANÁLISIS AUTOMÁTICO</div>
+      <div style="background:rgba(138,43,226,0.08);border:1px solid rgba(138,43,226,0.2);border-radius:10px;padding:12px;font-size:11px;color:var(--text);line-height:1.6;" id="bd-notas">—</div>
+    </div>
+
+    <!-- Verificación SEFIN -->
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:.07em;">VERIFICACIÓN PRESUPUESTARIA (SEFIN)</div>
+        <button id="bd-sefin-btn" onclick="verificarContraSEFIN()" style="background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.3);color:var(--electric);font-size:9px;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:5px;cursor:pointer;">▶ Verificar</button>
+      </div>
+      <div id="bd-sefin-result" style="background:var(--glass);border-radius:10px;padding:12px;font-size:11px;display:none;">
+        <div style="color:var(--text-dim);font-size:10px;">Cargando datos SEFIN…</div>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeBorradorDetalle()" style="background:var(--glass);border:1px solid var(--border);color:var(--text-dim);font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;">Cerrar</button>
+      <button id="bd-btn-descartar" onclick="descartarDesdeModal()" style="background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.3);color:var(--red);font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;">✕ Descartar</button>
+      <button id="bd-btn-aprobar" onclick="aprobarDesdeModal()" style="background:rgba(0,200,100,0.15);border:1px solid rgba(0,200,100,0.3);color:#4ade80;font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;">✓ Aprobar → Activa</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
 
@@ -8511,7 +8568,7 @@ async function loadBorradoresAuto() {
       const provEsc  = (r.proveedor||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
       const folioEsc = (r.folio||'').replace(/'/g,"\\'");
       const notaTip  = (r.notas||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-      return `<div style="display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);" title="${notaTip}">
+      return `<div style="display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;" onclick="showBorradorDetalle('${folioEsc}')" title="Click para ver detalle y verificar">
         <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--text-dim);flex-shrink:0;">${r.folio}</span>
         <span style="flex:1;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);">${r.proveedor||'—'}</span>
         <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--electric);flex-shrink:0;">${fmtL(r.monto)}</span>
@@ -8535,6 +8592,170 @@ async function loadBorradoresAuto() {
   } catch(e) {
     if (list) list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;padding:8px;">Error cargando borradores.</div>';
   }
+}
+
+// ── S90: Modal detalle + verificación SEFIN ──────────────────────────────────
+let _borradorActual = null;
+
+async function showBorradorDetalle(folio) {
+  const overlay = document.getElementById('borradorDetalleOverlay');
+  _borradorActual = null;
+
+  // Reset UI
+  document.getElementById('bd-folio').textContent = folio;
+  document.getElementById('bd-proveedor').textContent = 'Cargando…';
+  document.getElementById('bd-monto').textContent = '—';
+  document.getElementById('bd-entidad').textContent = '—';
+  document.getElementById('bd-regla').textContent = '—';
+  document.getElementById('bd-notas').textContent = '—';
+  document.getElementById('bd-sefin-result').style.display = 'none';
+  overlay.classList.add('open');
+
+  const { data, error } = await db
+    .from('investigaciones')
+    .select('folio,proveedor,entidad,monto,origen,patrones,notas,estado')
+    .eq('folio', folio)
+    .single();
+
+  if (error || !data) {
+    document.getElementById('bd-proveedor').textContent = 'Error cargando datos.';
+    return;
+  }
+  _borradorActual = data;
+
+  const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
+
+  const reglaDesc = {
+    'AUTO-INVESTIGADOR-R1': { label: 'R1 — Compra Menor Anómala', color: 'var(--red)' },
+    'AUTO-INVESTIGADOR-R2': { label: 'R2 — Cluster CRÍTICOS institucional', color: 'var(--amber)' },
+    'AUTO-INVESTIGADOR-R4': { label: 'R4 — Pico reciente de riesgo', color: 'var(--electric)' },
+    'AUTO-INVESTIGADOR-R5': { label: 'R5 — Fraccionamiento sistemático', color: '#a78bfa' },
+  };
+  const rd = reglaDesc[data.origen] || { label: data.origen || '—', color: 'var(--text-dim)' };
+
+  document.getElementById('bd-proveedor').textContent = data.proveedor || '—';
+  document.getElementById('bd-monto').textContent = fmtL(data.monto);
+  document.getElementById('bd-entidad').textContent = data.entidad || '—';
+  document.getElementById('bd-regla').innerHTML = `<span style="color:${rd.color}">${rd.label}</span>`;
+  document.getElementById('bd-notas').textContent = data.notas || '—';
+
+  // Botón aprobar: deshabilitado si ya está activo/descartado
+  const btnAprobar = document.getElementById('bd-btn-aprobar');
+  if (data.estado !== 'Borrador-Auto') {
+    btnAprobar.disabled = true;
+    btnAprobar.style.opacity = '0.4';
+    btnAprobar.title = `Estado actual: ${data.estado}`;
+  } else {
+    btnAprobar.disabled = false;
+    btnAprobar.style.opacity = '1';
+  }
+}
+
+function closeBorradorDetalle() {
+  document.getElementById('borradorDetalleOverlay').classList.remove('open');
+  _borradorActual = null;
+}
+
+async function verificarContraSEFIN() {
+  if (!_borradorActual) return;
+  const btn = document.getElementById('bd-sefin-btn');
+  const result = document.getElementById('bd-sefin-result');
+  btn.textContent = 'Verificando…';
+  btn.disabled = true;
+  result.style.display = 'block';
+  result.innerHTML = '<div style="color:var(--text-dim);font-size:10px;">Consultando datos SEFIN…</div>';
+
+  const entidad = (_borradorActual.entidad || '').trim();
+  const monto   = Number(_borradorActual.monto || 0);
+
+  // Extraer palabra clave para búsqueda (ignorar términos genéricos)
+  const genericos = ['unidad central','gerencia central','gerencia administrativa','unidad de compras','unidad de adquisiciones','despacho ministerial','departamento'];
+  const esGenerico = genericos.some(g => entidad.toLowerCase().includes(g));
+  const keyword = esGenerico ? null : entidad.split(/[\s,\/]+/).filter(w => w.length > 4)[0];
+
+  const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
+
+  if (!keyword) {
+    result.innerHTML = `<div style="color:var(--amber);font-size:11px;">⚠️ Entidad genérica (<strong>${entidad}</strong>) — no es posible hacer verificación automática.<br>
+    <span style="color:var(--text-dim);font-size:10px;">Verificar manualmente en el portal ONCAE/SEFIN usando el nombre real de la institución contratante.</span></div>`;
+    btn.textContent = '▶ Verificar';
+    btn.disabled = false;
+    return;
+  }
+
+  try {
+    const { data: sefin } = await db
+      .from('sefin_presupuesto')
+      .select('institucion_nombre,aprobado,vigente,ejecucion_acumulada,ejecucion_procurement,periodo')
+      .ilike('institucion_nombre', `%${keyword}%`)
+      .order('periodo', { ascending: false })
+      .limit(1);
+
+    if (!sefin || !sefin.length) {
+      result.innerHTML = `<div style="color:var(--text-dim);font-size:11px;">Sin datos SEFIN para "<strong>${entidad}</strong>". Verificar manualmente.</div>`;
+      btn.textContent = '▶ Verificar';
+      btn.disabled = false;
+      return;
+    }
+
+    const s = sefin[0];
+    const presupuesto = Number(s.aprobado || 0);
+    const procurement = Number(s.ejecucion_procurement || 0);
+    const ratio = presupuesto > 0 ? (monto / presupuesto) : null;
+
+    let verdict = '', vColor = '';
+    if (ratio === null) {
+      verdict = '⚠️ Sin presupuesto registrado — verificar manualmente';
+      vColor = 'var(--amber)';
+    } else if (ratio > 1) {
+      verdict = `🔴 ERROR PROBABLE — El contrato (${fmtL(monto)}) supera el presupuesto anual completo de la institución (${fmtL(presupuesto)})`;
+      vColor = 'var(--red)';
+    } else if (ratio > 0.5) {
+      verdict = `🟠 ALERTA — El contrato representa ${(ratio*100).toFixed(1)}% del presupuesto anual. Verificar fuente.`;
+      vColor = 'var(--amber)';
+    } else if (monto > procurement * 10) {
+      verdict = `🟡 ATENCIÓN — El contrato (${fmtL(monto)}) supera 10× la ejecución de compras registrada (${fmtL(procurement)})`;
+      vColor = 'var(--amber)';
+    } else {
+      verdict = `✅ Monto dentro de parámetros presupuestarios (${(ratio*100).toFixed(1)}% del presupuesto anual)`;
+      vColor = 'var(--green)';
+    }
+
+    result.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div><div style="font-size:9px;color:var(--text-dim);margin-bottom:3px;">INSTITUCIÓN (SEFIN)</div><div style="font-size:10px;color:var(--text);">${s.institucion_nombre}</div></div>
+        <div><div style="font-size:9px;color:var(--text-dim);margin-bottom:3px;">PRESUPUESTO ANUAL</div><div style="font-size:11px;font-weight:700;color:var(--electric);font-family:'JetBrains Mono',monospace;">${fmtL(presupuesto)}</div></div>
+        <div><div style="font-size:9px;color:var(--text-dim);margin-bottom:3px;">EJEC. PROCUREMENT</div><div style="font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text);">${fmtL(procurement)}</div></div>
+      </div>
+      <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;font-size:11px;font-weight:600;color:${vColor};line-height:1.5;">${verdict}</div>
+      <div style="margin-top:6px;font-size:9px;color:var(--text-dim);">Período SEFIN: ${s.periodo} · Fuente: SEFIN-PIEP</div>`;
+
+  } catch(e) {
+    result.innerHTML = '<div style="color:var(--red);font-size:11px;">Error al consultar SEFIN: ' + (e.message||e) + '</div>';
+  }
+  btn.textContent = '↺ Re-verificar';
+  btn.disabled = false;
+}
+
+async function aprobarDesdeModal() {
+  if (!_borradorActual) return;
+  const folio = _borradorActual.folio;
+  if (!confirm(`¿Aprobar ${folio} como investigación activa?\n\nAsegúrate de haber verificado el monto contra fuente SEFIN/ONCAE.`)) return;
+  const { error } = await db.from('investigaciones').update({ estado: 'Activa' }).eq('folio', folio);
+  if (error) { alert('Error: ' + error.message); return; }
+  closeBorradorDetalle();
+  await Promise.all([loadBorradoresAuto(), loadInvestigacionesDB()]);
+}
+
+async function descartarDesdeModal() {
+  if (!_borradorActual) return;
+  const folio = _borradorActual.folio;
+  const razon = prompt(`Razón para descartar ${folio}:\n(Dejar en blanco cancela)`);
+  if (razon === null || razon.trim() === '') return;
+  const { error } = await db.from('investigaciones').update({ estado: 'Descartado', notas: `[DESCARTADO] ${razon}` }).eq('folio', folio);
+  if (error) { alert('Error: ' + error.message); return; }
+  closeBorradorDetalle();
+  await loadBorradoresAuto();
 }
 
 async function aprobarBorrador(folio) {

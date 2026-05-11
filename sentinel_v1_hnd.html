@@ -5910,8 +5910,12 @@ function showVendorPanel(vendorName) {
   document.getElementById('ep-monto-pagado').textContent   = 'Sin datos';
   const difEl = document.getElementById('ep-diferencia');
   const lblEl = document.getElementById('ep-diferencia-lbl');
-  difEl.textContent = entities.length > 0 ? entities.slice(0,3).join(', ') + (entities.length > 3 ? ` +${entities.length-3} más` : '') : '—';
+  difEl.textContent = entities.length > 0 ? entities.join(', ') : '—';
   difEl.className   = 'ep-fin-val';
+  difEl.style.whiteSpace = 'normal';
+  difEl.style.overflow   = 'visible';
+  difEl.style.fontSize   = '11px';
+  difEl.style.lineHeight = '1.5';
   lblEl.textContent = 'Entidades contratantes';
 
   const sevColor = s => {
@@ -7228,6 +7232,16 @@ function iniciarInvestigacion(proveedorNombre) {
   document.getElementById('candidatosPanel').classList.remove('open');
   document.getElementById('nav-candidatos').classList.remove('active');
   showVendorPanel(proveedorNombre);
+  // Back button regresa a Candidatos (Regla #11 — no llamar hideEntityPanel)
+  const backBtn = document.querySelector('#entityPanel .fuente-back');
+  if (backBtn) {
+    backBtn.textContent = '← Candidatos';
+    backBtn.onclick = function() {
+      document.getElementById('entityPanel').classList.remove('open');
+      document.getElementById('candidatosPanel').classList.add('open');
+      document.getElementById('nav-candidatos').classList.add('active');
+    };
+  }
 }
 
 // ── Candidatos: Descartar (S69) ───────────────────────────────────────────────

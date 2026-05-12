@@ -2366,7 +2366,17 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
   </div>
 </div>
 
-<!-- ═══════════════════ TOP 5 CASOS CRÍTICOS — S92A ═══════════════════ -->
+<!-- ═══ BOTÓN FLOTANTE ← PANEL EJECUTIVO (universal para irDesdeEjecutivo) ═══ -->
+<div id="btnVolverEjecutivoFloat" style="display:none;position:fixed;top:16px;right:20px;z-index:99999;">
+  <button onclick="volverAPanelEjecutivo()"
+    style="padding:8px 16px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.08em;
+    background:rgba(5,10,20,0.85);color:rgba(160,180,210,0.8);border:1px solid rgba(160,180,210,0.2);
+    border-radius:8px;cursor:pointer;backdrop-filter:blur(8px);">
+    ← Panel Ejecutivo
+  </button>
+</div>
+
+<!-- ═══════════════════ TOP 10 CASOS CRÍTICOS — S93A ═══════════════════ -->
 <div id="top5Panel" class="hidden">
   <div class="t5-header">
     <div class="t5-header-left">
@@ -2374,6 +2384,11 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <p>ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · DATOS EN TIEMPO REAL</p>
     </div>
     <div style="display:flex;gap:10px;">
+      <button onclick="exportarTop10PDF()"
+        style="padding:8px 14px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.08em;
+        background:rgba(255,61,87,0.1);color:#ff3d57;border:1px solid rgba(255,61,87,0.3);border-radius:8px;cursor:pointer;">
+        🖨️ PDF
+      </button>
       <button class="pe-btn-back" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
     </div>
   </div>
@@ -13329,6 +13344,7 @@ function selectPanel(tipo) {
 
 function irDesdeEjecutivo(fn) {
   document.getElementById('panelEjecutivo').classList.add('hidden');
+  document.getElementById('btnVolverEjecutivoFloat').style.display = 'block';
   setTimeout(() => { try { fn(); } catch(e) { console.warn('irDesdeEjecutivo:', e); } }, 180);
 }
 
@@ -13528,6 +13544,81 @@ function volverAPanelEjecutivo() {
   document.getElementById('top5Panel').classList.add('hidden');
   document.getElementById('investigacionProyectoPanel').classList.add('hidden');
   document.getElementById('panelEjecutivo').classList.remove('hidden');
+  document.getElementById('btnVolverEjecutivoFloat').style.display = 'none';
+}
+
+function exportarTop10PDF() {
+  const body = document.getElementById('top5Body');
+  if (!body || !body.innerHTML || body.innerHTML.includes('Calculando')) {
+    alert('El Top 10 aún está cargando. Espera un momento e intenta de nuevo.'); return;
+  }
+  const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Top 10 Casos Críticos — Sentinel AI</title>
+  <style>
+    body { background:#fff; color:#111; font-family: 'Segoe UI', Arial, sans-serif; margin:0; padding:32px; }
+    h1 { font-size:18px; font-weight:900; margin:0 0 4px; }
+    .sub { font-size:10px; color:#666; letter-spacing:.08em; text-transform:uppercase; margin-bottom:24px; }
+    .insight { background:#fff5f5; border-left:3px solid #dc2626; padding:10px 14px; font-size:11px; color:#666; margin-bottom:20px; border-radius:4px; }
+    .insight strong { color:#dc2626; }
+    .case { border:1px solid #e5e7eb; border-radius:10px; padding:16px 20px; margin-bottom:14px; display:grid; grid-template-columns:44px 1fr 160px; gap:16px; }
+    .rank { font-size:26px; font-weight:900; color:#d1d5db; font-variant-numeric:tabular-nums; }
+    .rank.r1 { color:#dc2626; } .rank.r2 { color:#f59e0b; } .rank.r3 { color:#f59e0b; }
+    .proveedor { font-size:13px; font-weight:800; margin-bottom:3px; }
+    .entidades { font-size:9px; color:#6b7280; margin-bottom:6px; }
+    .tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
+    .tag { font-size:8px; font-weight:700; padding:2px 7px; border-radius:8px; letter-spacing:.05em; }
+    .tag-p { background:#fee2e2; color:#dc2626; } .tag-n { background:#dbeafe; color:#1d4ed8; }
+    .tag-s { background:#f3f4f6; color:#4b5563; } .tag-e { background:#fef3c7; color:#b45309; }
+    .nivel { font-size:8px; font-weight:900; letter-spacing:.1em; padding:2px 8px; border-radius:8px; margin-bottom:6px; display:inline-block; }
+    .nivel-max  { background:#fee2e2; color:#dc2626; }
+    .nivel-alto { background:#ffedd5; color:#ea580c; }
+    .nivel-elev { background:#fef9c3; color:#ca8a04; }
+    .dominante { font-size:9px; color:#6b7280; margin-top:4px; }
+    .dim-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
+    .dim-label { font-size:7px; font-weight:700; color:#9ca3af; width:64px; text-transform:uppercase; letter-spacing:.06em; }
+    .dim-track { flex:1; height:3px; background:#f3f4f6; border-radius:2px; }
+    .dim-fill  { height:100%; border-radius:2px; }
+    .monto-val { font-size:18px; font-weight:900; color:#dc2626; text-align:right; }
+    .monto-lbl { font-size:8px; color:#9ca3af; text-align:right; text-transform:uppercase; letter-spacing:.07em; }
+    .right { text-align:right; }
+    .footer { margin-top:28px; font-size:9px; color:#9ca3af; text-align:center; border-top:1px solid #f3f4f6; padding-top:12px; }
+    @media print { body { padding:16px; } }
+  </style></head><body>
+  <h1>🚨 Top 10 Casos Críticos — Sentinel AI</h1>
+  <div class="sub">ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · ${ts}</div>
+  <div class="insight">${document.querySelector('.t5-insight') ? document.querySelector('.t5-insight').innerText : ''}</div>
+  ${[...document.querySelectorAll('#top5Body .t5-case')].map((card, i) => {
+    const rank  = i + 1;
+    const rCls  = rank<=3 ? 'r'+rank : '';
+    const nivel = card.querySelector('.t5-nivel') ? card.querySelector('.t5-nivel').innerText : '';
+    const nivelCls = rank<=3 ? 'nivel-max' : rank<=7 ? 'nivel-alto' : 'nivel-elev';
+    const prov  = card.querySelector('.t5-proveedor') ? card.querySelector('.t5-proveedor').innerText : '';
+    const ents  = card.querySelector('.t5-entidades')  ? card.querySelector('.t5-entidades').innerText  : '';
+    const dom   = card.querySelector('.t5-badge-dominante') ? card.querySelector('.t5-badge-dominante').innerText : '';
+    const monto = card.querySelector('.t5-monto-val') ? card.querySelector('.t5-monto-val').innerText : '';
+    const tags  = [...(card.querySelectorAll('.t5-tag, .t5-sector')||[])].map(t =>
+      `<span class="tag tag-p">${t.innerText}</span>`).join('');
+    const dims  = [...(card.querySelectorAll('.t5-dim-row')||[])].map(d => {
+      const lbl = d.querySelector('.t5-dim-label') ? d.querySelector('.t5-dim-label').innerText : '';
+      const val = d.querySelector('.t5-dim-val')   ? parseInt(d.querySelector('.t5-dim-val').innerText)||0 : 0;
+      const fill= d.querySelector('.t5-dim-fill');
+      const color = fill ? fill.style.background : '#dc2626';
+      return '<div class="dim-row"><span class="dim-label">'+lbl+'</span><div class="dim-track"><div class="dim-fill" style="width:'+val+'%;background:'+color+';"></div></div></div>';
+    }).join('');
+    return '<div class="case"><div class="rank '+rCls+'">'+(rank<10?'0'+rank:rank)+'</div>'
+      +'<div><span class="nivel '+nivelCls+'">'+nivel+'</span><div class="proveedor">'+prov+'</div>'
+      +'<div class="entidades">'+ents+'</div><div class="tags">'+tags+'</div>'
+      +'<div class="dominante">'+dom+'</div>'+dims+'</div>'
+      +'<div class="right"><div class="monto-val">'+monto+'</div><div class="monto-lbl">monto en riesgo</div></div></div>';
+  }).join('')}
+  <div class="footer">Sentinel AI · Sistema Anticorrupción · PGR Honduras · ${ts} · CONFIDENCIAL — Solo personal autorizado</div>
+  </body></html>`;
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 async function renderTop5() {

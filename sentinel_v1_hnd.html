@@ -4944,6 +4944,30 @@ async function loadAlerts() {
     }
 
     allAlerts = all;
+
+    // S92 — Exclusiones quirúrgicas: pares proveedor+entidad con justificación operacional legítima.
+    // REGLA: NO excluir por proveedor solo — una agencia de viajes vendiendo insumos a una Secretaría ES fraude.
+    // Solo excluir cuando AMBOS campos coinciden (proveedor + entidad compradora).
+    const EXCLUSIONES_OPERACIONALES = [
+      { proveedor: 'ASTRO TOUR',    entidad: 'EJERCITO DE HONDURAS'      },
+      { proveedor: 'ASTRO TOUR',    entidad: 'ESTADO MAYOR CONJUNTO'     },
+      { proveedor: 'ASTRO TOUR',    entidad: 'UNIDAD CENTRAL'            },
+      { proveedor: 'VOLARE',        entidad: 'EJERCITO DE HONDURAS'      },
+      { proveedor: 'VOLARE',        entidad: 'ESTADO MAYOR CONJUNTO'     },
+      { proveedor: 'VOLARE',        entidad: 'UNIDAD CENTRAL'            },
+    ];
+    const antesExclusiones = allAlerts.length;
+    allAlerts = allAlerts.filter(a => {
+      const prov   = (a.proveedor_nombre || '').toUpperCase();
+      const entidad = (a.entity_name || '').toUpperCase();
+      return !EXCLUSIONES_OPERACIONALES.some(ex =>
+        prov.includes(ex.proveedor) && entidad.includes(ex.entidad)
+      );
+    });
+    if (allAlerts.length < antesExclusiones) {
+      console.log(`🔕 Exclusiones operacionales aplicadas: ${antesExclusiones - allAlerts.length} alertas filtradas (viajes militares legítimos)`);
+    }
+
     window.allAlerts = allAlerts; // expose for Vista Ejecutiva
     console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
     updateBDCountDisplay(allAlerts.length); // S67 — número dinámico en UI

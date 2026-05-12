@@ -14475,9 +14475,9 @@ tickClock();
 setInterval(tickClock, 1000);
 
 async function init() {
-  // Auto-load dashboard without login requirement (public MVP access)
+  // S92B — show panel selector instead of going directly to portal
   document.getElementById('loginScreen').classList.add('hidden');
-  showPortal();          // portal is entry point — show immediately
+  document.getElementById('panelSelector').classList.remove('hidden');
   await loadAlerts();    // data loads in background; poUpdateIndicators() polls for it
   startRealtime();
 }

@@ -13492,17 +13492,19 @@ async function renderTop5() {
   }
   body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Calculando análisis multi-dimensional…</div>';
 
+  try {
   // ── Errores de datos conocidos — excluidos del Top 5
   const EXCLUIR_TOP5 = ['RILMAC IMPRESORES'];
 
-  // ── Investigaciones confirmadas desde Supabase
+  // ── Investigaciones confirmadas desde Supabase (con timeout 5s)
   let investigados = new Map(); // proveedor_upper → estado
   try {
-    const { data } = await db.from('investigaciones')
-      .select('proveedor,estado')
-      .not('estado','in','("Borrador-Auto","Descartado","Nuevo")');
+    const timeout = new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000));
+    const query   = db.from('investigaciones').select('proveedor,estado')
+                      .not('estado','in','("Borrador-Auto","Descartado","Nuevo")');
+    const { data } = await Promise.race([query, timeout]);
     (data||[]).forEach(r => investigados.set((r.proveedor||'').toUpperCase().trim(), r.estado));
-  } catch(e) { console.warn('Top5: no pudo cargar investigaciones', e); }
+  } catch(e) { console.warn('Top5: investigaciones no disponible, continuando sin SEN-INV:', e.message); }
 
   const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
   const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
@@ -13646,6 +13648,13 @@ async function renderTop5() {
       </div>
     </div>`;
   }).join('');
+
+  } catch(err) {
+    console.error('renderTop5 error:', err);
+    body.innerHTML = `<div style="text-align:center;padding:60px;color:#fbbf24;font-family:'JetBrains Mono',monospace;font-size:11px;">
+      Error al calcular Top 5.<br><span style="color:rgba(160,180,210,0.4);font-size:10px;margin-top:8px;display:block;">${err.message||err}</span>
+    </div>`;
+  }
 }
 
 function poGo(fn) {

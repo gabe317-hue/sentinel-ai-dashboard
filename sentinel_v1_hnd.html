@@ -2275,7 +2275,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">The Prieto Group</span>
       <span class="login-inst-tag">·</span>
-      <span class="login-inst-tag">© Sentinel-AI v1.87</span>
+      <span class="login-inst-tag">© Sentinel-AI v1.88</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
@@ -2399,12 +2399,11 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
 <!-- ═══════════════════ PANEL EJECUTIVO — S92B ═══════════════════ -->
 <div id="panelEjecutivo" class="hidden">
-  <div class="pe-header">
-    <div>
-      <div class="pe-header-logo">SENTINEL<span>·</span>AI</div>
-      <div class="pe-header-label">Panel Ejecutivo</div>
-    </div>
-    <div class="pe-header-actions">
+  <div style="text-align:center;padding:32px 0 20px;border-bottom:1px solid var(--border);margin-bottom:32px;">
+    <div style="font-size:11px;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;">República de Honduras · SEFIN / ONCAE</div>
+    <div style="font-size:36px;font-weight:900;letter-spacing:.06em;color:#e2e8f0;line-height:1;">SENTINEL<span style="color:var(--cyan);">·</span>AI</div>
+    <div style="font-size:11px;letter-spacing:.14em;color:var(--text-dim);text-transform:uppercase;margin-top:6px;">Detección de Riesgo en Contratación Pública</div>
+    <div style="margin-top:16px;">
       <button class="pe-btn-back" onclick="volverAlPortal()">← Volver al Portal</button>
     </div>
   </div>
@@ -2588,7 +2587,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
-        <button onclick="abrirPanelEjecutivo()" style="background:rgba(0,200,255,0.12);color:var(--cyan);border:1px solid rgba(0,200,255,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">📊 Panel Ejecutivo</button>
+        <button onclick="abrirPanelEjecutivo()" style="background:rgba(0,200,255,0.22);color:var(--cyan);border:1px solid rgba(0,200,255,0.6);border-radius:12px;padding:4px 16px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;box-shadow:0 0 10px rgba(0,200,255,0.15);">📊 Panel Ejecutivo</button>
         <button onclick="hidePortal()" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Ver Contratos</button>
       </div>
     </div>
@@ -2676,6 +2675,11 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <div><div class="po-card-title">Análisis</div><div class="po-card-desc">5 módulos · Riesgo cuantitativo</div></div>
           <div class="po-chevron">▼</div>
         </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 4px;">
+          <span onclick="event.stopPropagation();poGo(showAnalyticsPanel)" style="cursor:pointer;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:8px;padding:3px 9px;font-size:10px;color:#fbbf24;font-weight:600;">🔍 General</span>
+          <span onclick="event.stopPropagation();poGo(showGlobalSobrecostos)" style="cursor:pointer;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:8px;padding:3px 9px;font-size:10px;color:#fbbf24;font-weight:600;">💰 Sobrepresupuestos</span>
+          <span onclick="event.stopPropagation();poGo(showPhase4Detection)" style="cursor:pointer;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:8px;padding:3px 9px;font-size:10px;color:#fbbf24;font-weight:600;">⚠️ Anomalías</span>
+        </div>
         <div class="po-submenu">
           <button class="po-item" onclick="poGo(showAnalyticsPanel)">
             <span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span>
@@ -2703,6 +2707,9 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
+          <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()" style="border-bottom:1px solid rgba(255,61,87,0.2);margin-bottom:4px;">
+            <span class="po-item-icon">📄</span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span>
+          </button>
           <button class="po-item" onclick="poGo(() => showTimelinePanel('portal'))">
             <span class="po-item-icon">🕐</span><span class="po-item-label">Cronología</span><span class="po-arrow">›</span>
           </button>
@@ -2711,9 +2718,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           </button>
           <button class="po-item" onclick="poGo(showScannerPanel)">
             <span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-item-tag tag-l">6 patrones</span><span class="po-arrow">›</span>
-          </button>
-          <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()" style="border-top:1px solid rgba(255,61,87,0.2);margin-top:4px;">
-            <span class="po-item-icon">📄</span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span>
           </button>
         </div>
       </div>
@@ -13879,7 +13883,14 @@ function poUpdateIndicators() {
           deltaBadge.style.background = 'rgba(0,200,100,0.15)';
           deltaBadge.style.color = '#00c864';
           deltaBadge.style.borderColor = 'rgba(0,200,100,0.35)';
-        } else if (prevCount > 0) {
+        } else if (prevCount > 0 && curCount < prevCount) {
+          const delta = prevCount - curCount;
+          const fmtPrev = new Date(prevDate).toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'});
+          deltaBadge.textContent = `▼ -${delta.toLocaleString('es-HN')} desde ${fmtPrev}`;
+          deltaBadge.style.background = 'rgba(255,200,0,0.12)';
+          deltaBadge.style.color = '#f59e0b';
+          deltaBadge.style.borderColor = 'rgba(255,200,0,0.3)';
+        } else if (prevCount > 0 && curCount === prevCount) {
           const fmtPrev = new Date(prevDate).toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'});
           deltaBadge.textContent = `↔ sin cambios desde ${fmtPrev}`;
           deltaBadge.style.background = 'rgba(255,255,255,0.05)';

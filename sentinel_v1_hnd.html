@@ -1185,6 +1185,123 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 .pe-tag-active { background: rgba(0,200,100,0.12); color: #00c864; border: 1px solid rgba(0,200,100,0.25); }
 .pe-tag-soon   { background: rgba(255,180,0,0.12);  color: #fbbf24; border: 1px solid rgba(255,180,0,0.25); }
 
+/* ═══ TOP 5 CASOS CRÍTICOS — S92A ══════════════════════════════════════════ */
+#top5Panel {
+  position: fixed; inset: 0; z-index: 9970;
+  background: var(--navy); display: flex; flex-direction: column; overflow-y: auto;
+}
+#top5Panel.hidden { display: none; }
+.t5-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 32px; border-bottom: 1px solid rgba(160,180,210,0.1);
+  background: rgba(5,10,20,0.6); backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 10;
+}
+.t5-header-left h2 { font-size: 20px; font-weight: 900; color: #e2e8f0; margin: 0 0 2px; }
+.t5-header-left p  { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: rgba(160,180,210,0.5); letter-spacing: .1em; margin: 0; }
+.t5-body { padding: 32px; max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 16px; }
+.t5-case {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(160,180,210,0.12);
+  border-radius: 14px; padding: 24px 28px; display: grid;
+  grid-template-columns: 48px 1fr auto; gap: 16px; align-items: start;
+  transition: border-color .2s;
+}
+.t5-case:hover { border-color: rgba(255,61,87,0.3); }
+.t5-case.t5-error { opacity: .6; border-style: dashed; }
+.t5-rank {
+  font-size: 28px; font-weight: 900; color: rgba(160,180,210,0.2);
+  font-family: 'JetBrains Mono', monospace; line-height: 1;
+}
+.t5-rank.rank-1 { color: rgba(255,61,87,0.7); }
+.t5-rank.rank-2 { color: rgba(255,171,0,0.6); }
+.t5-rank.rank-3 { color: rgba(255,171,0,0.4); }
+.t5-info { display: flex; flex-direction: column; gap: 6px; }
+.t5-proveedor { font-size: 15px; font-weight: 800; color: #e2e8f0; }
+.t5-entidad   { font-size: 11px; color: rgba(160,180,210,0.6); font-family: 'JetBrains Mono', monospace; }
+.t5-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.t5-tag {
+  font-size: 9px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  letter-spacing: .06em; padding: 3px 8px; border-radius: 10px;
+}
+.t5-tag-patron { background: rgba(255,61,87,0.1); color: var(--red); border: 1px solid rgba(255,61,87,0.25); }
+.t5-tag-fecha  { background: rgba(160,180,210,0.08); color: rgba(160,180,210,0.5); border: 1px solid rgba(160,180,210,0.15); }
+.t5-tag-n      { background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+.t5-tag-error  { background: rgba(255,171,0,0.1); color: #fbbf24; border: 1px solid rgba(255,171,0,0.25); }
+.t5-monto { text-align: right; }
+.t5-monto-val { font-size: 22px; font-weight: 900; color: var(--red); font-family: 'JetBrains Mono', monospace; }
+.t5-monto-label { font-size: 9px; color: rgba(160,180,210,0.4); letter-spacing: .08em; text-transform: uppercase; margin-top: 2px; }
+.t5-nota { font-size: 10px; color: #fbbf24; margin-top: 4px; font-style: italic; }
+
+/* ═══ INVESTIGACIÓN POR PROYECTO — S85 ══════════════════════════════════════ */
+#investigacionProyectoPanel {
+  position: fixed; inset: 0; z-index: 9965;
+  background: var(--navy); display: flex; flex-direction: column; overflow-y: auto;
+}
+#investigacionProyectoPanel.hidden { display: none; }
+.ip-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 32px; border-bottom: 1px solid rgba(160,180,210,0.1);
+  background: rgba(5,10,20,0.6); backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 10;
+}
+.ip-header h2 { font-size: 20px; font-weight: 900; color: #e2e8f0; margin: 0 0 2px; }
+.ip-header p  { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: rgba(160,180,210,0.5); letter-spacing: .1em; margin: 0; }
+.ip-body { padding: 28px 32px; max-width: 1000px; margin: 0 auto; width: 100%; }
+.ip-search-wrap { margin-bottom: 20px; }
+.ip-search {
+  width: 100%; padding: 10px 16px; border-radius: 10px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(160,180,210,0.2);
+  color: #e2e8f0; font-size: 13px; outline: none;
+  font-family: 'JetBrains Mono', monospace;
+}
+.ip-search:focus { border-color: rgba(0,200,255,0.4); }
+.ip-entity-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+.ip-entity-card {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(160,180,210,0.12);
+  border-radius: 12px; padding: 16px 20px; cursor: pointer; transition: all .2s;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.ip-entity-card:hover { border-color: rgba(0,200,255,0.35); background: rgba(0,200,255,0.04); }
+.ip-entity-name { font-size: 13px; font-weight: 700; color: #e2e8f0; line-height: 1.3; }
+.ip-entity-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.ip-stat { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: rgba(160,180,210,0.5); }
+.ip-stat span { color: #e2e8f0; font-weight: 700; }
+.ip-stat.critico span { color: var(--red); }
+
+/* Detail view */
+#ipDetail { display: none; }
+#ipDetail.visible { display: block; }
+.ip-detail-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; padding-bottom: 16px;
+  border-bottom: 1px solid rgba(160,180,210,0.1);
+}
+.ip-detail-name { font-size: 18px; font-weight: 800; color: #e2e8f0; }
+.ip-detail-sub  { font-size: 11px; color: rgba(160,180,210,0.5); font-family: 'JetBrains Mono', monospace; margin-top: 4px; }
+.ip-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.ip-kpi { background: rgba(255,255,255,0.03); border: 1px solid rgba(160,180,210,0.1); border-radius: 10px; padding: 12px 16px; }
+.ip-kpi-val { font-size: 20px; font-weight: 900; color: #e2e8f0; font-family: 'JetBrains Mono', monospace; }
+.ip-kpi-val.v-red { color: var(--red); } .ip-kpi-val.v-amb { color: var(--amber); }
+.ip-kpi-label { font-size: 9px; color: rgba(160,180,210,0.45); letter-spacing: .08em; text-transform: uppercase; margin-top: 3px; }
+.ip-tabs { display: flex; gap: 0; border-bottom: 1px solid rgba(160,180,210,0.12); margin-bottom: 16px; }
+.ip-tab {
+  padding: 8px 18px; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+  letter-spacing: .05em; text-transform: uppercase; cursor: pointer; color: rgba(160,180,210,0.5);
+  border-bottom: 2px solid transparent; transition: all .15s;
+}
+.ip-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+.ip-contracts-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.ip-contracts-table th {
+  text-align: left; padding: 6px 10px; font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: .08em; color: rgba(160,180,210,0.4);
+  text-transform: uppercase; border-bottom: 1px solid rgba(160,180,210,0.1);
+}
+.ip-contracts-table td { padding: 8px 10px; border-bottom: 1px solid rgba(160,180,210,0.06); color: rgba(160,180,210,0.75); vertical-align: top; }
+.ip-contracts-table tr:hover td { background: rgba(255,255,255,0.02); }
+.ip-sev-critica { color: var(--red); font-weight: 700; }
+.ip-sev-alta    { color: var(--amber); font-weight: 700; }
+.ip-pat-tag { display: inline-block; font-size: 8px; font-family: 'JetBrains Mono', monospace; padding: 2px 5px; border-radius: 4px; background: rgba(255,61,87,0.1); color: var(--red); border: 1px solid rgba(255,61,87,0.2); margin: 1px; }
+
 .login-screen::before {
   content: '';
   position: fixed; inset: 0;
@@ -2131,6 +2248,70 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
   <div class="ps-footer">v1.87 · SEFIN Fiscal 2023–2025 · The Prieto Group · Dallas, TX</div>
 </div>
 
+<!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
+<div id="investigacionProyectoPanel" class="hidden">
+  <div class="ip-header">
+    <div>
+      <h2>🗂️ Investigación por Proyecto</h2>
+      <p>SELECCIONA UNA ENTIDAD PARA VER SUS CONTRATOS, PATRONES Y CRONOLOGÍA</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button id="ipBtnBack" class="pe-btn-back" onclick="volverAPanelEjecutivo()" style="display:none;">← Panel Ejecutivo</button>
+      <button id="ipBtnBackList" class="pe-btn-back" onclick="ipVolverALista()" style="display:none;">← Lista de Entidades</button>
+    </div>
+  </div>
+  <div class="ip-body">
+    <!-- Lista de entidades -->
+    <div id="ipLista">
+      <div class="ip-search-wrap">
+        <input class="ip-search" type="text" id="ipSearch" placeholder="Buscar entidad..." oninput="ipFiltrar(this.value)">
+      </div>
+      <div class="ip-entity-grid" id="ipGrid">
+        <div style="color:rgba(160,180,210,0.4);font-size:12px;padding:20px;grid-column:span 2;text-align:center;font-family:'JetBrains Mono',monospace;">Cargando entidades…</div>
+      </div>
+    </div>
+    <!-- Detalle de entidad -->
+    <div id="ipDetail">
+      <div class="ip-detail-header">
+        <div>
+          <div class="ip-detail-name" id="ipDetailName">—</div>
+          <div class="ip-detail-sub" id="ipDetailSub">—</div>
+        </div>
+      </div>
+      <div class="ip-kpis">
+        <div class="ip-kpi"><div class="ip-kpi-val v-red" id="ip-kpi-criticos">—</div><div class="ip-kpi-label">Contratos Críticos</div></div>
+        <div class="ip-kpi"><div class="ip-kpi-val v-amb" id="ip-kpi-altos">—</div><div class="ip-kpi-label">Riesgo Alto</div></div>
+        <div class="ip-kpi"><div class="ip-kpi-val" id="ip-kpi-total">—</div><div class="ip-kpi-label">Total Contratos</div></div>
+        <div class="ip-kpi"><div class="ip-kpi-val v-red" id="ip-kpi-monto">—</div><div class="ip-kpi-label">Monto Total</div></div>
+      </div>
+      <div class="ip-tabs">
+        <div class="ip-tab active" id="ip-tab-contratos" onclick="ipTab('contratos')">Contratos</div>
+        <div class="ip-tab" id="ip-tab-patrones" onclick="ipTab('patrones')">Patrones</div>
+        <div class="ip-tab" id="ip-tab-proveedores" onclick="ipTab('proveedores')">Proveedores</div>
+      </div>
+      <div id="ip-content-contratos"></div>
+      <div id="ip-content-patrones"  style="display:none;"></div>
+      <div id="ip-content-proveedores" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TOP 5 CASOS CRÍTICOS — S92A ═══════════════════ -->
+<div id="top5Panel" class="hidden">
+  <div class="t5-header">
+    <div class="t5-header-left">
+      <h2>🚨 Top 5 Casos Críticos</h2>
+      <p>CONTRATOS DE MAYOR RIESGO · ORDENADOS POR MONTO · DATOS EN TIEMPO REAL</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="pe-btn-back" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
+    </div>
+  </div>
+  <div class="t5-body" id="top5Body">
+    <div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:'JetBrains Mono',monospace;font-size:12px;">Cargando casos críticos…</div>
+  </div>
+</div>
+
 <!-- ═══════════════════ PANEL EJECUTIVO — S92B ═══════════════════ -->
 <div id="panelEjecutivo" class="hidden">
   <div class="pe-header">
@@ -2139,7 +2320,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="pe-header-label">Panel Ejecutivo</div>
     </div>
     <div class="pe-header-actions">
-      <button class="pe-btn-back" onclick="showPanelSelector()">← Cambiar Panel</button>
+      <button class="pe-btn-back" onclick="volverAlPortal()">← Volver al Portal</button>
     </div>
   </div>
   <div class="pe-body">
@@ -2181,21 +2362,21 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     </div>
 
     <!-- Card 5 — Top 5 Casos Críticos (S92-A) -->
-    <div class="pe-card placeholder">
+    <div class="pe-card" onclick="abrirTop5()">
       <div class="pe-card-num">05</div>
       <div class="pe-card-icon">🚨</div>
       <div class="pe-card-title">Top 5 Casos Críticos</div>
-      <div class="pe-card-desc">Los 5 casos de mayor impacto fiscal con resumen ejecutivo por caso</div>
-      <span class="pe-card-tag pe-tag-soon">S92-A · PRÓXIMO</span>
+      <div class="pe-card-desc">Los 5 casos de mayor impacto fiscal ordenados por monto en riesgo</div>
+      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
     </div>
 
     <!-- Card 6 — Investigación por Proyecto (S85) -->
-    <div class="pe-card placeholder">
+    <div class="pe-card" onclick="abrirInvestigacionProyecto()">
       <div class="pe-card-num">06</div>
       <div class="pe-card-icon">🗂️</div>
       <div class="pe-card-title">Investigación por Proyecto</div>
-      <div class="pe-card-desc">Seguimiento completo de un proyecto: contratos, addendas, actores y cronología</div>
-      <span class="pe-card-tag pe-tag-soon">S85 · PRÓXIMO</span>
+      <div class="pe-card-desc">Contratos, patrones y proveedores por entidad · Análisis profundo</div>
+      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
     </div>
 
   </div>
@@ -2322,42 +2503,29 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
+        <button onclick="abrirPanelEjecutivo()" style="background:rgba(0,200,255,0.12);color:var(--cyan);border:1px solid rgba(0,200,255,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">📊 Panel Ejecutivo</button>
         <button onclick="hidePortal()" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Ver Contratos</button>
       </div>
     </div>
 
-    <!-- ══ CONSULTAS EXECUTIVE CARD (S67) ══ -->
-    <div class="po-section-label">Consultas</div>
+    <div class="po-section-label">Módulos del Sistema</div>
 
-    <div class="po-card po-amber" id="poc-playbook" style="margin-bottom:20px;">
-      <div class="po-card-hd" onclick="poToggle('playbook')" style="cursor:pointer;">
-        <div class="po-card-icon"><span>🔍</span></div>
-        <div><div class="po-card-title">Consultas</div><div class="po-card-desc">Vista ejecutiva · datos en tiempo real</div></div>
-        <div class="po-chevron">▼</div>
-      </div>
+    <div class="po-grid-top">
 
-      <!-- métricas siempre visibles -->
-      <div class="exec-metrics" style="grid-template-columns: repeat(4,1fr);">
-        <div class="exec-metric">
-          <div class="exec-metric-val v-red" id="exec-m-criticos">—</div>
-          <div class="exec-metric-label">Contratos críticos</div>
+      <!-- CONSULTAS (S92B — movida al grid) -->
+      <div class="po-card po-amber" id="poc-playbook" onclick="poToggle('playbook')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>🔍</span></div>
+          <div><div class="po-card-title">Consultas</div><div class="po-card-desc">Vista ejecutiva · datos en tiempo real</div></div>
+          <div class="po-chevron">▼</div>
         </div>
-        <div class="exec-metric">
-          <div class="exec-metric-val v-amber" id="exec-m-monto">—</div>
-          <div class="exec-metric-label">Monto expuesto</div>
+        <div class="exec-metrics" style="grid-template-columns:repeat(2,1fr);gap:6px;margin:8px 0 0;">
+          <div class="exec-metric"><div class="exec-metric-val v-red" id="exec-m-criticos">—</div><div class="exec-metric-label">Críticos</div></div>
+          <div class="exec-metric"><div class="exec-metric-val v-amber" id="exec-m-monto">—</div><div class="exec-metric-label">Monto expuesto</div></div>
+          <div class="exec-metric"><div class="exec-metric-val v-amber" id="exec-m-sobre">—</div><div class="exec-metric-label">Sobrepresupuesto</div></div>
+          <div class="exec-metric"><div class="exec-metric-val v-text" id="exec-m-inv">—</div><div class="exec-metric-label">Investigaciones</div></div>
         </div>
-        <div class="exec-metric">
-          <div class="exec-metric-val v-amber" id="exec-m-sobre">—</div>
-          <div class="exec-metric-label">Sobrepresupuesto</div>
-        </div>
-        <div class="exec-metric">
-          <div class="exec-metric-val v-text" id="exec-m-inv">—</div>
-          <div class="exec-metric-label">Investigaciones activas</div>
-        </div>
-      </div>
-
-      <!-- submenu expandible -->
-      <div class="po-submenu">
+        <div class="po-submenu">
 
         <!-- ── Candidatos Sentinel (S69) ── -->
         <div class="exec-section-hd" style="cursor:pointer;" onclick="poGo(showCandidatosPanel)">
@@ -2415,24 +2583,6 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
       </div>
     </div>
-
-    <div class="po-section-label">Módulos del sistema</div>
-
-    <div class="po-grid-top">
-
-      <!-- RESUMEN EJECUTIVO -->
-      <div class="po-card po-electric" id="poc-operacion" onclick="poToggle('operacion')">
-        <div class="po-card-hd">
-          <div class="po-card-icon"><span>⚡</span></div>
-          <div><div class="po-card-title">Resumen Ejecutivo</div><div class="po-card-desc">Dashboard · KPIs del sistema</div></div>
-          <div class="po-chevron">▼</div>
-        </div>
-        <div class="po-submenu">
-          <button class="po-item" onclick="poGo(showDashboardEjecutivo)">
-            <span class="po-item-icon">🏛️</span><span class="po-item-label">Vista Ejecutiva</span><span class="po-item-tag tag-c">Alta Prioridad</span><span class="po-arrow">›</span>
-          </button>
-        </div>
-      </div>
 
       <!-- ANÁLISIS -->
       <div class="po-card po-amber" id="poc-analisis" onclick="poToggle('analisis')">
@@ -13088,10 +13238,14 @@ function hidePortal() {
 }
 
 // ═══ PANEL SELECTOR — S92B ════════════════════════════════════════
-function showPanelSelector() {
-  document.getElementById('panelSelector').classList.remove('hidden');
+function volverAlPortal() {
   document.getElementById('panelEjecutivo').classList.add('hidden');
+  showPortal();
+}
+
+function abrirPanelEjecutivo() {
   hidePortal();
+  document.getElementById('panelEjecutivo').classList.remove('hidden');
 }
 
 function selectPanel(tipo) {
@@ -13115,11 +13269,229 @@ function generarBriefingEjecutivo() {
     .sort((a,b) => Number(b.monto_contrato) - Number(a.monto_contrato))
     .slice(0, 20);
   if (!top20.length) { alert('No hay datos disponibles aún.'); return; }
-  // Guardar temporalmente y generar reporte
   const _orig = window._briefingMode;
   window._briefingMode = { active: true, data: top20, title: 'Briefing Ejecutivo — Top 20 por Valor' };
   generateReport('todo');
   window._briefingMode = _orig;
+}
+
+// ═══ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════════════════
+let _ipEntidades = [];
+let _ipActiveTab = 'contratos';
+
+function abrirInvestigacionProyecto() {
+  document.getElementById('panelEjecutivo').classList.add('hidden');
+  document.getElementById('investigacionProyectoPanel').classList.remove('hidden');
+  document.getElementById('ipBtnBack').style.display = 'inline-flex';
+  document.getElementById('ipBtnBackList').style.display = 'none';
+  document.getElementById('ipLista').style.display = 'block';
+  document.getElementById('ipDetail').classList.remove('visible');
+  ipConstruirLista();
+}
+
+function ipConstruirLista() {
+  if (!allAlerts || !allAlerts.length) {
+    document.getElementById('ipGrid').innerHTML = '<div style="color:rgba(160,180,210,0.4);font-size:12px;padding:20px;grid-column:span 2;text-align:center;font-family:\'JetBrains Mono\',monospace;">Datos aún cargando…</div>';
+    return;
+  }
+  const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(1)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(0)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
+  const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+
+  const map = {};
+  allAlerts.filter(a => a.entity_name && Number(a.monto_contrato) > 0).forEach(a => {
+    const k = a.entity_name;
+    if (!map[k]) map[k] = { name: k, total: 0, monto: 0, criticos: 0, altos: 0 };
+    map[k].total++;
+    map[k].monto += Number(a.monto_contrato);
+    const s = normSev(a.severity);
+    if (s.includes('CRITICA')) map[k].criticos++;
+    else if (s.includes('ALTA')) map[k].altos++;
+  });
+
+  _ipEntidades = Object.values(map).sort((a,b) => b.monto - a.monto);
+  ipRenderLista(_ipEntidades);
+}
+
+function ipRenderLista(lista) {
+  const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(1)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(0)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
+  document.getElementById('ipGrid').innerHTML = lista.slice(0,30).map(e => `
+    <div class="ip-entity-card" onclick="ipVerDetalle(${JSON.stringify(e.name).replace(/'/g,'&#39;')})">
+      <div class="ip-entity-name">${e.name}</div>
+      <div class="ip-entity-stats">
+        <div class="ip-stat${e.criticos ? ' critico' : ''}">Críticos: <span>${e.criticos}</span></div>
+        <div class="ip-stat">Altos: <span>${e.altos}</span></div>
+        <div class="ip-stat">Total: <span>${e.total}</span></div>
+        <div class="ip-stat">Monto: <span>${fmtM(e.monto)}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+function ipFiltrar(q) {
+  const f = q.toLowerCase();
+  ipRenderLista(_ipEntidades.filter(e => e.name.toLowerCase().includes(f)));
+}
+
+function ipVerDetalle(entityName) {
+  document.getElementById('ipLista').style.display = 'none';
+  document.getElementById('ipDetail').classList.add('visible');
+  document.getElementById('ipBtnBack').style.display = 'none';
+  document.getElementById('ipBtnBackList').style.display = 'inline-flex';
+
+  const contratos = allAlerts.filter(a => a.entity_name === entityName && Number(a.monto_contrato) > 0)
+    .sort((a,b) => Number(b.monto_contrato) - Number(a.monto_contrato));
+
+  const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
+
+  const criticos = contratos.filter(a => normSev(a.severity).includes('CRITICA')).length;
+  const altos    = contratos.filter(a => normSev(a.severity).includes('ALTA')).length;
+  const monto    = contratos.reduce((s,a) => s + Number(a.monto_contrato), 0);
+
+  document.getElementById('ipDetailName').textContent = entityName;
+  document.getElementById('ipDetailSub').textContent  = `${contratos.length} contratos · Fiscal 2023–2025`;
+  document.getElementById('ip-kpi-criticos').textContent = criticos;
+  document.getElementById('ip-kpi-altos').textContent    = altos;
+  document.getElementById('ip-kpi-total').textContent    = contratos.length;
+  document.getElementById('ip-kpi-monto').textContent    = fmtM(monto);
+
+  // Tab contratos
+  document.getElementById('ip-content-contratos').innerHTML = `
+    <table class="ip-contracts-table">
+      <thead><tr>
+        <th>Proveedor</th><th>Monto</th><th>Patrón</th><th>Sev.</th><th>Fecha</th>
+      </tr></thead>
+      <tbody>${contratos.slice(0,50).map(a => {
+        const s = normSev(a.severity);
+        const sevClass = s.includes('CRITICA') ? 'ip-sev-critica' : s.includes('ALTA') ? 'ip-sev-alta' : '';
+        const pats = (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).slice(0,3);
+        return `<tr>
+          <td style="max-width:220px;word-break:break-word;">${a.proveedor_nombre||'—'}</td>
+          <td style="white-space:nowrap;color:#e2e8f0;font-weight:700;">${fmtM(Number(a.monto_contrato))}</td>
+          <td>${pats.map(p=>`<span class="ip-pat-tag">${p}</span>`).join('')}</td>
+          <td class="${sevClass}">${a.severity||'—'}</td>
+          <td style="white-space:nowrap;">${(a.fecha_contrato||'').slice(0,10)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+
+  // Tab patrones
+  const patronMap = {};
+  contratos.forEach(a => (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(p => {
+    patronMap[p] = (patronMap[p]||0) + 1;
+  }));
+  const patronList = Object.entries(patronMap).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('ip-content-patrones').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      ${patronList.map(([p,n]) => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(160,180,210,0.1);">
+          <span class="ip-pat-tag" style="font-size:10px;padding:4px 8px;">${p}</span>
+          <div style="flex:1;height:6px;border-radius:3px;background:rgba(160,180,210,0.08);">
+            <div style="width:${Math.min(100, n/contratos.length*100*5)}%;height:100%;border-radius:3px;background:rgba(255,61,87,0.5);"></div>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(160,180,210,0.6);min-width:30px;text-align:right;">${n}</span>
+        </div>`).join('')}
+    </div>`;
+
+  // Tab proveedores
+  const provMap = {};
+  contratos.forEach(a => {
+    const k = a.proveedor_nombre||'—';
+    if (!provMap[k]) provMap[k] = { n: 0, monto: 0 };
+    provMap[k].n++;
+    provMap[k].monto += Number(a.monto_contrato);
+  });
+  const provList = Object.entries(provMap).sort((a,b)=>b[1].monto-a[1].monto).slice(0,20);
+  document.getElementById('ip-content-proveedores').innerHTML = `
+    <table class="ip-contracts-table">
+      <thead><tr><th>Proveedor</th><th>Contratos</th><th>Monto Total</th></tr></thead>
+      <tbody>${provList.map(([p,v]) => `<tr>
+        <td>${p}</td>
+        <td style="text-align:center;color:#60a5fa;">${v.n}</td>
+        <td style="color:#e2e8f0;font-weight:700;">${fmtM(v.monto)}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+
+  ipTab('contratos');
+}
+
+function ipTab(tab) {
+  ['contratos','patrones','proveedores'].forEach(t => {
+    document.getElementById('ip-tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('ip-content-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+}
+
+function ipVolverALista() {
+  document.getElementById('ipDetail').classList.remove('visible');
+  document.getElementById('ipLista').style.display = 'block';
+  document.getElementById('ipBtnBack').style.display = 'inline-flex';
+  document.getElementById('ipBtnBackList').style.display = 'none';
+}
+
+// ═══ TOP 5 CASOS CRÍTICOS — S92A ══════════════════════════════════════
+function abrirTop5() {
+  document.getElementById('panelEjecutivo').classList.add('hidden');
+  document.getElementById('top5Panel').classList.remove('hidden');
+  renderTop5();
+}
+
+function volverAPanelEjecutivo() {
+  document.getElementById('top5Panel').classList.add('hidden');
+  document.getElementById('investigacionProyectoPanel').classList.add('hidden');
+  document.getElementById('panelEjecutivo').classList.remove('hidden');
+}
+
+function renderTop5() {
+  const body = document.getElementById('top5Body');
+  if (!allAlerts || !allAlerts.length) {
+    body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Datos aún cargando — intenta en unos segundos.</div>';
+    return;
+  }
+
+  const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+
+  // Agrupar por proveedor+entidad, sumar montos
+  const map = {};
+  allAlerts
+    .filter(a => normSev(a.severity).includes('CRITICA') || normSev(a.severity).includes('CRÍTICA'))
+    .filter(a => Number(a.monto_contrato) > 0 && a.proveedor_nombre)
+    .forEach(a => {
+      const key = (a.proveedor_nombre||'') + '||' + (a.entity_name||'');
+      if (!map[key]) map[key] = { proveedor: a.proveedor_nombre, entidad: a.entity_name, monto: 0, n: 0, patrones: new Set(), fecha: '' };
+      map[key].monto += Number(a.monto_contrato);
+      map[key].n++;
+      (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(p => map[key].patrones.add(p));
+      if (!map[key].fecha || a.fecha_contrato > map[key].fecha) map[key].fecha = a.fecha_contrato;
+    });
+
+  const top5 = Object.values(map).sort((a,b)=>b.monto-a.monto).slice(0,5);
+
+  const fmtM = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+  const RILMAC_FLAG = 'RILMAC IMPRESORES'; // S90: identificado como ERROR_DATOS
+
+  body.innerHTML = top5.map((c, i) => {
+    const rank = i + 1;
+    const esError = c.proveedor.toUpperCase().includes(RILMAC_FLAG);
+    const patArr = [...c.patrones].slice(0, 4);
+    return `
+    <div class="t5-case${esError ? ' t5-error' : ''}">
+      <div class="t5-rank rank-${rank <= 3 ? rank : ''}">${rank < 10 ? '0' + rank : rank}</div>
+      <div class="t5-info">
+        <div class="t5-proveedor">${c.proveedor}</div>
+        <div class="t5-entidad">${c.entidad || '—'}</div>
+        <div class="t5-meta">
+          ${patArr.map(p=>`<span class="t5-tag t5-tag-patron">${p}</span>`).join('')}
+          <span class="t5-tag t5-tag-n">${c.n} contrato${c.n !== 1 ? 's' : ''}</span>
+          ${c.fecha ? `<span class="t5-tag t5-tag-fecha">${c.fecha.slice(0,7)}</span>` : ''}
+        </div>
+        ${esError ? '<div class="t5-nota">⚠ Monto bajo revisión — posible error de datos (S90)</div>' : ''}
+      </div>
+      <div class="t5-monto">
+        <div class="t5-monto-val">${fmtM(c.monto)}</div>
+        <div class="t5-monto-label">monto en riesgo</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function poGo(fn) {
@@ -13277,7 +13649,7 @@ async function doLogin() {
 
     setCurrentUser(email);
     document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('panelSelector').classList.remove('hidden'); // S92B — mostrar selector
+    showPortal();
     await loadAlerts();
     startRealtime();
 
@@ -14475,9 +14847,8 @@ tickClock();
 setInterval(tickClock, 1000);
 
 async function init() {
-  // S92B — show panel selector instead of going directly to portal
   document.getElementById('loginScreen').classList.add('hidden');
-  document.getElementById('panelSelector').classList.remove('hidden');
+  showPortal();          // portal is entry point — show immediately
   await loadAlerts();    // data loads in background; poUpdateIndicators() polls for it
   startRealtime();
 }

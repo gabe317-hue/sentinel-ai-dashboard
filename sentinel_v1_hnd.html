@@ -13365,6 +13365,10 @@ function investigarDesdeTop10(entityName) {
   // Abrir Investigación por Proyecto directo a la entidad, con back → Top 10
   document.getElementById('top5Panel').classList.add('hidden');
   document.getElementById('investigacionProyectoPanel').classList.remove('hidden');
+  document.getElementById('ipLista').style.display = 'none';
+  // ipVerDetalle sobreescribe los botones — por eso se llama primero
+  ipVerDetalle(entityName);
+  // Override botones DESPUÉS de ipVerDetalle()
   document.getElementById('ipBtnBack').style.display = 'inline-flex';
   document.getElementById('ipBtnBack').textContent = '← Top 10 Críticos';
   document.getElementById('ipBtnBack').onclick = function() {
@@ -13372,9 +13376,6 @@ function investigarDesdeTop10(entityName) {
     document.getElementById('top5Panel').classList.remove('hidden');
   };
   document.getElementById('ipBtnBackList').style.display = 'none';
-  document.getElementById('ipLista').style.display = 'none';
-  document.getElementById('ipDetail').classList.add('visible');
-  ipVerDetalle(entityName);
 }
 
 function ipConstruirLista() {

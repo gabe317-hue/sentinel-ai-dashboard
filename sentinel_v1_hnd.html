@@ -1275,6 +1275,33 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 .t5-score-lbl   { font-size: 7px; color: rgba(160,180,210,0.4); letter-spacing: .05em; text-transform: uppercase; margin-top: 1px; }
 .t5-nota { font-size: 10px; color: #fbbf24; margin-top: 4px; font-style: italic; }
 
+/* Badge nivel de riesgo */
+.t5-nivel {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 900;
+  letter-spacing: .1em; padding: 3px 9px; border-radius: 10px; margin-bottom: 6px;
+}
+.t5-nivel-max  { background: rgba(255,61,87,0.12);  color: #ff3d57; border: 1px solid rgba(255,61,87,0.35); }
+.t5-nivel-alto { background: rgba(251,146,60,0.12); color: #fb923c; border: 1px solid rgba(251,146,60,0.35); }
+.t5-nivel-elev { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.35); }
+
+/* Badge sector */
+.t5-sector {
+  font-size: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  letter-spacing: .07em; padding: 2px 7px; border-radius: 8px;
+  background: rgba(160,180,210,0.08); color: rgba(160,180,210,0.5);
+  border: 1px solid rgba(160,180,210,0.15);
+}
+
+/* Insight de patrón sectorial */
+.t5-insight {
+  background: rgba(255,61,87,0.06); border: 1px solid rgba(255,61,87,0.15);
+  border-radius: 10px; padding: 12px 18px; margin-bottom: 8px;
+  font-size: 10px; font-family: 'JetBrains Mono', monospace;
+  color: rgba(160,180,210,0.6); line-height: 1.6;
+}
+.t5-insight strong { color: #ff3d57; }
+
 /* ═══ INVESTIGACIÓN POR PROYECTO — S85 ══════════════════════════════════════ */
 #investigacionProyectoPanel {
   position: fixed; inset: 0; z-index: 9965;
@@ -2343,8 +2370,8 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 <div id="top5Panel" class="hidden">
   <div class="t5-header">
     <div class="t5-header-left">
-      <h2>🚨 Top 5 Casos Críticos</h2>
-      <p>CONTRATOS DE MAYOR RIESGO · ORDENADOS POR MONTO · DATOS EN TIEMPO REAL</p>
+      <h2>🚨 Top 10 Casos Críticos</h2>
+      <p>ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · DATOS EN TIEMPO REAL</p>
     </div>
     <div style="display:flex;gap:10px;">
       <button class="pe-btn-back" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
@@ -13493,148 +13520,152 @@ async function renderTop5() {
   body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Calculando análisis multi-dimensional…</div>';
 
   try {
-  // ── Errores de datos conocidos — excluidos del Top 5
-  const EXCLUIR_TOP5 = ['RILMAC IMPRESORES'];
 
-  // ── Investigaciones confirmadas desde Supabase (con timeout 5s)
-  let investigados = new Map(); // proveedor_upper → estado
+  // ── Excluidos por error de datos conocido
+  const EXCLUIR = ['RILMAC IMPRESORES'];
+
+  // ── Investigaciones confirmadas (timeout 5s)
+  let investigados = new Map();
   try {
     const timeout = new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000));
     const query   = db.from('investigaciones').select('proveedor,estado')
                       .not('estado','in','("Borrador-Auto","Descartado","Nuevo")');
     const { data } = await Promise.race([query, timeout]);
     (data||[]).forEach(r => investigados.set((r.proveedor||'').toUpperCase().trim(), r.estado));
-  } catch(e) { console.warn('Top5: investigaciones no disponible, continuando sin SEN-INV:', e.message); }
+  } catch(e) { console.warn('Top10: investigaciones no disponible:', e.message); }
 
   const esc     = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-  const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
-  const ahora = new Date();
+  const fmtM    = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
+  const ahora   = new Date();
   const hace18m = new Date(ahora.getFullYear(), ahora.getMonth() - 18, 1).toISOString().slice(0,7);
 
-  // ── Agrupar por PROVEEDOR (cross-entidad) ───────────────────────────────
+  // ── Clasificador de sector por nombre de entidad/proveedor
+  function detectarSector(proveedor, entidades) {
+    const txt = (proveedor + ' ' + [...entidades].join(' ')).toLowerCase();
+    if (/salud|hospital|sesal|farma|medic|laborat|prodylab|corinfar|diagnost/.test(txt)) return 'SALUD';
+    if (/constru|obras|infraestruc|ingenie|acero|steel|emeco|cosco|pinel|cid santos|a&v|assen|geoconsult|naveda|cordons|union electrica/.test(txt)) return 'CONSTRUCCIÓN';
+    if (/educac|unah|universidad|escuela/.test(txt)) return 'EDUCACIÓN';
+    if (/energia|enee|combustib/.test(txt)) return 'ENERGÍA';
+    if (/seguro|asegurad|banrural|atlantida/.test(txt)) return 'SEGUROS';
+    if (/aliment|agro|product/.test(txt)) return 'ALIMENTOS';
+    return 'COMERCIO';
+  }
+
+  // ── Agrupar CRÍTICOS por proveedor (cross-entidad), piso L 100M
   const map = {};
   allAlerts
     .filter(a => normSev(a.severity).includes('CRITICA'))
     .filter(a => Number(a.monto_contrato) > 0 && a.proveedor_nombre)
-    .filter(a => !EXCLUIR_TOP5.some(ex => (a.proveedor_nombre||'').toUpperCase().includes(ex)))
+    .filter(a => !EXCLUIR.some(ex => (a.proveedor_nombre||'').toUpperCase().includes(ex)))
     .forEach(a => {
       const key = (a.proveedor_nombre||'').toUpperCase().trim();
-      if (!map[key]) map[key] = {
-        proveedor: a.proveedor_nombre,
-        entidades: new Set(),
-        monto: 0, n: 0,
-        patrones: new Set(),
-        nReciente: 0,
-        fuentes: new Set()
-      };
+      if (!map[key]) map[key] = { proveedor: a.proveedor_nombre, entidades: new Set(), monto: 0, n: 0, patrones: new Set(), nReciente: 0, fuentes: new Set() };
       const c = map[key];
       c.monto += Number(a.monto_contrato);
       c.n++;
       if (a.entity_name) c.entidades.add(a.entity_name);
-      const pat = (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean);
-      pat.forEach(p => c.patrones.add(p));
+      (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(p => c.patrones.add(p));
       if (a.source) c.fuentes.add(a.source);
       const mes = (a.fecha_contrato||'').slice(0,7);
       if (mes && mes >= hace18m) c.nReciente++;
     });
 
-  const todos = Object.values(map);
+  // Aplicar piso L 100M
+  const todos = Object.values(map).filter(c => c.monto >= 100000000);
   if (!todos.length) {
-    body.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Sin contratos CRÍTICA en base de datos.</div>';
+    body.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Sin contratos CRÍTICA ≥ L 100M en base de datos.</div>';
     return;
   }
 
-  // ── Normalización global para barras (0–100 relativo al máximo del conjunto) ─
+  // ── Normalizadores globales
   const maxMonto    = Math.max(...todos.map(c => c.monto));
-  const maxPatrones = Math.max(...todos.map(c => c.patrones.size));
-  const maxEntidades= Math.max(...todos.map(c => c.entidades.size));
-  const maxReciente = Math.max(...todos.map(c => c.nReciente));
+  const maxPatrones = Math.max(...todos.map(c => c.patrones.size)) || 1;
+  const maxEntidades= Math.max(...todos.map(c => c.entidades.size)) || 1;
+  const maxReciente = Math.max(...todos.map(c => c.nReciente)) || 1;
+  const norm = (val, mx) => mx > 0 ? Math.min(100, Math.round((val / mx) * 100)) : 0;
 
-  // ── Dimensión helper: si máximo es 0, evitar div/0 ─
-  const norm = (val, mx) => mx > 0 ? Math.round((val / mx) * 100) : 0;
-
-  // ── Scorer de corroboración externa (0–100) ─────────────────────────────
+  // ── Corroboración externa (0–100)
   function scoreExterno(c) {
     let pts = 0;
     const prov = c.proveedor.toUpperCase();
-    const haystack = c.proveedor.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    const engelMatch = (typeof ENGEL_LIST_HND !== 'undefined') && ENGEL_LIST_HND.some(e => haystack.includes(e.search));
-    const ofacMatch  = [...c.patrones].some(p => p.includes('SANCIONADO'));
-    if (engelMatch || ofacMatch) pts += 50;
-    const tieneONCAE = c.fuentes.has('ONCAE') || [...c.patrones].some(p => p.includes('ONCAE'));
-    if (tieneONCAE) pts += 30;
-    // SEN-INV activo
-    const sentMatch = [...investigados.keys()].some(inv =>
-      inv.length > 4 && (prov.includes(inv) || inv.includes(prov.slice(0, 12)))
-    );
-    if (sentMatch) pts += 20;
+    const hay  = c.proveedor.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if ((typeof ENGEL_LIST_HND !== 'undefined') && ENGEL_LIST_HND.some(e => hay.includes(e.search))) pts += 50;
+    if ([...c.patrones].some(p => p.includes('SANCIONADO'))) pts += 50;
+    if (c.fuentes.has('ONCAE') || [...c.patrones].some(p => p.includes('ONCAE'))) pts += 30;
+    if ([...investigados.keys()].some(inv => inv.length > 4 && (prov.includes(inv) || inv.includes(prov.slice(0,12))))) pts += 20;
     return Math.min(100, pts);
   }
 
-  // ── Scores por dimensión y compuesto ────────────────────────────────────
+  // ── Score: media geométrica de (monto_norm) × (comportamiento_norm)
+  //    comportamiento = promedio ponderado de 4 dimensiones (patrones 35, alcance 30, recencia 20, externo 15)
   const candidatos = todos.map(c => {
-    const d1 = norm(Math.log1p(c.monto), Math.log1p(maxMonto));           // Monto (log-scale)
-    const d2 = norm(c.patrones.size, maxPatrones);                         // Densidad patrones
-    const d3 = norm(c.entidades.size, maxEntidades);                       // Alcance institucional
-    const d4 = norm(c.nReciente, maxReciente > 0 ? maxReciente : 1);       // Recencia
-    const d5 = scoreExterno(c);                                            // Corroboración externa
-    const compuesto = Math.round(d1*0.25 + d2*0.25 + d3*0.20 + d4*0.15 + d5*0.15);
-    // Razón dominante
+    const dMonto   = norm(c.monto, maxMonto);
+    const dPatron  = norm(c.patrones.size, maxPatrones);
+    const dAlcance = norm(c.entidades.size, maxEntidades);
+    const dRecente = norm(c.nReciente, maxReciente);
+    const dExterno = scoreExterno(c);
+    const comportamiento = Math.round(dPatron*0.35 + dAlcance*0.30 + dRecente*0.20 + dExterno*0.15);
+    const score = Math.round(Math.sqrt(dMonto * comportamiento));
     const dims = [
-      { label: 'MONTO',     val: d1, texto: `${fmtM(c.monto)} acumulado` },
-      { label: 'PATRONES',  val: d2, texto: `${c.patrones.size} señale${c.patrones.size!==1?'s':''} distintas` },
-      { label: 'ALCANCE',   val: d3, texto: `${c.entidades.size} entidade${c.entidades.size!==1?'s':''}` },
-      { label: 'RECENCIA',  val: d4, texto: `${c.nReciente} contrato${c.nReciente!==1?'s':''} últimos 18m` },
-      { label: 'EXT',       val: d5, texto: d5 >= 50 ? 'Lista Engel/OFAC' : d5 >= 30 ? 'Patrón ONCAE' : 'SEN-INV activo' },
+      { label: 'MONTO',    val: dMonto,   color: '#ff3d57', texto: fmtM(c.monto) },
+      { label: 'PATRONES', val: dPatron,  color: '#a78bfa', texto: `${c.patrones.size} señal${c.patrones.size!==1?'es':''}` },
+      { label: 'ALCANCE',  val: dAlcance, color: '#60a5fa', texto: `${c.entidades.size} entidad${c.entidades.size!==1?'es':''}` },
+      { label: 'RECENCIA', val: dRecente, color: '#34d399', texto: `${c.nReciente} contratos ult. 18m` },
+      { label: 'EXT',      val: dExterno, color: '#fbbf24', texto: dExterno >= 50 ? 'Lista Engel/OFAC' : dExterno >= 30 ? 'Confirmado ONCAE' : 'SEN-INV activo' },
     ];
     const dominante = dims.reduce((a, b) => b.val > a.val ? b : a);
-    return { ...c, d1, d2, d3, d4, d5, compuesto, dims, dominante };
+    const sector = detectarSector(c.proveedor, c.entidades);
+    return { ...c, dMonto, comportamiento, score, dims, dominante, sector };
   });
 
-  // ── Top 5 por score compuesto ────────────────────────────────────────────
-  const top5 = candidatos
-    .sort((a, b) => b.compuesto - a.compuesto)
-    .slice(0, 5);
+  // ── Top 10 por score ─────────────────────────────────────────────────────
+  const top10 = candidatos.sort((a, b) => b.score - a.score).slice(0, 10);
 
-  // ── Colores por dimensión ────────────────────────────────────────────────
-  const dimColors = ['#ff3d57','#a78bfa','#60a5fa','#34d399','#fbbf24'];
+  // ── Insight sectorial ────────────────────────────────────────────────────
+  const sectorCount = {};
+  top10.forEach(c => { sectorCount[c.sector] = (sectorCount[c.sector]||0) + 1; });
+  const sectorTop = Object.entries(sectorCount).sort((a,b) => b[1]-a[1]);
+  const montoTotal = top10.reduce((s, c) => s + c.monto, 0);
+  const insightHtml = `<div class="t5-insight">
+    <strong>PATRÓN DETECTADO:</strong> ${sectorTop.map(([s,n]) => `${n} de 10 casos — ${s}`).join(' · ')}
+    &nbsp;·&nbsp; Exposición total Top 10: <strong>${fmtM(montoTotal)}</strong>
+  </div>`;
 
   // ── Render ───────────────────────────────────────────────────────────────
-  body.innerHTML = top5.map((c, i) => {
+  const nivelBadge = rank =>
+    rank <= 3  ? '<span class="t5-nivel t5-nivel-max">● RIESGO MÁXIMO</span>' :
+    rank <= 7  ? '<span class="t5-nivel t5-nivel-alto">● RIESGO ALTO</span>' :
+                 '<span class="t5-nivel t5-nivel-elev">● RIESGO ELEVADO</span>';
+
+  body.innerHTML = insightHtml + top10.map((c, i) => {
     const rank = i + 1;
     const rankClass = rank <= 3 ? ' rank-'+rank : '';
-    const scoreColor = c.compuesto >= 75 ? '#ff3d57' : c.compuesto >= 55 ? '#fbbf24' : '#60a5fa';
     const entLista = [...c.entidades].slice(0, 3).join(' · ') + (c.entidades.size > 3 ? ` +${c.entidades.size-3}` : '');
-    const patArr = [...c.patrones].slice(0, 4);
-
-    // Tags externos
-    const haystack = c.proveedor.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    const esEngel = (typeof ENGEL_LIST_HND !== 'undefined') && ENGEL_LIST_HND.some(e => haystack.includes(e.search));
-    const esSentinv = [...investigados.keys()].some(inv =>
-      inv.length > 4 && (c.proveedor.toUpperCase().includes(inv) || inv.includes(c.proveedor.toUpperCase().slice(0,12)))
-    );
-    const invEstado = esSentinv ? ([...investigados.entries()].find(([inv]) =>
-      inv.length > 4 && (c.proveedor.toUpperCase().includes(inv) || inv.includes(c.proveedor.toUpperCase().slice(0,12)))
-    )||[])[1] : null;
-
-    const dimRows = c.dims.map((d, di) => `
+    const patArr   = [...c.patrones].slice(0, 4);
+    const hay = c.proveedor.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const esEngel = (typeof ENGEL_LIST_HND !== 'undefined') && ENGEL_LIST_HND.some(e => hay.includes(e.search));
+    const invKey  = [...investigados.keys()].find(inv => inv.length > 4 && (c.proveedor.toUpperCase().includes(inv) || inv.includes(c.proveedor.toUpperCase().slice(0,12))));
+    const invEstado = invKey ? investigados.get(invKey) : null;
+    const dimRows = c.dims.map(d => `
       <div class="t5-dim-row">
         <span class="t5-dim-label">${d.label}</span>
-        <div class="t5-dim-track"><div class="t5-dim-fill" style="width:${d.val}%;background:${dimColors[di]};opacity:0.75;"></div></div>
-        <span class="t5-dim-val" style="color:${dimColors[di]};">${d.val}</span>
+        <div class="t5-dim-track"><div class="t5-dim-fill" style="width:${d.val}%;background:${d.color};opacity:0.8;"></div></div>
+        <span class="t5-dim-val" style="color:${d.color};">${d.val}</span>
       </div>`).join('');
 
     return `<div class="t5-case">
       <div class="t5-rank${rankClass}">${rank < 10 ? '0'+rank : rank}</div>
       <div class="t5-info">
+        ${nivelBadge(rank)}
         <div class="t5-proveedor">${esc(c.proveedor)}</div>
         <div class="t5-entidades">${esc(entLista) || '—'}</div>
         <div class="t5-meta">
           ${patArr.map(p=>`<span class="t5-tag t5-tag-patron">${esc(p)}</span>`).join('')}
           <span class="t5-tag t5-tag-n">${c.n} contrato${c.n!==1?'s':''}</span>
-          ${esEngel ? '<span class="t5-tag t5-tag-externo">⚠ ENGEL</span>' : ''}
-          ${esSentinv ? `<span class="t5-tag t5-tag-sent">SEN-INV ${esc(invEstado||'')}</span>` : ''}
+          <span class="t5-sector">${esc(c.sector)}</span>
+          ${esEngel   ? '<span class="t5-tag t5-tag-externo">⚠ ENGEL</span>' : ''}
+          ${invEstado ? `<span class="t5-tag t5-tag-sent">SEN-INV ${esc(invEstado)}</span>` : ''}
         </div>
         <div class="t5-badge-dominante">▲ ${esc(c.dominante.label)}: ${esc(c.dominante.texto)}</div>
         <div class="t5-dims">${dimRows}</div>
@@ -13642,18 +13673,14 @@ async function renderTop5() {
       <div class="t5-right">
         <div class="t5-monto-val">${fmtM(c.monto)}</div>
         <div class="t5-monto-label">monto en riesgo</div>
-        <div class="t5-score-ring" style="border-color:${scoreColor}40;">
-          <span class="t5-score-val" style="color:${scoreColor};">${c.compuesto}</span>
-          <span class="t5-score-lbl">score</span>
-        </div>
       </div>
     </div>`;
   }).join('');
 
   } catch(err) {
-    console.error('renderTop5 error:', err);
+    console.error('renderTop10 error:', err);
     body.innerHTML = `<div style="text-align:center;padding:60px;color:#fbbf24;font-family:'JetBrains Mono',monospace;font-size:11px;">
-      Error al calcular Top 5.<br><span style="color:rgba(160,180,210,0.4);font-size:10px;margin-top:8px;display:block;">${err.message||err}</span>
+      Error al calcular Top 10.<br><span style="color:rgba(160,180,210,0.4);font-size:10px;margin-top:8px;display:block;">${err.message||err}</span>
     </div>`;
   }
 }

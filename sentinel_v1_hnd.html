@@ -13432,7 +13432,7 @@ function ipVolverALista() {
 function abrirTop5() {
   document.getElementById('panelEjecutivo').classList.add('hidden');
   document.getElementById('top5Panel').classList.remove('hidden');
-  renderTop5();
+  renderTop5(); // async internally
 }
 
 function volverAPanelEjecutivo() {
@@ -13441,22 +13441,55 @@ function volverAPanelEjecutivo() {
   document.getElementById('panelEjecutivo').classList.remove('hidden');
 }
 
-function renderTop5() {
+async function renderTop5() {
   const body = document.getElementById('top5Body');
   if (!allAlerts || !allAlerts.length) {
     body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Datos aún cargando — intenta en unos segundos.</div>';
     return;
   }
+  body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Calculando credibilidad…</div>';
+
+  // ── Errores de datos conocidos — excluidos del Top 5
+  const EXCLUIR_TOP5 = ['RILMAC IMPRESORES'];
+
+  // ── Investigaciones confirmadas desde Supabase
+  let investigados = new Set();
+  try {
+    const { data } = await db.from('investigaciones')
+      .select('proveedor,estado')
+      .not('estado','in','("Borrador-Auto","Descartado","Nuevo")');
+    (data||[]).forEach(r => investigados.add((r.proveedor||'').toUpperCase().trim()));
+  } catch(e) { console.warn('Top5: no pudo cargar investigaciones', e); }
+
+  // ── Scorer de credibilidad (0-100) ────────────────────────────────────────
+  // Fuentes: SEFIN OCDS (base) · ONCAE (patrones) · SEN-INV (revisión humana)
+  //          Engel/OFAC (listas internacionales) · multi-patrón (corroboración)
+  function scoreCredibilidad(c) {
+    let pts = 0;
+    const prov = c.proveedor.toUpperCase();
+    const haystack = (c.proveedor + ' ' + (c.entidad||'')).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    pts += 20; // SEFIN OCDS verificado (base — todos nuestros datos)
+    const tieneONCAE = [...c.patrones].some(p => p.includes('ONCAE'));
+    if (tieneONCAE) pts += 30;
+    if ([...investigados].some(inv => inv.length > 4 && (prov.includes(inv) || inv.includes(prov.slice(0,12))))) pts += 35;
+    const engelMatch = (typeof ENGEL_LIST_HND !== 'undefined') && ENGEL_LIST_HND.some(e => haystack.includes(e.search));
+    const ofacMatch = [...c.patrones].some(p => p.includes('SANCIONADO'));
+    if (engelMatch || ofacMatch) pts += 15;
+    if (c.patrones.size >= 2) pts += 10;
+    if (c.patrones.size >= 3) pts += 5;
+    return Math.min(100, pts);
+  }
 
   const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
 
-  // Agrupar por proveedor+entidad, sumar montos
   const map = {};
   allAlerts
-    .filter(a => normSev(a.severity).includes('CRITICA') || normSev(a.severity).includes('CRÍTICA'))
+    .filter(a => normSev(a.severity).includes('CRITICA'))
     .filter(a => Number(a.monto_contrato) > 0 && a.proveedor_nombre)
+    .filter(a => !EXCLUIR_TOP5.some(ex => (a.proveedor_nombre||'').toUpperCase().includes(ex)))
     .forEach(a => {
-      const key = (a.proveedor_nombre||'') + '||' + (a.entity_name||'');
+      const key = (a.proveedor_nombre||'')+'||'+(a.entity_name||'');
       if (!map[key]) map[key] = { proveedor: a.proveedor_nombre, entidad: a.entity_name, monto: 0, n: 0, patrones: new Set(), fecha: '' };
       map[key].monto += Number(a.monto_contrato);
       map[key].n++;
@@ -13464,36 +13497,40 @@ function renderTop5() {
       if (!map[key].fecha || a.fecha_contrato > map[key].fecha) map[key].fecha = a.fecha_contrato;
     });
 
-  const top5 = Object.values(map).sort((a,b)=>b.monto-a.monto).slice(0,5);
+  const candidatos = Object.values(map)
+    .map(c => ({ ...c, score: scoreCredibilidad(c) }))
+    .filter(c => c.score >= 80)
+    .sort((a,b) => b.monto - a.monto)
+    .slice(0, 5);
 
-  const fmtM = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
-  // S92B — Excluir casos con error de datos conocido (aparecen en reporte de anomalías)
-  const EXCLUIR_TOP5 = ['RILMAC IMPRESORES'];
+  if (!candidatos.length) {
+    body.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">No hay casos con credibilidad ≥80%.<br>Se requiere SEN-INV activo o patrón ONCAE + múltiples fuentes.</div>';
+    return;
+  }
 
-  body.innerHTML = top5
-    .filter(c => !EXCLUIR_TOP5.some(ex => c.proveedor.toUpperCase().includes(ex)))
-    .slice(0, 5)
-    .map((c, i) => {
-      const rank = i + 1;
-      const patArr = [...c.patrones].slice(0, 4);
-      return `
-    <div class="t5-case">
-      <div class="t5-rank rank-${rank <= 3 ? rank : ''}">${rank < 10 ? '0' + rank : rank}</div>
+  body.innerHTML = candidatos.map((c, i) => {
+    const rank = i + 1;
+    const patArr = [...c.patrones].slice(0, 4);
+    const scoreColor = c.score >= 95 ? '#00c864' : c.score >= 85 ? '#60a5fa' : '#fbbf24';
+    const rankClass = rank <= 3 ? ' rank-'+rank : '';
+    return `<div class="t5-case">
+      <div class="t5-rank${rankClass}">${rank < 10 ? '0'+rank : rank}</div>
       <div class="t5-info">
         <div class="t5-proveedor">${c.proveedor}</div>
         <div class="t5-entidad">${c.entidad || '—'}</div>
         <div class="t5-meta">
           ${patArr.map(p=>`<span class="t5-tag t5-tag-patron">${p}</span>`).join('')}
-          <span class="t5-tag t5-tag-n">${c.n} contrato${c.n !== 1 ? 's' : ''}</span>
+          <span class="t5-tag t5-tag-n">${c.n} contrato${c.n!==1?'s':''}</span>
           ${c.fecha ? `<span class="t5-tag t5-tag-fecha">${c.fecha.slice(0,7)}</span>` : ''}
         </div>
       </div>
       <div class="t5-monto">
         <div class="t5-monto-val">${fmtM(c.monto)}</div>
         <div class="t5-monto-label">monto en riesgo</div>
+        <div style="margin-top:6px;font-size:10px;font-family:'JetBrains Mono',monospace;color:${scoreColor};font-weight:700;">${c.score}% credibilidad</div>
       </div>
     </div>`;
-    }).join('');
+  }).join('');
 }
 
 function poGo(fn) {

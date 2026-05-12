@@ -13467,14 +13467,17 @@ function renderTop5() {
   const top5 = Object.values(map).sort((a,b)=>b.monto-a.monto).slice(0,5);
 
   const fmtM = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
-  const RILMAC_FLAG = 'RILMAC IMPRESORES'; // S90: identificado como ERROR_DATOS
+  // S92B — Excluir casos con error de datos conocido (aparecen en reporte de anomalías)
+  const EXCLUIR_TOP5 = ['RILMAC IMPRESORES'];
 
-  body.innerHTML = top5.map((c, i) => {
-    const rank = i + 1;
-    const esError = c.proveedor.toUpperCase().includes(RILMAC_FLAG);
-    const patArr = [...c.patrones].slice(0, 4);
-    return `
-    <div class="t5-case${esError ? ' t5-error' : ''}">
+  body.innerHTML = top5
+    .filter(c => !EXCLUIR_TOP5.some(ex => c.proveedor.toUpperCase().includes(ex)))
+    .slice(0, 5)
+    .map((c, i) => {
+      const rank = i + 1;
+      const patArr = [...c.patrones].slice(0, 4);
+      return `
+    <div class="t5-case">
       <div class="t5-rank rank-${rank <= 3 ? rank : ''}">${rank < 10 ? '0' + rank : rank}</div>
       <div class="t5-info">
         <div class="t5-proveedor">${c.proveedor}</div>
@@ -13484,14 +13487,13 @@ function renderTop5() {
           <span class="t5-tag t5-tag-n">${c.n} contrato${c.n !== 1 ? 's' : ''}</span>
           ${c.fecha ? `<span class="t5-tag t5-tag-fecha">${c.fecha.slice(0,7)}</span>` : ''}
         </div>
-        ${esError ? '<div class="t5-nota">⚠ Monto bajo revisión — posible error de datos (S90)</div>' : ''}
       </div>
       <div class="t5-monto">
         <div class="t5-monto-val">${fmtM(c.monto)}</div>
         <div class="t5-monto-label">monto en riesgo</div>
       </div>
     </div>`;
-  }).join('');
+    }).join('');
 }
 
 function poGo(fn) {

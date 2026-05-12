@@ -1042,6 +1042,149 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
   display: flex; align-items: center; justify-content: center;
 }
 .login-screen.hidden { display: none; }
+
+/* ═══ PANEL SELECTOR — S92B ═══════════════════════════════════════════════ */
+#panelSelector {
+  position: fixed; inset: 0; z-index: 9990;
+  background: var(--navy);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0;
+}
+#panelSelector.hidden { display: none; }
+#panelSelector::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,200,255,0.04) 0%, transparent 70%);
+}
+.ps-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .15em; color: rgba(160,180,210,0.5);
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.ps-logo {
+  font-size: 36px; font-weight: 900; letter-spacing: .04em;
+  color: #e2e8f0; margin-bottom: 4px;
+}
+.ps-logo span { color: var(--cyan); }
+.ps-sub {
+  font-size: 13px; color: rgba(160,180,210,0.6);
+  margin-bottom: 48px; letter-spacing: .04em;
+}
+.ps-cards {
+  display: flex; gap: 24px; align-items: stretch;
+}
+.ps-card {
+  width: 260px; padding: 32px 28px;
+  border-radius: 16px; cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  text-align: center; border: 1px solid transparent;
+  position: relative; overflow: hidden;
+}
+.ps-card:hover { transform: translateY(-4px); }
+.ps-card-ejecutivo {
+  background: rgba(0,200,255,0.07);
+  border-color: rgba(0,200,255,0.3);
+  box-shadow: 0 0 30px rgba(0,200,255,0.08);
+}
+.ps-card-ejecutivo:hover { box-shadow: 0 8px 40px rgba(0,200,255,0.18); }
+.ps-card-analista {
+  background: rgba(139,92,246,0.07);
+  border-color: rgba(139,92,246,0.3);
+  box-shadow: 0 0 30px rgba(139,92,246,0.08);
+}
+.ps-card-analista:hover { box-shadow: 0 8px 40px rgba(139,92,246,0.18); }
+.ps-card-icon { font-size: 36px; }
+.ps-card-title {
+  font-size: 16px; font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.ps-card-ejecutivo .ps-card-title { color: var(--cyan); }
+.ps-card-analista .ps-card-title { color: #a855f7; }
+.ps-card-desc {
+  font-size: 12px; color: rgba(160,180,210,0.6); line-height: 1.5;
+}
+.ps-card-items {
+  display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 4px;
+}
+.ps-card-item {
+  font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  color: rgba(160,180,210,0.55); text-align: left;
+  padding: 4px 8px; border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+}
+.ps-divider {
+  width: 1px; background: rgba(160,180,210,0.12); align-self: stretch; margin: 0 4px;
+}
+.ps-footer {
+  margin-top: 40px; font-size: 10px;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: .08em;
+  color: rgba(160,180,210,0.3);
+}
+
+/* ═══ PANEL EJECUTIVO — S92B ═══════════════════════════════════════════════ */
+#panelEjecutivo {
+  position: fixed; inset: 0; z-index: 9980;
+  background: var(--navy);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+#panelEjecutivo.hidden { display: none; }
+.pe-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 32px; border-bottom: 1px solid rgba(160,180,210,0.1);
+  background: rgba(5,10,20,0.6); backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 10;
+}
+.pe-header-logo { font-size: 18px; font-weight: 900; color: #e2e8f0; letter-spacing: .04em; }
+.pe-header-logo span { color: var(--cyan); }
+.pe-header-label {
+  font-size: 10px; font-family: 'JetBrains Mono', monospace;
+  letter-spacing: .12em; color: var(--cyan); text-transform: uppercase;
+}
+.pe-header-actions { display: flex; gap: 10px; align-items: center; }
+.pe-btn-back {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(160,180,210,0.2);
+  color: rgba(160,180,210,0.7); border-radius: 8px; padding: 6px 14px;
+  font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: .05em;
+  transition: all .2s;
+}
+.pe-btn-back:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+.pe-body {
+  padding: 40px 32px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px; max-width: 1100px; margin: 0 auto; width: 100%;
+}
+.pe-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(160,180,210,0.12);
+  border-radius: 14px; padding: 28px 24px;
+  cursor: pointer; transition: all .2s;
+  display: flex; flex-direction: column; gap: 10px;
+  position: relative; overflow: hidden;
+}
+.pe-card:hover { border-color: rgba(0,200,255,0.35); background: rgba(0,200,255,0.05); transform: translateY(-2px); }
+.pe-card.placeholder { cursor: default; opacity: .55; }
+.pe-card.placeholder:hover { transform: none; border-color: rgba(160,180,210,0.12); background: rgba(255,255,255,0.03); }
+.pe-card-icon { font-size: 28px; }
+.pe-card-num {
+  font-size: 10px; font-family: 'JetBrains Mono', monospace;
+  color: rgba(160,180,210,0.35); letter-spacing: .1em;
+}
+.pe-card-title {
+  font-size: 15px; font-weight: 800; color: #e2e8f0;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.pe-card-desc { font-size: 12px; color: rgba(160,180,210,0.55); line-height: 1.5; }
+.pe-card-tag {
+  display: inline-block; font-size: 9px; font-family: 'JetBrains Mono', monospace;
+  letter-spacing: .08em; padding: 3px 8px; border-radius: 10px;
+  font-weight: 700; align-self: flex-start; margin-top: auto;
+}
+.pe-tag-active { background: rgba(0,200,100,0.12); color: #00c864; border: 1px solid rgba(0,200,100,0.25); }
+.pe-tag-soon   { background: rgba(255,180,0,0.12);  color: #fbbf24; border: 1px solid rgba(255,180,0,0.25); }
+
 .login-screen::before {
   content: '';
   position: fixed; inset: 0;
@@ -1948,6 +2091,113 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">© Sentinel-AI v1.87</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PANEL SELECTOR — S92B ═══════════════════ -->
+<div id="panelSelector" class="hidden">
+  <div class="ps-eyebrow">República de Honduras · Sistema Nacional Anticorrupción</div>
+  <div class="ps-logo">SENTINEL<span>·</span>AI</div>
+  <div class="ps-sub">Selecciona tu modo de acceso</div>
+  <div class="ps-cards">
+    <div class="ps-card ps-card-ejecutivo" onclick="selectPanel('ejecutivo')">
+      <div class="ps-card-icon">📊</div>
+      <div class="ps-card-title">Panel Ejecutivo</div>
+      <div class="ps-card-desc">Vista de alto nivel · Indicadores clave · Reportes ejecutivos</div>
+      <div class="ps-card-items">
+        <div class="ps-card-item">▸ Vista Ejecutiva</div>
+        <div class="ps-card-item">▸ Modo Presentación</div>
+        <div class="ps-card-item">▸ Briefing Ejecutivo</div>
+        <div class="ps-card-item">▸ Análisis General</div>
+        <div class="ps-card-item">▸ Top 5 Casos Críticos</div>
+        <div class="ps-card-item">▸ Investigación por Proyecto</div>
+      </div>
+    </div>
+    <div class="ps-divider"></div>
+    <div class="ps-card ps-card-analista" onclick="selectPanel('analista')">
+      <div class="ps-card-icon">🔍</div>
+      <div class="ps-card-title">Panel Analista</div>
+      <div class="ps-card-desc">Análisis detallado · Contratos · Alertas · Investigaciones</div>
+      <div class="ps-card-items">
+        <div class="ps-card-item">▸ Todos los contratos</div>
+        <div class="ps-card-item">▸ Alertas y patrones</div>
+        <div class="ps-card-item">▸ Investigaciones activas</div>
+        <div class="ps-card-item">▸ Herramientas de análisis</div>
+        <div class="ps-card-item">▸ Notificaciones</div>
+        <div class="ps-card-item">▸ Canal ciudadano</div>
+      </div>
+    </div>
+  </div>
+  <div class="ps-footer">v1.87 · SEFIN Fiscal 2023–2025 · The Prieto Group · Dallas, TX</div>
+</div>
+
+<!-- ═══════════════════ PANEL EJECUTIVO — S92B ═══════════════════ -->
+<div id="panelEjecutivo" class="hidden">
+  <div class="pe-header">
+    <div>
+      <div class="pe-header-logo">SENTINEL<span>·</span>AI</div>
+      <div class="pe-header-label">Panel Ejecutivo</div>
+    </div>
+    <div class="pe-header-actions">
+      <button class="pe-btn-back" onclick="showPanelSelector()">← Cambiar Panel</button>
+    </div>
+  </div>
+  <div class="pe-body">
+
+    <!-- Card 1 — Vista Ejecutiva -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showVistaEjecutiva)">
+      <div class="pe-card-num">01</div>
+      <div class="pe-card-icon">📈</div>
+      <div class="pe-card-title">Vista Ejecutiva</div>
+      <div class="pe-card-desc">Indicadores clave · Montos en riesgo · Resumen del sistema en tiempo real</div>
+      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
+    </div>
+
+    <!-- Card 2 — Modo Presentación -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(toggleModoDemo)">
+      <div class="pe-card-num">02</div>
+      <div class="pe-card-icon">▶️</div>
+      <div class="pe-card-title">Modo Presentación</div>
+      <div class="pe-card-desc">Vista fullscreen para reuniones y presentaciones institucionales</div>
+      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
+    </div>
+
+    <!-- Card 3 — Briefing Ejecutivo -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(generarBriefingEjecutivo)">
+      <div class="pe-card-num">03</div>
+      <div class="pe-card-icon">📄</div>
+      <div class="pe-card-title">Briefing Ejecutivo</div>
+      <div class="pe-card-desc">Reporte PDF · Top 20 contratos de mayor riesgo ordenados por valor</div>
+      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
+    </div>
+
+    <!-- Card 4 — Análisis General -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showAnalyticsPanel)">
+      <div class="pe-card-num">04</div>
+      <div class="pe-card-icon">🧠</div>
+      <div class="pe-card-title">Análisis General</div>
+      <div class="pe-card-desc">Patrones sistémicos · Distribución de riesgo · Tendencias fiscales</div>
+      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
+    </div>
+
+    <!-- Card 5 — Top 5 Casos Críticos (S92-A) -->
+    <div class="pe-card placeholder">
+      <div class="pe-card-num">05</div>
+      <div class="pe-card-icon">🚨</div>
+      <div class="pe-card-title">Top 5 Casos Críticos</div>
+      <div class="pe-card-desc">Los 5 casos de mayor impacto fiscal con resumen ejecutivo por caso</div>
+      <span class="pe-card-tag pe-tag-soon">S92-A · PRÓXIMO</span>
+    </div>
+
+    <!-- Card 6 — Investigación por Proyecto (S85) -->
+    <div class="pe-card placeholder">
+      <div class="pe-card-num">06</div>
+      <div class="pe-card-icon">🗂️</div>
+      <div class="pe-card-title">Investigación por Proyecto</div>
+      <div class="pe-card-desc">Seguimiento completo de un proyecto: contratos, addendas, actores y cronología</div>
+      <span class="pe-card-tag pe-tag-soon">S85 · PRÓXIMO</span>
+    </div>
+
   </div>
 </div>
 
@@ -12837,6 +13087,41 @@ function hidePortal() {
   document.getElementById('portalOverlay').classList.remove('visible');
 }
 
+// ═══ PANEL SELECTOR — S92B ════════════════════════════════════════
+function showPanelSelector() {
+  document.getElementById('panelSelector').classList.remove('hidden');
+  document.getElementById('panelEjecutivo').classList.add('hidden');
+  hidePortal();
+}
+
+function selectPanel(tipo) {
+  document.getElementById('panelSelector').classList.add('hidden');
+  if (tipo === 'ejecutivo') {
+    document.getElementById('panelEjecutivo').classList.remove('hidden');
+  } else {
+    showPortal(); // Panel Analista → portal existente
+  }
+}
+
+function irDesdeEjecutivo(fn) {
+  document.getElementById('panelEjecutivo').classList.add('hidden');
+  setTimeout(() => { try { fn(); } catch(e) { console.warn('irDesdeEjecutivo:', e); } }, 180);
+}
+
+function generarBriefingEjecutivo() {
+  // Top 20 alertas por monto_contrato desc → reutiliza generateReport con filtro
+  const top20 = [...allAlerts]
+    .filter(a => a.monto_contrato && Number(a.monto_contrato) > 0)
+    .sort((a,b) => Number(b.monto_contrato) - Number(a.monto_contrato))
+    .slice(0, 20);
+  if (!top20.length) { alert('No hay datos disponibles aún.'); return; }
+  // Guardar temporalmente y generar reporte
+  const _orig = window._briefingMode;
+  window._briefingMode = { active: true, data: top20, title: 'Briefing Ejecutivo — Top 20 por Valor' };
+  generateReport('todo');
+  window._briefingMode = _orig;
+}
+
 function poGo(fn) {
   hidePortal();
   setTimeout(() => { try { fn(); } catch(e) { console.warn('poGo:', e); } }, 220);
@@ -12992,6 +13277,7 @@ async function doLogin() {
 
     setCurrentUser(email);
     document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('panelSelector').classList.remove('hidden'); // S92B — mostrar selector
     await loadAlerts();
     startRealtime();
 

@@ -2395,57 +2395,57 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
   </div>
   <div class="pe-body">
 
-    <!-- Card 1 — Vista Ejecutiva -->
-    <div class="pe-card" onclick="irDesdeEjecutivo(showVistaEjecutiva)">
+    <!-- Card 1 — Top 10 Casos Críticos (S93-A) -->
+    <div class="pe-card" onclick="abrirTop5()">
       <div class="pe-card-num">01</div>
+      <div class="pe-card-icon">🚨</div>
+      <div class="pe-card-title">Top 10 Casos Críticos</div>
+      <div class="pe-card-desc">Los 10 casos de mayor riesgo · Análisis multi-dimensional monto × comportamiento</div>
+      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
+    </div>
+
+    <!-- Card 2 — Vista Ejecutiva -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showVistaEjecutiva)">
+      <div class="pe-card-num">02</div>
       <div class="pe-card-icon">📈</div>
       <div class="pe-card-title">Vista Ejecutiva</div>
       <div class="pe-card-desc">Indicadores clave · Montos en riesgo · Resumen del sistema en tiempo real</div>
       <span class="pe-card-tag pe-tag-active">ACTIVO</span>
     </div>
 
-    <!-- Card 2 — Modo Presentación -->
+    <!-- Card 3 — Investigación por Proyecto (S85) -->
+    <div class="pe-card" onclick="abrirInvestigacionProyecto()">
+      <div class="pe-card-num">03</div>
+      <div class="pe-card-icon">🗂️</div>
+      <div class="pe-card-title">Investigación por Proyecto</div>
+      <div class="pe-card-desc">Contratos, patrones y proveedores por entidad · Análisis profundo</div>
+      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
+    </div>
+
+    <!-- Card 4 — Modo Presentación -->
     <div class="pe-card" onclick="irDesdeEjecutivo(toggleModoDemo)">
-      <div class="pe-card-num">02</div>
+      <div class="pe-card-num">04</div>
       <div class="pe-card-icon">▶️</div>
       <div class="pe-card-title">Modo Presentación</div>
       <div class="pe-card-desc">Vista fullscreen para reuniones y presentaciones institucionales</div>
       <span class="pe-card-tag pe-tag-active">ACTIVO</span>
     </div>
 
-    <!-- Card 3 — Briefing Ejecutivo -->
+    <!-- Card 5 — Briefing Ejecutivo -->
     <div class="pe-card" onclick="irDesdeEjecutivo(generarBriefingEjecutivo)">
-      <div class="pe-card-num">03</div>
+      <div class="pe-card-num">05</div>
       <div class="pe-card-icon">📄</div>
       <div class="pe-card-title">Briefing Ejecutivo</div>
       <div class="pe-card-desc">Reporte PDF · Top 20 contratos de mayor riesgo ordenados por valor</div>
       <span class="pe-card-tag pe-tag-active">ACTIVO</span>
     </div>
 
-    <!-- Card 4 — Análisis General -->
+    <!-- Card 6 — Análisis General -->
     <div class="pe-card" onclick="irDesdeEjecutivo(showAnalyticsPanel)">
-      <div class="pe-card-num">04</div>
+      <div class="pe-card-num">06</div>
       <div class="pe-card-icon">🧠</div>
       <div class="pe-card-title">Análisis General</div>
       <div class="pe-card-desc">Patrones sistémicos · Distribución de riesgo · Tendencias fiscales</div>
-      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
-    </div>
-
-    <!-- Card 5 — Top 5 Casos Críticos (S92-A) -->
-    <div class="pe-card" onclick="abrirTop5()">
-      <div class="pe-card-num">05</div>
-      <div class="pe-card-icon">🚨</div>
-      <div class="pe-card-title">Top 5 Casos Críticos</div>
-      <div class="pe-card-desc">Los 5 casos de mayor impacto fiscal ordenados por monto en riesgo</div>
-      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
-    </div>
-
-    <!-- Card 6 — Investigación por Proyecto (S85) -->
-    <div class="pe-card" onclick="abrirInvestigacionProyecto()">
-      <div class="pe-card-num">06</div>
-      <div class="pe-card-icon">🗂️</div>
-      <div class="pe-card-title">Investigación por Proyecto</div>
-      <div class="pe-card-desc">Contratos, patrones y proveedores por entidad · Análisis profundo</div>
       <span class="pe-card-tag pe-tag-active">ACTIVO</span>
     </div>
 
@@ -13353,10 +13353,28 @@ function abrirInvestigacionProyecto() {
   document.getElementById('panelEjecutivo').classList.add('hidden');
   document.getElementById('investigacionProyectoPanel').classList.remove('hidden');
   document.getElementById('ipBtnBack').style.display = 'inline-flex';
+  document.getElementById('ipBtnBack').textContent = '← Panel Ejecutivo';
+  document.getElementById('ipBtnBack').onclick = volverAPanelEjecutivo;
   document.getElementById('ipBtnBackList').style.display = 'none';
   document.getElementById('ipLista').style.display = 'block';
   document.getElementById('ipDetail').classList.remove('visible');
   ipConstruirLista();
+}
+
+function investigarDesdeTop10(entityName) {
+  // Abrir Investigación por Proyecto directo a la entidad, con back → Top 10
+  document.getElementById('top5Panel').classList.add('hidden');
+  document.getElementById('investigacionProyectoPanel').classList.remove('hidden');
+  document.getElementById('ipBtnBack').style.display = 'inline-flex';
+  document.getElementById('ipBtnBack').textContent = '← Top 10 Críticos';
+  document.getElementById('ipBtnBack').onclick = function() {
+    document.getElementById('investigacionProyectoPanel').classList.add('hidden');
+    document.getElementById('top5Panel').classList.remove('hidden');
+  };
+  document.getElementById('ipBtnBackList').style.display = 'none';
+  document.getElementById('ipLista').style.display = 'none';
+  document.getElementById('ipDetail').classList.add('visible');
+  ipVerDetalle(entityName);
 }
 
 function ipConstruirLista() {
@@ -13673,6 +13691,11 @@ async function renderTop5() {
       <div class="t5-right">
         <div class="t5-monto-val">${fmtM(c.monto)}</div>
         <div class="t5-monto-label">monto en riesgo</div>
+        ${c.entidades.size > 0 ? `<button onclick="investigarDesdeTop10('${esc([...c.entidades][0]).replace(/'/g,"\\'")}');event.stopPropagation();"
+          style="margin-top:14px;padding:6px 12px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
+          background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;">
+          🗂️ INVESTIGAR →
+        </button>` : ''}
       </div>
     </div>`;
   }).join('');

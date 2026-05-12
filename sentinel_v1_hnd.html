@@ -1185,7 +1185,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 .pe-tag-active { background: rgba(0,200,100,0.12); color: #00c864; border: 1px solid rgba(0,200,100,0.25); }
 .pe-tag-soon   { background: rgba(255,180,0,0.12);  color: #fbbf24; border: 1px solid rgba(255,180,0,0.25); }
 
-/* ═══ TOP 5 CASOS CRÍTICOS — S92A ══════════════════════════════════════════ */
+/* ═══ TOP 5 CASOS CRÍTICOS — S93A multi-dimensional ═══════════════════════ */
 #top5Panel {
   position: fixed; inset: 0; z-index: 9970;
   background: var(--navy); display: flex; flex-direction: column; overflow-y: auto;
@@ -1199,37 +1199,80 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 }
 .t5-header-left h2 { font-size: 20px; font-weight: 900; color: #e2e8f0; margin: 0 0 2px; }
 .t5-header-left p  { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: rgba(160,180,210,0.5); letter-spacing: .1em; margin: 0; }
-.t5-body { padding: 32px; max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 16px; }
+.t5-body { padding: 32px; max-width: 960px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+
+/* Card principal */
 .t5-case {
   background: rgba(255,255,255,0.03); border: 1px solid rgba(160,180,210,0.12);
-  border-radius: 14px; padding: 24px 28px; display: grid;
-  grid-template-columns: 48px 1fr auto; gap: 16px; align-items: start;
+  border-radius: 14px; padding: 22px 26px; display: grid;
+  grid-template-columns: 52px 1fr 180px; gap: 20px; align-items: start;
   transition: border-color .2s;
 }
 .t5-case:hover { border-color: rgba(255,61,87,0.3); }
-.t5-case.t5-error { opacity: .6; border-style: dashed; }
+
+/* Número de rank */
 .t5-rank {
-  font-size: 28px; font-weight: 900; color: rgba(160,180,210,0.2);
-  font-family: 'JetBrains Mono', monospace; line-height: 1;
+  font-size: 30px; font-weight: 900; color: rgba(160,180,210,0.2);
+  font-family: 'JetBrains Mono', monospace; line-height: 1; padding-top: 2px;
 }
-.t5-rank.rank-1 { color: rgba(255,61,87,0.7); }
-.t5-rank.rank-2 { color: rgba(255,171,0,0.6); }
-.t5-rank.rank-3 { color: rgba(255,171,0,0.4); }
-.t5-info { display: flex; flex-direction: column; gap: 6px; }
+.t5-rank.rank-1 { color: rgba(255,61,87,0.8); }
+.t5-rank.rank-2 { color: rgba(255,171,0,0.7); }
+.t5-rank.rank-3 { color: rgba(255,171,0,0.45); }
+
+/* Info central */
+.t5-info { display: flex; flex-direction: column; gap: 5px; }
 .t5-proveedor { font-size: 15px; font-weight: 800; color: #e2e8f0; }
-.t5-entidad   { font-size: 11px; color: rgba(160,180,210,0.6); font-family: 'JetBrains Mono', monospace; }
-.t5-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.t5-entidades { font-size: 10px; color: rgba(160,180,210,0.55); font-family: 'JetBrains Mono', monospace; margin-top: 1px; }
+
+/* Tags fila */
+.t5-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
 .t5-tag {
   font-size: 9px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
   letter-spacing: .06em; padding: 3px 8px; border-radius: 10px;
 }
-.t5-tag-patron { background: rgba(255,61,87,0.1); color: var(--red); border: 1px solid rgba(255,61,87,0.25); }
-.t5-tag-fecha  { background: rgba(160,180,210,0.08); color: rgba(160,180,210,0.5); border: 1px solid rgba(160,180,210,0.15); }
-.t5-tag-n      { background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
-.t5-tag-error  { background: rgba(255,171,0,0.1); color: #fbbf24; border: 1px solid rgba(255,171,0,0.25); }
-.t5-monto { text-align: right; }
-.t5-monto-val { font-size: 22px; font-weight: 900; color: var(--red); font-family: 'JetBrains Mono', monospace; }
-.t5-monto-label { font-size: 9px; color: rgba(160,180,210,0.4); letter-spacing: .08em; text-transform: uppercase; margin-top: 2px; }
+.t5-tag-patron  { background: rgba(255,61,87,0.1);   color: var(--red);  border: 1px solid rgba(255,61,87,0.25); }
+.t5-tag-n       { background: rgba(59,130,246,0.1);  color: #60a5fa;     border: 1px solid rgba(59,130,246,0.25); }
+.t5-tag-externo { background: rgba(251,191,36,0.1);  color: #fbbf24;     border: 1px solid rgba(251,191,36,0.25); }
+.t5-tag-sent    { background: rgba(0,200,100,0.1);   color: #00c864;     border: 1px solid rgba(0,200,100,0.25); }
+.t5-tag-error   { background: rgba(255,171,0,0.1);   color: #fbbf24;     border: 1px solid rgba(255,171,0,0.25); }
+
+/* Badge razón dominante */
+.t5-badge-dominante {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 9px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  letter-spacing: .07em; padding: 4px 10px; border-radius: 12px; margin-top: 8px;
+  background: rgba(255,61,87,0.08); color: var(--red); border: 1px solid rgba(255,61,87,0.2);
+}
+
+/* Barras dimensionales */
+.t5-dims { display: flex; flex-direction: column; gap: 7px; margin-top: 6px; }
+.t5-dim-row { display: flex; align-items: center; gap: 8px; }
+.t5-dim-label {
+  font-size: 8px; font-family: 'JetBrains Mono', monospace; letter-spacing: .07em;
+  color: rgba(160,180,210,0.45); width: 80px; flex-shrink: 0; text-transform: uppercase;
+}
+.t5-dim-track {
+  flex: 1; height: 4px; background: rgba(160,180,210,0.08); border-radius: 2px; overflow: hidden;
+}
+.t5-dim-fill {
+  height: 100%; border-radius: 2px; transition: width .4s ease;
+}
+.t5-dim-val {
+  font-size: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  color: rgba(160,180,210,0.5); width: 26px; text-align: right; flex-shrink: 0;
+}
+
+/* Columna derecha — monto + score */
+.t5-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.t5-monto-val   { font-size: 20px; font-weight: 900; color: var(--red); font-family: 'JetBrains Mono', monospace; }
+.t5-monto-label { font-size: 9px; color: rgba(160,180,210,0.4); letter-spacing: .08em; text-transform: uppercase; }
+.t5-score-ring  {
+  width: 52px; height: 52px; border-radius: 50%; margin-top: 10px;
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  border: 2px solid rgba(160,180,210,0.15); position: relative;
+}
+.t5-score-val   { font-size: 13px; font-weight: 900; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+.t5-score-lbl   { font-size: 7px; color: rgba(160,180,210,0.4); letter-spacing: .05em; text-transform: uppercase; margin-top: 1px; }
 .t5-nota { font-size: 10px; color: #fbbf24; margin-top: 4px; font-style: italic; }
 
 /* ═══ INVESTIGACIÓN POR PROYECTO — S85 ══════════════════════════════════════ */
@@ -13447,87 +13490,159 @@ async function renderTop5() {
     body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Datos aún cargando — intenta en unos segundos.</div>';
     return;
   }
-  body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Calculando credibilidad…</div>';
+  body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Calculando análisis multi-dimensional…</div>';
 
   // ── Errores de datos conocidos — excluidos del Top 5
   const EXCLUIR_TOP5 = ['RILMAC IMPRESORES'];
 
   // ── Investigaciones confirmadas desde Supabase
-  let investigados = new Set();
+  let investigados = new Map(); // proveedor_upper → estado
   try {
     const { data } = await db.from('investigaciones')
       .select('proveedor,estado')
       .not('estado','in','("Borrador-Auto","Descartado","Nuevo")');
-    (data||[]).forEach(r => investigados.add((r.proveedor||'').toUpperCase().trim()));
+    (data||[]).forEach(r => investigados.set((r.proveedor||'').toUpperCase().trim(), r.estado));
   } catch(e) { console.warn('Top5: no pudo cargar investigaciones', e); }
-
-  // ── Scorer de credibilidad (0-100) ────────────────────────────────────────
-  // Fuentes: SEFIN OCDS (base) · ONCAE (patrones) · SEN-INV (revisión humana)
-  //          Engel/OFAC (listas internacionales) · multi-patrón (corroboración)
-  function scoreCredibilidad(c) {
-    let pts = 0;
-    const prov = c.proveedor.toUpperCase();
-    const haystack = (c.proveedor + ' ' + (c.entidad||'')).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    pts += 20; // SEFIN OCDS verificado (base — todos nuestros datos)
-    const tieneONCAE = [...c.patrones].some(p => p.includes('ONCAE'));
-    if (tieneONCAE) pts += 30;
-    if ([...investigados].some(inv => inv.length > 4 && (prov.includes(inv) || inv.includes(prov.slice(0,12))))) pts += 35;
-    const engelMatch = (typeof ENGEL_LIST_HND !== 'undefined') && ENGEL_LIST_HND.some(e => haystack.includes(e.search));
-    const ofacMatch = [...c.patrones].some(p => p.includes('SANCIONADO'));
-    if (engelMatch || ofacMatch) pts += 15;
-    if (c.patrones.size >= 2) pts += 10;
-    if (c.patrones.size >= 3) pts += 5;
-    return Math.min(100, pts);
-  }
 
   const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
   const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
+  const ahora = new Date();
+  const hace18m = new Date(ahora.getFullYear(), ahora.getMonth() - 18, 1).toISOString().slice(0,7);
 
+  // ── Agrupar por PROVEEDOR (cross-entidad) ───────────────────────────────
   const map = {};
   allAlerts
     .filter(a => normSev(a.severity).includes('CRITICA'))
     .filter(a => Number(a.monto_contrato) > 0 && a.proveedor_nombre)
     .filter(a => !EXCLUIR_TOP5.some(ex => (a.proveedor_nombre||'').toUpperCase().includes(ex)))
     .forEach(a => {
-      const key = (a.proveedor_nombre||'')+'||'+(a.entity_name||'');
-      if (!map[key]) map[key] = { proveedor: a.proveedor_nombre, entidad: a.entity_name, monto: 0, n: 0, patrones: new Set(), fecha: '' };
-      map[key].monto += Number(a.monto_contrato);
-      map[key].n++;
-      (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(p => map[key].patrones.add(p));
-      if (!map[key].fecha || a.fecha_contrato > map[key].fecha) map[key].fecha = a.fecha_contrato;
+      const key = (a.proveedor_nombre||'').toUpperCase().trim();
+      if (!map[key]) map[key] = {
+        proveedor: a.proveedor_nombre,
+        entidades: new Set(),
+        monto: 0, n: 0,
+        patrones: new Set(),
+        nReciente: 0,
+        fuentes: new Set()
+      };
+      const c = map[key];
+      c.monto += Number(a.monto_contrato);
+      c.n++;
+      if (a.entity_name) c.entidades.add(a.entity_name);
+      const pat = (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean);
+      pat.forEach(p => c.patrones.add(p));
+      if (a.source) c.fuentes.add(a.source);
+      const mes = (a.fecha_contrato||'').slice(0,7);
+      if (mes && mes >= hace18m) c.nReciente++;
     });
 
-  const candidatos = Object.values(map)
-    .map(c => ({ ...c, score: scoreCredibilidad(c) }))
-    .filter(c => c.score >= 80)
-    .sort((a,b) => b.monto - a.monto)
-    .slice(0, 5);
-
-  if (!candidatos.length) {
-    body.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">No hay casos con credibilidad ≥80%.<br>Se requiere SEN-INV activo o patrón ONCAE + múltiples fuentes.</div>';
+  const todos = Object.values(map);
+  if (!todos.length) {
+    body.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Sin contratos CRÍTICA en base de datos.</div>';
     return;
   }
 
-  body.innerHTML = candidatos.map((c, i) => {
+  // ── Normalización global para barras (0–100 relativo al máximo del conjunto) ─
+  const maxMonto    = Math.max(...todos.map(c => c.monto));
+  const maxPatrones = Math.max(...todos.map(c => c.patrones.size));
+  const maxEntidades= Math.max(...todos.map(c => c.entidades.size));
+  const maxReciente = Math.max(...todos.map(c => c.nReciente));
+
+  // ── Dimensión helper: si máximo es 0, evitar div/0 ─
+  const norm = (val, mx) => mx > 0 ? Math.round((val / mx) * 100) : 0;
+
+  // ── Scorer de corroboración externa (0–100) ─────────────────────────────
+  function scoreExterno(c) {
+    let pts = 0;
+    const prov = c.proveedor.toUpperCase();
+    const haystack = c.proveedor.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const engelMatch = (typeof ENGEL_LIST_HND !== 'undefined') && ENGEL_LIST_HND.some(e => haystack.includes(e.search));
+    const ofacMatch  = [...c.patrones].some(p => p.includes('SANCIONADO'));
+    if (engelMatch || ofacMatch) pts += 50;
+    const tieneONCAE = c.fuentes.has('ONCAE') || [...c.patrones].some(p => p.includes('ONCAE'));
+    if (tieneONCAE) pts += 30;
+    // SEN-INV activo
+    const sentMatch = [...investigados.keys()].some(inv =>
+      inv.length > 4 && (prov.includes(inv) || inv.includes(prov.slice(0, 12)))
+    );
+    if (sentMatch) pts += 20;
+    return Math.min(100, pts);
+  }
+
+  // ── Scores por dimensión y compuesto ────────────────────────────────────
+  const candidatos = todos.map(c => {
+    const d1 = norm(Math.log1p(c.monto), Math.log1p(maxMonto));           // Monto (log-scale)
+    const d2 = norm(c.patrones.size, maxPatrones);                         // Densidad patrones
+    const d3 = norm(c.entidades.size, maxEntidades);                       // Alcance institucional
+    const d4 = norm(c.nReciente, maxReciente > 0 ? maxReciente : 1);       // Recencia
+    const d5 = scoreExterno(c);                                            // Corroboración externa
+    const compuesto = Math.round(d1*0.25 + d2*0.25 + d3*0.20 + d4*0.15 + d5*0.15);
+    // Razón dominante
+    const dims = [
+      { label: 'MONTO',     val: d1, texto: `${fmtM(c.monto)} acumulado` },
+      { label: 'PATRONES',  val: d2, texto: `${c.patrones.size} señale${c.patrones.size!==1?'s':''} distintas` },
+      { label: 'ALCANCE',   val: d3, texto: `${c.entidades.size} entidade${c.entidades.size!==1?'s':''}` },
+      { label: 'RECENCIA',  val: d4, texto: `${c.nReciente} contrato${c.nReciente!==1?'s':''} últimos 18m` },
+      { label: 'EXT',       val: d5, texto: d5 >= 50 ? 'Lista Engel/OFAC' : d5 >= 30 ? 'Patrón ONCAE' : 'SEN-INV activo' },
+    ];
+    const dominante = dims.reduce((a, b) => b.val > a.val ? b : a);
+    return { ...c, d1, d2, d3, d4, d5, compuesto, dims, dominante };
+  });
+
+  // ── Top 5 por score compuesto ────────────────────────────────────────────
+  const top5 = candidatos
+    .sort((a, b) => b.compuesto - a.compuesto)
+    .slice(0, 5);
+
+  // ── Colores por dimensión ────────────────────────────────────────────────
+  const dimColors = ['#ff3d57','#a78bfa','#60a5fa','#34d399','#fbbf24'];
+
+  // ── Render ───────────────────────────────────────────────────────────────
+  body.innerHTML = top5.map((c, i) => {
     const rank = i + 1;
-    const patArr = [...c.patrones].slice(0, 4);
-    const scoreColor = c.score >= 95 ? '#00c864' : c.score >= 85 ? '#60a5fa' : '#fbbf24';
     const rankClass = rank <= 3 ? ' rank-'+rank : '';
+    const scoreColor = c.compuesto >= 75 ? '#ff3d57' : c.compuesto >= 55 ? '#fbbf24' : '#60a5fa';
+    const entLista = [...c.entidades].slice(0, 3).join(' · ') + (c.entidades.size > 3 ? ` +${c.entidades.size-3}` : '');
+    const patArr = [...c.patrones].slice(0, 4);
+
+    // Tags externos
+    const haystack = c.proveedor.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const esEngel = (typeof ENGEL_LIST_HND !== 'undefined') && ENGEL_LIST_HND.some(e => haystack.includes(e.search));
+    const esSentinv = [...investigados.keys()].some(inv =>
+      inv.length > 4 && (c.proveedor.toUpperCase().includes(inv) || inv.includes(c.proveedor.toUpperCase().slice(0,12)))
+    );
+    const invEstado = esSentinv ? ([...investigados.entries()].find(([inv]) =>
+      inv.length > 4 && (c.proveedor.toUpperCase().includes(inv) || inv.includes(c.proveedor.toUpperCase().slice(0,12)))
+    )||[])[1] : null;
+
+    const dimRows = c.dims.map((d, di) => `
+      <div class="t5-dim-row">
+        <span class="t5-dim-label">${d.label}</span>
+        <div class="t5-dim-track"><div class="t5-dim-fill" style="width:${d.val}%;background:${dimColors[di]};opacity:0.75;"></div></div>
+        <span class="t5-dim-val" style="color:${dimColors[di]};">${d.val}</span>
+      </div>`).join('');
+
     return `<div class="t5-case">
       <div class="t5-rank${rankClass}">${rank < 10 ? '0'+rank : rank}</div>
       <div class="t5-info">
-        <div class="t5-proveedor">${c.proveedor}</div>
-        <div class="t5-entidad">${c.entidad || '—'}</div>
+        <div class="t5-proveedor">${esc(c.proveedor)}</div>
+        <div class="t5-entidades">${esc(entLista) || '—'}</div>
         <div class="t5-meta">
-          ${patArr.map(p=>`<span class="t5-tag t5-tag-patron">${p}</span>`).join('')}
+          ${patArr.map(p=>`<span class="t5-tag t5-tag-patron">${esc(p)}</span>`).join('')}
           <span class="t5-tag t5-tag-n">${c.n} contrato${c.n!==1?'s':''}</span>
-          ${c.fecha ? `<span class="t5-tag t5-tag-fecha">${c.fecha.slice(0,7)}</span>` : ''}
+          ${esEngel ? '<span class="t5-tag t5-tag-externo">⚠ ENGEL</span>' : ''}
+          ${esSentinv ? `<span class="t5-tag t5-tag-sent">SEN-INV ${esc(invEstado||'')}</span>` : ''}
         </div>
+        <div class="t5-badge-dominante">▲ ${esc(c.dominante.label)}: ${esc(c.dominante.texto)}</div>
+        <div class="t5-dims">${dimRows}</div>
       </div>
-      <div class="t5-monto">
+      <div class="t5-right">
         <div class="t5-monto-val">${fmtM(c.monto)}</div>
         <div class="t5-monto-label">monto en riesgo</div>
-        <div style="margin-top:6px;font-size:10px;font-family:'JetBrains Mono',monospace;color:${scoreColor};font-weight:700;">${c.score}% credibilidad</div>
+        <div class="t5-score-ring" style="border-color:${scoreColor}40;">
+          <span class="t5-score-val" style="color:${scoreColor};">${c.compuesto}</span>
+          <span class="t5-score-lbl">score</span>
+        </div>
       </div>
     </div>`;
   }).join('');

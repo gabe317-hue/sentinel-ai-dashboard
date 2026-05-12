@@ -157,6 +157,9 @@ body::after {
 .po-submenu { display: none; border-top: 1px solid var(--border); padding: 8px 12px 12px; }
 .po-card.po-expanded .po-submenu { display: block; }
 .po-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text-dim); transition: all 0.15s; font-family: 'Inter', sans-serif; border: none; background: none; width: 100%; text-align: left; }
+.notif-trigger-btn { background: var(--glass); border: 1px solid var(--border); color: var(--text-dim); font-family: 'Inter', sans-serif; font-size: 12px; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+.notif-trigger-btn:hover { border-color: rgba(0,200,255,0.4); color: var(--electric); background: rgba(0,200,255,0.06); }
+.notif-trigger-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .po-item:hover { background: var(--glass-hover); color: var(--text); }
 .po-item:hover .po-arrow { opacity: 1; transform: translateX(0); }
 .po-item-icon  { font-size: 13px; width: 20px; text-align: center; flex-shrink: 0; }
@@ -2310,6 +2313,41 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- NOTIFICACIONES MANUALES -->
+  <div style="padding:0 40px 32px;">
+    <div class="po-section-label">Notificaciones</div>
+    <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:14px;padding:20px 24px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <span style="font-size:16px;">📧</span>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);">Disparar Notificación Manual</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-top:2px;">Envía correo inmediatamente sin esperar el schedule automático</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;" id="notif-btn-row">
+        <button onclick="dispararNotificacion('alerta-critica','Alerta Crítica')" class="notif-trigger-btn">
+          🚨 Alerta Crítica
+        </button>
+        <button onclick="dispararNotificacion('reporte-semanal','Reporte Semanal')" class="notif-trigger-btn">
+          📊 Reporte Semanal
+        </button>
+        <button onclick="dispararNotificacion('reporte-mensual','Reporte Mensual')" class="notif-trigger-btn">
+          📅 Reporte Mensual
+        </button>
+        <button onclick="dispararNotificacion('monitor-red-flags','Red Flags')" class="notif-trigger-btn">
+          🚩 Red Flags
+        </button>
+        <button onclick="dispararNotificacion('post-ingesta-detector','Post-Ingesta Detector')" class="notif-trigger-btn">
+          🔍 Post-Ingesta Detector
+        </button>
+        <button onclick="dispararNotificacion('auto-investigador','Auto-Investigador')" class="notif-trigger-btn">
+          🤖 Auto-Investigador
+        </button>
+      </div>
+      <div id="notif-status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);display:none;"></div>
     </div>
   </div>
 
@@ -12930,6 +12968,34 @@ async function doLogin() {
       : err.message);
     btn.disabled = false;
     btn.textContent = 'Ingresar al Sistema';
+  }
+}
+
+// ── Disparar notificación manual (S91) ──────────────────────────────────────
+async function dispararNotificacion(fnName, label) {
+  const statusEl = document.getElementById('notif-status');
+  const btns = document.querySelectorAll('.notif-trigger-btn');
+  btns.forEach(b => b.disabled = true);
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = `⏳ Enviando ${label}…`; }
+
+  try {
+    const url = `${SUPABASE_URL}/functions/v1/${fnName}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }
+    });
+    const ok = res.ok || res.status === 200 || res.status === 202;
+    if (statusEl) {
+      statusEl.style.color = ok ? 'var(--green)' : 'var(--red)';
+      statusEl.textContent = ok
+        ? `✅ ${label} enviado correctamente (${new Date().toLocaleTimeString('es-HN')})`
+        : `❌ Error al enviar ${label} — status ${res.status}`;
+    }
+  } catch(e) {
+    if (statusEl) { statusEl.style.color = 'var(--red)'; statusEl.textContent = `❌ Error: ${e.message}`; }
+  } finally {
+    btns.forEach(b => b.disabled = false);
+    setTimeout(() => { if (statusEl) statusEl.style.display = 'none'; }, 8000);
   }
 }
 

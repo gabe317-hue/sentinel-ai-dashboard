@@ -13506,6 +13506,7 @@ async function renderTop5() {
     (data||[]).forEach(r => investigados.set((r.proveedor||'').toUpperCase().trim(), r.estado));
   } catch(e) { console.warn('Top5: investigaciones no disponible, continuando sin SEN-INV:', e.message); }
 
+  const esc     = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
   const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
   const ahora = new Date();

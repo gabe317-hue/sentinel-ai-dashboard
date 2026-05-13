@@ -2582,12 +2582,14 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="po-eyebrow">República de Honduras · SEFIN / ONCAE</div>
       <div class="po-logo">SENTINEL<span>·</span>AI</div>
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
+      <div style="text-align:center;margin:16px 0 8px;">
+        <button onclick="abrirPanelEjecutivo()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.55);border-radius:14px;padding:10px 32px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.06em;transition:all .2s;box-shadow:0 0 18px rgba(0,200,255,0.2);">📊 Panel Ejecutivo</button>
+      </div>
       <div class="po-meta">
         <span class="po-badge electric">v1.89 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
-        <button onclick="abrirPanelEjecutivo()" style="background:rgba(0,200,255,0.22);color:var(--cyan);border:1px solid rgba(0,200,255,0.6);border-radius:12px;padding:7px 22px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;box-shadow:0 0 14px rgba(0,200,255,0.25);">📊 Panel Ejecutivo</button>
         <button onclick="hidePortal()" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Ver Contratos</button>
       </div>
     </div>
@@ -2675,6 +2677,11 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <div><div class="po-card-title">Análisis</div><div class="po-card-desc">5 módulos · Riesgo cuantitativo</div></div>
           <div class="po-chevron">▼</div>
         </div>
+        <div style="padding:8px 12px 4px;display:flex;flex-direction:column;gap:2px;">
+          <button class="po-item" onclick="event.stopPropagation();poGo(showAnalyticsPanel)"><span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span></button>
+          <button class="po-item" onclick="event.stopPropagation();poGo(showGlobalSobrecostos)"><span class="po-item-icon">💰</span><span class="po-item-label">Sobrepresupuestos</span><span class="po-arrow">›</span></button>
+          <button class="po-item" onclick="event.stopPropagation();poGo(showPhase4Detection)"><span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span></button>
+        </div>
         <div class="po-submenu">
           <button class="po-item" onclick="poGo(showAnalyticsPanel)">
             <span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span>
@@ -2700,6 +2707,11 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <div class="po-card-icon"><span>🔎</span></div>
           <div><div class="po-card-title">Investigación</div><div class="po-card-desc">Casos · Cronología · Escáner</div></div>
           <div class="po-chevron">▼</div>
+        </div>
+        <div style="padding:8px 12px 4px;display:flex;flex-direction:column;gap:2px;">
+          <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()"><span class="po-item-icon">📄</span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span></button>
+          <button class="po-item" onclick="event.stopPropagation();poGo(()=>showTimelinePanel('portal'))"><span class="po-item-icon">🕐</span><span class="po-item-label">Cronología</span><span class="po-arrow">›</span></button>
+          <button class="po-item" onclick="event.stopPropagation();poGo(showScannerPanel)"><span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-arrow">›</span></button>
         </div>
         <div class="po-submenu">
           <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()" style="border-bottom:1px solid rgba(255,61,87,0.2);margin-bottom:4px;">

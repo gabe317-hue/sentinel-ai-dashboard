@@ -13525,10 +13525,11 @@ function ipBuscar() {
   // Filtrar allAlerts
   let res = allAlerts.filter(a => Number(a.monto_contrato) > 0);
 
-  // Campo 1: busca en entity_name OR proveedor_nombre
+  // Campo 1: busca en entity_name, proveedor_nombre, o description (proyecto/objeto)
   if (q1) res = res.filter(a =>
     (a.entity_name||'').toLowerCase().includes(q1) ||
-    (a.proveedor_nombre||'').toLowerCase().includes(q1)
+    (a.proveedor_nombre||'').toLowerCase().includes(q1) ||
+    (a.description||'').toLowerCase().includes(q1)
   );
 
   // Campos 2 y 3: AND

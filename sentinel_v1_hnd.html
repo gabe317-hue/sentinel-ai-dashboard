@@ -2275,7 +2275,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">The Prieto Group</span>
       <span class="login-inst-tag">·</span>
-      <span class="login-inst-tag">© Sentinel-AI v1.90</span>
+      <span class="login-inst-tag">© Sentinel-AI v1.91</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
@@ -2315,7 +2315,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
     </div>
   </div>
-  <div class="ps-footer">v1.90 · SEFIN Fiscal 2023–2025 · The Prieto Group · Dallas, TX</div>
+  <div class="ps-footer">v1.91 · SEFIN Fiscal 2023–2025 · The Prieto Group · Dallas, TX</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -2336,7 +2336,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="ip-search-wrap" style="display:flex;flex-direction:column;gap:8px;padding:12px 0 8px;">
         <!-- Campo principal -->
         <div style="display:flex;gap:8px;align-items:center;">
-          <input class="ip-search" type="text" id="ipSearchQ1" placeholder="Buscar por entidad, proveedor o proyecto…" style="flex:1;" onkeydown="if(event.key==='Enter')ipBuscar()">
+          <input class="ip-search" type="text" id="ipSearchQ1" placeholder="Buscar por nombre de entidad o proveedor…" style="flex:1;" onkeydown="if(event.key==='Enter')ipBuscar()">
           <button onclick="ipBuscar()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:8px;padding:7px 16px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'JetBrains Mono',monospace;">🔍 Buscar</button>
           <button onclick="ipLimpiarBusqueda()" id="ipBtnLimpiar" style="display:none;background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:8px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;">✕</button>
         </div>
@@ -2505,7 +2505,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.90 — HND</div>
+    <div class="logo-version">v1.91 — HND</div>
   </div>
 
   <div class="nav">
@@ -2614,7 +2614,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <button onclick="abrirPanelEjecutivo()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.55);border-radius:14px;padding:10px 32px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.06em;transition:all .2s;box-shadow:0 0 18px rgba(0,200,255,0.2);">📊 Panel Ejecutivo</button>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric">v1.90 · 2026</span>
+        <span class="po-badge electric">v1.91 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
@@ -13491,6 +13491,7 @@ function ipFiltrar(q) {
 
 // ── S95: variables para búsqueda y export ──
 let _ipCurrentContratos = [];
+let _ipFilteredContratos = null; // null = sin filtro activo
 let _ipSearchMode = false;
 
 function ipToggleFiltros() {
@@ -13587,6 +13588,7 @@ function ipBuscar() {
 }
 
 function ipVerDetalle(entityName, contratosPreFiltrados) {
+  _ipFilteredContratos = null; // reset filtro al entrar a nueva entidad
   document.getElementById('ipLista').style.display = 'none';
   document.getElementById('ipDetail').classList.add('visible');
   document.getElementById('ipBtnBack').style.display = 'none';
@@ -13614,13 +13616,20 @@ function ipVerDetalle(entityName, contratosPreFiltrados) {
   document.getElementById('ip-kpi-total').textContent    = contratos.length;
   document.getElementById('ip-kpi-monto').textContent    = fmtM(monto);
 
-  // Tab contratos
+  // Tab contratos — S96: filter bar + id on tbody
   document.getElementById('ip-content-contratos').innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;">
+      <input id="ipDetalleQ" type="text" placeholder="Filtrar por proveedor, patrón o descripción…"
+        style="flex:1;background:rgba(255,255,255,0.04);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:11px;font-family:'JetBrains Mono',monospace;"
+        oninput="ipDetalleFilter()" onkeydown="if(event.key==='Escape'){this.value='';ipDetalleFilter();}">
+      <button id="ipDetalleClearBtn" onclick="document.getElementById('ipDetalleQ').value='';ipDetalleFilter();"
+        style="display:none;background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;">✕</button>
+    </div>
     <table class="ip-contracts-table">
       <thead><tr>
         <th>Proveedor</th><th>Monto</th><th>Patrón</th><th>Sev.</th><th>Fecha</th>
       </tr></thead>
-      <tbody>${contratos.slice(0,50).map(a => {
+      <tbody id="ipContratosBody">${contratos.slice(0,100).map(a => {
         const s = normSev(a.severity);
         const sevClass = s.includes('CRITICA') ? 'ip-sev-critica' : s.includes('ALTA') ? 'ip-sev-alta' : '';
         const pats = (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).slice(0,3);
@@ -13682,6 +13691,41 @@ function ipVerDetalle(entityName, contratosPreFiltrados) {
     </table>`;
 
   ipTab('contratos');
+}
+
+function ipDetalleFilter() {
+  const q = ((document.getElementById('ipDetalleQ')||{value:''}).value||'').trim().toLowerCase();
+  _ipFilteredContratos = q ? _ipCurrentContratos.filter(a =>
+    (a.proveedor_nombre||'').toLowerCase().includes(q) ||
+    (a.description||'').toLowerCase().includes(q) ||
+    (a.patterns||'').toLowerCase().includes(q)
+  ) : null;
+  const list = _ipFilteredContratos || _ipCurrentContratos;
+  const fmtM = n => n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':'L '+Math.round(n).toLocaleString('es-HN');
+  const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  // Update sub-header count
+  const sub = document.getElementById('ipDetailSub');
+  if (sub) sub.textContent = q
+    ? `${list.length} de ${_ipCurrentContratos.length} contratos · filtro activo`
+    : `${_ipCurrentContratos.length} contratos · Fiscal 2023–2025`;
+  // Re-render tbody
+  const tbody = document.getElementById('ipContratosBody');
+  if (!tbody) return;
+  tbody.innerHTML = list.slice(0,100).map(a => {
+    const s = normSev(a.severity);
+    const sevClass = s.includes('CRITICA') ? 'ip-sev-critica' : s.includes('ALTA') ? 'ip-sev-alta' : '';
+    const pats = (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).slice(0,3);
+    return `<tr>
+      <td style="max-width:220px;word-break:break-word;">${a.proveedor_nombre||'—'}</td>
+      <td style="white-space:nowrap;color:#e2e8f0;font-weight:700;">${fmtM(Number(a.monto_contrato))}</td>
+      <td>${pats.map(p=>`<span class="ip-pat-tag">${p}</span>`).join('')}</td>
+      <td class="${sevClass}">${a.severity||'—'}</td>
+      <td style="white-space:nowrap;">${(a.fecha_contrato||'').slice(0,10)}</td>
+    </tr>`;
+  }).join('');
+  // Show/hide clear button
+  const btn = document.getElementById('ipDetalleClearBtn');
+  if (btn) btn.style.display = q ? 'inline-flex' : 'none';
 }
 
 function ipTab(tab) {
@@ -13758,7 +13802,7 @@ function ipExportarExcel() {
 }
 
 function ipExportarExcelCore() {
-  const contratos = _ipCurrentContratos;
+  const contratos = _ipFilteredContratos || _ipCurrentContratos;
   const entidad   = document.getElementById('ipDetailName').textContent;
   const fecha     = new Date().toLocaleDateString('es-HN');
   const normSev   = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');

@@ -14556,10 +14556,12 @@ async function ccGenerarExpediente() {
   try {
     // Build clean payload — strip large contract arrays, normalize patrones to array
     const d = _ccData;
+    const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
     const payload = {
       entidad:        d.entidad,
       proveedor:      d.proveedor,
       esquema:        d.esquema,
+      fecha:          ts,
       concentracion:  { pct: d.concentracion.mntPct, contratos: d.concentracion.vendorCount, total_entidad: d.concentracion.entityCount, monto: d.concentracion.vendorMonto },
       timeline:       (d.timeline || []).map(t => ({ periodo: t.nombre, contratos: t.count, monto: t.monto })),
       patrones:       (d.score.criteria || []).map(c => ({ nombre: c.label, detectado: c.val, detalle: c.detail })),
@@ -14585,7 +14587,6 @@ async function ccGenerarExpediente() {
       secMap[title] = body;
     });
 
-    const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
     const folio = `SEN-EXP-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
 
     const mdToHtml = (text) => text

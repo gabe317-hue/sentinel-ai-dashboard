@@ -14572,7 +14572,7 @@ async function ccGenerarExpediente() {
       body: JSON.stringify(payload)
     });
     const json = await res.json();
-    if (!res.ok || json.error) throw new Error((json.error || 'Error del servidor') + (json.detail ? '\n\nDetalle: ' + json.detail.substring(0,300) : ''));
+    if (!res.ok || json.error) throw new Error((json.error || 'Error del servidor') + (json.detail ? '\n\nDetalle: ' + json.detail.substring(0,300) : '') + (json.key_hint ? '\n\nKey leído: ' + json.key_hint : ''));
 
     const narrativa = json.narrativa || '';
     // Parse sections separated by ###

@@ -14633,11 +14633,16 @@ async function ccGenerarExpediente() {
       <div><label>Proveedor</label><span>${_ccData.proveedor}</span></div>
       <div><label>Esquema</label><span>${_ccData.esquema || 'Por determinar'}</span></div>
     </div>
-    ${secHtml('RESUMEN EJECUTIVO','📋')}
-    ${secHtml('HALLAZGOS PRINCIPALES','🔍')}
-    ${secHtml('ANÁLISIS DE RIESGO','⚠️')}
-    ${secHtml('PRÓXIMOS PASOS INVESTIGATIVOS','📌')}
-    <div class="disclaimer">${secMap['DISCLAIMER'] || 'Este reporte fue generado por Sentinel AI con datos de ONCAE/SEFIN y es de carácter preliminar; no constituye prueba judicial ni opinión legal.'}</div>
+    ${sections.filter(s => !s.trim().toUpperCase().startsWith('DISCLAIMER')).map(s => {
+      const nl = s.indexOf('\n');
+      const title = s.substring(0, nl).trim();
+      const body  = s.substring(nl + 1).trim();
+      if (!body || body === '#') return '';
+      const icons = { 'RESUMEN':'📋', 'HALLAZGOS':'🔍', 'ANÁLISIS':'⚠️', 'AN':'⚠️', 'PRÓXIMOS':'📌', 'PROX':'📌' };
+      const icon = Object.entries(icons).find(([k]) => title.toUpperCase().startsWith(k))?.[1] || '▸';
+      return `<div class="sec"><div class="sec-title">${icon} ${title}</div><div class="sec-body">${mdToHtml(body)}</div></div>`;
+    }).join('')}
+    <div class="disclaimer">${secMap['DISCLAIMER'] || (sections.find(s=>s.trim().toUpperCase().startsWith('DISCLAIMER'))?.split('\n').slice(1).join(' ').trim()) || 'Este reporte fue generado por Sentinel AI con datos de ONCAE/SEFIN y es de carácter preliminar; no constituye prueba judicial ni opinión legal.'}</div>
     <div class="footer"><span>Sentinel AI — Sistema de Detección de Riesgo</span><span>Generado: ${ts} · Folio: ${folio}</span></div>
     </div></body></html>`;
 

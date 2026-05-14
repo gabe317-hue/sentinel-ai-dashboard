@@ -14588,12 +14588,18 @@ async function ccGenerarExpediente() {
     const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
     const folio = `SEN-EXP-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
 
+    const mdToHtml = (text) => text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>')
+      .replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0">')
+      .replace(/\n/g, '<br>');
     const secHtml = (title, icon) => {
       const content = secMap[title] || '';
-      if (!content) return '';
+      if (!content || content.trim() === '#') return '';
       return `<div class="sec">
         <div class="sec-title">${icon} ${title}</div>
-        <div class="sec-body">${content.replace(/\n/g,'<br>')}</div>
+        <div class="sec-body">${mdToHtml(content)}</div>
       </div>`;
     };
 

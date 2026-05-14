@@ -14554,10 +14554,22 @@ async function ccGenerarExpediente() {
   btn.style.opacity = '0.6';
 
   try {
+    // Build clean payload — strip large contract arrays, normalize patrones to array
+    const d = _ccData;
+    const payload = {
+      entidad:        d.entidad,
+      proveedor:      d.proveedor,
+      esquema:        d.esquema,
+      concentracion:  d.concentracion,
+      timeline:       (d.timeline || []).map(t => ({ periodo: t.nombre, contratos: t.count, monto: t.monto })),
+      patrones:       (d.score.criteria || []).map(c => ({ nombre: c.label, detectado: c.val, detalle: c.detail })),
+      score:          { total: d.score.total, max: d.score.max },
+      gaps:           d.gaps
+    };
     const res = await fetch(`${SUPABASE_URL}/functions/v1/generar-expediente`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify(_ccData)
+      body: JSON.stringify(payload)
     });
     const json = await res.json();
     if (!res.ok || json.error) throw new Error(json.error || 'Error del servidor');

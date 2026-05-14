@@ -2459,6 +2459,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div style="display:flex;gap:12px;margin-top:20px;padding-top:20px;border-top:1px solid rgba(160,180,210,0.1);flex-wrap:wrap;">
         <button onclick="ccExportPDF()" style="background:rgba(220,38,38,0.15);color:#f87171;border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">🖨️ REPORTE DE INVESTIGACIÓN (PDF)</button>
         <button onclick="ccExportExcel()" style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">📊 EVIDENCIA COMPLETA (Excel)</button>
+        <button id="ccBtnExpediente" onclick="ccGenerarExpediente()" style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.35);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">✦ EXPEDIENTE NARRATIVO (IA)</button>
       </div>
     </div>
 
@@ -14542,6 +14543,98 @@ function ccExportExcelCore() {
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([cols4,...rows4]), 'Preguntas LTAIP');
 
   XLSX.writeFile(wb, `Sentinel_ReporteInvestigacion_${entidad.substring(0,20).replace(/\s/g,'_')}_${proveedor.substring(0,15).replace(/\s/g,'_')}.xlsx`);
+}
+
+async function ccGenerarExpediente() {
+  if (!_ccData) return;
+  const btn = document.getElementById('ccBtnExpediente');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ Generando expediente…';
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/generar-expediente`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify(_ccData)
+    });
+    const json = await res.json();
+    if (!res.ok || json.error) throw new Error(json.error || 'Error del servidor');
+
+    const narrativa = json.narrativa || '';
+    // Parse sections separated by ###
+    const sections = narrativa.split(/###\s+/).filter(Boolean);
+    const secMap = {};
+    sections.forEach(s => {
+      const nl = s.indexOf('\n');
+      const title = s.substring(0, nl).trim();
+      const body  = s.substring(nl + 1).trim();
+      secMap[title] = body;
+    });
+
+    const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+    const folio = `SEN-EXP-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+
+    const secHtml = (title, icon) => {
+      const content = secMap[title] || '';
+      if (!content) return '';
+      return `<div class="sec">
+        <div class="sec-title">${icon} ${title}</div>
+        <div class="sec-body">${content.replace(/\n/g,'<br>')}</div>
+      </div>`;
+    };
+
+    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+    <title>Expediente Narrativo — ${_ccData.proveedor} × ${_ccData.entidad}</title>
+    <style>
+      body { background:#fff; color:#111; font-family:'Segoe UI',Arial,sans-serif; margin:0; padding:0; font-size:12px; }
+      .page { padding:44px 54px; max-width:900px; margin:0 auto; }
+      .hdr { border-bottom:3px solid #7c3aed; padding-bottom:18px; margin-bottom:24px; }
+      .hdr-eyebrow { font-size:9px; letter-spacing:.15em; text-transform:uppercase; color:#666; margin-bottom:6px; }
+      .hdr-title { font-size:22px; font-weight:900; color:#111; margin:0 0 4px; }
+      .hdr-sub { font-size:11px; color:#666; }
+      .ai-badge { display:inline-block; background:#f3e8ff; color:#7c3aed; font-size:9px; font-weight:800; letter-spacing:.1em; padding:3px 10px; border-radius:20px; text-transform:uppercase; margin-left:10px; vertical-align:middle; }
+      .meta { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px; padding:14px; background:#faf5ff; border-radius:8px; border:1px solid #e9d5ff; }
+      .meta label { font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:#9ca3af; display:block; margin-bottom:2px; }
+      .meta span { font-size:12px; font-weight:700; color:#111; }
+      .sec { margin-bottom:22px; }
+      .sec-title { font-size:10px; letter-spacing:.15em; text-transform:uppercase; font-weight:800; color:#374151; border-bottom:1px solid #e5e7eb; padding-bottom:6px; margin-bottom:12px; }
+      .sec-body { font-size:12px; line-height:1.7; color:#374151; }
+      .disclaimer { margin-top:28px; padding:10px 14px; background:#f3e8ff; border:1px solid #e9d5ff; border-radius:6px; font-size:10px; color:#5b21b6; font-style:italic; }
+      .footer { margin-top:20px; padding-top:10px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; }
+      @media print { .no-print { display:none; } }
+    </style></head><body><div class="page">
+    <div class="hdr">
+      <div class="hdr-eyebrow">República de Honduras · ONCAE / SEFIN · ${ts}</div>
+      <div class="hdr-title">Expediente Narrativo de Investigación <span class="ai-badge">✦ IA</span></div>
+      <div class="hdr-sub">${_ccData.proveedor} × ${_ccData.entidad} · Folio: ${folio}</div>
+    </div>
+    <div class="meta">
+      <div><label>Entidad</label><span>${_ccData.entidad}</span></div>
+      <div><label>Proveedor</label><span>${_ccData.proveedor}</span></div>
+      <div><label>Esquema</label><span>${_ccData.esquema || 'Por determinar'}</span></div>
+    </div>
+    ${secHtml('RESUMEN EJECUTIVO','📋')}
+    ${secHtml('HALLAZGOS PRINCIPALES','🔍')}
+    ${secHtml('ANÁLISIS DE RIESGO','⚠️')}
+    ${secHtml('PRÓXIMOS PASOS INVESTIGATIVOS','📌')}
+    <div class="disclaimer">${secMap['DISCLAIMER'] || 'Este reporte fue generado por Sentinel AI con datos de ONCAE/SEFIN y es de carácter preliminar; no constituye prueba judicial ni opinión legal.'}</div>
+    <div class="footer"><span>Sentinel AI — Sistema de Detección de Riesgo</span><span>Generado: ${ts} · Folio: ${folio}</span></div>
+    </div></body></html>`;
+
+    const pw = window.open('', '_blank', 'width=1100,height=800');
+    if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+    pw.document.write(addPrintBtn(html));
+    pw.document.close();
+    pw.addEventListener('load', () => pw.focus());
+  } catch(e) {
+    alert('Error al generar expediente: ' + e.message);
+  } finally {
+    btn.innerHTML = orig;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
 }
 
 function exportarTop10PDF() {

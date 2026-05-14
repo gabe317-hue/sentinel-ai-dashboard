@@ -14560,7 +14560,7 @@ async function ccGenerarExpediente() {
       entidad:        d.entidad,
       proveedor:      d.proveedor,
       esquema:        d.esquema,
-      concentracion:  d.concentracion,
+      concentracion:  { pct: d.concentracion.mntPct, contratos: d.concentracion.vendorCount, total_entidad: d.concentracion.entityCount, monto: d.concentracion.vendorMonto },
       timeline:       (d.timeline || []).map(t => ({ periodo: t.nombre, contratos: t.count, monto: t.monto })),
       patrones:       (d.score.criteria || []).map(c => ({ nombre: c.label, detectado: c.val, detalle: c.detail })),
       score:          { total: d.score.total, max: d.score.max },

@@ -14103,7 +14103,13 @@ function ccGetEntityIdx() {
 function ccMatchEntity(input, entityName) {
   const inp  = input.toLowerCase().trim();
   const name = (entityName||'').toLowerCase();
-  if (name.includes(inp)) return true;
+  if (!inp || !name) return false;
+  // Bidireccional: name contiene input, O input contiene name
+  if (name.includes(inp) || inp.includes(name)) return true;
+  // Strip paréntesis del input (ej. "...Eléctrica (ENEE)" → "...Eléctrica") y reintentar
+  const coreInp = inp.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  if (coreInp !== inp && (name.includes(coreInp) || coreInp.includes(name))) return true;
+  // Índice de abreviaciones (sigla corta como "ENEE" → nombre completo)
   const idx = ccGetEntityIdx();
   const expanded = idx[inp];
   return !!(expanded && name.includes(expanded));

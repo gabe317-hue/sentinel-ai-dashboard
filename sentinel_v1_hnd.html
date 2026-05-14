@@ -2444,7 +2444,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
           <option value="PROVEEDOR_ÚNICO">Proveedor único / captura de proceso</option>
           <option value="CAPTURA_INSTITUCIONAL">Captura institucional (relación preferencial persistente)</option>
         </select>
-        <button onclick="ccAnalizar()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:10px;padding:10px 24px;font-size:12px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;align-self:flex-start;">⚡ ANALIZAR CASO</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <button onclick="ccAnalizar()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:10px;padding:10px 24px;font-size:12px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;">⚡ ANALIZAR CASO</button>
+          <button onclick="ccMisExpedientes()" style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 18px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">📂 MIS EXPEDIENTES</button>
+        </div>
       </div>
     </div>
 
@@ -2460,9 +2463,46 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <button onclick="ccExportPDF()" style="background:rgba(220,38,38,0.15);color:#f87171;border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">🖨️ REPORTE DE INVESTIGACIÓN (PDF)</button>
         <button onclick="ccExportExcel()" style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">📊 EVIDENCIA COMPLETA (Excel)</button>
         <button id="ccBtnExpediente" onclick="ccGenerarExpediente()" style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.35);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">✦ EXPEDIENTE NARRATIVO (IA)</button>
+        <button onclick="ccGuardarExpediente()" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">💾 GUARDAR EXPEDIENTE</button>
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ═══ MODAL: GUARDAR EXPEDIENTE ═══ -->
+<div id="ccGuardarModal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
+  <div style="background:#0d1117;border:1px solid rgba(160,180,210,0.2);border-radius:14px;padding:32px;width:480px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#64748b;margin-bottom:6px;">Constructor de Caso</div>
+    <div style="font-size:16px;font-weight:800;color:#e2e8f0;margin-bottom:20px;">💾 Guardar Expediente</div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(160,180,210,0.5);display:block;margin-bottom:6px;">Nombre del expediente *</label>
+      <input id="ccExpNombre" type="text" style="width:100%;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(160,180,210,0.2);color:#e2e8f0;font-size:13px;font-family:'JetBrains Mono',monospace;outline:none;box-sizing:border-box;" placeholder="ej. Patuca III — GEOCONSULT">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(160,180,210,0.5);display:block;margin-bottom:6px;">Notas (opcional)</label>
+      <textarea id="ccExpNotas" rows="3" style="width:100%;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(160,180,210,0.2);color:#e2e8f0;font-size:12px;font-family:'JetBrains Mono',monospace;outline:none;resize:vertical;box-sizing:border-box;" placeholder="Contexto, hipótesis, fuentes adicionales…"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="ccConfirmarGuardar()" id="ccBtnConfGuardar" style="background:rgba(251,191,36,0.18);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);border-radius:8px;padding:10px 24px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">💾 GUARDAR</button>
+      <button onclick="document.getElementById('ccGuardarModal').style.display='none'" style="background:rgba(255,255,255,0.05);color:rgba(160,180,210,0.6);border:1px solid rgba(160,180,210,0.15);border-radius:8px;padding:10px 20px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: MIS EXPEDIENTES ═══ -->
+<div id="ccExpedientesModal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
+  <div style="background:#0d1117;border:1px solid rgba(160,180,210,0.2);border-radius:14px;padding:32px;width:640px;max-width:92vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#64748b;margin-bottom:4px;">Constructor de Caso</div>
+        <div style="font-size:16px;font-weight:800;color:#e2e8f0;">📂 Mis Expedientes Guardados</div>
+      </div>
+      <button onclick="document.getElementById('ccExpedientesModal').style.display='none'" style="background:none;border:none;color:rgba(160,180,210,0.5);font-size:20px;cursor:pointer;padding:4px 8px;">✕</button>
+    </div>
+    <div id="ccExpedientesList" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="color:rgba(160,180,210,0.4);font-size:12px;text-align:center;padding:20px;">Cargando…</div>
+    </div>
   </div>
 </div>
 
@@ -2577,7 +2617,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.91 — HND</div>
+    <div class="logo-version">v1.93 — HND</div>
   </div>
 
   <div class="nav">
@@ -14660,6 +14700,95 @@ async function ccGenerarExpediente() {
     btn.style.opacity = '1';
   }
 }
+
+// ─── EXPEDIENTE GUARDADO ──────────────────────────────────────────────────────
+
+function ccGuardarExpediente() {
+  if (!_ccData) { alert('Primero ejecuta un análisis de caso.'); return; }
+  const nombre = `${_ccData.proveedor} × ${_ccData.entidad}`;
+  document.getElementById('ccExpNombre').value = nombre;
+  document.getElementById('ccExpNotas').value = '';
+  document.getElementById('ccGuardarModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('ccExpNombre').focus(), 100);
+}
+
+async function ccConfirmarGuardar() {
+  const nombre = (document.getElementById('ccExpNombre').value || '').trim();
+  if (!nombre) { alert('El nombre del expediente es requerido.'); return; }
+  const btn = document.getElementById('ccBtnConfGuardar');
+  btn.disabled = true; btn.innerHTML = 'Guardando…';
+  try {
+    const notas = (document.getElementById('ccExpNotas').value || '').trim();
+    const d = _ccData;
+    const payload = {
+      nombre,
+      entidad:         d.entidad,
+      proveedor:       d.proveedor,
+      esquema:         d.esquema || null,
+      notas:           notas || null,
+      score_total:     d.score?.total ?? null,
+      contratos_count: d.vendorContratos?.length ?? null,
+      monto_total:     d.vendorContratos?.reduce((s,c)=>s+(c.monto||0),0) ?? null,
+    };
+    const { error } = await db.from('expedientes').insert([payload]);
+    if (error) throw new Error(error.message);
+    document.getElementById('ccGuardarModal').style.display = 'none';
+    alert(`✅ Expediente "${nombre}" guardado correctamente.`);
+  } catch(e) {
+    alert('Error al guardar: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '💾 GUARDAR';
+  }
+}
+
+async function ccMisExpedientes() {
+  document.getElementById('ccExpedientesModal').style.display = 'flex';
+  const list = document.getElementById('ccExpedientesList');
+  list.innerHTML = '<div style="color:rgba(160,180,210,0.4);font-size:12px;text-align:center;padding:20px;">Cargando…</div>';
+  try {
+    const { data, error } = await db.from('expedientes').select('*').order('created_at', { ascending: false }).limit(50);
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div style="color:rgba(160,180,210,0.4);font-size:12px;text-align:center;padding:20px;">No hay expedientes guardados aún.</div>';
+      return;
+    }
+    const fmtM = n => n ? `L ${(n/1e6).toFixed(1)}M` : '—';
+    const fmtDate = s => s ? new Date(s).toLocaleDateString('es-HN',{year:'numeric',month:'short',day:'numeric'}) : '';
+    list.innerHTML = data.map(exp => `
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(160,180,210,0.15);border-radius:10px;padding:14px 18px;cursor:pointer;transition:border-color .2s;"
+           onmouseover="this.style.borderColor='rgba(251,191,36,0.4)'" onmouseout="this.style.borderColor='rgba(160,180,210,0.15)'"
+           onclick="ccCargarExpediente(${JSON.stringify(exp).replace(/"/g,'&quot;')})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <div>
+            <div style="font-size:13px;font-weight:800;color:#e2e8f0;margin-bottom:4px;">${exp.nombre}</div>
+            <div style="font-size:10px;color:rgba(160,180,210,0.5);letter-spacing:.05em;">${exp.entidad} · ${exp.proveedor}</div>
+            ${exp.notas ? `<div style="font-size:10px;color:rgba(160,180,210,0.45);margin-top:6px;font-style:italic;">${exp.notas}</div>` : ''}
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:11px;color:#fbbf24;font-weight:800;">${exp.score_total ?? '—'}/6</div>
+            <div style="font-size:10px;color:rgba(160,180,210,0.4);">${fmtM(exp.monto_total)}</div>
+            <div style="font-size:9px;color:rgba(160,180,210,0.3);margin-top:4px;">${fmtDate(exp.created_at)}</div>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    list.innerHTML = `<div style="color:#f87171;font-size:12px;text-align:center;padding:20px;">Error: ${e.message}</div>`;
+  }
+}
+
+function ccCargarExpediente(exp) {
+  document.getElementById('ccExpedientesModal').style.display = 'none';
+  if (exp.entidad) document.getElementById('ccEntidad').value = exp.entidad;
+  if (exp.proveedor) document.getElementById('ccProveedor').value = exp.proveedor;
+  const esqSel = document.getElementById('ccEsquema');
+  if (esqSel && exp.esquema) {
+    const opt = Array.from(esqSel.options).find(o => o.value === exp.esquema);
+    if (opt) esqSel.value = exp.esquema;
+  }
+  ccAnalizar();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function exportarTop10PDF() {
   const body = document.getElementById('top5Body');

@@ -2432,7 +2432,8 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
     <div class="cc-section">
       <div class="cc-section-title">Paso 1 — Define el caso</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <input class="ip-search" type="text" id="ccEntidad" placeholder="Entidad pública (ej. ENEE, SESAL, UNAH…)" onkeydown="if(event.key==='Enter')ccAnalizar()">
+        <input class="ip-search" type="text" id="ccEntidad" placeholder="Entidad pública (ej. ENEE, SESAL, UNAH…)" list="ccEntityList" onkeydown="if(event.key==='Enter')ccAnalizar()" onfocus="ccPopulateEntityList()">
+        <datalist id="ccEntityList"></datalist>
         <input class="ip-search" type="text" id="ccProveedor" placeholder="Proveedor o empresa sospechosa (ej. GEOCONSULT, RILMAC…)" onkeydown="if(event.key==='Enter')ccAnalizar()">
         <select id="ccEsquema" style="width:100%;padding:10px 16px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(160,180,210,0.2);color:#e2e8f0;font-size:12px;font-family:'JetBrains Mono',monospace;outline:none;cursor:pointer;">
           <option value="GENERAL">— Análisis general (sin hipótesis específica) —</option>
@@ -14069,6 +14070,43 @@ function volverAPanelEjecutivo() {
 }
 
 // ═══ CONSTRUCTOR DE CASO — S97 ═══════════════════════════════════════
+// Índice de abreviaciones — construido dinámicamente desde allAlerts
+let _ccEntityIdx = null;
+const CC_SKIP_WORDS = new Set(['de','del','la','el','los','las','y','a','en','por','para','con','sin','al','e','o','u','i']);
+// Overrides manuales para siglas que no siguen el patrón de primera letra
+const CC_MANUAL_ALIASES = {
+  'sesal':'salud', 'infop':'formación profesional', 'seplan':'planificación',
+  'serna':'recursos naturales', 'condepor':'deporte', 'copeco':'contingencias',
+  'sgjd':'gobernación y justicia', 'inprema':'magisterio', 'injupemp':'jubilaciones',
+  'hondutel':'hondutel', 'uep':'ejecución de proyectos', 'pcm':'presidencia'
+};
+function ccGetEntityIdx() {
+  if (_ccEntityIdx) return _ccEntityIdx;
+  _ccEntityIdx = { ...CC_MANUAL_ALIASES };
+  if (!allAlerts || !allAlerts.length) return _ccEntityIdx;
+  const entities = [...new Set(allAlerts.map(a => a.entity_name).filter(Boolean))];
+  entities.forEach(name => {
+    const lower = name.toLowerCase();
+    // Primera letra de cada palabra significativa (≥2 chars, no conector)
+    const words = name.split(/[\s\-\(\)]+/).filter(w => w.length >= 2 && !CC_SKIP_WORDS.has(w.toLowerCase()) && /[a-záéíóúüñ]/i.test(w));
+    if (words.length >= 2) {
+      const abbr = words.map(w => w[0]).join('').toLowerCase();
+      if (abbr.length >= 2 && abbr.length <= 8 && !_ccEntityIdx[abbr]) {
+        _ccEntityIdx[abbr] = lower; // mapea sigla → nombre completo en lowercase
+      }
+    }
+  });
+  return _ccEntityIdx;
+}
+function ccMatchEntity(input, entityName) {
+  const inp  = input.toLowerCase().trim();
+  const name = (entityName||'').toLowerCase();
+  if (name.includes(inp)) return true;
+  const idx = ccGetEntityIdx();
+  const expanded = idx[inp];
+  return !!(expanded && name.includes(expanded));
+}
+
 const CC_ADMINS = [
   { id:'joh',     nombre:'JOH II (2018–2022)',        color:'#818cf8', inicio:'2018-01-27', fin:'2022-01-27' },
   { id:'xiomara', nombre:'Xiomara Castro (2022–2026)', color:'#22d3ee', inicio:'2022-01-27', fin:'2026-01-27' },
@@ -14078,12 +14116,20 @@ let _ccData = null;
 
 function abrirConstructorCaso() {
   ['panelEjecutivo','investigacionProyectoPanel','top5Panel'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.add('hidden');
+    const el = document.getElementById(id); if (el) el.classList.add('hidden');
   });
   document.getElementById('constructorCasoPanel').classList.remove('hidden');
   document.getElementById('ccResultados').classList.add('hidden');
   document.getElementById('ccBtnBack').onclick = volverAPanelEjecutivo;
+  ccPopulateEntityList();
+}
+function ccPopulateEntityList() {
+  const dl = document.getElementById('ccEntityList');
+  if (!dl || dl.children.length > 0 || !allAlerts || !allAlerts.length) return;
+  const entities = [...new Set(allAlerts.map(a => a.entity_name).filter(Boolean))].sort();
+  const frag = document.createDocumentFragment();
+  entities.forEach(e => { const opt = document.createElement('option'); opt.value = e; frag.appendChild(opt); });
+  dl.appendChild(frag);
 }
 
 function ccAnalizar() {
@@ -14093,14 +14139,23 @@ function ccAnalizar() {
   if (!entidad || !proveedor) { alert('Ingresa entidad y proveedor para continuar.'); return; }
   if (!allAlerts || !allAlerts.length) { alert('Datos aún cargando. Espera un momento.'); return; }
 
-  const ent = entidad.toLowerCase();
-  const prov = proveedor.toLowerCase();
-  const entityContratos  = allAlerts.filter(a => (a.entity_name||'').toLowerCase().includes(ent));
+  const ent  = entidad.toLowerCase().trim();
+  const prov = proveedor.toLowerCase().trim();
+  const entityContratos = allAlerts.filter(a => ccMatchEntity(ent, a.entity_name));
   const vendorContratos  = entityContratos.filter(a => (a.proveedor_nombre||'').toLowerCase().includes(prov));
   const vendorGlobal     = allAlerts.filter(a => (a.proveedor_nombre||'').toLowerCase().includes(prov));
 
-  if (!entityContratos.length) { alert(`No se encontró la entidad "${entidad}" en la base de datos.`); return; }
-  if (!vendorContratos.length) { alert(`El proveedor "${proveedor}" no tiene contratos con "${entidad}".`); return; }
+  if (!entityContratos.length) {
+    alert(`No se encontró la entidad "${entidad}" en la base de datos.\nPrueba con el nombre completo (ej. "Empresa Nacional de Energía Eléctrica" en lugar de "ENEE").`); return;
+  }
+  if (!vendorContratos.length) {
+    // Show which entities this vendor DOES appear in
+    const entidadesDelVendor = [...new Set(vendorGlobal.map(a=>a.entity_name))].slice(0,5);
+    const sugerencia = entidadesDelVendor.length
+      ? `\n\nEste proveedor aparece en:\n${entidadesDelVendor.map(e=>'• '+e).join('\n')}`
+      : '\n\nEste proveedor no aparece en la base de datos.';
+    alert(`"${proveedor}" no tiene contratos con "${entidad}".${sugerencia}`); return;
+  }
 
   const concentracion = ccCalcConcentracion(entityContratos, vendorContratos);
   const timeline      = ccCalcTimeline(vendorContratos);

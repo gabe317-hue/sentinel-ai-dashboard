@@ -5608,6 +5608,22 @@ async function loadAlerts() {
       console.log(`🔕 Exclusiones operacionales aplicadas: ${antesExclusiones - allAlerts.length} alertas filtradas (viajes militares legítimos)`);
     }
 
+    // S99 — Entity resolution: normalizar variantes de nombre del mismo proveedor.
+    // REGLA: usar nombre canónico (más corto/oficial). No modifica la BD — solo la vista en memoria.
+    const VENDOR_ALIASES = [
+      // SOLUCIONES INTEGRALES — 3 variantes, mismo proveedor, ~L 89M combinado
+      { patron: 'SOLINT',  canonico: 'SOLUCIONES INTEGRALES (SOLINTSA)' },
+    ];
+    allAlerts.forEach(a => {
+      const prov = (a.proveedor_nombre || '').toUpperCase();
+      for (const alias of VENDOR_ALIASES) {
+        if (prov.includes(alias.patron)) {
+          a.proveedor_nombre = alias.canonico;
+          break;
+        }
+      }
+    });
+
     // S94 — FRACCIONAMIENTO fix global: solo mostrar si proveedor tiene ≥2 contratos en BD.
     // Un solo contrato bajo el umbral = compra pequeña legítima, no fraccionamiento.
     { const provConteo = {};

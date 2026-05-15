@@ -2345,8 +2345,8 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 <div id="investigacionProyectoPanel" class="hidden">
   <div class="ip-header">
     <div>
-      <h2>🗂️ Investigación por Proyecto</h2>
-      <p>SELECCIONA UNA ENTIDAD PARA VER SUS CONTRATOS, PATRONES Y CRONOLOGÍA</p>
+      <h2>🗂️ Análisis por Entidad</h2>
+      <p>BUSCAR POR ENTIDAD O PROVEEDOR · CONTRATOS, PATRONES Y CRONOLOGÍA</p>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
       <button id="ipBtnBack" class="pe-btn-back" onclick="volverAPanelEjecutivo()" style="display:none;">← Panel Ejecutivo</button>
@@ -5625,6 +5625,16 @@ async function loadAlerts() {
         }
       }
     });
+
+    // S100 — ERROR_DATOS: excluir contratos con monto claramente erróneo (error de captura ONCAE).
+    // Solo filtra cuando monto > umbral — contratos pequeños legítimos del proveedor permanecen visibles.
+    const ERROR_DATOS_CONTRATOS = [
+      { patron: 'RILMAC IMPRESORES', montoMin: 1_000_000_000 } // L 5.08B = error decimal ONCAE (monto real ~L 5.1M)
+    ];
+    allAlerts = allAlerts.filter(a => !ERROR_DATOS_CONTRATOS.some(e =>
+      (a.proveedor_nombre||'').toUpperCase().includes(e.patron) &&
+      (Number(a.monto_contrato)||0) > e.montoMin
+    ));
 
     // S94 — FRACCIONAMIENTO fix global: solo mostrar si proveedor tiene ≥2 contratos en BD.
     // Un solo contrato bajo el umbral = compra pequeña legítima, no fraccionamiento.

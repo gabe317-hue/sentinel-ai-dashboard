@@ -5613,6 +5613,8 @@ async function loadAlerts() {
     const VENDOR_ALIASES = [
       // SOLUCIONES INTEGRALES — 3 variantes, mismo proveedor, ~L 89M combinado
       { patron: 'SOLINT',  canonico: 'SOLUCIONES INTEGRALES (SOLINTSA)' },
+      // INFRA DE HONDURAS — 6 variantes (incl. typo "IINFRA"), mismo proveedor, ~L 253M combinado (S100)
+      { patron: 'INFRA DE HONDUR', canonico: 'INFRA DE HONDURAS S.A.' },
     ];
     allAlerts.forEach(a => {
       const prov = (a.proveedor_nombre || '').toUpperCase();

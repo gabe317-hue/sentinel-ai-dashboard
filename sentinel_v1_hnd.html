@@ -5950,21 +5950,21 @@ async function generateReport(mode = 'todo') {
       if (entityMap[ent][sl] !== undefined) entityMap[ent][sl]++;
     }
 
-    // Sort by count descending (Pareto logic)
-    let entityList = Object.entries(entityMap).sort((a, b) => b[1].count - a[1].count);
+    // Sort by monto descending (Pareto by monto)
+    let entityList = Object.entries(entityMap).sort((a, b) => b[1].monto - a[1].monto);
 
-    // ── 5. Pareto filter: keep entities that account for ≥80% of reportable count ──
+    // ── 5. Pareto filter: keep entities that account for ≥80% of reportable monto ──
     let paretoEntities = null;
     let modeLabel = 'Todo';
     if (mode === 'pareto') {
       modeLabel = 'Pareto 80/20';
-      const total80 = reportable.length;
+      const totalMonto80 = entityList.reduce((s, [, d]) => s + d.monto, 0);
       let acc = 0;
       const paretoSet = new Set();
       for (const [ent, d] of entityList) {
         paretoSet.add(ent);
-        acc += d.count;
-        if (acc / total80 >= 0.8) break;
+        acc += d.monto;
+        if (acc / totalMonto80 >= 0.8) break;
       }
       paretoEntities = paretoSet;
       entityList = entityList.filter(([ent]) => paretoEntities.has(ent));
@@ -11398,6 +11398,9 @@ function exportTimelineProvPDF() {
     provMap[prov].monto += Number(a.monto_contrato||0);
     grandMonto += Number(a.monto_contrato||0);
   });
+  // Excluir "Sin nombre" del ranking principal — roll-up como nota al pie
+  const sinNombreData = provMap['Sin nombre'] || null;
+  delete provMap['Sin nombre'];
   const sorted = Object.entries(provMap).sort((a,b) => isMonto ? b[1].monto - a[1].monto : b[1].total - a[1].total).slice(0,50);
   const timestamp = new Date().toISOString().slice(0,10);
   const yearLabel = _tlYear || 'Todos los años';
@@ -11415,6 +11418,14 @@ function exportTimelineProvPDF() {
       <td style="text-align:right;">${pct}</td>
     </tr>`;
   }).join('');
+  const sinNombreFooter = sinNombreData ? (() => {
+    const alertaStr = (sinNombreData.critica > 0 || sinNombreData.alta > 0)
+      ? ` · ⚠️ ${sinNombreData.critica} Crítica + ${sinNombreData.alta} Alta — revisar manualmente`
+      : '';
+    return `<tr style="background:#fff8e6;font-style:italic;font-size:8pt;color:#888;">
+      <td colspan="9">* Sin nombre: ${sinNombreData.total.toLocaleString('es-HN')} registros · ${fmtL(sinNombreData.monto)} · excluidos del ranking (sin identidad verificable)${alertaStr}</td>
+    </tr>`;
+  })() : '';
   // Capture provChart with white background (Chart.js canvas is transparent by default)
   const _provDataUrl = _captureChartCanvas('provChart');
   const chartImgHtml = _provDataUrl ? `<div style="margin-bottom:18px;"><img src="${_provDataUrl}" style="width:100%;max-height:400px;object-fit:contain;border:1px solid #D0D7E2;border-radius:6px;padding:6px;box-sizing:border-box;"></div>` : '';
@@ -11438,7 +11449,7 @@ function exportTimelineProvPDF() {
 ${chartImgHtml}
 <table>
   <thead><tr><th>#</th><th>Proveedor</th><th style="text-align:right">Total</th><th style="text-align:center">Crítica</th><th style="text-align:center">Alta</th><th style="text-align:center">Media</th><th style="text-align:center">Baja</th><th style="text-align:right">Monto (L.)</th><th style="text-align:right">% Monto</th></tr></thead>
-  <tbody>${rows}</tbody>
+  <tbody>${rows}${sinNombreFooter}</tbody>
 </table>
 </body></html>`;
   const pw = window.open('','_blank','width=1100,height=800');
@@ -21700,7 +21711,7 @@ async function runSEFINIngest() {
     const res = await fetch(url, { headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY } });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    const sobreList = (data.sobrecostos || []).map(s =>
+    const sobreList = (data.sobrepresupuestos || []).map(s =>
       `  • ${s.nombre} (${s.codigo}) → ${(s.ratio * 100).toFixed(1)}% ritmo${s.edca_match ? ` · EDCA: ${s.edca_match}` : ''}`
     ).join('\n');
     document.getElementById('sefinResult').style.display = 'block';
@@ -21708,7 +21719,7 @@ async function runSEFINIngest() {
       `✅ <strong style="color:var(--green);">SEFIN ${periodo} ingresado</strong><br>` +
       `📊 ${data.instituciones_procesadas} instituciones · ${data.lineas_csv?.toLocaleString()} líneas CSV (${(data.bytes_csv/1e6).toFixed(1)} MB)<br>` +
       `🔗 ${data.edca_matches} matches EDCA · ${data.contratos_actualizados} contratos actualizados<br>` +
-      `⚠️ <strong style="color:var(--amber);">${data.instituciones_sobrecosto} instituciones SOBREPRESUPUESTO detectadas</strong>` +
+      `⚠️ <strong style="color:var(--amber);">${data.instituciones_sobrepresupuesto} instituciones SOBREPRESUPUESTO detectadas</strong>` +
       (sobreList ? `<pre style="margin-top:8px;font-size:10px;color:var(--amber);white-space:pre-wrap;">${sobreList}</pre>` : '') +
       `<br><em style="font-size:10px;color:var(--text-dim);">Recarga la página para ver los cambios en el dashboard.</em>`;
     btn.textContent = '✅ SEFIN actualizado';

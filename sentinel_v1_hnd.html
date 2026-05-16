@@ -502,7 +502,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 }
 .stat-card {
   background: var(--glass); border: 1px solid var(--border);
-  border-radius: 12px; padding: 20px;
+  border-radius: 12px; padding: 16px;
   position: relative; overflow: hidden; transition: all 0.2s;
 }
 .stat-card::before {
@@ -517,7 +517,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
 .stat-value {
   font-family: 'Syne', sans-serif;
-  font-size: 36px; font-weight: 800; line-height: 1; margin-bottom: 8px;
+  font-size: 29px; font-weight: 800; line-height: 1; margin-bottom: 6px;
 }
 .stat-card.s-total  .stat-value { color: var(--electric); }
 .stat-card.s-critica .stat-value{ color: var(--red); }
@@ -2298,7 +2298,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">The Prieto Group</span>
       <span class="login-inst-tag">·</span>
-      <span class="login-inst-tag">© Sentinel-AI v1.91</span>
+      <span class="login-inst-tag">© Sentinel-AI v1.94</span>
     </div>
     <div class="login-footer">Procuraduría General de la República · Honduras<br>Acceso restringido — Solo personal autorizado</div>
   </div>
@@ -2338,7 +2338,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       </div>
     </div>
   </div>
-  <div class="ps-footer">v1.91 · SEFIN Fiscal 2023–2025 · The Prieto Group · Dallas, TX</div>
+  <div class="ps-footer">v1.94 · SEFIN Fiscal 2023–2025 · The Prieto Group · Dallas, TX</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -2617,7 +2617,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
-    <div class="logo-version">v1.93 — HND</div>
+    <div class="logo-version">v1.94 — HND</div>
   </div>
 
   <div class="nav">
@@ -2726,7 +2726,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <button onclick="abrirPanelEjecutivo()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.55);border-radius:14px;padding:10px 32px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.06em;transition:all .2s;box-shadow:0 0 18px rgba(0,200,255,0.2);">📊 Panel Ejecutivo</button>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric">v1.91 · 2026</span>
+        <span class="po-badge electric">v1.94 · 2026</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
@@ -3169,12 +3169,12 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="exec-card-sub" id="exec-sobrecosto-monto">L —</div>
         <div class="exec-card-note">▸ Análisis SIAFI2</div>
       </div>
-      <!-- System status box -->
-      <div class="exec-card exec-card-glass">
-        <div class="exec-card-label">Estado del Sistema</div>
-        <div class="exec-card-value" style="font-size:20px;" id="exec-status-val">—</div>
-        <div class="exec-card-sub" id="exec-last-update">—</div>
-        <div class="exec-card-note">▸ Supabase · SEFIN · ONCAE · OFAC · Engel</div>
+      <!-- Investigaciones Activas -->
+      <div class="exec-card exec-card-electric" style="cursor:pointer;" onclick="irDesdeEjecutivo(()=>{ document.getElementById('po-exc-investigaciones')?.click(); })" title="Ver investigaciones activas">
+        <div class="exec-card-label">Investigaciones Activas</div>
+        <div class="exec-card-value" id="exec-inv-activas-count">—</div>
+        <div class="exec-card-sub" id="exec-inv-activas-sub">casos SEN-INV</div>
+        <div class="exec-card-note">▸ Activas + Referidas en curso</div>
       </div>
       <!-- Candidatos Detectados card — clickeable → candidatosPanel -->
       <div class="exec-card exec-card-amber" onclick="showCandidatosPanel()" title="Ver candidatos a investigación" style="cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor=''">
@@ -3209,6 +3209,14 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <div class="exec-card-value" style="color:var(--green);" id="exec-cobertura">9.7%</div>
         <div class="exec-card-sub">del Presupuesto Gral. 2024 (L 309B)</div>
         <div class="exec-card-note">▸ Contratos monitoreados vs total nación</div>
+      </div>
+
+      <!-- KPI: Detecciones Automáticas -->
+      <div class="exec-card exec-card-amber" style="cursor:pointer;" onclick="showPortal()" title="Ver detecciones automáticas">
+        <div class="exec-card-label">Detecciones Automáticas</div>
+        <div class="exec-card-value" id="exec-borradores-activos">—</div>
+        <div class="exec-card-sub">borradores pendientes revisión</div>
+        <div class="exec-card-note">▸ Generados por auto-investigador</div>
       </div>
 
     </div>
@@ -4274,7 +4282,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
   <!-- ══ CANDIDATOS DETECTADOS PANEL ══ -->
   <div class="fuente-panel" id="candidatosPanel">
-    <button class="fuente-back" onclick="hideCandidatosPanel()">← Contratos</button>
+    <button class="fuente-back" onclick="hideCandidatosPanel()">← Portal</button>
 
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
       <div>
@@ -7880,7 +7888,7 @@ function showCandidatosPanel() {
 function hideCandidatosPanel() {
   document.getElementById('candidatosPanel').classList.remove('open');
   document.getElementById('nav-candidatos').classList.remove('active');
-  showContratosView();
+  showPortal();
 }
 
 // ── Candidatos Detectados ─────────────────────────────────────────────────────
@@ -9230,6 +9238,12 @@ async function loadInvestigacionesDB() {
 
     if (badge) badge.textContent = `${activas} activa${activas!==1?'s':''} · ${nuevas} nueva${nuevas!==1?'s':''}`;
     if (metricEl) metricEl.textContent = total;
+    // Resumen Ejecutivo card
+    const invActivasEl = document.getElementById('exec-inv-activas-count');
+    const invSubEl = document.getElementById('exec-inv-activas-sub');
+    if (invActivasEl) invActivasEl.textContent = (activas + nuevas).toLocaleString();
+    if (invSubEl) invSubEl.textContent = `${activas} activa${activas!==1?'s':''} · ${nuevas} nueva${nuevas!==1?'s':''}`;
+
 
     const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(1)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
     const TOP = 3;
@@ -9302,6 +9316,8 @@ async function loadBorradoresAuto() {
     data = data.filter(r => !['RILMAC IMPRESORES'].some(ex => (r.proveedor||'').toUpperCase().includes(ex)));
 
     if (badge) badge.textContent = `${data.length} pendiente${data.length!==1?'s':''}`;
+    const borradoresEl = document.getElementById('exec-borradores-activos');
+    if (borradoresEl) borradoresEl.textContent = data.length.toLocaleString();
 
     if (!data.length) {
       list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Sin borradores pendientes.</div>';
@@ -13957,76 +13973,111 @@ function ipExportarExcel() {
 }
 
 function ipExportarExcelCore() {
-  const contratos = _ipFilteredContratos || _ipCurrentContratos;
-  const entidad   = document.getElementById('ipDetailName').textContent;
-  const fecha     = new Date().toLocaleDateString('es-HN');
-  const normSev   = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-  const fmtM      = n => n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':Math.round(n).toLocaleString('es-HN');
+  const todosContratos = _ipFilteredContratos || _ipCurrentContratos;
+  const entidad        = document.getElementById('ipDetailName').textContent;
+  const fecha          = new Date().toLocaleDateString('es-HN');
+  const normSev        = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const fmtM           = n => n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':Math.round(n).toLocaleString('es-HN');
 
-  const criticos   = contratos.filter(a => normSev(a.severity).includes('CRITICA'));
-  const altos      = contratos.filter(a => normSev(a.severity).includes('ALTA'));
-  const montoTotal = contratos.reduce((s,a) => s+Number(a.monto_contrato), 0);
-  const wb = window.XLSX.utils.book_new();
+  // ── Solo CRÍTICA + ALTA para el reporte ──
+  const criticos   = todosContratos.filter(a => normSev(a.severity).includes('CRITICA'));
+  const altos      = todosContratos.filter(a => normSev(a.severity).includes('ALTA'));
+  const contratos  = [...criticos, ...altos]; // solo contratos de alto riesgo
+  const montoTotal = todosContratos.reduce((s,a) => s+Number(a.monto_contrato), 0);
+  const montoRiesgo = contratos.reduce((s,a) => s+Number(a.monto_contrato), 0);
+
+  const BOLD = { font: { bold: true } };
+  const HDR  = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1A1A2E' } }, alignment: { horizontal: 'center' } };
+  const RED  = { fill: { fgColor: { rgb: 'FFE4E4' } } };
+  const AMB  = { fill: { fgColor: { rgb: 'FFF4E0' } } };
+  const wb   = window.XLSX.utils.book_new();
 
   // ── Hoja 1: Resumen ──
   const ws1 = window.XLSX.utils.aoa_to_sheet([
-    ['SENTINEL AI — Expediente de Investigación'],
-    ['Entidad', entidad],
-    ['Fecha', fecha],
-    ['Período', 'Fiscal 2023–2025'],
-    ['Fuente', 'SEFIN-PIEP / ONCAE HonduCompras'],
-    [],
-    ['INDICADORES', ''],
-    ['Total contratos', contratos.length],
+    ['SENTINEL AI — EXPEDIENTE DE INVESTIGACIÓN'],
+    [''],
+    ['Entidad institucional', entidad],
+    ['Fecha de generación', fecha],
+    ['Período analizado', 'Fiscal 2023–2026'],
+    ['Fuente de datos', 'SEFIN-PIEP / ONCAE HonduCompras'],
+    ['Clasificación', 'CONFIDENCIAL — Uso institucional exclusivo'],
+    [''],
+    ['INDICADORES DE RIESGO', ''],
+    ['Total contratos monitoreados', todosContratos.length],
     ['Contratos CRÍTICA', criticos.length],
-    ['Contratos ALTA', altos.length],
-    ['Monto total (L)', Math.round(montoTotal)],
-    ['Monto críticos (L)', Math.round(criticos.reduce((s,a)=>s+Number(a.monto_contrato),0))],
-    [],
-    ['NOTA', 'Clasificación automática — requiere verificación antes de acción formal.'],
+    ['Contratos RIESGO ALTO', altos.length],
+    ['Total contratos en alto riesgo', contratos.length],
+    ['Monto total monitoreado (L)', Math.round(montoTotal)],
+    ['Monto en alto riesgo (L)', Math.round(montoRiesgo)],
+    ['% monto en riesgo', montoTotal > 0 ? (montoRiesgo/montoTotal*100).toFixed(1)+'%' : '—'],
+    [''],
+    ['NOTA LEGAL', 'Clasificación automática — requiere verificación antes de acción formal. No constituye prueba judicial.'],
   ]);
+  // Estilos encabezado
+  ws1['A1'] && Object.assign(ws1['A1'], { font: { bold: true, sz: 14 } });
+  ws1['A9'] && Object.assign(ws1['A9'], BOLD);
+  ws1['!cols'] = [{ wch: 38 }, { wch: 48 }];
   window.XLSX.utils.book_append_sheet(wb, ws1, 'Resumen');
 
-  // ── Hoja 2: Contratos ──
-  const ws2 = window.XLSX.utils.aoa_to_sheet([
-    ['Proveedor', 'Monto (L)', 'Severidad', 'Patrones', 'Fecha', 'Fuente'],
-    ...contratos.map(a => [
-      a.proveedor_nombre||'—',
-      Math.round(Number(a.monto_contrato)||0),
-      a.severity||'—',
-      (a.patterns||'').replace(/[,·]/g,' | ').trim(),
-      (a.fecha_contrato||'').slice(0,10),
-      a.source||'—'
-    ])
+  // ── Hoja 2: Contratos CRÍTICA + ALTA ──
+  const hdrRow = ['#', 'Proveedor', 'Monto (L)', 'Severidad', 'Patrones de Riesgo', 'Fecha Contrato', 'Fuente'];
+  const dataRows = contratos.map((a, i) => [
+    i + 1,
+    a.proveedor_nombre || '—',
+    Math.round(Number(a.monto_contrato) || 0),
+    a.severity || '—',
+    (a.patterns || '').replace(/[,·]/g, ' | ').trim(),
+    (a.fecha_contrato || '').slice(0, 10),
+    a.source || '—'
   ]);
-  window.XLSX.utils.book_append_sheet(wb, ws2, 'Contratos');
+  const ws2 = window.XLSX.utils.aoa_to_sheet([hdrRow, ...dataRows]);
+  // Aplicar color a filas CRÍTICA vs ALTA
+  const range2 = window.XLSX.utils.decode_range(ws2['!ref'] || 'A1');
+  for (let r = 1; r <= range2.e.r; r++) {
+    const sevCell = ws2[window.XLSX.utils.encode_cell({ r, c: 3 })];
+    const style   = sevCell && normSev(sevCell.v||'').includes('CRITICA') ? RED : AMB;
+    for (let c = 0; c <= 6; c++) {
+      const addr = window.XLSX.utils.encode_cell({ r, c });
+      if (ws2[addr]) Object.assign(ws2[addr], { s: style });
+    }
+  }
+  // Header bold
+  hdrRow.forEach((_, c) => {
+    const addr = window.XLSX.utils.encode_cell({ r: 0, c });
+    if (ws2[addr]) Object.assign(ws2[addr], { s: HDR });
+  });
+  ws2['!cols'] = [{ wch: 4 }, { wch: 40 }, { wch: 16 }, { wch: 14 }, { wch: 50 }, { wch: 14 }, { wch: 10 }];
+  window.XLSX.utils.book_append_sheet(wb, ws2, 'Contratos Alto Riesgo');
 
   // ── Hoja 3: Proveedores ──
   const pm = {};
   contratos.forEach(a => {
-    const k = a.proveedor_nombre||'—';
-    if (!pm[k]) pm[k] = { n:0, monto:0, criticos:0, patrones:new Set() };
+    const k = a.proveedor_nombre || '—';
+    if (!pm[k]) pm[k] = { n: 0, monto: 0, criticos: 0, altos: 0, patrones: new Set() };
     pm[k].n++; pm[k].monto += Number(a.monto_contrato);
     if (normSev(a.severity).includes('CRITICA')) pm[k].criticos++;
-    (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(p=>pm[k].patrones.add(p));
+    else pm[k].altos++;
+    (a.patterns || '').split(/[,·]/).map(p => p.trim()).filter(Boolean).forEach(p => pm[k].patrones.add(p));
   });
   const ws3 = window.XLSX.utils.aoa_to_sheet([
-    ['Proveedor', 'Contratos', 'Críticos', 'Monto Total (L)', 'Patrones'],
-    ...Object.entries(pm).sort((a,b)=>b[1].monto-a[1].monto).map(([p,v]) => [
-      p, v.n, v.criticos, Math.round(v.monto), [...v.patrones].join(' | ')
+    ['Proveedor', 'Total Contratos', 'CRÍTICA', 'ALTA', 'Monto Total (L)', 'Patrones de Riesgo'],
+    ...Object.entries(pm).sort((a, b) => b[1].monto - a[1].monto).map(([p, v]) => [
+      p, v.n, v.criticos, v.altos, Math.round(v.monto), [...v.patrones].join(' | ')
     ])
   ]);
+  ws3['!cols'] = [{ wch: 40 }, { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 18 }, { wch: 50 }];
   window.XLSX.utils.book_append_sheet(wb, ws3, 'Proveedores');
 
   // ── Hoja 4: LTAIP ──
   const ltaip = ipGenerarLTAIP(contratos, entidad);
-  const ws4 = window.XLSX.utils.aoa_to_sheet([
-    ['#', 'Categoría', 'Pregunta de Investigación', 'Base Legal'],
+  const ws4   = window.XLSX.utils.aoa_to_sheet([
+    ['#', 'Categoría', 'Pregunta de Investigación (LTAIP)', 'Base Legal'],
     ...ltaip.map(q => [q.num, q.categoria, q.pregunta, q.base_legal])
   ]);
+  ws4['!cols'] = [{ wch: 4 }, { wch: 22 }, { wch: 70 }, { wch: 30 }];
   window.XLSX.utils.book_append_sheet(wb, ws4, 'LTAIP');
 
-  const nombre = `Sentinel_${entidad.replace(/\s+/g,'_').slice(0,30)}_${new Date().toISOString().slice(0,10)}.xlsx`;
+  const nombre = `Sentinel_${entidad.replace(/\s+/g, '_').slice(0, 30)}_AltoRiesgo_${new Date().toISOString().slice(0, 10)}.xlsx`;
   window.XLSX.writeFile(wb, nombre);
 }
 
@@ -17874,8 +17925,7 @@ function renderEjecutiva() {
   document.getElementById('exec-total-monto').textContent    = fmtL(sumMonto(alerts));
   document.getElementById('exec-sobrecosto').textContent     = sobrecosto.length.toLocaleString();
   document.getElementById('exec-sobrecosto-monto').textContent = fmtL(sumMonto(sobrecosto));
-  document.getElementById('exec-status-val').textContent     = '✅ Activo';
-  document.getElementById('exec-last-update').textContent    = 'Actualizado: ' + new Date().toLocaleTimeString('es-HN');
+  // exec-status-val reemplazado por exec-inv-activas-count (ver loadInvestigacionesDB)
   document.getElementById('execSubtitle').textContent        = `${alerts.length.toLocaleString()} contratos monitoreados · 2019–2026 · ${new Date().toLocaleDateString('es-HN')}`;
 
   // ── P2: Top 5 Entidades por riesgo ──

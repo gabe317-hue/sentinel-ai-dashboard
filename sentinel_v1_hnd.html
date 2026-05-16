@@ -14151,6 +14151,38 @@ function ipExportarExcelCore() {
   ws4['!cols'] = [{ wch: 4 }, { wch: 22 }, { wch: 70 }, { wch: 30 }];
   window.XLSX.utils.book_append_sheet(wb, ws4, 'LTAIP');
 
+  // ── Hoja 5: Aviso Legal ──
+  const fechaL = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const ws5 = window.XLSX.utils.aoa_to_sheet([
+    ['AVISO LEGAL — SENTINEL AI'],
+    [''],
+    ['Clasificación', 'CONFIDENCIAL — Uso institucional exclusivo'],
+    ['Fecha de generación', fechaL],
+    ['Sistema', 'SENTINEL-AI — Sistema de Análisis de Riesgo en Contratación Pública de Honduras'],
+    ['Fuentes', 'Secretaría de Finanzas (SEFIN-PIEP) · Oficina Normativa de Contratación y Adquisiciones del Estado (ONCAE) · Período 2019–2026'],
+    [''],
+    ['NATURALEZA DEL DOCUMENTO', ''],
+    ['', 'Los hallazgos contenidos en este expediente son indicadores estadísticos de riesgo generados de manera automatizada. NO constituyen prueba de irregularidad, fraude, responsabilidad penal ni administrativa.'],
+    ['', 'La presencia de un contrato o proveedor en este análisis no implica determinación de culpabilidad. Los datos de fuente pueden contener errores de captura, duplicados o registros incompletos que afecten los montos reportados.'],
+    [''],
+    ['LIMITACIONES DE LOS DATOS', ''],
+    ['', 'Los registros ONCAE comprenden contratos desde 2019. La ausencia de un contrato en la base de datos no implica que dicho contrato no exista — puede corresponder a períodos previos o a fuentes no integradas al sistema.'],
+    ['', 'Los montos SEFIN reflejan ejecución presupuestaria institucional y pueden diferir de montos de adjudicación ONCAE por partidas no desagregadas o transferencias entre unidades ejecutoras.'],
+    [''],
+    ['REQUERIMIENTO DE VERIFICACIÓN', ''],
+    ['', 'Toda acción formal — incluyendo investigación administrativa, referido a autoridad competente o apertura de proceso penal — requiere verificación independiente por la autoridad correspondiente, conforme a la Ley de Contratación del Estado (Decreto 74-2001) y demás normativa aplicable.'],
+    ['', 'SENTINEL-AI no es un órgano jurisdiccional ni emite resoluciones vinculantes.'],
+    [''],
+    ['CONFIDENCIALIDAD', ''],
+    ['', 'Este documento es de uso restringido. Queda prohibida su reproducción, divulgación o distribución sin autorización expresa de The Prieto Group LLC. Su uso indebido puede acarrear responsabilidad legal.'],
+    [''],
+    ['Generado por', 'The Prieto Group LLC — Sentinel AI'],
+  ]);
+  ws5['A1'] && Object.assign(ws5['A1'], { font: { bold: true, sz: 13, color: { rgb: 'CC0000' } } });
+  ['A8','A12','A16','A20'].forEach(addr => { if (ws5[addr]) Object.assign(ws5[addr], { font: { bold: true } }); });
+  ws5['!cols'] = [{ wch: 30 }, { wch: 90 }];
+  window.XLSX.utils.book_append_sheet(wb, ws5, 'Aviso Legal');
+
   const nombre = `Sentinel_${entidad.replace(/\s+/g, '_').slice(0, 30)}_AltoRiesgo_${new Date().toISOString().slice(0, 10)}.xlsx`;
   window.XLSX.writeFile(wb, nombre);
 }
@@ -14851,6 +14883,57 @@ async function ccExportExcelCore() {
     row.height = 20;
     sc(row.getCell(1),'0D1B2A','CCDDEE',false,10,'center');
     for(let c=2;c<=6;c++) sc(row.getCell(c),'0D1B2A','CCDDEE',false,10,'left', c===3);
+  });
+
+  // ════════════════════════════════════════════
+  // HOJA 5 — Aviso Legal
+  // ════════════════════════════════════════════
+  const ws5 = wb.addWorksheet('Aviso Legal');
+  ws5.columns = [{width:28},{width:92}];
+  const tsL = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+
+  // Título
+  const r0 = ws5.addRow(['AVISO LEGAL — DOCUMENTO CONFIDENCIAL', '']);
+  r0.height = 22;
+  sc(r0.getCell(1), 'CC0000', 'FFFFFF', true, 13, 'left');
+  ws5.addRow([]);
+
+  const legalData = [
+    ['Clasificación', 'CONFIDENCIAL — Uso institucional exclusivo'],
+    ['Fecha de generación', tsL],
+    ['Sistema', 'SENTINEL-AI — Sistema de Análisis de Riesgo en Contratación Pública de Honduras'],
+    ['Fuentes', 'Secretaría de Finanzas (SEFIN-PIEP) · ONCAE HonduCompras · Período 2019–2026'],
+    ['', ''],
+    ['NATURALEZA DEL DOCUMENTO', ''],
+    ['', 'Los hallazgos de este expediente son indicadores estadísticos de riesgo generados de manera automatizada. NO constituyen prueba de irregularidad, fraude, responsabilidad penal ni administrativa. La presencia de un contrato o proveedor en este análisis no implica determinación de culpabilidad.'],
+    ['', ''],
+    ['LIMITACIONES', ''],
+    ['', 'Los registros ONCAE comprenden contratos desde 2019. La ausencia de un contrato en la base de datos no implica que dicho contrato no exista. Los montos SEFIN reflejan ejecución presupuestaria y pueden diferir de montos de adjudicación por partidas no desagregadas.'],
+    ['', ''],
+    ['VERIFICACIÓN OBLIGATORIA', ''],
+    ['', 'Toda acción formal requiere verificación independiente por autoridad competente conforme a la Ley de Contratación del Estado (Decreto 74-2001). SENTINEL-AI no es un órgano jurisdiccional ni emite resoluciones vinculantes.'],
+    ['', ''],
+    ['CONFIDENCIALIDAD', ''],
+    ['', 'Prohibida su reproducción o divulgación sin autorización expresa de The Prieto Group LLC.'],
+    ['', ''],
+    ['Emitido por', 'The Prieto Group LLC — Sentinel AI · ' + tsL],
+  ];
+
+  const sectionKeys = new Set(['NATURALEZA DEL DOCUMENTO','LIMITACIONES','VERIFICACIÓN OBLIGATORIA','CONFIDENCIALIDAD']);
+  legalData.forEach(([k, v]) => {
+    const row = ws5.addRow([k, v]);
+    row.height = k && sectionKeys.has(k) ? 16 : v && v.length > 60 ? 36 : 18;
+    if (sectionKeys.has(k)) {
+      sc(row.getCell(1), '0A1628', '00C8FF', true, 10, 'left');
+      sc(row.getCell(2), '0A1628', '00C8FF', true, 10, 'left');
+    } else if (k && !v) {
+      // empty row
+    } else if (k) {
+      sc(row.getCell(1), null, '8899AA', true, 9, 'left');
+      sc(row.getCell(2), '0D1B2A', 'CCDDEE', false, 9, 'left', true);
+    } else {
+      sc(row.getCell(2), '0D1B2A', 'AABBCC', false, 9, 'left', true);
+    }
   });
 
   // ── Guardar ──────────────────────────────────────────────────────
@@ -15826,13 +15909,27 @@ function addPrintBtn(html) {
   html = html.replace(/<button[^>]*onclick="window\.print\(\)"[^>]*>[\s\S]*?<\/button>/g, '');
   const printCss = '<style>@media print { .no-print { display: none !important; } }</style>';
   const btn = '<button class="no-print" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:#1a56db;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;"><span>🖨️</span> Imprimir / Guardar como PDF</button>';
+  const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const disclaimer = `<div style="margin-top:40px;padding:16px 20px;border-top:2px solid #dc2626;background:#fff8f8;font-family:Arial,sans-serif;font-size:10px;color:#555;line-height:1.6;">
+    <div style="font-weight:700;color:#dc2626;font-size:11px;letter-spacing:.05em;margin-bottom:6px;">⚠ AVISO LEGAL — DOCUMENTO CONFIDENCIAL</div>
+    <p style="margin:0 0 6px 0;">Este documento ha sido generado por <strong>SENTINEL-AI</strong>, sistema de análisis de riesgo en contratación pública de Honduras, con base en registros públicos de la Secretaría de Finanzas (SEFIN) y la Oficina Normativa de Contratación y Adquisiciones del Estado (ONCAE). Los datos comprenden el período 2019–2026.</p>
+    <p style="margin:0 0 6px 0;"><strong>Los hallazgos contenidos en este reporte son indicadores estadísticos de riesgo — no constituyen prueba de irregularidad, fraude o responsabilidad penal o administrativa.</strong> La presencia de un contrato o proveedor en este análisis no implica determinación de culpabilidad. Los datos de fuente pueden contener errores de captura, duplicados o registros incompletos que afecten los montos reportados.</p>
+    <p style="margin:0 0 6px 0;">Toda acción formal — incluyendo investigación administrativa, referido a autoridad competente o apertura de proceso penal — requiere verificación independiente por la autoridad correspondiente conforme a la Ley de Contratación del Estado (Decreto 74-2001) y demás normativa aplicable. SENTINEL-AI no es un órgano jurisdiccional ni emite resoluciones vinculantes.</p>
+    <p style="margin:0;">Documento generado el <strong>${ts}</strong> · Uso restringido a destinatarios autorizados · Prohibida su reproducción o divulgación sin autorización expresa de The Prieto Group LLC.</p>
+  </div>`;
   // Inject print CSS into <head> if present, else prepend
   if (html.includes('</head>')) {
     html = html.replace('</head>', printCss + '\n</head>');
   } else {
     html = printCss + html;
   }
-  return html.replace('</body>', btn + '\n</body>');
+  // Inject disclaimer before </body>, then print button
+  if (html.includes('</body>')) {
+    html = html.replace('</body>', disclaimer + '\n' + btn + '\n</body>');
+  } else {
+    html = html + disclaimer + btn;
+  }
+  return html;
 }
 
 // Normalize a name using aliases (ONCAE long → SEFIN canonical)

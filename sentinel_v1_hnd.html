@@ -14622,57 +14622,179 @@ function ccExportExcel() {
 function ccExportExcelCore() {
   if (!_ccData) return;
   const { entidad, proveedor, esquema, concentracion, timeline, score, gaps, vendorContratos } = _ccData;
-  const wb = XLSX.utils.book_new();
-  const ts = new Date().toLocaleDateString('es-HN');
+  const wb  = XLSX.utils.book_new();
+  const ts  = new Date().toLocaleDateString('es-HN');
   const folio = `SEN-INV-${new Date().getFullYear()}-RI-${String(Date.now()).slice(-4)}`;
+  const fmtL  = n => { const v = Number(n||0); return v>=1e9?'L '+(v/1e9).toFixed(2)+'B':v>=1e6?'L '+(v/1e6).toFixed(1)+'M':'L '+Math.round(v).toLocaleString('es-HN'); };
+  const normSv = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 
-  // Hoja 1: Ficha del Caso
-  const ficha = [
-    ['REPORTE DE INVESTIGACIÓN — SENTINEL AI'],
-    ['Folio', folio], ['Fecha', ts], ['Entidad', entidad],
-    ['Proveedor investigado', proveedor], ['Hipótesis', esquema || 'Análisis General'],
-    ['Score de solidez', `${score.total}/${score.max}`], [],
-    ['CRITERIOS DE SOLIDEZ'],
-    ['Criterio', 'Resultado', 'Detalle'],
-    ...score.criteria.map(c => [c.label, c.val?'SÍ':'NO', c.detail]), [],
-    ['CONCENTRACIÓN'],
-    ['Contratos del proveedor', concentracion.vendorCount],
-    ['Total contratos entidad', concentracion.entityCount],
-    ['% contratos', `${concentracion.cntPct.toFixed(1)}%`],
-    ['Monto proveedor (L)', concentracion.vendorMonto],
-    ['Monto total entidad (L)', concentracion.entityMonto],
-    ['% monto', `${concentracion.mntPct.toFixed(1)}%`],
+  // ── Estilos reutilizables ──
+  const S = {
+    TITLE:  { font:{bold:true,sz:15,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'0A1628'}}, alignment:{horizontal:'left',vertical:'center'} },
+    HDR:    { font:{bold:true,sz:10,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'0D2137'}}, alignment:{horizontal:'center',vertical:'center'}, border:{bottom:{style:'thin',color:{rgb:'00C8FF'}}} },
+    SEC:    { font:{bold:true,sz:10,color:{rgb:'00C8FF'}}, fill:{fgColor:{rgb:'0A1628'}}, alignment:{horizontal:'left'} },
+    KEY:    { font:{bold:true,sz:10,color:{rgb:'8899AA'}}, alignment:{horizontal:'left'} },
+    VAL:    { font:{sz:10,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'0D1B2A'}}, alignment:{horizontal:'left'} },
+    CRIT:   { fill:{fgColor:{rgb:'2A0A0A'}}, font:{sz:10,color:{rgb:'FF6B6B'}} },
+    ALTA:   { fill:{fgColor:{rgb:'1E1400'}}, font:{sz:10,color:{rgb:'FFB347'}} },
+    NORMAL: { fill:{fgColor:{rgb:'0D1B2A'}}, font:{sz:10,color:{rgb:'CCDDEE'}} },
+    MONTO:  { font:{bold:true,sz:10}, alignment:{horizontal:'right'} },
+    PCT:    { font:{bold:true,sz:10,color:{rgb:'00C8FF'}}, alignment:{horizontal:'center'} },
+    NOTE:   { font:{italic:true,sz:9,color:{rgb:'778899'}}, alignment:{wrapText:true} },
+  };
+  const cell = (v, s) => ({ v, t: typeof v === 'number' ? 'n' : 's', s });
+  const setCell = (ws, addr, v, s) => { ws[addr] = cell(v, s); };
+
+  // ════════════════════════════════════════════
+  // HOJA 1 — Ficha del Caso
+  // ════════════════════════════════════════════
+  const ws1 = {};
+  let r = 0;
+
+  const H = (ws, row, col, v, s) => {
+    const addr = XLSX.utils.encode_cell({r:row,c:col});
+    ws[addr] = { v, t: typeof v === 'number' ? 'n' : 's', s };
+  };
+
+  // Título principal
+  H(ws1, r, 0, 'SENTINEL AI', S.TITLE);
+  H(ws1, r, 1, 'REPORTE DE INVESTIGACIÓN', S.TITLE);
+  H(ws1, r, 2, 'CONFIDENCIAL', { font:{bold:true,sz:10,color:{rgb:'FF3D57'}}, fill:{fgColor:{rgb:'0A1628'}}, alignment:{horizontal:'right'} });
+  r++;
+  H(ws1, r, 0, 'Sistema de Detección de Irregularidades en Contratación Pública — Honduras', { font:{sz:9,color:{rgb:'8899AA'}}, fill:{fgColor:{rgb:'0A1628'}} });
+  r+=2;
+
+  // Bloque de metadatos
+  const meta = [
+    ['Folio', folio], ['Fecha', ts], ['Entidad institucional', entidad],
+    ['Proveedor investigado', proveedor],
+    ['Hipótesis / Esquema', esquema || 'Análisis General'],
+    ['Score de solidez del caso', `${score.total} / ${score.max} criterios`],
   ];
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ficha), 'Ficha del Caso');
+  meta.forEach(([k,v]) => {
+    H(ws1, r, 0, k, S.KEY); H(ws1, r, 1, v, S.VAL); r++;
+  });
+  r++;
 
-  // Hoja 2: Contratos del Proveedor
-  const cols2 = ['No.','Entidad','Proveedor','Descripción','Monto (L)','Severidad','Patrones','Fecha','Fuente'];
-  const rows2 = vendorContratos.map((a,i) => [
-    i+1, a.entity_name||'', a.proveedor_nombre||'', a.description||'', a.monto||0,
-    a.severity||'',
-    (Array.isArray(a.patterns)?a.patterns:((a.patterns||'').split(','))).filter(Boolean).join(', '),
-    a.fecha_contrato||'', a.source_type||''
-  ]);
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([cols2,...rows2]), 'Contratos');
+  // Sección Concentración
+  H(ws1, r, 0, 'CONCENTRACIÓN', S.SEC); H(ws1, r, 1, '', S.SEC); r++;
+  H(ws1, r, 0, 'Contratos del proveedor en entidad', S.KEY); H(ws1, r, 1, concentracion.vendorCount, S.VAL); r++;
+  H(ws1, r, 0, 'Total contratos de la entidad', S.KEY); H(ws1, r, 1, concentracion.entityCount, S.VAL); r++;
+  H(ws1, r, 0, '% contratos', S.KEY); H(ws1, r, 1, `${concentracion.cntPct.toFixed(1)}%`, S.PCT); r++;
+  H(ws1, r, 0, 'Monto del proveedor', S.KEY); H(ws1, r, 1, fmtL(concentracion.vendorMonto), {...S.MONTO,fill:{fgColor:{rgb:'0D1B2A'}}}); r++;
+  H(ws1, r, 0, 'Monto total de la entidad', S.KEY); H(ws1, r, 1, fmtL(concentracion.entityMonto), {...S.MONTO,fill:{fgColor:{rgb:'0D1B2A'}}}); r++;
+  H(ws1, r, 0, '% monto', S.KEY); H(ws1, r, 1, `${concentracion.mntPct.toFixed(1)}%`, S.PCT); r+=2;
 
-  // Hoja 3: Por Administración
-  const totalMonto = timeline.reduce((s,t)=>s+t.monto,0);
-  const cols3 = ['Administración','Período','Contratos','Monto Total (L)','% del Total'];
-  const rows3 = timeline.map(t => [
-    t.nombre, `${t.inicio} → ${t.fin||'Presente'}`, t.count, t.monto,
-    totalMonto ? `${(t.monto/totalMonto*100).toFixed(1)}%` : '0%'
-  ]);
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([cols3,...rows3]), 'Por Administración');
+  // Sección Criterios de Solidez
+  H(ws1, r, 0, 'CRITERIOS DE SOLIDEZ DEL CASO', S.SEC); H(ws1, r, 1, ''); H(ws1, r, 2, ''); r++;
+  H(ws1, r, 0, 'Criterio', S.HDR); H(ws1, r, 1, 'Detectado', S.HDR); H(ws1, r, 2, 'Detalle', S.HDR); r++;
+  score.criteria.forEach(c => {
+    const s = c.val ? {...S.NORMAL,fill:{fgColor:{rgb:'0A1E0A'}}} : S.NORMAL;
+    H(ws1, r, 0, c.label, {...S.KEY,fill:{fgColor:{rgb:'0D1B2A'}}});
+    H(ws1, r, 1, c.val ? '✔ SÍ' : '✘ NO', c.val ? {...s,font:{bold:true,color:{rgb:'4ADE80'}}} : {...s,font:{color:{rgb:'FF6B6B'}}});
+    H(ws1, r, 2, c.detail, S.NORMAL); r++;
+  });
+  r++;
 
-  // Hoja 4: Preguntas LTAIP
-  const cols4 = ['No.','Gap de evidencia','Solicitud LTAIP','Destinatario','Base legal','Plazo'];
-  const rows4 = gaps.map((g,i) => [
-    i+1, g.gap, g.ltaip, `Unidad de Transparencia — ${entidad}`,
-    'Art. 3, Art. 8 y Art. 13 LTAIP', '10 días hábiles'
-  ]);
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([cols4,...rows4]), 'Preguntas LTAIP');
+  // Nota legal
+  H(ws1, r, 0, 'NOTA LEGAL', S.KEY);
+  H(ws1, r, 1, 'Clasificación automática — requiere verificación antes de acción formal. No constituye prueba judicial.', S.NOTE);
 
-  XLSX.writeFile(wb, `Sentinel_ReporteInvestigacion_${entidad.substring(0,20).replace(/\s/g,'_')}_${proveedor.substring(0,15).replace(/\s/g,'_')}.xlsx`);
+  ws1['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:r,c:3}});
+  ws1['!cols'] = [{wch:36},{wch:42},{wch:60},{wch:10}];
+  ws1['!rows'] = [{hpt:22},{hpt:14}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Ficha del Caso');
+
+  // ════════════════════════════════════════════
+  // HOJA 2 — Contratos del Proveedor
+  // ════════════════════════════════════════════
+  const ws2 = {};
+  let r2 = 0;
+
+  // Sub-header
+  H(ws2, r2, 0, `SENTINEL AI — Contratos: ${proveedor} × ${entidad}`, S.TITLE);
+  for(let c=1;c<=8;c++) H(ws2, r2, c, '', S.TITLE);
+  r2++;
+  H(ws2, r2, 0, `${vendorContratos.length} contratos · generado ${ts} · ${folio}`, S.KEY);
+  r2+=2;
+
+  // Headers
+  const hdr2 = ['#','Entidad','Proveedor','Descripción','Monto','Severidad','Patrones de Riesgo','Fecha','Fuente'];
+  hdr2.forEach((h,c) => H(ws2, r2, c, h, S.HDR));
+  r2++;
+
+  // Rows con color por severidad
+  vendorContratos.forEach((a,i) => {
+    const sv   = normSv(a.severity);
+    const sRow = sv.includes('CRITICA') ? S.CRIT : sv.includes('ALTA') ? S.ALTA : S.NORMAL;
+    const monto = Number(a.monto||a.monto_contrato||0);
+    const pats  = (Array.isArray(a.patterns)?a.patterns:((a.patterns||'').split(/[,·]/))).filter(Boolean).join(' | ');
+    H(ws2, r2, 0, i+1,                    {...sRow,alignment:{horizontal:'center'}});
+    H(ws2, r2, 1, a.entity_name||'—',     sRow);
+    H(ws2, r2, 2, a.proveedor_nombre||'—',sRow);
+    H(ws2, r2, 3, a.description||'—',     sRow);
+    H(ws2, r2, 4, fmtL(monto),            {...sRow,alignment:{horizontal:'right'},font:{...((sv.includes('CRITICA')?S.CRIT:sv.includes('ALTA')?S.ALTA:S.NORMAL).font),bold:true}});
+    H(ws2, r2, 5, a.severity||'—',        sRow);
+    H(ws2, r2, 6, pats||'—',              sRow);
+    H(ws2, r2, 7, (a.fecha_contrato||'').slice(0,10), sRow);
+    H(ws2, r2, 8, a.source_type||a.source||'—', sRow);
+    r2++;
+  });
+
+  ws2['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:r2,c:8}});
+  ws2['!cols'] = [{wch:4},{wch:22},{wch:28},{wch:38},{wch:14},{wch:12},{wch:46},{wch:12},{wch:8}];
+  ws2['!rows'] = [{hpt:22}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Contratos');
+
+  // ════════════════════════════════════════════
+  // HOJA 3 — Por Administración
+  // ════════════════════════════════════════════
+  const ws3 = {};
+  let r3 = 0;
+  H(ws3, r3, 0, `DISTRIBUCIÓN POR ADMINISTRACIÓN — ${entidad}`, S.TITLE);
+  for(let c=1;c<=4;c++) H(ws3, r3, c, '', S.TITLE);
+  r3+=2;
+  const hdr3 = ['Administración','Período','Contratos','Monto Total','% del Total'];
+  hdr3.forEach((h,c) => H(ws3, r3, c, h, S.HDR));
+  r3++;
+  const totalM = timeline.reduce((s,t)=>s+t.monto,0);
+  timeline.forEach(t => {
+    H(ws3, r3, 0, t.nombre, S.NORMAL);
+    H(ws3, r3, 1, `${t.inicio} → ${t.fin||'Presente'}`, S.NORMAL);
+    H(ws3, r3, 2, t.count, {...S.NORMAL,alignment:{horizontal:'center'}});
+    H(ws3, r3, 3, fmtL(t.monto), {...S.NORMAL,alignment:{horizontal:'right'},font:{bold:true,color:{rgb:'FFFFFF'}}});
+    H(ws3, r3, 4, totalM?`${(t.monto/totalM*100).toFixed(1)}%`:'0%', S.PCT);
+    r3++;
+  });
+  ws3['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:r3,c:4}});
+  ws3['!cols'] = [{wch:28},{wch:24},{wch:12},{wch:16},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws3, 'Por Administración');
+
+  // ════════════════════════════════════════════
+  // HOJA 4 — Preguntas LTAIP
+  // ════════════════════════════════════════════
+  const ws4 = {};
+  let r4 = 0;
+  H(ws4, r4, 0, `PREGUNTAS LTAIP — ${entidad}`, S.TITLE);
+  for(let c=1;c<=5;c++) H(ws4, r4, c, '', S.TITLE);
+  r4+=2;
+  const hdr4 = ['#','Gap de Evidencia','Solicitud LTAIP','Destinatario','Base Legal','Plazo'];
+  hdr4.forEach((h,c) => H(ws4, r4, c, h, S.HDR));
+  r4++;
+  gaps.forEach((g,i) => {
+    H(ws4, r4, 0, i+1,                                  {...S.NORMAL,alignment:{horizontal:'center'}});
+    H(ws4, r4, 1, g.gap,                                 S.NORMAL);
+    H(ws4, r4, 2, g.ltaip,                               {...S.NORMAL,alignment:{wrapText:true}});
+    H(ws4, r4, 3, `Unidad de Transparencia — ${entidad}`,S.NORMAL);
+    H(ws4, r4, 4, 'Art. 3, 8 y 13 LTAIP',               S.NORMAL);
+    H(ws4, r4, 5, '10 días hábiles',                     S.NORMAL);
+    r4++;
+  });
+  ws4['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:r4,c:5}});
+  ws4['!cols'] = [{wch:4},{wch:36},{wch:62},{wch:30},{wch:18},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws4, 'Preguntas LTAIP');
+
+  XLSX.writeFile(wb, `Sentinel_${entidad.replace(/\s/g,'_').slice(0,20)}_${proveedor.replace(/\s/g,'_').slice(0,15)}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 async function ccGenerarExpediente() {

@@ -13573,16 +13573,90 @@ function irDesdeEjecutivo(fn) {
 }
 
 function generarBriefingEjecutivo() {
-  // Top 20 alertas por monto_contrato desc → reutiliza generateReport con filtro
-  const top20 = [...allAlerts]
+  const top20 = [...(allAlerts||[])]
     .filter(a => a.monto_contrato && Number(a.monto_contrato) > 0)
     .sort((a,b) => Number(b.monto_contrato) - Number(a.monto_contrato))
     .slice(0, 20);
   if (!top20.length) { alert('No hay datos disponibles aún.'); return; }
-  const _orig = window._briefingMode;
-  window._briefingMode = { active: true, data: top20, title: 'Briefing Ejecutivo — Top 20 por Valor' };
-  generateReport('todo');
-  window._briefingMode = _orig;
+
+  const fmtL = v => 'L. ' + (Number(v)||0).toLocaleString('es-HN', {minimumFractionDigits:0,maximumFractionDigits:0});
+  const esc  = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const now  = new Date();
+  const fechaStr = now.toLocaleDateString('es-HN', {year:'numeric',month:'long',day:'numeric'});
+  const horaStr  = now.toLocaleTimeString('es-HN', {hour:'2-digit',minute:'2-digit'});
+
+  const sevColor = s => {
+    const n = (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if (n.includes('CRITICA')) return '#e74c3c';
+    if (n.includes('ALTA'))    return '#e67e22';
+    if (n.includes('MEDIA'))   return '#f39c12';
+    return '#7f8c8d';
+  };
+
+  const filas = top20.map((a, i) => {
+    const proveedor = a.proveedor_nombre || '—';
+    const entidad   = a.entity_name || '—';
+    const monto     = fmtL(a.monto_contrato);
+    const sev       = a.severity || 'Baja';
+    const pats      = (a.patterns||'').split(',').filter(Boolean).slice(0,2).join(', ') || '—';
+    const bg        = i % 2 === 0 ? '#fff' : '#f8f9fa';
+    return `<tr style="background:${bg}">
+      <td style="padding:7px 10px;font-size:11px;color:#6b7280;text-align:center;">${i+1}</td>
+      <td style="padding:7px 10px;font-size:12px;font-weight:600;">${esc(proveedor)}</td>
+      <td style="padding:7px 10px;font-size:11px;color:#374151;">${esc(entidad)}</td>
+      <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#c0392b;text-align:right;">${monto}</td>
+      <td style="padding:7px 10px;font-size:11px;font-weight:700;color:${sevColor(sev)};text-align:center;">${esc(sev)}</td>
+      <td style="padding:7px 10px;font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;">${esc(pats)}</td>
+    </tr>`;
+  }).join('');
+
+  const totalMonto = top20.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <style>
+    body{margin:0;padding:24px 32px;font-family:Arial,sans-serif;color:#1a202c;background:#fff;}
+    h1{font-size:20px;font-weight:800;color:#0a1628;margin:0 0 2px;}
+    .sub{font-size:13px;color:#6b7280;margin:0 0 16px;}
+    .meta{font-size:11px;color:#94a3b8;margin-bottom:20px;}
+    .kpi-bar{display:flex;gap:16px;margin-bottom:20px;padding:12px 16px;background:#0a1628;border-radius:6px;}
+    .kpi{text-align:center;flex:1;}
+    .kpi-val{font-size:18px;font-weight:800;color:#fff;}
+    .kpi-lbl{font-size:10px;color:#94a3b8;margin-top:2px;}
+    table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;}
+    th{background:#0a1628;color:#fff;padding:8px 10px;font-size:11px;text-align:left;}
+    th:nth-child(4),th:nth-child(5){text-align:center;}
+    .footer{margin-top:20px;font-size:10px;color:#94a3b8;text-align:center;border-top:1px solid #e5e7eb;padding-top:10px;}
+    .conf{display:inline-block;background:#c0392b;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:3px;letter-spacing:1px;margin-bottom:12px;}
+  </style></head><body>
+  <span class="conf">CONFIDENCIAL</span>
+  <h1>SENTINEL-AI HONDURAS</h1>
+  <div class="sub">Briefing Ejecutivo — Top 20 Contratos de Mayor Riesgo por Valor</div>
+  <div class="meta">Generado: ${fechaStr} a las ${horaStr} · Base: ${(allAlerts||[]).length.toLocaleString('es-HN')} contratos monitoreados</div>
+  <div class="kpi-bar">
+    <div class="kpi"><div class="kpi-val">20</div><div class="kpi-lbl">Contratos</div></div>
+    <div class="kpi"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">Monto Expuesto</div></div>
+    <div class="kpi"><div class="kpi-val">${top20.filter(a=>(a.severity||'').includes('rít')).length}</div><div class="kpi-lbl">Críticos</div></div>
+    <div class="kpi"><div class="kpi-val">${top20.filter(a=>(a.severity||'').includes('lta')).length}</div><div class="kpi-lbl">Altos</div></div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:30px;">#</th>
+      <th>Proveedor</th>
+      <th>Entidad</th>
+      <th style="text-align:right;">Monto</th>
+      <th style="text-align:center;">Severidad</th>
+      <th>Patrones</th>
+    </tr></thead>
+    <tbody>${filas}</tbody>
+  </table>
+  <div class="footer">Sentinel AI · Honduras · ${fechaStr} · CONFIDENCIAL — Solo para uso interno autorizado</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 // ═══ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════════════════

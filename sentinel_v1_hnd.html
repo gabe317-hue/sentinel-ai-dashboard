@@ -19744,16 +19744,13 @@ async function _loadCruceTabB() {
   const fmtL = n => { if(!n||n===0) return 'L —'; if(n>=1e9) return 'L '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L '+(n/1e6).toFixed(1)+'M'; return 'L '+Math.round(n).toLocaleString('es-HN'); };
   const fmtPct = r => { if(!r) return '—'; const pct = (r*100).toFixed(1)+'%'; if(r < 0.1) return `<span style="color:var(--red);font-weight:700;">${pct}</span>`; if(r < 0.25) return `<span style="color:var(--amber);font-weight:700;">${pct}</span>`; return `<span style="color:var(--green);">${pct}</span>`; };
 
-  if (!window.supabase) { loadingEl.textContent = 'Supabase no disponible.'; return; }
+  if (!db) { loadingEl.textContent = 'Supabase no disponible.'; return; }
 
   try {
-    const { data, error } = await window.supabase.rpc('cruce_oncae_sefin_cobertura').catch(() => ({ data: null, error: { message: 'RPC no disponible' } }));
-
-    // Fallback: manual JS join using allAlerts + query sefin_presupuesto
+    // Fetch sefin_presupuesto via db (global Supabase client)
     let rows;
-    if (error || !data) {
-      // Fetch sefin_presupuesto from supabase
-      const { data: sefin, error: se } = await window.supabase
+    {
+      const { data: sefin, error: se } = await db
         .from('sefin_presupuesto')
         .select('institucion_nombre, gestion, ejecucion_acumulada')
         .gt('ejecucion_acumulada', 0);
@@ -19789,8 +19786,6 @@ async function _loadCruceTabB() {
         rows.push({ ent: o.ent, anio: o.anio, oncae: o.oncae, sefin: s.sefin, ratio });
       });
       rows.sort((a, b) => a.ratio - b.ratio);
-    } else {
-      rows = data;
     }
 
     if (!rows || rows.length === 0) {

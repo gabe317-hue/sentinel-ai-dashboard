@@ -2720,6 +2720,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div class="user-info">
         <div class="user-name" id="userDisplayName">—</div>
         <div class="user-role" id="userRole">PGR — Honduras</div>
+        <div id="userRoleBadge" style="font-size:10px;margin-top:2px;color:var(--text-dim);font-weight:600;"></div>
       </div>
     </div>
   </div>
@@ -15619,29 +15620,69 @@ document.addEventListener('DOMContentLoaded', () => {
 // ════════════════════════════════════════════════════════════
 let currentUser = null;  // { email, name, initials }
 
+// ── Role config: map email → role ('admin' | 'analista') ─────────────────────
+// Add emails here. Any email NOT in ADMIN_EMAILS gets role 'analista'.
+const SENTINEL_ADMIN_EMAILS = [
+  'gabe317@gmail.com',
+  'admin@theprietogroup.com',
+  'gprieto@theprietogroup.com'
+];
+
+function resolveRole(email) {
+  return SENTINEL_ADMIN_EMAILS.includes((email||'').toLowerCase().trim()) ? 'admin' : 'analista';
+}
+
+function applyRole(role) {
+  // Items hidden for analista (data ingestion + raw audit log)
+  const adminOnly = ['nav-ingest', 'nav-audit'];
+  adminOnly.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = role === 'admin' ? '' : 'none';
+  });
+  // Role badge color in sidebar
+  const roleEl = document.getElementById('userRoleBadge');
+  if (roleEl) {
+    roleEl.textContent = role === 'admin' ? '👑 Admin' : '🔍 Analista';
+    roleEl.style.color = role === 'admin' ? 'var(--electric)' : '#a855f7';
+  }
+}
+
 function setCurrentUser(email) {
   // Derive display name from email prefix (e.g. gprieto@pgr → G. Prieto)
-  const prefix = email.split('@')[0];                        // "gprieto"
+  const prefix = email.split('@')[0];
   const parts  = prefix.replace(/[^a-zA-Z]/g, ' ').trim().split(' ');
   const name   = parts.length > 1
     ? parts[0][0].toUpperCase() + '. ' +
       parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase()
     : prefix.charAt(0).toUpperCase() + prefix.slice(1).toLowerCase();
   const initials = parts.map(p => p[0] || '').join('').toUpperCase().slice(0, 2);
+  const role = resolveRole(email);
 
-  currentUser = { email, name, initials };
+  currentUser = { email, name, initials, role };
 
   // Update sidebar user card
   document.getElementById('userAvatar').textContent      = initials;
   document.getElementById('userDisplayName').textContent = name;
   document.getElementById('userRole').textContent        = email;
 
+  // Apply role restrictions
+  applyRole(role);
+
   // Persist for page reload
   try { sessionStorage.setItem('sentinel_user', JSON.stringify(currentUser)); } catch(e){}
 }
 
+// ── Sentinel local credentials (no Supabase Auth required) ──────────────────
+// To change passwords: update the 'pw' values below.
+// Roles: 'admin' = acceso total · 'analista' = vista limitada (sin Ingesta/Auditoría)
+const SENTINEL_USERS = {
+  'gabe317@gmail.com':          { pw: 'Sentinel2026!',  role: 'admin',    name: 'G. Prieto' },
+  'analista@sentinel.hn':       { pw: 'Analista2026!',  role: 'analista', name: 'Analista PGR' }
+};
+
 async function doLogin() {
-  const email    = document.getElementById('loginEmail').value.trim();
+  const email    = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value;
   const errEl    = document.getElementById('loginError');
   const btn      = document.getElementById('loginBtn');
@@ -15652,23 +15693,35 @@ async function doLogin() {
   btn.disabled = true;
   btn.textContent = 'Verificando...';
 
-  try {
-    const { data, error } = await db.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+  // Small delay for UX
+  await new Promise(r => setTimeout(r, 400));
 
-    setCurrentUser(email);
-    document.getElementById('loginScreen').classList.add('hidden');
-    showPortal();
-    await loadAlerts();
-    startRealtime();
-
-  } catch (err) {
-    errEl.textContent = '❌ ' + (err.message === 'Invalid login credentials'
-      ? 'Correo o contraseña incorrectos'
-      : err.message);
+  const user = SENTINEL_USERS[email];
+  if (!user || user.pw !== password) {
+    errEl.textContent = '❌ Correo o contraseña incorrectos';
     btn.disabled = false;
     btn.textContent = 'Ingresar al Sistema';
+    return;
   }
+
+  // Log access to Supabase (non-blocking)
+  try {
+    await db.from('alert_audit_log').insert([{
+      alert_id: null,
+      action: 'LOGIN',
+      old_value: null,
+      new_value: email,
+      user_email: email,
+      user_name: user.name,
+      notes: `Acceso · rol: ${user.role} · ${new Date().toISOString()}`
+    }]);
+  } catch(e) { /* non-blocking */ }
+
+  setCurrentUser(email);
+  document.getElementById('loginScreen').classList.add('hidden');
+  showPortal();
+  await loadAlerts();
+  startRealtime();
 }
 
 // ── Disparar notificación manual (S91) ──────────────────────────────────────
@@ -15699,9 +15752,8 @@ async function dispararNotificacion(fnName, label) {
   }
 }
 
-async function doLogout() {
+function doLogout() {
   if (!confirm('¿Deseas cerrar tu sesión en Sentinel-AI?')) return;
-  try { await db.auth.signOut(); } catch(e) {}
   try { sessionStorage.removeItem('sentinel_user'); } catch(e) {}
   currentUser = null;
   // Show login screen, hide dashboard content
@@ -15724,6 +15776,7 @@ function checkStoredSession() {
         document.getElementById('userAvatar').textContent      = u.initials || '—';
         document.getElementById('userDisplayName').textContent = u.name    || u.email;
         document.getElementById('userRole').textContent        = u.email;
+        applyRole(u.role || resolveRole(u.email));
         document.getElementById('loginScreen').classList.add('hidden');
         return true;  // session restored
       }

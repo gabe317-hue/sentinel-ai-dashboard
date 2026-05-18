@@ -16930,10 +16930,15 @@ tickClock();
 setInterval(tickClock, 1000);
 
 async function init() {
-  document.getElementById('loginScreen').classList.add('hidden');
-  showPortal();          // portal is entry point — show immediately
-  await loadAlerts();    // data loads in background; poUpdateIndicators() polls for it
-  startRealtime();
+  // Check for existing session first — if valid, skip login
+  if (checkStoredSession()) {
+    showPortal();
+    await loadAlerts();
+    startRealtime();
+  } else {
+    // No valid session — show login screen
+    document.getElementById('loginScreen').classList.remove('hidden');
+  }
 }
 
 async function reloadDashboardData() {

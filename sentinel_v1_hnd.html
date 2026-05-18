@@ -2683,6 +2683,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         <span class="nav-icon">🔗</span> OCDS / Cruce
         <span class="nav-chip" id="nav-ocds-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">—</span>
       </button>
+      <button class="nav-item" id="nav-cruce-sefin" onclick="showCruceSefinPanel()">
+        <span class="nav-icon">⚖️</span> Cruce ONCAE×SEFIN
+        <span class="nav-chip" id="nav-cruce-sefin-chip" style="background:rgba(255,165,0,0.1);color:var(--amber);border-color:rgba(255,165,0,0.25);">NEW</span>
+      </button>
       <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
         <span class="nav-icon">📝</span> Auditoría
         <span class="nav-chip">LOG</span>
@@ -4823,6 +4827,64 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
     <div id="ocdsBody" style="margin-top:18px;">
       <div style="color:var(--muted);padding:40px;text-align:center;">Calculando cruce...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ CRUCE ONCAE × SEFIN PANEL ═══════════════════ -->
+  <div class="fuente-panel" id="cruceSefinPanel">
+    <button class="fuente-back" onclick="hideCruceSefinPanel()">← Contratos</button>
+
+    <div class="fuente-header">
+      <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
+        <span>⚖️</span>
+        <span>Cruce ONCAE × SEFIN — Detección de Doble Contabilización</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+        Contratos fraccionados · Brecha ONCAE vs ejecución SEFIN por institución
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div style="display:flex;gap:0;margin-top:18px;border-bottom:1px solid var(--border);">
+      <button id="cruce-tab-a" onclick="switchCruceTab('a')"
+        style="padding:9px 18px;font-size:12px;font-weight:700;letter-spacing:.05em;background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;margin-right:4px;">
+        🔁 Contratos Similares
+      </button>
+      <button id="cruce-tab-b" onclick="switchCruceTab('b')"
+        style="padding:9px 18px;font-size:12px;font-weight:700;letter-spacing:.05em;background:var(--glass);color:var(--text-dim);border:1px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;">
+        📊 Cobertura SEFIN
+      </button>
+    </div>
+
+    <!-- Tab A: Near-duplicates (Fraccionamiento) -->
+    <div id="cruce-pane-a" style="margin-top:16px;">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+        <div style="padding:12px 18px;background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.25);border-radius:10px;">
+          <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">Grupos detectados</div>
+          <div id="cruce-a-grupos" style="font-size:26px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</div>
+        </div>
+        <div style="padding:12px 18px;background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.25);border-radius:10px;">
+          <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">Contratos en grupos</div>
+          <div id="cruce-a-contratos" style="font-size:26px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</div>
+        </div>
+        <div style="padding:12px 18px;background:rgba(255,165,0,0.08);border:1px solid rgba(255,165,0,0.25);border-radius:10px;">
+          <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">Monto exceso estimado</div>
+          <div id="cruce-a-exceso" style="font-size:26px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">
+        Patrón <strong>FRACCIONAMIENTO</strong>: mismo proveedor + misma entidad + mismo monto + misma fecha, distintos IDs de contrato.
+      </div>
+      <div id="cruce-a-table" style="overflow-x:auto;max-height:480px;overflow-y:auto;"></div>
+    </div>
+
+    <!-- Tab B: ONCAE vs SEFIN coverage -->
+    <div id="cruce-pane-b" style="display:none;margin-top:16px;">
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;">
+        Ratio = Monto ONCAE registrado / Ejecución SEFIN · Valores bajos indican gasto que <strong>no pasó por ONCAE</strong>.
+      </div>
+      <div id="cruce-b-loading" style="color:var(--muted);padding:32px;text-align:center;">Consultando Supabase...</div>
+      <div id="cruce-b-table" style="overflow-x:auto;max-height:480px;overflow-y:auto;display:none;"></div>
     </div>
   </div>
 
@@ -7861,7 +7923,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -19558,6 +19620,224 @@ function exportOcdsCrossRefPDF() {
   pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
+}
+
+// ══════════════════════════════════════════════════════════════
+// CRUCE ONCAE × SEFIN PANEL
+// ══════════════════════════════════════════════════════════════
+
+let _cruceSefinLoaded = false;
+
+function showCruceSefinPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('cruceSefinPanel').classList.add('open');
+  document.getElementById('nav-cruce-sefin').classList.add('active');
+  document.getElementById('nav-cruce-sefin-chip').textContent = '⚖️';
+  if (!_cruceSefinLoaded) {
+    _cruceSefinLoaded = true;
+    _loadCruceTabA();
+  }
+}
+
+function hideCruceSefinPanel() {
+  document.getElementById('cruceSefinPanel').classList.remove('open');
+  document.getElementById('nav-cruce-sefin').classList.remove('active');
+}
+
+function switchCruceTab(tab) {
+  const tabA = document.getElementById('cruce-tab-a');
+  const tabB = document.getElementById('cruce-tab-b');
+  const paneA = document.getElementById('cruce-pane-a');
+  const paneB = document.getElementById('cruce-pane-b');
+  const activeStyle = 'padding:9px 18px;font-size:12px;font-weight:700;letter-spacing:.05em;background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;margin-right:4px;';
+  const inactiveStyle = 'padding:9px 18px;font-size:12px;font-weight:700;letter-spacing:.05em;background:var(--glass);color:var(--text-dim);border:1px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;';
+  if (tab === 'a') {
+    tabA.style.cssText = activeStyle;
+    tabB.style.cssText = inactiveStyle;
+    paneA.style.display = 'block';
+    paneB.style.display = 'none';
+  } else {
+    tabA.style.cssText = inactiveStyle;
+    tabB.style.cssText = activeStyle + 'margin-right:0;';
+    paneA.style.display = 'none';
+    paneB.style.display = 'block';
+    _loadCruceTabB();
+  }
+}
+
+// ── Tab A: Near-duplicate / Fraccionamiento detection ───────────
+function _loadCruceTabA() {
+  const all = window.allAlerts || [];
+  const fmtL = n => { if(!n||n===0) return 'L —'; if(n>=1e9) return 'L '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L '+(n/1e6).toFixed(1)+'M'; return 'L '+Math.round(n).toLocaleString('es-HN'); };
+
+  // Group by proveedor + entity + monto + date (YYYY-MM-DD)
+  const groupMap = {};
+  all.forEach(a => {
+    const prov = (a.proveedor_nombre || '').trim();
+    const ent  = (a.entity_name || '').trim();
+    const monto = parseFloat(a.monto_contrato) || 0;
+    const fecha = (a.fecha_contrato || '').substring(0, 10);
+    if (!prov || !ent || monto <= 0 || !fecha) return;
+    const key = `${prov.toLowerCase()}|||${ent.toLowerCase()}|||${Math.round(monto)}|||${fecha}`;
+    if (!groupMap[key]) groupMap[key] = { prov, ent, monto, fecha, ids: [] };
+    groupMap[key].ids.push(a.contract_id || '');
+  });
+
+  // Only groups with 2+ contracts
+  const groups = Object.values(groupMap).filter(g => g.ids.length >= 2);
+  groups.sort((a, b) => (b.ids.length * b.monto) - (a.ids.length * a.monto));
+
+  const totalContratos = groups.reduce((s, g) => s + g.ids.length, 0);
+  const totalExceso = groups.reduce((s, g) => s + g.monto * (g.ids.length - 1), 0);
+
+  document.getElementById('cruce-a-grupos').textContent = groups.length.toLocaleString('es-HN');
+  document.getElementById('cruce-a-contratos').textContent = totalContratos.toLocaleString('es-HN');
+  document.getElementById('cruce-a-exceso').textContent = fmtL(totalExceso);
+
+  if (groups.length === 0) {
+    document.getElementById('cruce-a-table').innerHTML = '<div style="color:var(--muted);padding:24px;text-align:center;">No se detectaron contratos duplicados con los datos actuales.</div>';
+    return;
+  }
+
+  const top50 = groups.slice(0, 50);
+  const rows = top50.map((g, i) => {
+    const bgRow = i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)';
+    const exceso = g.monto * (g.ids.length - 1);
+    return `<tr style="background:${bgRow};border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:7px 10px;font-size:11px;color:var(--text-dim);">${i+1}</td>
+      <td style="padding:7px 10px;font-size:12px;font-weight:600;color:var(--text);">${(g.prov.length>45?g.prov.slice(0,44)+'…':g.prov)}</td>
+      <td style="padding:7px 10px;font-size:11px;color:var(--text-dim);">${(g.ent.length>40?g.ent.slice(0,39)+'…':g.ent)}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:12px;font-weight:700;color:var(--red);">${g.ids.length}</td>
+      <td style="padding:7px 10px;text-align:right;font-size:12px;">${fmtL(g.monto)}</td>
+      <td style="padding:7px 10px;text-align:right;font-size:12px;font-weight:700;color:var(--amber);">${fmtL(exceso)}</td>
+      <td style="padding:7px 10px;font-size:10px;color:var(--text-dim);">${g.fecha}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('cruce-a-table').innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-family:'Inter',sans-serif;">
+      <thead>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+          <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:left;font-weight:600;">#</th>
+          <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:left;font-weight:600;">PROVEEDOR</th>
+          <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:left;font-weight:600;">ENTIDAD</th>
+          <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:center;font-weight:600;">COPIAS</th>
+          <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:right;font-weight:600;">MONTO c/u</th>
+          <th style="padding:8px 10px;font-size:10px;color:var(--amber);text-align:right;font-weight:600;">EXCESO EST.</th>
+          <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:left;font-weight:600;">FECHA</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${groups.length > 50 ? `<div style="text-align:center;color:var(--muted);font-size:11px;padding:10px;">… y ${(groups.length-50).toLocaleString()} grupos adicionales</div>` : ''}
+  `;
+}
+
+// ── Tab B: ONCAE vs SEFIN institutional coverage ─────────────────
+let _cruceBLoaded = false;
+async function _loadCruceTabB() {
+  if (_cruceBLoaded) return;
+  _cruceBLoaded = true;
+
+  const loadingEl = document.getElementById('cruce-b-loading');
+  const tableEl   = document.getElementById('cruce-b-table');
+  const fmtL = n => { if(!n||n===0) return 'L —'; if(n>=1e9) return 'L '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L '+(n/1e6).toFixed(1)+'M'; return 'L '+Math.round(n).toLocaleString('es-HN'); };
+  const fmtPct = r => { if(!r) return '—'; const pct = (r*100).toFixed(1)+'%'; if(r < 0.1) return `<span style="color:var(--red);font-weight:700;">${pct}</span>`; if(r < 0.25) return `<span style="color:var(--amber);font-weight:700;">${pct}</span>`; return `<span style="color:var(--green);">${pct}</span>`; };
+
+  if (!window.supabase) { loadingEl.textContent = 'Supabase no disponible.'; return; }
+
+  try {
+    const { data, error } = await window.supabase.rpc('cruce_oncae_sefin_cobertura').catch(() => ({ data: null, error: { message: 'RPC no disponible' } }));
+
+    // Fallback: manual JS join using allAlerts + query sefin_presupuesto
+    let rows;
+    if (error || !data) {
+      // Fetch sefin_presupuesto from supabase
+      const { data: sefin, error: se } = await window.supabase
+        .from('sefin_presupuesto')
+        .select('institucion_nombre, gestion, ejecucion_acumulada')
+        .gt('ejecucion_acumulada', 0);
+
+      if (se || !sefin) { loadingEl.textContent = 'Error al cargar datos SEFIN: ' + (se?.message || 'desconocido'); return; }
+
+      // Aggregate sefin by institution + year
+      const sefinMap = {};
+      sefin.forEach(r => {
+        const k = `${(r.institucion_nombre||'').toLowerCase().trim()}|||${r.gestion}`;
+        if (!sefinMap[k]) sefinMap[k] = { inst: r.institucion_nombre, anio: r.gestion, sefin: 0 };
+        sefinMap[k].sefin += parseFloat(r.ejecucion_acumulada) || 0;
+      });
+
+      // Aggregate ONCAE alerts by entity + year
+      const oncaeMap = {};
+      (window.allAlerts || []).forEach(a => {
+        if (!a.entity_name || !a.fecha_contrato || !a.monto_contrato) return;
+        const anio = parseInt((a.fecha_contrato||'').substring(0,4));
+        if (anio < 2019 || anio > 2026) return;
+        const k = `${(a.entity_name||'').toLowerCase().trim()}|||${anio}`;
+        if (!oncaeMap[k]) oncaeMap[k] = { ent: a.entity_name, anio, oncae: 0 };
+        oncaeMap[k].oncae += parseFloat(a.monto_contrato) || 0;
+      });
+
+      // Join: only rows that have both ONCAE and SEFIN
+      rows = [];
+      Object.keys(oncaeMap).forEach(k => {
+        const o = oncaeMap[k];
+        const s = sefinMap[k];
+        if (!s || s.sefin <= 0) return;
+        const ratio = o.oncae / s.sefin;
+        rows.push({ ent: o.ent, anio: o.anio, oncae: o.oncae, sefin: s.sefin, ratio });
+      });
+      rows.sort((a, b) => a.ratio - b.ratio);
+    } else {
+      rows = data;
+    }
+
+    if (!rows || rows.length === 0) {
+      loadingEl.textContent = 'No se encontraron instituciones con datos en ambas fuentes.';
+      return;
+    }
+
+    loadingEl.style.display = 'none';
+    tableEl.style.display = 'block';
+
+    const topRows = rows.slice(0, 30);
+    const tableRows = topRows.map((r, i) => {
+      const bgRow = i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)';
+      const brecha = r.sefin - r.oncae;
+      return `<tr style="background:${bgRow};border-bottom:1px solid rgba(255,255,255,0.05);">
+        <td style="padding:7px 10px;font-size:11px;color:var(--text-dim);">${i+1}</td>
+        <td style="padding:7px 10px;font-size:12px;font-weight:600;color:var(--text);">${((r.ent||r.entity_name||'').length>45?(r.ent||r.entity_name||'').slice(0,44)+'…':(r.ent||r.entity_name||''))}</td>
+        <td style="padding:7px 10px;text-align:center;font-size:11px;color:var(--text-dim);">${r.anio||r.anio_}</td>
+        <td style="padding:7px 10px;text-align:right;font-size:12px;">${fmtL(r.oncae||r.oncae_total)}</td>
+        <td style="padding:7px 10px;text-align:right;font-size:12px;">${fmtL(r.sefin||r.sefin_ejecutado)}</td>
+        <td style="padding:7px 10px;text-align:right;font-size:12px;font-weight:700;color:var(--amber);">${fmtL(brecha > 0 ? brecha : (r.sefin||r.sefin_ejecutado) - (r.oncae||r.oncae_total))}</td>
+        <td style="padding:7px 10px;text-align:center;font-size:12px;">${fmtPct(r.ratio)}</td>
+      </tr>`;
+    }).join('');
+
+    tableEl.innerHTML = `
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;">
+        Mostrando ${topRows.length} de ${rows.length} instituciones con datos en ambas fuentes. Ordenado por cobertura ONCAE (menor → mayor riesgo).
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-family:'Inter',sans-serif;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:left;font-weight:600;">#</th>
+            <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:left;font-weight:600;">INSTITUCIÓN</th>
+            <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:center;font-weight:600;">AÑO</th>
+            <th style="padding:8px 10px;font-size:10px;color:var(--electric);text-align:right;font-weight:600;">ONCAE</th>
+            <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:right;font-weight:600;">SEFIN EJEC.</th>
+            <th style="padding:8px 10px;font-size:10px;color:var(--amber);text-align:right;font-weight:600;">BRECHA</th>
+            <th style="padding:8px 10px;font-size:10px;color:var(--text-dim);text-align:center;font-weight:600;">COBERTURA</th>
+          </tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    `;
+  } catch(e) {
+    loadingEl.textContent = 'Error: ' + e.message;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════

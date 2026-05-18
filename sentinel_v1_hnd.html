@@ -4842,6 +4842,10 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
         Contratos fraccionados · Brecha ONCAE vs ejecución SEFIN por institución
       </div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="pdf-btn" onclick="exportCruceASimilaresPDF()" style="background:rgba(255,80,80,0.08);color:var(--red);border-color:rgba(255,80,80,0.3);">📄 PDF Contratos Similares</button>
+        <button class="pdf-btn" onclick="exportCruceBCoberturaPDF()" style="background:rgba(255,165,0,0.08);color:var(--amber);border-color:rgba(255,165,0,0.3);">📄 PDF Cobertura SEFIN</button>
+      </div>
     </div>
 
     <!-- Tab bar -->
@@ -19833,6 +19837,184 @@ async function _loadCruceTabB() {
   } catch(e) {
     loadingEl.textContent = 'Error: ' + e.message;
   }
+}
+
+// ── PDF exports: Cruce ONCAE × SEFIN ─────────────────────────────────────────
+function exportCruceASimilaresPDF() {
+  const all = window.allAlerts || [];
+  if (!all.length) { alert('Datos no cargados.'); return; }
+  const fmtL = n => { if(!n||n===0) return 'L —'; if(n>=1e9) return 'L '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L '+(n/1e6).toFixed(1)+'M'; return 'L '+Math.round(n).toLocaleString('es-HN'); };
+  const esc  = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const today = new Date();
+  const ds    = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-FRAC-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  // Rebuild groups (same logic as _loadCruceTabA)
+  const groupMap = {};
+  all.forEach(a => {
+    const prov = (a.proveedor_nombre||'').trim();
+    const ent  = (a.entity_name||'').trim();
+    const monto = parseFloat(a.monto_contrato)||0;
+    const fecha = (a.fecha_contrato||'').substring(0,10);
+    if (!prov||!ent||monto<=0||!fecha) return;
+    const key = `${prov.toLowerCase()}|||${ent.toLowerCase()}|||${Math.round(monto)}|||${fecha}`;
+    if (!groupMap[key]) groupMap[key] = { prov, ent, monto, fecha, count:0 };
+    groupMap[key].count++;
+  });
+  const groups = Object.values(groupMap).filter(g => g.count>=2);
+  groups.sort((a,b)=>(b.count*b.monto)-(a.count*a.monto));
+  const totalContratos = groups.reduce((s,g)=>s+g.count,0);
+  const totalExceso    = groups.reduce((s,g)=>s+g.monto*(g.count-1),0);
+
+  const rows = groups.slice(0,60).map((g,i) => {
+    const bg = i%2===0?'#fff':'#fff8f0';
+    const exceso = g.monto*(g.count-1);
+    return `<tr style="background:${bg};border-bottom:1px solid #fde8cc;">
+      <td style="padding:6px 8px;font-size:11px;text-align:center;color:#92400e;">${i+1}</td>
+      <td style="padding:6px 8px;font-size:11px;font-weight:600;">${esc(g.prov.length>50?g.prov.slice(0,49)+'…':g.prov)}</td>
+      <td style="padding:6px 8px;font-size:10px;">${esc(g.ent.length>45?g.ent.slice(0,44)+'…':g.ent)}</td>
+      <td style="padding:6px 8px;text-align:center;font-size:11px;font-weight:700;color:#dc2626;">${g.count}</td>
+      <td style="padding:6px 8px;text-align:right;font-size:11px;">${fmtL(g.monto)}</td>
+      <td style="padding:6px 8px;text-align:right;font-size:11px;font-weight:700;color:#d97706;">${fmtL(exceso)}</td>
+      <td style="padding:6px 8px;font-size:10px;color:#666;">${g.fecha}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — Contratos Similares (Fraccionamiento)</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 landscape;margin:15mm 14mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#7c1d1d,#dc2626);color:#fff;padding:20px 26px 16px;margin-bottom:16px;}
+    .kpi-row{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+    .kpi-box{flex:1;min-width:90px;border:1px solid #fde8cc;border-radius:8px;padding:10px 14px;background:#fff8f0;text-align:center;}
+    .kpi-val{font-size:18px;font-weight:700;color:#dc2626;}
+    .kpi-lbl{font-size:9px;color:#888;margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
+    .alert-box{background:#fff8f0;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:10px;color:#92400e;}
+    table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+    thead tr{background:#7c1d1d;}
+    thead th{padding:7px 8px;color:#fff;font-size:10px;font-weight:700;text-align:left;letter-spacing:.04em;}
+    .footer{margin-top:20px;padding-top:10px;border-top:2px solid #dc2626;display:flex;justify-content:space-between;font-size:9px;color:#888;}
+    .classification{background:#dc2626;color:#fff;text-align:center;padding:5px;font-size:9px;font-weight:700;letter-spacing:.12em;margin-top:12px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:5px;">SISTEMA SENTINEL — HONDURAS · PATRÓN: FRACCIONAMIENTO</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:3px;">🔁 Contratos Similares — Detección de Doble Contabilización</div>
+        <div style="font-size:10px;opacity:.8;">Mismo proveedor + entidad + monto + fecha con distintos IDs de contrato</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.85;">
+        <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:3px;">${ds}</div>
+        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos monitoreados</div>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-val">${groups.length.toLocaleString()}</div><div class="kpi-lbl">Grupos detectados</div></div>
+    <div class="kpi-box"><div class="kpi-val">${totalContratos.toLocaleString()}</div><div class="kpi-lbl">Contratos en grupos</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#d97706;">${fmtL(totalExceso)}</div><div class="kpi-lbl">Exceso estimado</div></div>
+    <div class="kpi-box"><div class="kpi-val">${all.length.toLocaleString()}</div><div class="kpi-lbl">Total contratos base</div></div>
+  </div>
+  <div class="alert-box">⚠️ <strong>Señal FRACCIONAMIENTO:</strong> Los grupos listados presentan contratos registrados con IDs distintos pero idénticos en proveedor, entidad, monto y fecha. Patrón consistente con fraccionamiento para evadir umbrales de licitación o duplicar pagos. Requiere verificación documental en cada institución.</div>
+  <table>
+    <thead><tr>
+      <th style="width:28px;">#</th><th>Proveedor</th><th>Entidad compradora</th>
+      <th style="text-align:center;width:50px;">Copias</th>
+      <th style="text-align:right;width:100px;">Monto c/u</th>
+      <th style="text-align:right;width:110px;">Exceso est.</th>
+      <th style="width:80px;">Fecha</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  ${groups.length>60?`<div style="text-align:center;color:#888;font-size:10px;padding:8px;">… y ${(groups.length-60).toLocaleString()} grupos adicionales no mostrados</div>`:''}
+  <div class="footer">
+    <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras</div>
+    <div>Generado: ${ds} · ${folio}</div>
+  </div>
+  <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('','_blank','width=1200,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+function exportCruceBCoberturaPDF() {
+  const tableEl = document.getElementById('cruce-b-table');
+  if (!tableEl || tableEl.style.display === 'none') {
+    alert('Primero abre el Tab "Cobertura SEFIN" para cargar los datos.');
+    return;
+  }
+  const fmtL = n => { if(!n||n===0) return 'L —'; if(n>=1e9) return 'L '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L '+(n/1e6).toFixed(1)+'M'; return 'L '+Math.round(n).toLocaleString('es-HN'); };
+  const today = new Date();
+  const ds    = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-COB-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  // Re-use rendered table HTML, strip interactive elements
+  const tableHTML = tableEl.innerHTML
+    .replace(/style="color:var\(--red\)/g, 'style="color:#dc2626')
+    .replace(/style="color:var\(--amber\)/g, 'style="color:#d97706')
+    .replace(/style="color:var\(--green\)/g, 'style="color:#16a34a')
+    .replace(/var\(--text-dim\)/g,'#666')
+    .replace(/var\(--text\)/g,'#1a1a2e')
+    .replace(/var\(--electric\)/g,'#0e7490')
+    .replace(/rgba\(255,255,255,0\.03\)/g,'#fff')
+    .replace(/rgba\(255,255,255,0\.01\)/g,'#f9fafb')
+    .replace(/rgba\(255,255,255,0\.1\)/g,'#e5e7eb');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — Cobertura ONCAE vs SEFIN</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 landscape;margin:15mm 14mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#78350f,#d97706);color:#fff;padding:20px 26px 16px;margin-bottom:16px;}
+    .info-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:10px;color:#92400e;}
+    table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:11px;}
+    thead tr{background:#78350f;}
+    thead th{padding:7px 8px;color:#fff;font-size:10px;font-weight:700;text-align:left;letter-spacing:.04em;}
+    .footer{margin-top:20px;padding-top:10px;border-top:2px solid #d97706;display:flex;justify-content:space-between;font-size:9px;color:#888;}
+    .classification{background:#d97706;color:#fff;text-align:center;padding:5px;font-size:9px;font-weight:700;letter-spacing:.12em;margin-top:12px;}
+    .legend{display:flex;gap:16px;margin-bottom:12px;font-size:10px;}
+    .leg-item{display:flex;align-items:center;gap:5px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:5px;">SISTEMA SENTINEL — HONDURAS · CRUCE ONCAE × SEFIN</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:3px;">📊 Cobertura ONCAE vs Ejecución SEFIN por Institución</div>
+        <div style="font-size:10px;opacity:.8;">Ratio = Monto ONCAE registrado / Ejecución presupuestaria SEFIN · Instituciones ordenadas por menor cobertura</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.85;">
+        <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:3px;">${ds}</div>
+      </div>
+    </div>
+  </div>
+  <div class="info-box">ℹ️ <strong>Metodología:</strong> Cruce por nombre normalizado (minúsculas) entre tabla <code>alerts</code> (ONCAE/Honducompras) y <code>sefin_presupuesto</code> (PIEP). Una cobertura baja indica que la institución ejecutó presupuesto de adquisiciones sin publicar los contratos correspondientes en ONCAE — posible señal de contratación directa irregular.</div>
+  <div class="legend">
+    <div class="leg-item"><span style="color:#dc2626;font-weight:700;">■</span> &lt;10% — Riesgo alto</div>
+    <div class="leg-item"><span style="color:#d97706;font-weight:700;">■</span> 10–25% — Riesgo medio</div>
+    <div class="leg-item"><span style="color:#16a34a;font-weight:700;">■</span> &gt;25% — Normal</div>
+  </div>
+  ${tableHTML}
+  <div class="footer">
+    <div>Sistema Sentinel — Monitoreo de Contratación Pública Honduras</div>
+    <div>Generado: ${ds} · ${folio}</div>
+  </div>
+  <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('','_blank','width=1200,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
 }
 
 // ══════════════════════════════════════════════════════════════

@@ -4884,6 +4884,20 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
     <!-- Tab B: ONCAE vs SEFIN coverage -->
     <div id="cruce-pane-b" style="display:none;margin-top:16px;">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+        <div style="padding:12px 18px;background:rgba(255,165,0,0.08);border:1px solid rgba(255,165,0,0.25);border-radius:10px;">
+          <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">Instituciones analizadas</div>
+          <div id="cruce-b-stat-inst" style="font-size:26px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</div>
+        </div>
+        <div style="padding:12px 18px;background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.25);border-radius:10px;">
+          <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">Brecha total (SEFIN − ONCAE)</div>
+          <div id="cruce-b-stat-brecha" style="font-size:26px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</div>
+        </div>
+        <div style="padding:12px 18px;background:rgba(255,80,80,0.06);border:1px solid rgba(255,80,80,0.2);border-radius:10px;">
+          <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;">Cobertura &lt;10% (riesgo alto)</div>
+          <div id="cruce-b-stat-riesgo" style="font-size:26px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</div>
+        </div>
+      </div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;">
         Ratio = Monto ONCAE registrado / Ejecución SEFIN · Valores bajos indican gasto que <strong>no pasó por ONCAE</strong>.
       </div>
@@ -19796,6 +19810,15 @@ async function _loadCruceTabB() {
       loadingEl.textContent = 'No se encontraron instituciones con datos en ambas fuentes.';
       return;
     }
+
+    // Update KPI summary bar
+    const bTotalInst = rows.length;
+    const bTotalBrecha = rows.reduce((s,r) => s + ((r.sefin||r.sefin_ejecutado||0) - (r.oncae||r.oncae_total||0)), 0);
+    const bRiesgoAlto  = rows.filter(r => (r.ratio||0) < 0.1).length;
+    const fmtLb = n => { if(!n||n===0) return 'L —'; if(n>=1e9) return 'L '+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return 'L '+(n/1e6).toFixed(1)+'M'; return 'L '+Math.round(n).toLocaleString('es-HN'); };
+    const instEl = document.getElementById('cruce-b-stat-inst');   if(instEl)   instEl.textContent = bTotalInst.toLocaleString('es-HN');
+    const brechaEl = document.getElementById('cruce-b-stat-brecha'); if(brechaEl) brechaEl.textContent = fmtLb(bTotalBrecha);
+    const riesgoEl = document.getElementById('cruce-b-stat-riesgo'); if(riesgoEl) riesgoEl.textContent = bRiesgoAlto.toLocaleString('es-HN');
 
     loadingEl.style.display = 'none';
     tableEl.style.display = 'block';

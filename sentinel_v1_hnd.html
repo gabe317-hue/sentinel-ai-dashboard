@@ -3091,6 +3091,11 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
   <!-- ═══════════════════ VISTA EJECUTIVA ═══════════════════ -->
   <div id="vistaEjecutiva" style="display:none;">
 
+    <!-- Back button -->
+    <div style="margin-bottom:16px;">
+      <button onclick="showPortal()" style="background:none;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);padding:0;display:inline-flex;align-items:center;gap:6px;transition:color .15s;" onmouseover="this.style.color='var(--electric)'" onmouseout="this.style.color='var(--text-dim)'">← Portal</button>
+    </div>
+
     <!-- Ticker bar — live data feed (inside Vista Ejecutiva) -->
     <div style="margin-bottom:6px;">
       <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--electric);text-transform:uppercase;">⬡ EN VIVO</span>
@@ -7915,7 +7920,7 @@ ${sobrecostoHtml}
 
   const w = window.open('', '_blank', 'width=1100,height=800');
   if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
-  w.document.write(html);
+  w.document.write(addPrintBtn(html));
   w.document.close();
 }
 
@@ -9303,7 +9308,7 @@ function generarSolicitudLTAIP() {
 
   const pw = window.open('', '_blank', 'width=1020,height=870');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar la solicitud.'); return; }
-  pw.document.write(htmlContent);
+  pw.document.write(addPrintBtn(htmlContent));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
@@ -10183,7 +10188,7 @@ ${sorted.length > 25 ? `<p style="font-size:9pt;color:#555;font-style:italic;mar
       alert('⚠️ El navegador bloqueó la ventana emergente. Por favor permite ventanas emergentes para este sitio.');
       return;
     }
-    win.document.write(html);
+    win.document.write(addPrintBtn(html));
     win.document.close();
 
   } catch(e) {
@@ -10304,7 +10309,7 @@ async function exportarListaCompleta(folio, entidad) {
 
     const win = window.open('', '_blank', 'width=1000,height=800');
     if (!win) { alert('⚠️ El navegador bloqueó la ventana emergente. Por favor permite ventanas emergentes para este sitio.'); return; }
-    win.document.write(html);
+    win.document.write(addPrintBtn(html));
     win.document.close();
 
   } catch(e) {
@@ -11515,7 +11520,7 @@ ${chartImgHtml}
 </body></html>`;
   const pw = window.open('','_blank','width=1050,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
 }
 
@@ -11600,7 +11605,7 @@ ${chartImgHtml}
 </body></html>`;
   const pw = window.open('','_blank','width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes.'); return; }
-  pw.document.write(html);
+  pw.document.write(addPrintBtn(html));
   pw.document.close();
 }
 

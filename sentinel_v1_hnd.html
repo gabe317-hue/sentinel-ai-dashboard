@@ -421,18 +421,22 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 /* ─── DEMO MODE: hide all export / investigation controls ─── */
 body.modo-demo [onclick*="PDF"],
 body.modo-demo [onclick*="Excel"],
+body.modo-demo [onclick*="export"],
+body.modo-demo [onclick*="Export"],
 body.modo-demo [onclick*="exportar"],
-body.modo-demo [onclick*="exportAlert"],
-body.modo-demo [onclick*="exportTimeline"],
-body.modo-demo [onclick*="exportarLista"],
+body.modo-demo [onclick*="Exportar"],
+body.modo-demo [onclick*="generateReport"],
 body.modo-demo [onclick*="generarSolicitud"],
 body.modo-demo [onclick*="generarMemo"],
 body.modo-demo [onclick*="ccExport"],
+body.modo-demo [onclick*="openModal"],
+body.modo-demo [onclick*="toggleModoDemo"],
+body.modo-demo #btnReportPareto,
+body.modo-demo #btnReportTodo,
 body.modo-demo .export-btn,
 body.modo-demo #candidatosPanel,
 body.modo-demo #investigaciones-section,
 body.modo-demo .borradores-panel { display: none !important; }
-body.modo-demo .user-select-none,
 body.modo-demo * { -webkit-user-select: none !important; user-select: none !important; }
 
 /* ─── WATERMARK OVERLAY ─── */

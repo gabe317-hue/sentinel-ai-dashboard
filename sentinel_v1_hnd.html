@@ -415,6 +415,32 @@ body.modo-demo #demo-exit-bar      { display: flex !important; }
 body.modo-demo .exec-grid          { grid-template-columns: repeat(4, 1fr) !important; }
 body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 
+/* ─── DEMO MODE: hide all export / investigation controls ─── */
+body.modo-demo [onclick*="PDF"],
+body.modo-demo [onclick*="Excel"],
+body.modo-demo [onclick*="exportar"],
+body.modo-demo [onclick*="exportAlert"],
+body.modo-demo [onclick*="exportTimeline"],
+body.modo-demo [onclick*="exportarLista"],
+body.modo-demo [onclick*="generarSolicitud"],
+body.modo-demo [onclick*="generarMemo"],
+body.modo-demo [onclick*="ccExport"],
+body.modo-demo .export-btn,
+body.modo-demo #candidatosPanel,
+body.modo-demo #investigaciones-section,
+body.modo-demo .borradores-panel { display: none !important; }
+body.modo-demo .user-select-none,
+body.modo-demo * { -webkit-user-select: none !important; user-select: none !important; }
+
+/* ─── WATERMARK OVERLAY ─── */
+#sentinel-watermark {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 99998;
+  background-repeat: repeat;
+}
+
 /* ─── PRINT / SAVE AS PDF ─── */
 @media print {
   .sidebar, .page-header, .inst-collab-bar,
@@ -2266,6 +2292,9 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════ DEMO WATERMARK ═══════════════════ -->
+<div id="sentinel-watermark" style="display:none;" data-wm="CONFIDENCIAL"></div>
 
 <!-- ═══════════════════ LOGIN SCREEN ═══════════════════ -->
 <div class="login-screen hidden" id="loginScreen">
@@ -15880,22 +15909,60 @@ const SENTINEL_ADMIN_EMAILS = [
 ];
 
 function resolveRole(email) {
-  return SENTINEL_ADMIN_EMAILS.includes((email||'').toLowerCase().trim()) ? 'admin' : 'analista';
+  const key = (email||'').toLowerCase().trim();
+  const u = SENTINEL_USERS[key];
+  if (u && u.role === 'demo') return 'demo';
+  return SENTINEL_ADMIN_EMAILS.includes(key) ? 'admin' : 'analista';
 }
 
 function applyRole(role) {
-  // Items hidden for analista (data ingestion + raw audit log)
+  // Items hidden for analista + demo (data ingestion + raw audit log)
   const adminOnly = ['nav-ingest', 'nav-audit'];
   adminOnly.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.style.display = role === 'admin' ? '' : 'none';
   });
-  // Role badge color in sidebar
+  // Role badge
   const roleEl = document.getElementById('userRoleBadge');
   if (roleEl) {
-    roleEl.textContent = role === 'admin' ? '👑 Admin' : '🔍 Analista';
-    roleEl.style.color = role === 'admin' ? 'var(--electric)' : '#a855f7';
+    if (role === 'admin')    { roleEl.textContent = '👑 Admin';   roleEl.style.color = 'var(--electric)'; }
+    else if (role === 'demo'){ roleEl.textContent = '👁 Demo';    roleEl.style.color = '#f59e0b'; }
+    else                     { roleEl.textContent = '🔍 Analista';roleEl.style.color = '#a855f7'; }
+  }
+  // Activate demo mode restrictions
+  if (role === 'demo') {
+    document.body.classList.add('modo-demo');
+    applyDemoRestrictions();
+    // Show watermark with current user name (SVG tiled background)
+    const wm = document.getElementById('sentinel-watermark');
+    if (wm) {
+      const uname = (currentUser && currentUser.name) ? currentUser.name : 'DEMO';
+      const wmText = `${uname}  ·  CONFIDENCIAL  ·  ${new Date().toLocaleDateString('es-HN')}`;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="160"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" transform="rotate(-35,250,80)" font-family="monospace" font-size="13" font-weight="600" fill="rgba(255,255,255,0.065)" letter-spacing="2">${wmText}</text></svg>`;
+      wm.style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+      wm.style.display = 'block';
+    }
+  }
+}
+
+function applyDemoRestrictions() {
+  // Hide all export buttons (PDF, Excel, CSV) via CSS class — body.modo-demo handles display:none
+  // Also hide investigation panels and sensitive sections
+  // Disable right-click context menu
+  document.addEventListener('contextmenu', _demoBlockContext, true);
+  // Disable keyboard shortcuts for print/save
+  document.addEventListener('keydown', _demoBlockKeys, true);
+}
+
+function _demoBlockContext(e) {
+  if (document.body.classList.contains('modo-demo')) { e.preventDefault(); e.stopPropagation(); return false; }
+}
+function _demoBlockKeys(e) {
+  if (!document.body.classList.contains('modo-demo')) return;
+  // Block Ctrl/Cmd + P (print), S (save), A (select all in context)
+  if ((e.ctrlKey || e.metaKey) && ['p','s','a'].includes(e.key.toLowerCase())) {
+    e.preventDefault(); e.stopPropagation();
   }
 }
 
@@ -15929,7 +15996,8 @@ function setCurrentUser(email) {
 // Roles: 'admin' = acceso total · 'analista' = vista limitada (sin Ingesta/Auditoría)
 const SENTINEL_USERS = {
   'gabe317@gmail.com':          { pw: 'Sentinel2026!',  role: 'admin',    name: 'G. Prieto' },
-  'analista@sentinel.hn':       { pw: 'Analista2026!',  role: 'analista', name: 'Analista PGR' }
+  'analista@sentinel.hn':       { pw: 'Analista2026!',  role: 'analista', name: 'Analista PGR' },
+  'demo@pgr.hn':                { pw: 'Demo2026!',      role: 'demo',     name: 'Demo PGR',    expira: '2026-05-25' }
 };
 
 async function doLogin() {
@@ -15953,6 +16021,17 @@ async function doLogin() {
     btn.disabled = false;
     btn.textContent = 'Ingresar al Sistema';
     return;
+  }
+  // Check expiry for demo accounts
+  if (user.expira) {
+    const now = new Date(); now.setHours(0,0,0,0);
+    const exp = new Date(user.expira + 'T00:00:00');
+    if (now > exp) {
+      errEl.textContent = '⏰ Acceso de demostración expirado. Contacte a Sentinel.';
+      btn.disabled = false;
+      btn.textContent = 'Ingresar al Sistema';
+      return;
+    }
   }
 
   // Log access to Supabase (non-blocking)

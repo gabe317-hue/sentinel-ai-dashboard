@@ -407,10 +407,7 @@ body.modo-demo .page-header        { display: none !important; }
 body.modo-demo .inst-collab-bar    { display: none !important; }
 body.modo-demo .stats-grid         { display: none !important; }
 body.modo-demo .controls-bar       { display: none !important; }
-/* body.modo-demo #mainTableContainer — table visible in demo mode, drilldown blocked below */
-body.modo-demo #alertTbody tr          { pointer-events: none !important; cursor: default !important; }
-body.modo-demo #alertTbody .action-group,
-body.modo-demo #alertTbody .cell-entity-link { pointer-events: none !important; opacity: 0.4 !important; }
+body.modo-demo #mainTableContainer { display: none !important; }
 body.modo-demo .risk-band          { display: none !important; }
 body.modo-demo #risk-band-exec     { display: flex !important; } /* keep exec risk band visible in presentation mode */
 body.modo-demo #demo-exit-bar      { display: flex !important; }
@@ -2779,7 +2776,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
-        <button onclick="hidePortal();hideAllPanels();" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Ver Contratos</button>
+        <button onclick="hidePortal()" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Ver Contratos</button>
       </div>
     </div>
 

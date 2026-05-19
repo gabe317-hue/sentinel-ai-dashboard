@@ -2456,6 +2456,7 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
       <div id="ccTimelineBox"></div>
       <div id="ccPatronesBox"></div>
       <div id="ccGapsBox"></div>
+      <div id="ccChartsBox"></div>
       <!-- Export -->
       <div style="display:flex;gap:12px;margin-top:20px;padding-top:20px;border-top:1px solid rgba(160,180,210,0.1);flex-wrap:wrap;">
         <button onclick="ccExportPDF()" style="background:rgba(220,38,38,0.15);color:#f87171;border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">🖨️ REPORTE DE INVESTIGACIÓN (PDF)</button>
@@ -3009,6 +3010,19 @@ body.modo-demo #vistaEjecutiva     { max-width: 1400px; margin: 0 auto; }
         </button>
       </div>
       <div id="notif-status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);display:none;"></div>
+    </div>
+  </div>
+
+  <!-- ACTIVIDAD DEL SISTEMA -->
+  <div style="padding:0 40px 32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="po-section-label" style="margin-bottom:0;">Actividad del Sistema</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--green);display:flex;align-items:center;gap:6px;">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite;"></span>EN VIVO
+      </div>
+    </div>
+    <div id="portal-activity-feed" style="background:var(--navy-light);border:1px solid var(--border);border-radius:14px;padding:4px 0;min-height:80px;">
+      <div style="padding:20px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">Cargando actividad…</div>
     </div>
   </div>
 
@@ -13624,14 +13638,93 @@ function showEnhancedDetectionReport() {
 // ════════════════════════════════════════════════════════════
 // PORTAL OVERLAY
 // ════════════════════════════════════════════════════════════
+// ═══ ACTIVITY FEED ════════════════════════════════════════════════
+let _activityFeedInterval = null;
+
+async function loadActivityFeed() {
+  try {
+    const { data, error } = await db
+      .from('audit_log')
+      .select('evento_ts, usuario, fuente, accion, objeto, event_type')
+      .order('evento_ts', { ascending: false })
+      .limit(10);
+    if (error) throw error;
+    renderActivityFeed(data || []);
+  } catch(e) {
+    const el = document.getElementById('portal-activity-feed');
+    if (el) el.innerHTML = '<div style="padding:16px 20px;font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--text-dim);">Sin datos disponibles</div>';
+  }
+}
+
+function renderActivityFeed(events) {
+  const el = document.getElementById('portal-activity-feed');
+  if (!el) return;
+  if (!events.length) {
+    el.innerHTML = '<div style="padding:16px 20px;font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--text-dim);">Sin actividad reciente</div>';
+    return;
+  }
+  el.innerHTML = events.map((e, i) => {
+    const ts = new Date(e.evento_ts);
+    const timeAgo = afTimeAgo(ts);
+    const dot = afDotColor(e.event_type);
+    const icon = afIcon(e.accion, e.event_type);
+    const obj = (e.objeto || e.fuente || '—').substring(0, 50);
+    const border = i < events.length - 1 ? 'border-bottom:1px solid var(--border);' : '';
+    return `<div style="display:flex;align-items:flex-start;gap:14px;padding:11px 20px;${border}">
+      <div style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0;margin-top:5px;box-shadow:0 0 6px ${dot}55;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${icon} <strong>${e.accion || 'Evento'}</strong> <span style="color:var(--text-dim);">— ${obj}</span></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:3px;">${timeAgo} · ${e.fuente || 'Sistema'} · ${e.usuario || 'sistema'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function afTimeAgo(date) {
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (diff < 60)    return 'Hace ' + diff + 's';
+  if (diff < 3600)  return 'Hace ' + Math.floor(diff / 60) + 'm';
+  if (diff < 86400) return 'Hace ' + Math.floor(diff / 3600) + 'h';
+  return 'Hace ' + Math.floor(diff / 86400) + 'd';
+}
+
+function afDotColor(type) {
+  const map = {
+    'exportacion':  'var(--electric)',
+    'investigacion':'var(--amber)',
+    'ingesta':      'var(--green)',
+    'denuncia':     'var(--purple)',
+    'acceso':       'var(--text-dim)',
+    'alerta':       'var(--red)',
+  };
+  return map[type] || 'var(--text-dim)';
+}
+
+function afIcon(accion, type) {
+  if (!accion) return '◈';
+  const a = accion.toLowerCase();
+  if (a.includes('export') || a.includes('pdf') || a.includes('excel')) return '📤';
+  if (a.includes('invest') || a.includes('referir') || a.includes('caso')) return '🔎';
+  if (a.includes('ingesta') || a.includes('import')) return '📥';
+  if (a.includes('denuncia')) return '📨';
+  if (a.includes('login') || a.includes('acceso')) return '🔐';
+  if (a.includes('alerta') || a.includes('crítica')) return '🚨';
+  if (a.includes('auto') || a.includes('borrador')) return '🤖';
+  return '◈';
+}
+
 function showPortal() {
   document.querySelectorAll('.po-card').forEach(c => c.classList.remove('po-expanded'));
   document.getElementById('portalOverlay').classList.add('visible');
   poUpdateIndicators();
+  loadActivityFeed();
+  if (_activityFeedInterval) clearInterval(_activityFeedInterval);
+  _activityFeedInterval = setInterval(loadActivityFeed, 30000);
 }
 
 function hidePortal() {
   document.getElementById('portalOverlay').classList.remove('visible');
+  if (_activityFeedInterval) { clearInterval(_activityFeedInterval); _activityFeedInterval = null; }
 }
 
 // ═══ PANEL SELECTOR — S92B ════════════════════════════════════════
@@ -14706,6 +14799,134 @@ function ccRenderResultados() {
 
   document.getElementById('ccResultados').classList.remove('hidden');
   document.getElementById('ccResultados').scrollIntoView({ behavior:'smooth', block:'start' });
+  renderCCCharts();
+}
+
+// ═══ CONSTRUCTOR CASO — CHARTS ════════════════════════════════════
+let _ccChartInstances = [];
+
+function renderCCCharts() {
+  if (!_ccData) return;
+  const { concentracion, timeline, patrones } = _ccData;
+  const el = document.getElementById('ccChartsBox');
+  if (!el) return;
+
+  // Destruir instancias anteriores
+  _ccChartInstances.forEach(c => { try { c.destroy(); } catch(e) {} });
+  _ccChartInstances = [];
+
+  el.innerHTML = `
+    <div class="cc-section">
+      <div class="cc-section-title">Análisis Visual</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+        <!-- Chart 1: Contratos por administración -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(160,180,210,0.1);border-radius:12px;padding:16px;">
+          <div style="font-size:10px;font-weight:700;color:rgba(160,180,210,0.5);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;">Contratos por Administración</div>
+          <canvas id="ccChartAdmin" height="160"></canvas>
+        </div>
+
+        <!-- Chart 2: Distribución Severidad -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(160,180,210,0.1);border-radius:12px;padding:16px;">
+          <div style="font-size:10px;font-weight:700;color:rgba(160,180,210,0.5);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;">Distribución por Severidad</div>
+          <canvas id="ccChartSev" height="160"></canvas>
+        </div>
+
+        <!-- Chart 3: Concentración proveedor -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(160,180,210,0.1);border-radius:12px;padding:16px;">
+          <div style="font-size:10px;font-weight:700;color:rgba(160,180,210,0.5);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;">Concentración Financiera</div>
+          <canvas id="ccChartConc" height="160"></canvas>
+        </div>
+
+        <!-- Placeholder: Radar dimensional (futuro) -->
+        <div style="background:rgba(255,255,255,0.02);border:1px dashed rgba(160,180,210,0.12);border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:180px;">
+          <div style="font-size:28px;opacity:0.25;">🔬</div>
+          <div style="font-size:11px;font-weight:700;color:rgba(160,180,210,0.25);text-align:center;">Radar Multi-Dimensional</div>
+          <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:rgba(160,180,210,0.2);text-align:center;letter-spacing:.05em;">DISPONIBLE CON MÁS FUENTES DE DATOS<br>(ONCAE · RNP · TSC · Gaceta Oficial)</div>
+        </div>
+
+      </div>
+
+      <!-- Placeholder: Mapa de vínculos (futuro) -->
+      <div style="background:rgba(255,255,255,0.02);border:1px dashed rgba(160,180,210,0.12);border-radius:12px;padding:20px;display:flex;align-items:center;gap:20px;">
+        <div style="font-size:36px;opacity:0.2;">🕸</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:rgba(160,180,210,0.25);">Mapa de Vínculos — Proveedor × Entidad × Funcionarios</div>
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:rgba(160,180,210,0.18);margin-top:4px;letter-spacing:.04em;">REQUIERE: datos de funcionarios adjudicadores · RNP personas jurídicas · cruce listas internacionales por individuo</div>
+        </div>
+        <div style="margin-left:auto;padding:6px 12px;border-radius:6px;background:rgba(160,180,210,0.05);border:1px solid rgba(160,180,210,0.1);font-size:9px;font-family:'JetBrains Mono',monospace;color:rgba(160,180,210,0.3);white-space:nowrap;">PRÓXIMA FASE</div>
+      </div>
+    </div>`;
+
+  // ── Chart 1: Contratos por administración ──
+  try {
+    const admLabels = timeline.map(t => t.nombre.split(' ')[0]); // "JOH", "Xiomara", "Asfura"
+    const admCounts = timeline.map(t => t.count);
+    const admColors = timeline.map(t => t.color + 'cc');
+    const ctx1 = document.getElementById('ccChartAdmin');
+    if (ctx1) {
+      const c1 = new Chart(ctx1.getContext('2d'), {
+        type: 'bar',
+        data: { labels: admLabels, datasets: [{ label: 'Contratos', data: admCounts, backgroundColor: admColors, borderRadius: 6, borderSkipped: false }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: {
+          x: { grid: { color: 'rgba(160,180,210,0.06)' }, ticks: { color: 'rgba(160,180,210,0.5)', font: { size: 10 } } },
+          y: { grid: { color: 'rgba(160,180,210,0.06)' }, ticks: { color: 'rgba(160,180,210,0.5)', font: { size: 10 } }, beginAtZero: true }
+        }}
+      });
+      _ccChartInstances.push(c1);
+    }
+  } catch(e) { console.warn('ccChartAdmin error:', e); }
+
+  // ── Chart 2: Severidad (donut) ──
+  try {
+    const sevTotal = concentracion.vendorCount;
+    const sevCrit  = patrones.criticos;
+    const sevAlta  = patrones.altos;
+    const sevOtros = Math.max(0, sevTotal - sevCrit - sevAlta);
+    const ctx2 = document.getElementById('ccChartSev');
+    if (ctx2) {
+      const c2 = new Chart(ctx2.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['CRÍTICA', 'ALTA', 'MEDIA/BAJA'],
+          datasets: [{ data: [sevCrit, sevAlta, sevOtros],
+            backgroundColor: ['rgba(239,68,68,0.8)', 'rgba(245,158,11,0.8)', 'rgba(160,180,210,0.25)'],
+            borderColor: ['rgba(239,68,68,0.3)', 'rgba(245,158,11,0.3)', 'rgba(160,180,210,0.1)'],
+            borderWidth: 1 }]
+        },
+        options: { responsive: true, cutout: '65%', plugins: {
+          legend: { position: 'bottom', labels: { color: 'rgba(160,180,210,0.5)', font: { size: 10 }, padding: 12 } }
+        }}
+      });
+      _ccChartInstances.push(c2);
+    }
+  } catch(e) { console.warn('ccChartSev error:', e); }
+
+  // ── Chart 3: Concentración financiera (horizontal bar) ──
+  try {
+    const ctx3 = document.getElementById('ccChartConc');
+    if (ctx3) {
+      const vendorM = concentracion.vendorMonto / 1e6;
+      const restoM  = Math.max(0, (concentracion.totalMonto - concentracion.vendorMonto) / 1e6);
+      const c3 = new Chart(ctx3.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: ['Monto (L M)'],
+          datasets: [
+            { label: 'Este proveedor', data: [vendorM], backgroundColor: 'rgba(239,68,68,0.7)', borderRadius: 4 },
+            { label: 'Resto entidad',  data: [restoM],  backgroundColor: 'rgba(160,180,210,0.15)', borderRadius: 4 }
+          ]
+        },
+        options: { indexAxis: 'y', responsive: true, plugins: {
+          legend: { position: 'bottom', labels: { color: 'rgba(160,180,210,0.5)', font: { size: 10 }, padding: 10 } }
+        }, scales: {
+          x: { stacked: true, grid: { color: 'rgba(160,180,210,0.06)' }, ticks: { color: 'rgba(160,180,210,0.5)', font: { size: 9 } } },
+          y: { stacked: true, ticks: { color: 'rgba(160,180,210,0.5)' } }
+        }}
+      });
+      _ccChartInstances.push(c3);
+    }
+  } catch(e) { console.warn('ccChartConc error:', e); }
 }
 
 function ccExportPDF() {

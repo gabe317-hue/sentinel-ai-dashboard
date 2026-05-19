@@ -13663,21 +13663,48 @@ function renderActivityFeed(events) {
     el.innerHTML = '<div style="padding:16px 20px;font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--text-dim);">Sin actividad reciente</div>';
     return;
   }
-  el.innerHTML = events.map((e, i) => {
+  const VISIBLE = 5;
+  const visible  = events.slice(0, VISIBLE);
+  const hidden   = events.slice(VISIBLE);
+
+  function afRow(e, showBorder) {
     const ts = new Date(e.evento_ts);
-    const timeAgo = afTimeAgo(ts);
-    const dot = afDotColor(e.event_type);
+    const dot  = afDotColor(e.event_type);
     const icon = afIcon(e.accion, e.event_type);
-    const obj = (e.objeto || e.fuente || '—').substring(0, 50);
-    const border = i < events.length - 1 ? 'border-bottom:1px solid var(--border);' : '';
+    const obj  = (e.objeto || e.fuente || '—').substring(0, 50);
+    const border = showBorder ? 'border-bottom:1px solid var(--border);' : '';
     return `<div style="display:flex;align-items:flex-start;gap:14px;padding:11px 20px;${border}">
       <div style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0;margin-top:5px;box-shadow:0 0 6px ${dot}55;"></div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${icon} <strong>${e.accion || 'Evento'}</strong> <span style="color:var(--text-dim);">— ${obj}</span></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:3px;">${timeAgo} · ${e.fuente || 'Sistema'} · ${e.usuario || 'sistema'}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:3px;">${afTimeAgo(ts)} · ${e.fuente || 'Sistema'} · ${e.usuario || 'sistema'}</div>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  let html = visible.map((e, i) => afRow(e, i < visible.length - 1 || hidden.length > 0)).join('');
+
+  if (hidden.length > 0) {
+    html += `<div id="af-extra" style="display:none;">` +
+      hidden.map((e, i) => afRow(e, i < hidden.length - 1)).join('') +
+    `</div>`;
+    html += `<div style="padding:10px 20px;border-top:1px solid var(--border);">
+      <button id="af-toggle-btn" onclick="afToggle()" style="background:none;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--electric);letter-spacing:.04em;padding:0;">
+        Ver ${hidden.length} más ›
+      </button>
+    </div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+function afToggle() {
+  const extra = document.getElementById('af-extra');
+  const btn   = document.getElementById('af-toggle-btn');
+  if (!extra || !btn) return;
+  const expanded = extra.style.display !== 'none';
+  extra.style.display = expanded ? 'none' : 'block';
+  btn.textContent = expanded ? `Ver ${extra.children.length} más ›` : '↑ Colapsar';
 }
 
 function afTimeAgo(date) {

@@ -2737,6 +2737,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span class="nav-icon">🔄</span> Ingesta
         <span class="nav-chip" style="background:rgba(0,230,118,0.12);color:var(--green);border-color:rgba(0,230,118,0.3);">LIVE</span>
       </button>
+      <button class="nav-item" id="nav-admin" onclick="showAdminPanel()">
+        <span class="nav-icon">⚙️</span> Admin
+        <span class="nav-chip" style="background:rgba(99,102,241,0.15);color:#818cf8;border-color:rgba(99,102,241,0.3);">USR</span>
+      </button>
       <a class="nav-item" href="index.html">
         <span class="nav-icon">🏠</span> Inicio
       </a>
@@ -4636,6 +4640,61 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div><!-- /tl-prov-section -->
 
   </div>
+
+  <!-- ═══════════════════ PANEL ADMIN — GESTIÓN USUARIOS DEMO (S110) ═══════════════════ -->
+  <div class="fuente-panel" id="adminPanel">
+    <button class="fuente-back" onclick="hideAdminPanel()">← Portal</button>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+      <span style="font-size:22px;">⚙️</span>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--electric);letter-spacing:.04em;">Panel de Administración</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:2px;">Gestión de usuarios demo — solo visible para administradores</div>
+      </div>
+    </div>
+
+    <!-- Crear nuevo usuario -->
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:20px;margin-bottom:28px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;margin-bottom:14px;">➕ NUEVO USUARIO DEMO</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;align-items:end;">
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">CORREO</div>
+          <input id="adm-email" type="email" placeholder="demo@pgr.hn"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">CONTRASEÑA</div>
+          <input id="adm-pw" type="text" placeholder="Demo2026!"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">NOMBRE</div>
+          <input id="adm-name" type="text" placeholder="Juan Pérez / PGR"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">EXPIRA</div>
+          <input id="adm-expira" type="date"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <button onclick="admCrearUsuario()"
+          style="background:var(--electric);color:#000;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
+          Crear
+        </button>
+      </div>
+      <div id="adm-create-status" style="font-size:12px;margin-top:10px;min-height:16px;"></div>
+    </div>
+
+    <!-- Tabla de usuarios demo -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;">USUARIOS DEMO ACTIVOS</div>
+      <button onclick="admLoadUsuarios()" style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 12px;color:var(--text-dim);font-size:12px;cursor:pointer;">↺ Actualizar</button>
+    </div>
+    <div id="adm-table-wrap">
+      <div style="color:var(--text-dim);font-size:13px;padding:20px 0;">Cargando usuarios…</div>
+    </div>
+
+  </div><!-- /adminPanel -->
 
   <!-- ═══════════════════ MÓDULO F — CANAL DE INTEGRIDAD CIUDADANA ════════════════════ -->
   <div class="fuente-panel" id="moduloFPanel">
@@ -8002,7 +8061,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -15921,8 +15980,8 @@ function resolveRole(email) {
 }
 
 function applyRole(role) {
-  // Items hidden for analista + demo (data ingestion + raw audit log)
-  const adminOnly = ['nav-ingest', 'nav-audit'];
+  // Items hidden for analista + demo (data ingestion + raw audit log + admin panel)
+  const adminOnly = ['nav-ingest', 'nav-audit', 'nav-admin'];
   adminOnly.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -15971,16 +16030,17 @@ function _demoBlockKeys(e) {
   }
 }
 
-function setCurrentUser(email) {
+function setCurrentUser(email, overrides = {}) {
   // Derive display name from email prefix (e.g. gprieto@pgr → G. Prieto)
   const prefix = email.split('@')[0];
   const parts  = prefix.replace(/[^a-zA-Z]/g, ' ').trim().split(' ');
-  const name   = parts.length > 1
+  const derivedName = parts.length > 1
     ? parts[0][0].toUpperCase() + '. ' +
       parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase()
     : prefix.charAt(0).toUpperCase() + prefix.slice(1).toLowerCase();
-  const initials = parts.map(p => p[0] || '').join('').toUpperCase().slice(0, 2);
-  const role = resolveRole(email);
+  const name = overrides.name || (SENTINEL_USERS[email] && SENTINEL_USERS[email].name) || derivedName;
+  const initials = name.replace(/[^a-zA-Z ]/g, '').trim().split(' ').map(p => p[0] || '').join('').toUpperCase().slice(0, 2) || prefix[0].toUpperCase();
+  const role = overrides.role || resolveRole(email);
 
   currentUser = { email, name, initials, role };
 
@@ -16017,46 +16077,69 @@ async function doLogin() {
   btn.disabled = true;
   btn.textContent = 'Verificando...';
 
-  // Small delay for UX
   await new Promise(r => setTimeout(r, 400));
 
-  const user = SENTINEL_USERS[email];
-  if (!user || user.pw !== password) {
-    errEl.textContent = '❌ Correo o contraseña incorrectos';
-    btn.disabled = false;
-    btn.textContent = 'Ingresar al Sistema';
+  // ── 1. Check hardcoded SENTINEL_USERS ───────────────────────────────────────
+  const localUser = SENTINEL_USERS[email];
+  if (localUser) {
+    if (localUser.pw !== password) {
+      errEl.textContent = '❌ Correo o contraseña incorrectos';
+      btn.disabled = false; btn.textContent = 'Ingresar al Sistema'; return;
+    }
+    if (localUser.expira) {
+      const now = new Date(); now.setHours(0,0,0,0);
+      const exp = new Date(localUser.expira + 'T00:00:00');
+      if (now > exp) {
+        errEl.textContent = '⏰ Acceso de demostración expirado. Contacte a Sentinel.';
+        btn.disabled = false; btn.textContent = 'Ingresar al Sistema'; return;
+      }
+    }
+    try { await db.from('alert_audit_log').insert([{ alert_id: null, action: 'LOGIN',
+      new_value: email, user_email: email, user_name: localUser.name,
+      notes: `Acceso · rol: ${localUser.role} · ${new Date().toISOString()}` }]); } catch(e){}
+    setCurrentUser(email);
+    document.getElementById('loginScreen').classList.add('hidden');
+    showPortal(); await loadAlerts(); startRealtime();
     return;
   }
-  // Check expiry for demo accounts
-  if (user.expira) {
-    const now = new Date(); now.setHours(0,0,0,0);
-    const exp = new Date(user.expira + 'T00:00:00');
-    if (now > exp) {
-      errEl.textContent = '⏰ Acceso de demostración expirado. Contacte a Sentinel.';
-      btn.disabled = false;
-      btn.textContent = 'Ingresar al Sistema';
-      return;
-    }
-  }
 
-  // Log access to Supabase (non-blocking)
+  // ── 2. Fallback: check sentinel_demo_access table (Supabase) ────────────────
   try {
-    await db.from('alert_audit_log').insert([{
-      alert_id: null,
-      action: 'LOGIN',
-      old_value: null,
-      new_value: email,
-      user_email: email,
-      user_name: user.name,
-      notes: `Acceso · rol: ${user.role} · ${new Date().toISOString()}`
-    }]);
-  } catch(e) { /* non-blocking */ }
+    const { data: demoRows, error: demoErr } = await db
+      .from('sentinel_demo_access')
+      .select('email, password, name, expira, activo')
+      .eq('email', email)
+      .eq('activo', true)
+      .limit(1);
 
-  setCurrentUser(email);
-  document.getElementById('loginScreen').classList.add('hidden');
-  showPortal();
-  await loadAlerts();
-  startRealtime();
+    if (demoErr || !demoRows || demoRows.length === 0) {
+      errEl.textContent = '❌ Correo o contraseña incorrectos';
+      btn.disabled = false; btn.textContent = 'Ingresar al Sistema'; return;
+    }
+    const demoUser = demoRows[0];
+    if (demoUser.password !== password) {
+      errEl.textContent = '❌ Correo o contraseña incorrectos';
+      btn.disabled = false; btn.textContent = 'Ingresar al Sistema'; return;
+    }
+    if (demoUser.expira) {
+      const now = new Date(); now.setHours(0,0,0,0);
+      const exp = new Date(demoUser.expira + 'T00:00:00');
+      if (now > exp) {
+        errEl.textContent = '⏰ Acceso de demostración expirado. Contacte a Sentinel.';
+        btn.disabled = false; btn.textContent = 'Ingresar al Sistema'; return;
+      }
+    }
+    // Log + login as demo user using name from DB
+    try { await db.from('alert_audit_log').insert([{ alert_id: null, action: 'LOGIN',
+      new_value: email, user_email: email, user_name: demoUser.name,
+      notes: `Acceso · rol: demo (Supabase) · ${new Date().toISOString()}` }]); } catch(e){}
+    setCurrentUser(email, { name: demoUser.name, role: 'demo' });
+    document.getElementById('loginScreen').classList.add('hidden');
+    showPortal(); await loadAlerts(); startRealtime();
+  } catch(e) {
+    errEl.textContent = '❌ Error de conexión. Intente de nuevo.';
+    btn.disabled = false; btn.textContent = 'Ingresar al Sistema';
+  }
 }
 
 // ── Disparar notificación manual (S91) ──────────────────────────────────────
@@ -16869,6 +16952,131 @@ function hideAuditPanel() {
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
   document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════════
+// PANEL ADMIN — Gestión de Usuarios Demo (S110)
+// Solo accesible para rol 'admin'. Lee/escribe sentinel_demo_access.
+// ════════════════════════════════════════════════════════════
+
+function showAdminPanel() {
+  if (!currentUser || currentUser.role !== 'admin') return;
+  _closeAllFuentePanels();
+  document.getElementById('adminPanel').classList.add('open');
+  document.getElementById('nav-admin').classList.add('active');
+  admLoadUsuarios();
+}
+
+function hideAdminPanel() {
+  document.getElementById('adminPanel').classList.remove('open');
+  document.getElementById('nav-admin').classList.remove('active');
+  showPortal();
+}
+
+async function admLoadUsuarios() {
+  const wrap = document.getElementById('adm-table-wrap');
+  wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Cargando…</div>';
+  try {
+    const { data, error } = await db
+      .from('sentinel_demo_access')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Sin usuarios demo registrados.</div>';
+      return;
+    }
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    let rows = data.map(u => {
+      const exp = new Date(u.expira + 'T00:00:00');
+      const expirado = exp < hoy;
+      const statusColor = !u.activo ? 'var(--text-dim)' : expirado ? 'var(--red)' : 'var(--green)';
+      const statusTxt  = !u.activo ? '⏸ Inactivo' : expirado ? '⏰ Expirado' : '✅ Activo';
+      return `<tr>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${u.email}</td>
+        <td style="font-size:12px;">${u.name}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${u.password}</td>
+        <td style="font-size:12px;">${u.expira}</td>
+        <td style="font-size:12px;color:${statusColor};">${statusTxt}</td>
+        <td style="white-space:nowrap;">
+          <button onclick="admExtenderExpira(${u.id}, '${u.expira}')"
+            style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#818cf8;border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;margin-right:4px;">
+            +7d
+          </button>
+          <button onclick="admToggleActivo(${u.id}, ${u.activo})"
+            style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;margin-right:4px;">
+            ${u.activo ? 'Desactivar' : 'Activar'}
+          </button>
+          <button onclick="admEliminar(${u.id}, '${u.email}')"
+            style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:var(--red);border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;">
+            Eliminar
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = `
+      <table class="alert-table" style="width:100%;">
+        <thead>
+          <tr>
+            <th>Correo</th><th>Nombre</th><th>Contraseña</th><th>Expira</th><th>Estado</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:10px;opacity:0.6;">
+        ⓘ La contraseña se muestra en texto claro — solo compartir por canal seguro.
+      </div>`;
+  } catch(e) {
+    wrap.innerHTML = `<div style="color:var(--red);font-size:13px;">Error al cargar usuarios: ${e.message}</div>`;
+  }
+}
+
+async function admCrearUsuario() {
+  const email  = document.getElementById('adm-email').value.trim().toLowerCase();
+  const pw     = document.getElementById('adm-pw').value.trim();
+  const name   = document.getElementById('adm-name').value.trim();
+  const expira = document.getElementById('adm-expira').value;
+  const statusEl = document.getElementById('adm-create-status');
+
+  if (!email || !pw || !name || !expira) {
+    statusEl.style.color = 'var(--amber)'; statusEl.textContent = '⚠ Todos los campos son requeridos.'; return;
+  }
+  statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
+  try {
+    const { error } = await db.from('sentinel_demo_access').insert([{ email, password: pw, name, expira, activo: true }]);
+    if (error) throw error;
+    statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ Usuario ${email} creado correctamente.`;
+    document.getElementById('adm-email').value = '';
+    document.getElementById('adm-pw').value = '';
+    document.getElementById('adm-name').value = '';
+    document.getElementById('adm-expira').value = '';
+    admLoadUsuarios();
+  } catch(e) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = e.code === '23505' ? '❌ Ese correo ya existe.' : `❌ Error: ${e.message}`;
+  }
+}
+
+async function admExtenderExpira(id, expiraActual) {
+  const exp = new Date(expiraActual + 'T00:00:00');
+  exp.setDate(exp.getDate() + 7);
+  const nuevaExpira = exp.toISOString().slice(0, 10);
+  const { error } = await db.from('sentinel_demo_access').update({ expira: nuevaExpira }).eq('id', id);
+  if (error) { alert('Error al extender: ' + error.message); return; }
+  admLoadUsuarios();
+}
+
+async function admToggleActivo(id, estadoActual) {
+  const { error } = await db.from('sentinel_demo_access').update({ activo: !estadoActual }).eq('id', id);
+  if (error) { alert('Error: ' + error.message); return; }
+  admLoadUsuarios();
+}
+
+async function admEliminar(id, email) {
+  if (!confirm(`¿Eliminar acceso demo de ${email}? Esta acción no se puede deshacer.`)) return;
+  const { error } = await db.from('sentinel_demo_access').delete().eq('id', id);
+  if (error) { alert('Error al eliminar: ' + error.message); return; }
+  admLoadUsuarios();
 }
 
 // ════════════════════════════════════════════════════════════

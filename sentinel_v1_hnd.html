@@ -4656,15 +4656,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- Crear nuevo usuario -->
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:20px;margin-bottom:28px;">
       <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;margin-bottom:14px;">➕ NUEVO USUARIO DEMO</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;align-items:end;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 120px auto;gap:10px;align-items:end;">
         <div>
           <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">CORREO</div>
-          <input id="adm-email" type="email" placeholder="demo@pgr.hn"
+          <input id="adm-email" type="email" placeholder="usuario@pgr.hn"
             style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
         </div>
         <div>
           <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">CONTRASEÑA</div>
-          <input id="adm-pw" type="text" placeholder="Demo2026!"
+          <input id="adm-pw" type="text" placeholder="Pass2026!"
             style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
         </div>
         <div>
@@ -4676,6 +4676,14 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">EXPIRA</div>
           <input id="adm-expira" type="date"
             style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">ROL</div>
+          <select id="adm-role"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+            <option value="demo">👁 Demo</option>
+            <option value="analista">🔍 Analista</option>
+          </select>
         </div>
         <button onclick="admCrearUsuario()"
           style="background:var(--electric);color:#000;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
@@ -16132,8 +16140,8 @@ async function doLogin() {
     // Log + login as demo user using name from DB
     try { await db.from('alert_audit_log').insert([{ alert_id: null, action: 'LOGIN',
       new_value: email, user_email: email, user_name: demoUser.name,
-      notes: `Acceso · rol: demo (Supabase) · ${new Date().toISOString()}` }]); } catch(e){}
-    setCurrentUser(email, { name: demoUser.name, role: 'demo' });
+      notes: `Acceso · rol: ${demoUser.role} (Supabase) · ${new Date().toISOString()}` }]); } catch(e){}
+    setCurrentUser(email, { name: demoUser.name, role: demoUser.role || 'demo' });
     document.getElementById('loginScreen').classList.add('hidden');
     showPortal(); await loadAlerts(); startRealtime();
   } catch(e) {
@@ -16992,11 +17000,15 @@ async function admLoadUsuarios() {
       const expirado = exp < hoy;
       const statusColor = !u.activo ? 'var(--text-dim)' : expirado ? 'var(--red)' : 'var(--green)';
       const statusTxt  = !u.activo ? '⏸ Inactivo' : expirado ? '⏰ Expirado' : '✅ Activo';
+      const rolBadge = u.role === 'analista'
+        ? '<span style="color:#a855f7;font-size:11px;">🔍 Analista</span>'
+        : '<span style="color:#f59e0b;font-size:11px;">👁 Demo</span>';
       return `<tr>
         <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${u.email}</td>
         <td style="font-size:12px;">${u.name}</td>
         <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${u.password}</td>
         <td style="font-size:12px;">${u.expira}</td>
+        <td>${rolBadge}</td>
         <td style="font-size:12px;color:${statusColor};">${statusTxt}</td>
         <td style="white-space:nowrap;">
           <button onclick="admExtenderExpira(${u.id}, '${u.expira}')"
@@ -17018,7 +17030,7 @@ async function admLoadUsuarios() {
       <table class="alert-table" style="width:100%;">
         <thead>
           <tr>
-            <th>Correo</th><th>Nombre</th><th>Contraseña</th><th>Expira</th><th>Estado</th><th>Acciones</th>
+            <th>Correo</th><th>Nombre</th><th>Contraseña</th><th>Expira</th><th>Rol</th><th>Estado</th><th>Acciones</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -17036,6 +17048,7 @@ async function admCrearUsuario() {
   const pw     = document.getElementById('adm-pw').value.trim();
   const name   = document.getElementById('adm-name').value.trim();
   const expira = document.getElementById('adm-expira').value;
+  const role   = document.getElementById('adm-role').value;
   const statusEl = document.getElementById('adm-create-status');
 
   if (!email || !pw || !name || !expira) {
@@ -17043,7 +17056,7 @@ async function admCrearUsuario() {
   }
   statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
   try {
-    const { error } = await db.from('sentinel_demo_access').insert([{ email, password: pw, name, expira, activo: true }]);
+    const { error } = await db.from('sentinel_demo_access').insert([{ email, password: pw, name, expira, activo: true, role }]);
     if (error) throw error;
     statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ Usuario ${email} creado correctamente.`;
     document.getElementById('adm-email').value = '';

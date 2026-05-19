@@ -407,7 +407,10 @@ body.modo-demo .page-header        { display: none !important; }
 body.modo-demo .inst-collab-bar    { display: none !important; }
 body.modo-demo .stats-grid         { display: none !important; }
 body.modo-demo .controls-bar       { display: none !important; }
-body.modo-demo #mainTableContainer { display: none !important; }
+/* body.modo-demo #mainTableContainer — table visible in demo mode, drilldown blocked below */
+body.modo-demo #alertTbody tr          { pointer-events: none !important; cursor: default !important; }
+body.modo-demo #alertTbody .action-group,
+body.modo-demo #alertTbody .cell-entity-link { pointer-events: none !important; opacity: 0.4 !important; }
 body.modo-demo .risk-band          { display: none !important; }
 body.modo-demo #risk-band-exec     { display: flex !important; } /* keep exec risk band visible in presentation mode */
 body.modo-demo #demo-exit-bar      { display: flex !important; }

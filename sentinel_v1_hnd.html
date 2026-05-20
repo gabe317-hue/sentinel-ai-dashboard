@@ -4721,6 +4721,41 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div style="color:var(--text-dim);font-size:13px;padding:20px 0;">Cargando usuarios…</div>
     </div>
 
+    <!-- Proveedores Error de Datos (S113) -->
+    <div style="margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <span style="font-size:16px;">🚫</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;">PROVEEDORES EXCLUIDOS — ERROR DE DATOS</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">Se excluyen de alertas semanales, reportes y auto-investigador</div>
+        </div>
+      </div>
+
+      <!-- Agregar nuevo -->
+      <div style="display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:end;margin-bottom:16px;">
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">NOMBRE PROVEEDOR</div>
+          <input id="ped-proveedor" type="text" placeholder="NOMBRE EN MAYÚSCULAS"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">RAZÓN</div>
+          <input id="ped-razon" type="text" placeholder="Ej: Error de captura ONCAE — monto imposible"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <button onclick="pedAgregar()"
+          style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:var(--red);border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
+          + Excluir
+        </button>
+      </div>
+      <div id="ped-status" style="font-size:12px;margin-bottom:12px;min-height:16px;"></div>
+
+      <!-- Lista actual -->
+      <div id="ped-list">
+        <div style="color:var(--text-dim);font-size:13px;">Cargando…</div>
+      </div>
+    </div>
+
   </div><!-- /adminPanel -->
 
   <!-- ═══════════════════ PANEL CLIENT-ADMIN — GESTIÓN DE USUARIOS (S113) ════════════════════ -->
@@ -17060,6 +17095,7 @@ function showAdminPanel() {
   document.getElementById('adminPanel').classList.add('open');
   document.getElementById('nav-admin').classList.add('active');
   admLoadUsuarios();
+  pedCargar();
 }
 
 function hideAdminPanel() {
@@ -17186,6 +17222,63 @@ async function admEliminar(id, email) {
   const { error } = await db.from('sentinel_demo_access').delete().eq('id', id);
   if (error) { alert('Error al eliminar: ' + error.message); return; }
   admLoadUsuarios();
+}
+
+// ════════════════════════════════════════════════════════════
+// PROVEEDORES ERROR DE DATOS — S113 (tabla Supabase, gestión desde Admin Panel)
+// ════════════════════════════════════════════════════════════
+
+async function pedCargar() {
+  const listEl = document.getElementById('ped-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="color:var(--text-dim);font-size:13px;">Cargando…</div>';
+  try {
+    const { data, error } = await db.from('proveedores_error_datos').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      listEl.innerHTML = '<div style="color:var(--text-dim);font-size:13px;">Sin proveedores excluidos.</div>';
+      return;
+    }
+    listEl.innerHTML = `<table class="alert-table" style="width:100%;">
+      <thead><tr><th>Proveedor</th><th>Razón</th><th>Agregado</th><th></th></tr></thead>
+      <tbody>${data.map(r => `<tr>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--red);">${r.proveedor}</td>
+        <td style="font-size:12px;color:var(--text-dim);">${r.razon||'—'}</td>
+        <td style="font-size:11px;color:var(--text-dim);">${r.created_at ? new Date(r.created_at).toLocaleDateString('es-HN') : '—'}</td>
+        <td><button onclick="pedEliminar(${r.id}, '${r.proveedor.replace(/'/g,"\\'")}')"
+          style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:var(--red);border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;">
+          Quitar
+        </button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch(e) {
+    listEl.innerHTML = `<div style="color:var(--red);font-size:13px;">Error: ${e.message}</div>`;
+  }
+}
+
+async function pedAgregar() {
+  const proveedor = document.getElementById('ped-proveedor').value.trim().toUpperCase();
+  const razon     = document.getElementById('ped-razon').value.trim();
+  const statusEl  = document.getElementById('ped-status');
+  if (!proveedor) { statusEl.style.color = 'var(--amber)'; statusEl.textContent = '⚠ Ingresa el nombre del proveedor.'; return; }
+  statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
+  try {
+    const { error } = await db.from('proveedores_error_datos').insert([{ proveedor, razon: razon || 'Error de datos' }]);
+    if (error) throw error;
+    statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ ${proveedor} agregado a la lista de exclusión.`;
+    document.getElementById('ped-proveedor').value = '';
+    document.getElementById('ped-razon').value = '';
+    pedCargar();
+  } catch(e) {
+    statusEl.style.color = 'var(--red)'; statusEl.textContent = `❌ Error: ${e.message}`;
+  }
+}
+
+async function pedEliminar(id, proveedor) {
+  if (!confirm(`¿Quitar "${proveedor}" de la lista de exclusión? Volverá a aparecer en los reportes.`)) return;
+  const { error } = await db.from('proveedores_error_datos').delete().eq('id', id);
+  if (error) { alert('Error: ' + error.message); return; }
+  pedCargar();
 }
 
 // ════════════════════════════════════════════════════════════

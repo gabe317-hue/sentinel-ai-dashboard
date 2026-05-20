@@ -2645,6 +2645,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag pe-tag-active">ACTIVO</span>
     </div>
 
+    <!-- Card 8 — Reporte Ejecución Presupuestaria SEFIN (S111) -->
+    <div class="pe-card" onclick="generarReporteSEFIN()">
+      <div class="pe-card-num">08</div>
+      <div class="pe-card-icon">📊</div>
+      <div class="pe-card-title">Ejecución Presupuestaria</div>
+      <div class="pe-card-desc">Ranking completo de instituciones por ritmo de ejecución · SEFIN PIEP · PDF imprimible</div>
+      <span class="pe-card-tag pe-tag-active">PDF</span>
+    </div>
+
   </div>
 </div>
 
@@ -20268,6 +20277,166 @@ function exportOcdsCrossRefPDF() {
 // ══════════════════════════════════════════════════════════════
 
 let _cruceSefinLoaded = false;
+
+// ════════════════════════════════════════════════════════════
+// REPORTE EJECUCIÓN PRESUPUESTARIA SEFIN (S111)
+// Card 08 Panel Ejecutivo — PDF popup igual que Briefing Ejecutivo
+// Consulta sefin_presupuesto (último período) + ranking por ritmo
+// ════════════════════════════════════════════════════════════
+async function generarReporteSEFIN() {
+  const now      = new Date();
+  const fechaStr = now.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const horaStr  = now.toLocaleTimeString('es-HN', { hour:'2-digit', minute:'2-digit' });
+
+  // 1 — Obtener último período disponible
+  const { data: periodos } = await db.from('sefin_presupuesto')
+    .select('periodo').order('periodo', { ascending: false }).limit(1);
+  const ultimoPeriodo = periodos?.[0]?.periodo || null;
+  if (!ultimoPeriodo) { alert('No hay datos SEFIN disponibles.'); return; }
+
+  const mes = parseInt(ultimoPeriodo.slice(4, 6));
+  const meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio',
+                 'Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const periodoStr = `${meses[mes]} ${ultimoPeriodo.slice(0,4)}`;
+  const presupuestoRef = parseInt(ultimoPeriodo.slice(0,4)) >= 2026 ? '2025 prorrogado' : ultimoPeriodo.slice(0,4);
+
+  // 2 — Traer todas las instituciones del período
+  const { data: rows, error } = await db.from('sefin_presupuesto')
+    .select('institucion_nombre, aprobado, ejecucion_acumulada')
+    .eq('periodo', ultimoPeriodo)
+    .order('ejecucion_acumulada', { ascending: false });
+
+  if (error || !rows || rows.length === 0) { alert('Error al cargar datos SEFIN: ' + (error?.message||'sin datos')); return; }
+
+  // 3 — Calcular ritmo y clasificar
+  const esperadoBase = mes / 12;
+  const data = rows.map(r => {
+    const aprobado  = Number(r.aprobado) || 0;
+    const ejecutado = Number(r.ejecucion_acumulada) || 0;
+    const esperado  = aprobado * esperadoBase;
+    const ritmo     = esperado > 0 ? ejecutado / esperado : 0;
+    const pctAnual  = aprobado > 0 ? (ejecutado / aprobado) * 100 : 0;
+    return { nombre: r.institucion_nombre, aprobado, ejecutado, esperado, ritmo, pctAnual };
+  }).sort((a, b) => b.ritmo - a.ritmo);
+
+  const aceleradas = data.filter(r => r.ritmo > 1.0).length;
+  const normal     = data.filter(r => r.ritmo >= 0.33 && r.ritmo <= 1.0).length;
+  const rezagadas  = data.filter(r => r.ritmo < 0.33 && r.ritmo > 0).length;
+  const sinDatos   = data.filter(r => r.ritmo === 0).length;
+
+  const fmtL = v => {
+    if (!v) return '—';
+    if (v >= 1e9) return 'L ' + (v/1e9).toFixed(2) + 'B';
+    if (v >= 1e6) return 'L ' + (v/1e6).toFixed(1) + 'M';
+    return 'L ' + v.toLocaleString('es-HN');
+  };
+
+  const ritmoColor = r => {
+    if (r >= 2.0) return '#c0392b';
+    if (r >= 1.5) return '#d97706';
+    if (r >= 1.0) return '#f59e0b';
+    if (r >= 0.33) return '#059669';
+    if (r > 0)   return '#3b82f6';
+    return '#9ca3af';
+  };
+  const ritmoBadge = r => {
+    if (r >= 2.0) return { txt: '🔴 Muy acelerado', color:'#c0392b' };
+    if (r >= 1.5) return { txt: '🟠 Acelerado',     color:'#d97706' };
+    if (r >= 1.0) return { txt: '🟡 Lev. acelerado',color:'#f59e0b' };
+    if (r >= 0.33)return { txt: '🟢 Normal',         color:'#059669' };
+    if (r > 0)    return { txt: '🔵 Rezagado',        color:'#3b82f6' };
+    return         { txt: '⚪ Sin ejecución',          color:'#9ca3af' };
+  };
+
+  const filas = data.map((r, i) => {
+    const badge = ritmoBadge(r.ritmo);
+    const bg    = i % 2 === 0 ? '#fff' : '#f8fafc';
+    return `<tr style="background:${bg}">
+      <td style="padding:6px 10px;font-size:11px;color:#6b7280;text-align:center;">${i+1}</td>
+      <td style="padding:6px 10px;font-size:11px;font-weight:600;">${r.nombre}</td>
+      <td style="padding:6px 10px;font-size:11px;text-align:right;">${fmtL(r.aprobado)}</td>
+      <td style="padding:6px 10px;font-size:11px;text-align:right;color:#78350f;">${fmtL(r.esperado)}</td>
+      <td style="padding:6px 10px;font-size:11px;text-align:right;font-weight:700;">${fmtL(r.ejecutado)}</td>
+      <td style="padding:6px 10px;font-size:11px;text-align:center;color:#6b7280;">${r.pctAnual.toFixed(0)}%</td>
+      <td style="padding:6px 10px;font-size:11px;text-align:center;font-weight:700;color:${ritmoColor(r.ritmo)};">${r.ritmo > 0 ? (r.ritmo*100).toFixed(0)+'%' : '—'}</td>
+      <td style="padding:6px 10px;font-size:10px;"><span style="color:${badge.color};font-weight:700;">${badge.txt}</span></td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <style>
+    body{margin:0;padding:24px 32px;font-family:Arial,sans-serif;color:#1a202c;background:#fff;font-size:12px;}
+    h1{font-size:19px;font-weight:800;color:#0a1628;margin:0 0 2px;}
+    .sub{font-size:13px;color:#6b7280;margin:0 0 6px;}
+    .meta{font-size:11px;color:#94a3b8;margin-bottom:14px;}
+    .aviso{background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:10px 14px;font-size:11px;color:#713f12;margin-bottom:14px;line-height:1.6;}
+    .kpi-bar{display:flex;gap:12px;margin-bottom:16px;}
+    .kpi{text-align:center;padding:10px 16px;border-radius:6px;flex:1;}
+    .kpi-val{font-size:20px;font-weight:800;}
+    .kpi-lbl{font-size:10px;margin-top:2px;}
+    .leyenda{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:10px;}
+    .ley-item{display:flex;align-items:center;gap:4px;}
+    table{width:100%;border-collapse:collapse;}
+    th{background:#0a1628;color:#fff;padding:7px 10px;font-size:10px;text-align:left;letter-spacing:.04em;}
+    th:nth-child(1),th:nth-child(6),th:nth-child(7){text-align:center;}
+    th:nth-child(3),th:nth-child(4),th:nth-child(5){text-align:right;}
+    .footer{margin-top:16px;font-size:10px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;line-height:1.6;}
+    .conf{display:inline-block;background:#c0392b;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:3px;letter-spacing:1px;margin-bottom:10px;}
+    @media print { body{padding:16px 20px;} }
+  </style></head><body>
+  <span class="conf">CONFIDENCIAL</span>
+  <h1>SENTINEL-AI HONDURAS</h1>
+  <div class="sub">Reporte de Ejecución Presupuestaria — Ranking completo de instituciones</div>
+  <div class="meta">Período: ${periodoStr} · Generado: ${fechaStr} a las ${horaStr} · Fuente: SEFIN PIEP</div>
+
+  <div class="aviso">
+    ⚠️ <strong>Referencia presupuestaria:</strong> Los montos de "Aprobado Anual" corresponden al
+    <strong>Presupuesto ${presupuestoRef}</strong> vigente durante la transición de gobierno.
+    El Presupuesto 2026 aprobado por el Congreso aún no está publicado en SEFIN PIEP y se incorporará automáticamente cuando esté disponible.
+  </div>
+
+  <div class="kpi-bar">
+    <div class="kpi" style="background:#fef2f2;"><div class="kpi-val" style="color:#c0392b;">${aceleradas}</div><div class="kpi-lbl" style="color:#6b7280;">Ejecución acelerada<br>(>100% ritmo)</div></div>
+    <div class="kpi" style="background:#f0fdf4;"><div class="kpi-val" style="color:#059669;">${normal}</div><div class="kpi-lbl" style="color:#6b7280;">Ritmo normal<br>(33–100%)</div></div>
+    <div class="kpi" style="background:#eff6ff;"><div class="kpi-val" style="color:#3b82f6;">${rezagadas}</div><div class="kpi-lbl" style="color:#6b7280;">Rezagadas<br>(<33% ritmo)</div></div>
+    <div class="kpi" style="background:#f9fafb;"><div class="kpi-val" style="color:#9ca3af;">${sinDatos}</div><div class="kpi-lbl" style="color:#6b7280;">Sin ejecución<br>registrada</div></div>
+    <div class="kpi" style="background:#0a1628;"><div class="kpi-val" style="color:#fff;">${data.length}</div><div class="kpi-lbl" style="color:#94a3b8;">Total instituciones<br>período ${periodoStr}</div></div>
+  </div>
+
+  <div class="leyenda">
+    <div class="ley-item"><span style="color:#c0392b;font-weight:700;">🔴 Muy acelerado</span> &gt;200% ritmo esperado</div>
+    <div class="ley-item"><span style="color:#d97706;font-weight:700;">🟠 Acelerado</span> 150–200%</div>
+    <div class="ley-item"><span style="color:#f59e0b;font-weight:700;">🟡 Lev. acelerado</span> 100–150%</div>
+    <div class="ley-item"><span style="color:#059669;font-weight:700;">🟢 Normal</span> 33–100%</div>
+    <div class="ley-item"><span style="color:#3b82f6;font-weight:700;">🔵 Rezagado</span> &lt;33%</div>
+  </div>
+  <div style="font-size:10px;color:#9ca3af;margin-bottom:10px;">
+    Ritmo esperado = Aprobado anual × (${mes}/12) = ${(esperadoBase*100).toFixed(0)}% del presupuesto. Columna "% Ritmo" = Ejecutado ÷ Esperado.
+  </div>
+
+  <table>
+    <thead><tr>
+      <th>#</th><th>Institución</th>
+      <th>Aprobado Anual *</th><th>Esperado Mes ${mes}</th>
+      <th>Ejecutado Real</th><th>% Anual</th><th>% Ritmo</th><th>Clasificación</th>
+    </tr></thead>
+    <tbody>${filas}</tbody>
+  </table>
+
+  <div class="footer">
+    * Aprobado = Presupuesto ${presupuestoRef}. Ritmo esperado = Aprobado × ${mes}/12.<br>
+    Los datos de ejecución provienen de SEFIN PIEP y pueden tener rezago de publicación de 30–60 días.<br>
+    La ejecución acelerada o rezagada no constituye por sí sola evidencia de irregularidad.<br>
+    Sentinel AI · Reporte Ejecución Presupuestaria · ${now.toISOString()}
+  </div>
+</body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1200,height=850');
+  if (!pw) { alert('Habilita ventanas emergentes para generar el reporte.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
 
 function showCruceSefinPanel() {
   _closeAllFuentePanels();

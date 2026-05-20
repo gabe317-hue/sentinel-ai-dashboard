@@ -2750,6 +2750,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span class="nav-icon">⚙️</span> Admin
         <span class="nav-chip" style="background:rgba(99,102,241,0.15);color:#818cf8;border-color:rgba(99,102,241,0.3);">USR</span>
       </button>
+      <button class="nav-item" id="nav-client-admin" onclick="showClientAdminPanel()" style="display:none;">
+        <span class="nav-icon">🏢</span> Mi Org
+        <span class="nav-chip" style="background:rgba(16,185,129,0.15);color:#10b981;border-color:rgba(16,185,129,0.3);">ORG</span>
+      </button>
       <a class="nav-item" href="index.html">
         <span class="nav-icon">🏠</span> Inicio
       </a>
@@ -4665,7 +4669,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- Crear nuevo usuario -->
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:20px;margin-bottom:28px;">
       <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;margin-bottom:14px;">➕ NUEVO USUARIO DEMO</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 120px auto;gap:10px;align-items:end;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px 130px auto;gap:10px;align-items:end;">
         <div>
           <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">CORREO</div>
           <input id="adm-email" type="email" placeholder="usuario@pgr.hn"
@@ -4692,7 +4696,13 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
             <option value="demo">👁 Demo</option>
             <option value="analista">🔍 Analista</option>
+            <option value="client-admin">🏢 Admin Org</option>
           </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">ORG (opcional)</div>
+          <input id="adm-org" type="text" placeholder="pgr / tsc"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
         </div>
         <button onclick="admCrearUsuario()"
           style="background:var(--electric);color:#000;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
@@ -4712,6 +4722,69 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
 
   </div><!-- /adminPanel -->
+
+  <!-- ═══════════════════ PANEL CLIENT-ADMIN — GESTIÓN DE USUARIOS (S113) ════════════════════ -->
+  <div class="fuente-panel" id="clientAdminPanel">
+    <button class="fuente-back" onclick="hideClientAdminPanel()">← Portal</button>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+      <span style="font-size:22px;">🏢</span>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#10b981;letter-spacing:.04em;" id="ca-panel-title">Gestión de Usuarios — Mi Organización</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:2px;">Solo usuarios de tu organización · No puedes crear administradores</div>
+      </div>
+    </div>
+
+    <!-- Crear nuevo usuario -->
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:20px;margin-bottom:28px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;margin-bottom:14px;">➕ NUEVO USUARIO</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 120px auto;gap:10px;align-items:end;">
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">CORREO</div>
+          <input id="ca-email" type="email" placeholder="usuario@org.hn"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">CONTRASEÑA</div>
+          <input id="ca-pw" type="text" placeholder="Pass2026!"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">NOMBRE</div>
+          <input id="ca-name" type="text" placeholder="Juan Pérez"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">EXPIRA</div>
+          <input id="ca-expira" type="date"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">ROL</div>
+          <select id="ca-role"
+            style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+            <option value="demo">👁 Demo</option>
+            <option value="analista">🔍 Analista</option>
+          </select>
+        </div>
+        <button onclick="caCrearUsuario()"
+          style="background:#10b981;color:#000;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
+          Crear
+        </button>
+      </div>
+      <div id="ca-create-status" style="font-size:12px;margin-top:10px;min-height:16px;"></div>
+    </div>
+
+    <!-- Tabla de usuarios de la org -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;">USUARIOS DE TU ORGANIZACIÓN</div>
+      <button onclick="caLoadUsuarios()" style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 12px;color:var(--text-dim);font-size:12px;cursor:pointer;">↺ Actualizar</button>
+    </div>
+    <div id="ca-table-wrap">
+      <div style="color:var(--text-dim);font-size:13px;padding:20px 0;">Cargando usuarios…</div>
+    </div>
+
+  </div><!-- /clientAdminPanel -->
 
   <!-- ═══════════════════ MÓDULO F — CANAL DE INTEGRIDAD CIUDADANA ════════════════════ -->
   <div class="fuente-panel" id="moduloFPanel">
@@ -8078,7 +8151,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -16004,12 +16077,16 @@ function applyRole(role) {
     if (!el) return;
     el.style.display = role === 'admin' ? '' : 'none';
   });
+  // client-admin: show Mi Org nav, hide global admin
+  const caNav = document.getElementById('nav-client-admin');
+  if (caNav) caNav.style.display = role === 'client-admin' ? '' : 'none';
   // Role badge
   const roleEl = document.getElementById('userRoleBadge');
   if (roleEl) {
-    if (role === 'admin')    { roleEl.textContent = '👑 Admin';   roleEl.style.color = 'var(--electric)'; }
-    else if (role === 'demo'){ roleEl.textContent = '👁 Demo';    roleEl.style.color = '#f59e0b'; }
-    else                     { roleEl.textContent = '🔍 Analista';roleEl.style.color = '#a855f7'; }
+    if (role === 'admin')        { roleEl.textContent = '👑 Admin';    roleEl.style.color = 'var(--electric)'; }
+    else if (role === 'client-admin') { roleEl.textContent = '🏢 Admin Org'; roleEl.style.color = '#10b981'; }
+    else if (role === 'demo')    { roleEl.textContent = '👁 Demo';     roleEl.style.color = '#f59e0b'; }
+    else                         { roleEl.textContent = '🔍 Analista'; roleEl.style.color = '#a855f7'; }
   }
   // Activate demo mode restrictions
   if (role === 'demo') {
@@ -16058,8 +16135,9 @@ function setCurrentUser(email, overrides = {}) {
   const name = overrides.name || (SENTINEL_USERS[email] && SENTINEL_USERS[email].name) || derivedName;
   const initials = name.replace(/[^a-zA-Z ]/g, '').trim().split(' ').map(p => p[0] || '').join('').toUpperCase().slice(0, 2) || prefix[0].toUpperCase();
   const role = overrides.role || resolveRole(email);
+  const org  = overrides.org  || null;
 
-  currentUser = { email, name, initials, role };
+  currentUser = { email, name, initials, role, org };
 
   // Update sidebar user card
   document.getElementById('userAvatar').textContent      = initials;
@@ -16124,7 +16202,7 @@ async function doLogin() {
   try {
     const { data: demoRows, error: demoErr } = await db
       .from('sentinel_demo_access')
-      .select('email, password, name, expira, activo')
+      .select('email, password, name, expira, activo, role, org')
       .eq('email', email)
       .eq('activo', true)
       .limit(1);
@@ -16150,7 +16228,7 @@ async function doLogin() {
     try { await db.from('alert_audit_log').insert([{ alert_id: null, action: 'LOGIN',
       new_value: email, user_email: email, user_name: demoUser.name,
       notes: `Acceso · rol: ${demoUser.role} (Supabase) · ${new Date().toISOString()}` }]); } catch(e){}
-    setCurrentUser(email, { name: demoUser.name, role: demoUser.role || 'demo' });
+    setCurrentUser(email, { name: demoUser.name, role: demoUser.role || 'demo', org: demoUser.org || null });
     document.getElementById('loginScreen').classList.add('hidden');
     showPortal(); await loadAlerts(); startRealtime();
   } catch(e) {
@@ -17011,13 +17089,17 @@ async function admLoadUsuarios() {
       const statusTxt  = !u.activo ? '⏸ Inactivo' : expirado ? '⏰ Expirado' : '✅ Activo';
       const rolBadge = u.role === 'analista'
         ? '<span style="color:#a855f7;font-size:11px;">🔍 Analista</span>'
-        : '<span style="color:#f59e0b;font-size:11px;">👁 Demo</span>';
+        : u.role === 'client-admin'
+          ? '<span style="color:#10b981;font-size:11px;">🏢 Admin Org</span>'
+          : '<span style="color:#f59e0b;font-size:11px;">👁 Demo</span>';
+      const orgTxt = u.org ? `<span style="font-size:11px;color:#10b981;">${u.org}</span>` : '<span style="color:var(--text-dim);font-size:11px;">—</span>';
       return `<tr>
         <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${u.email}</td>
         <td style="font-size:12px;">${u.name}</td>
         <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${u.password}</td>
         <td style="font-size:12px;">${u.expira}</td>
         <td>${rolBadge}</td>
+        <td>${orgTxt}</td>
         <td style="font-size:12px;color:${statusColor};">${statusTxt}</td>
         <td style="white-space:nowrap;">
           <button onclick="admExtenderExpira(${u.id}, '${u.expira}')"
@@ -17039,7 +17121,7 @@ async function admLoadUsuarios() {
       <table class="alert-table" style="width:100%;">
         <thead>
           <tr>
-            <th>Correo</th><th>Nombre</th><th>Contraseña</th><th>Expira</th><th>Rol</th><th>Estado</th><th>Acciones</th>
+            <th>Correo</th><th>Nombre</th><th>Contraseña</th><th>Expira</th><th>Rol</th><th>Org</th><th>Estado</th><th>Acciones</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -17058,20 +17140,25 @@ async function admCrearUsuario() {
   const name   = document.getElementById('adm-name').value.trim();
   const expira = document.getElementById('adm-expira').value;
   const role   = document.getElementById('adm-role').value;
+  const org    = (document.getElementById('adm-org').value || '').trim().toLowerCase() || null;
   const statusEl = document.getElementById('adm-create-status');
 
   if (!email || !pw || !name || !expira) {
     statusEl.style.color = 'var(--amber)'; statusEl.textContent = '⚠ Todos los campos son requeridos.'; return;
   }
+  if (role === 'client-admin' && !org) {
+    statusEl.style.color = 'var(--amber)'; statusEl.textContent = '⚠ El rol Admin Org requiere especificar una organización.'; return;
+  }
   statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
   try {
-    const { error } = await db.from('sentinel_demo_access').insert([{ email, password: pw, name, expira, activo: true, role }]);
+    const { error } = await db.from('sentinel_demo_access').insert([{ email, password: pw, name, expira, activo: true, role, org }]);
     if (error) throw error;
     statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ Usuario ${email} creado correctamente.`;
     document.getElementById('adm-email').value = '';
     document.getElementById('adm-pw').value = '';
     document.getElementById('adm-name').value = '';
     document.getElementById('adm-expira').value = '';
+    document.getElementById('adm-org').value = '';
     admLoadUsuarios();
   } catch(e) {
     statusEl.style.color = 'var(--red)';
@@ -17099,6 +17186,155 @@ async function admEliminar(id, email) {
   const { error } = await db.from('sentinel_demo_access').delete().eq('id', id);
   if (error) { alert('Error al eliminar: ' + error.message); return; }
   admLoadUsuarios();
+}
+
+// ════════════════════════════════════════════════════════════
+// CLIENT-ADMIN PANEL — S113 (gestión de usuarios scoped por org)
+// Solo accesible para rol 'client-admin'. Solo ve/edita su propia org.
+// ════════════════════════════════════════════════════════════
+
+function showClientAdminPanel() {
+  if (!currentUser || currentUser.role !== 'client-admin') return;
+  _closeAllFuentePanels();
+  document.getElementById('clientAdminPanel').classList.add('open');
+  document.getElementById('nav-client-admin').classList.add('active');
+  // Actualizar título con nombre de org
+  const orgLabel = (currentUser.org || 'tu organización').toUpperCase();
+  const titleEl = document.getElementById('ca-panel-title');
+  if (titleEl) titleEl.textContent = `Gestión de Usuarios — ${orgLabel}`;
+  caLoadUsuarios();
+}
+
+function hideClientAdminPanel() {
+  document.getElementById('clientAdminPanel').classList.remove('open');
+  document.getElementById('nav-client-admin').classList.remove('active');
+  showPortal();
+}
+
+async function caLoadUsuarios() {
+  const wrap = document.getElementById('ca-table-wrap');
+  if (!currentUser || !currentUser.org) {
+    wrap.innerHTML = '<div style="color:var(--amber);font-size:13px;padding:16px 0;">⚠ Tu usuario no tiene organización asignada. Contacta al administrador.</div>';
+    return;
+  }
+  wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Cargando…</div>';
+  try {
+    const { data, error } = await db
+      .from('sentinel_demo_access')
+      .select('*')
+      .eq('org', currentUser.org)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Sin usuarios registrados en tu organización.</div>';
+      return;
+    }
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    let rows = data.map(u => {
+      const exp = new Date(u.expira + 'T00:00:00');
+      const expirado = exp < hoy;
+      const statusColor = !u.activo ? 'var(--text-dim)' : expirado ? 'var(--red)' : 'var(--green)';
+      const statusTxt  = !u.activo ? '⏸ Inactivo' : expirado ? '⏰ Expirado' : '✅ Activo';
+      const rolBadge = u.role === 'analista'
+        ? '<span style="color:#a855f7;font-size:11px;">🔍 Analista</span>'
+        : '<span style="color:#f59e0b;font-size:11px;">👁 Demo</span>';
+      return `<tr>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${u.email}</td>
+        <td style="font-size:12px;">${u.name}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${u.password}</td>
+        <td style="font-size:12px;">${u.expira}</td>
+        <td>${rolBadge}</td>
+        <td style="font-size:12px;color:${statusColor};">${statusTxt}</td>
+        <td style="white-space:nowrap;">
+          <button onclick="caExtenderExpira(${u.id}, '${u.expira}')"
+            style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#818cf8;border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;margin-right:4px;">
+            +7d
+          </button>
+          <button onclick="caToggleActivo(${u.id}, ${u.activo})"
+            style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;margin-right:4px;">
+            ${u.activo ? 'Desactivar' : 'Activar'}
+          </button>
+          <button onclick="caEliminar(${u.id}, '${u.email}')"
+            style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:var(--red);border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;">
+            Eliminar
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = `
+      <table class="alert-table" style="width:100%;">
+        <thead>
+          <tr>
+            <th>Correo</th><th>Nombre</th><th>Contraseña</th><th>Expira</th><th>Rol</th><th>Estado</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:10px;opacity:0.6;">
+        ⓘ La contraseña se muestra en texto claro — solo compartir por canal seguro.
+      </div>`;
+  } catch(e) {
+    wrap.innerHTML = `<div style="color:var(--red);font-size:13px;">Error al cargar usuarios: ${e.message}</div>`;
+  }
+}
+
+async function caCrearUsuario() {
+  if (!currentUser || !currentUser.org) {
+    alert('Tu usuario no tiene organización asignada. Contacta al administrador.');
+    return;
+  }
+  const email  = document.getElementById('ca-email').value.trim().toLowerCase();
+  const pw     = document.getElementById('ca-pw').value.trim();
+  const name   = document.getElementById('ca-name').value.trim();
+  const expira = document.getElementById('ca-expira').value;
+  const role   = document.getElementById('ca-role').value;
+  const statusEl = document.getElementById('ca-create-status');
+
+  // Validar que no pueda crear admin ni client-admin
+  if (role === 'admin' || role === 'client-admin') {
+    statusEl.style.color = 'var(--red)'; statusEl.textContent = '❌ No puedes crear usuarios administradores.'; return;
+  }
+  if (!email || !pw || !name || !expira) {
+    statusEl.style.color = 'var(--amber)'; statusEl.textContent = '⚠ Todos los campos son requeridos.'; return;
+  }
+  statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
+  try {
+    const { error } = await db.from('sentinel_demo_access').insert([{
+      email, password: pw, name, expira, activo: true, role, org: currentUser.org
+    }]);
+    if (error) throw error;
+    statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ Usuario ${email} creado correctamente.`;
+    document.getElementById('ca-email').value = '';
+    document.getElementById('ca-pw').value = '';
+    document.getElementById('ca-name').value = '';
+    document.getElementById('ca-expira').value = '';
+    caLoadUsuarios();
+  } catch(e) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = e.code === '23505' ? '❌ Ese correo ya existe.' : `❌ Error: ${e.message}`;
+  }
+}
+
+async function caExtenderExpira(id, expiraActual) {
+  const exp = new Date(expiraActual + 'T00:00:00');
+  exp.setDate(exp.getDate() + 7);
+  const nuevaExpira = exp.toISOString().slice(0, 10);
+  const { error } = await db.from('sentinel_demo_access').update({ expira: nuevaExpira }).eq('id', id).eq('org', currentUser.org);
+  if (error) { alert('Error al extender: ' + error.message); return; }
+  caLoadUsuarios();
+}
+
+async function caToggleActivo(id, estadoActual) {
+  const { error } = await db.from('sentinel_demo_access').update({ activo: !estadoActual }).eq('id', id).eq('org', currentUser.org);
+  if (error) { alert('Error: ' + error.message); return; }
+  caLoadUsuarios();
+}
+
+async function caEliminar(id, email) {
+  if (!confirm(`¿Eliminar acceso de ${email}? Esta acción no se puede deshacer.`)) return;
+  const { error } = await db.from('sentinel_demo_access').delete().eq('id', id).eq('org', currentUser.org);
+  if (error) { alert('Error al eliminar: ' + error.message); return; }
+  caLoadUsuarios();
 }
 
 // ════════════════════════════════════════════════════════════

@@ -14146,6 +14146,22 @@ function investigarDesdeTop10(entityName) {
   document.getElementById('ipBtnBackList').style.display = 'none';
 }
 
+function investigarDesdeTop10PorProveedor(proveedorName) {
+  // Investigar por proveedor desde Top 10 — filtra allAlerts por proveedor_nombre
+  document.getElementById('top5Panel').classList.add('hidden');
+  document.getElementById('investigacionProyectoPanel').classList.remove('hidden');
+  document.getElementById('ipLista').style.display = 'none';
+  const contratosProv = allAlerts.filter(a => (a.proveedor_nombre||'').toLowerCase() === proveedorName.toLowerCase() && Number(a.monto_contrato) > 0);
+  ipVerDetalle(proveedorName, contratosProv);
+  document.getElementById('ipBtnBack').style.display = 'inline-flex';
+  document.getElementById('ipBtnBack').textContent = '← Top 10 Críticos';
+  document.getElementById('ipBtnBack').onclick = function() {
+    document.getElementById('investigacionProyectoPanel').classList.add('hidden');
+    document.getElementById('top5Panel').classList.remove('hidden');
+  };
+  document.getElementById('ipBtnBackList').style.display = 'none';
+}
+
 function ipConstruirLista() {
   if (!allAlerts || !allAlerts.length) {
     document.getElementById('ipGrid').innerHTML = '<div style="color:rgba(160,180,210,0.4);font-size:12px;padding:20px;grid-column:span 2;text-align:center;font-family:\'JetBrains Mono\',monospace;">Datos aún cargando…</div>';
@@ -15972,11 +15988,18 @@ async function renderTop5() {
       <div class="t5-right">
         <div class="t5-monto-val">${fmtM(c.monto)}</div>
         <div class="t5-monto-label">monto en riesgo</div>
-        ${c.entidades.size > 0 ? `<button onclick="investigarDesdeTop10('${esc([...c.entidades][0]).replace(/'/g,"\\'")}');event.stopPropagation();"
-          style="margin-top:14px;padding:6px 12px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
-          background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;">
-          🗂️ INVESTIGAR →
-        </button>` : ''}
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">
+          ${c.entidades.size > 0 ? `<button onclick="investigarDesdeTop10('${esc([...c.entidades][0]).replace(/'/g,"\\'")}');event.stopPropagation();"
+            style="padding:6px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
+            background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left;">
+            🏛️ Por Entidad →
+          </button>` : ''}
+          <button onclick="investigarDesdeTop10PorProveedor('${esc(c.proveedor).replace(/'/g,"\\'")}');event.stopPropagation();"
+            style="padding:6px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
+            background:rgba(52,211,153,0.1);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left;">
+            📦 Por Proveedor →
+          </button>
+        </div>
       </div>
     </div>`;
   }).join('');

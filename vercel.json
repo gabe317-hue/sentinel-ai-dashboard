@@ -1,4 +1,11 @@
 {
+  "rewrites": [
+    { "source": "/",                           "destination": "/api/gate?page=index" },
+    { "source": "/HTML/index.html",            "destination": "/api/gate?page=index" },
+    { "source": "/HTML/sentinel_v1_hnd.html",  "destination": "/api/gate?page=sentinel_v1_hnd.html" },
+    { "source": "/HTML/mvp.html",              "destination": "/api/gate?page=mvp.html" },
+    { "source": "/HTML/demo.html",             "destination": "/api/gate?page=demo.html" }
+  ],
   "headers": [
     {
       "source": "/(.*\\.html)",

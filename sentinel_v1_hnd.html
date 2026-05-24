@@ -2333,8 +2333,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al Artículo 234 del Código Penal de Honduras. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag">The Prieto Group</span>
-      <span class="login-inst-tag">·</span>
       <span class="login-inst-tag">© Sentinel-AI v1.94</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
@@ -2375,7 +2373,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer">v1.94 · SEFIN Fiscal 2023–2025 · The Prieto Group · Dallas, TX</div>
+  <div class="ps-footer">v1.94 · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -2672,7 +2670,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="status-dot"></div>
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
-    <div class="logo-ip">The Prieto Group · IP en Desarrollo</div>
+    <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
     <div class="logo-version">v1.95 — HND</div>
   </div>
 
@@ -3095,7 +3093,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
   <div class="po-footer">
-    <div class="po-footer-brand"><span>The Prieto Group</span> · 2026 ©</div>
+    <div class="po-footer-brand"><span>Sentinel-AI</span> · 2026 ©</div>
     <div class="po-footer-class">Clasificación: Reservado · Uso Institucional</div>
   </div>
 
@@ -3122,7 +3120,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div class="inst-collab-bar">
     <span>🇭🇳</span>
     <span>República de Honduras · Sistema Nacional Anticorrupción</span>
-    <span style="margin-left:auto; color:rgba(0,230,118,0.5);">● The Prieto Group — Dallas, TX</span>
+    <span style="margin-left:auto; color:rgba(0,230,118,0.5);">● Sistema Confidencial</span>
   </div>
 
   <!-- Page header -->
@@ -5892,35 +5890,88 @@ function fmtDate(iso) {
 // NEVER falls back to localStorage on failure — shows error instead.
 // Required console output for Week 3 Step 5 verification.
 // ════════════════════════════════════════════════════════════
+// S125 — Transforms extraídos para reutilización en carga parcial y final.
+function _applyAlertTransforms() {
+  // Exclusiones operacionales: pares proveedor+entidad legítimos (viajes militares)
+  const EXCLUSIONES_OPERACIONALES = [
+    { proveedor: 'ASTRO TOUR', entidad: 'EJERCITO DE HONDURAS'  },
+    { proveedor: 'ASTRO TOUR', entidad: 'ESTADO MAYOR CONJUNTO' },
+    { proveedor: 'ASTRO TOUR', entidad: 'UNIDAD CENTRAL'        },
+    { proveedor: 'VOLARE',     entidad: 'EJERCITO DE HONDURAS'  },
+    { proveedor: 'VOLARE',     entidad: 'ESTADO MAYOR CONJUNTO' },
+    { proveedor: 'VOLARE',     entidad: 'UNIDAD CENTRAL'        },
+  ];
+  allAlerts = allAlerts.filter(a => {
+    const prov    = (a.proveedor_nombre || '').toUpperCase();
+    const entidad = (a.entity_name      || '').toUpperCase();
+    return !EXCLUSIONES_OPERACIONALES.some(ex =>
+      prov.includes(ex.proveedor) && entidad.includes(ex.entidad)
+    );
+  });
+
+  // Entity resolution: variantes del mismo proveedor → nombre canónico
+  const VENDOR_ALIASES = [
+    { patron: 'SOLINT',          canonico: 'SOLUCIONES INTEGRALES (SOLINTSA)' },
+    { patron: 'INFRA DE HONDUR', canonico: 'INFRA DE HONDURAS S.A.'           },
+  ];
+  allAlerts.forEach(a => {
+    const prov = (a.proveedor_nombre || '').toUpperCase();
+    for (const alias of VENDOR_ALIASES) {
+      if (prov.includes(alias.patron)) { a.proveedor_nombre = alias.canonico; break; }
+    }
+  });
+
+  // Error de datos: excluir contratos con monto claramente erróneo (error captura ONCAE)
+  const ERROR_DATOS_CONTRATOS = [
+    { patron: 'RILMAC IMPRESORES', montoMin: 1_000_000_000 }
+  ];
+  allAlerts = allAlerts.filter(a => !ERROR_DATOS_CONTRATOS.some(e =>
+    (a.proveedor_nombre || '').toUpperCase().includes(e.patron) &&
+    (Number(a.monto_contrato) || 0) > e.montoMin
+  ));
+
+  // FRACCIONAMIENTO scrub: solo mostrar si proveedor tiene ≥2 contratos en BD
+  { const provConteo = {};
+    allAlerts.forEach(a => { const k = (a.proveedor_nombre || '').toUpperCase().trim(); provConteo[k] = (provConteo[k] || 0) + 1; });
+    allAlerts.forEach(a => { const k = (a.proveedor_nombre || '').toUpperCase().trim();
+      if (provConteo[k] < 2 && (a.patterns || '').includes('FRACCIONAMIENTO_ONCAE')) {
+        a.patterns = (a.patterns || '').split(',').filter(p => p.trim() !== 'FRACCIONAMIENTO_ONCAE').join(',');
+      }
+    });
+  }
+}
+
 async function loadAlerts() {
-  // Parallel batch fetch — S124 optimization. No count query needed.
-  // Fetches 8 pages at a time; stops when a batch returns a short page.
+  // S125 — 2-phase loading:
+  //   Phase 1: First batch (8K records) → show portal immediately (<3s)
+  //   Phase 2: Remaining records → load in background, update counts when done
+  // Fixes: (1) order('id') uses PK index (fast), (2) select only needed columns (~60% less data),
+  //        (3) portal visible after first batch instead of waiting 138 pages.
+  const COLS = 'id,alert_id,proveedor_nombre,entity_name,monto_contrato,severity,patterns,fecha_contrato,description,created_at,data_source,alert_type,ocid';
+  const PAGE_SIZE  = 1000;
+  const BATCH_SIZE = 8;
+  const APPROX_PAGES = 145; // ~138K registros / 1000 + buffer
+
+  const progressBar  = document.getElementById('load-progress-bar');
+  const progressWrap = document.getElementById('load-progress-wrap');
+  const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
+  if (progressWrap) progressWrap.style.display = 'block';
+  setProgress(3);
+
   try {
-    const PAGE_SIZE  = 1000;
-    const BATCH_SIZE = 8;
-
-    // Progress bar (fixed top)
-    const progressBar  = document.getElementById('load-progress-bar');
-    const progressWrap = document.getElementById('load-progress-wrap');
-    const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
-    if (progressWrap) { progressWrap.style.display = 'block'; }
-    setProgress(3);
-
-    // Known approximate total (~40K records → ~40 pages). Used only for progress display.
-    const APPROX_PAGES = 42;
-
     let all = [];
     let batchStart = 0;
     let done = false;
     let pagesLoaded = 0;
+    let portalShown = false;
 
     while (!done) {
       const promises = [];
       for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) {
         promises.push(
           db.from('alerts')
-            .select('*')
-            .order('created_at', { ascending: false })
+            .select(COLS)
+            .order('id', { ascending: false })   // PK index → sin full table scan
             .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
         );
       }
@@ -5933,96 +5984,50 @@ async function loadAlerts() {
         if (batch.length < PAGE_SIZE) done = true;
       }
       setProgress(Math.round((pagesLoaded / APPROX_PAGES) * 95));
-      console.log(`Alerts loaded: pages ${batchStart + 1}-${batchStart + BATCH_SIZE} (total so far: ${all.length})`);
+      console.log(`Alerts loaded: pages ${batchStart + 1}–${batchStart + BATCH_SIZE} (total: ${all.length})`);
       batchStart += BATCH_SIZE;
+
+      // ── PHASE 1: mostrar portal tras el primer batch (no esperar carga completa)
+      if (!portalShown) {
+        portalShown = true;
+        allAlerts = all.slice(); // snapshot parcial
+        _applyAlertTransforms();
+        window.allAlerts = allAlerts;
+        updateBDCountDisplay(allAlerts.length);
+        updateConsultasMetrics(allAlerts);
+        buildNewsMatchIndex();
+        buildHighRiskIndex();
+        buildEngelIndex();
+        buildRedFlagIndex();
+        loadRedFlagsFromSupabase();
+        renderCandidatosDetectados();
+        loadInvestigacionesDB();
+        loadBorradoresAuto();
+        setStatus('connected');
+        hideError();
+        render();
+        poUpdateIndicators();
+        if (window.location.hash === '#ejecutiva') showVistaEjecutiva();
+        console.log(`✅ Phase 1: portal visible con ${allAlerts.length} contratos.`);
+      }
     }
 
-    // Complete & hide
+    // ── PHASE 2: dataset completo — actualizar conteos e índices silenciosamente
     setProgress(100);
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
+    // Phase 2 — full dataset ready, apply transforms and refresh indices silently
     allAlerts = all;
-
-    // S92 — Exclusiones quirúrgicas: pares proveedor+entidad con justificación operacional legítima.
-    // REGLA: NO excluir por proveedor solo — una agencia de viajes vendiendo insumos a una Secretaría ES fraude.
-    // Solo excluir cuando AMBOS campos coinciden (proveedor + entidad compradora).
-    const EXCLUSIONES_OPERACIONALES = [
-      { proveedor: 'ASTRO TOUR',    entidad: 'EJERCITO DE HONDURAS'      },
-      { proveedor: 'ASTRO TOUR',    entidad: 'ESTADO MAYOR CONJUNTO'     },
-      { proveedor: 'ASTRO TOUR',    entidad: 'UNIDAD CENTRAL'            },
-      { proveedor: 'VOLARE',        entidad: 'EJERCITO DE HONDURAS'      },
-      { proveedor: 'VOLARE',        entidad: 'ESTADO MAYOR CONJUNTO'     },
-      { proveedor: 'VOLARE',        entidad: 'UNIDAD CENTRAL'            },
-    ];
-    const antesExclusiones = allAlerts.length;
-    allAlerts = allAlerts.filter(a => {
-      const prov   = (a.proveedor_nombre || '').toUpperCase();
-      const entidad = (a.entity_name || '').toUpperCase();
-      return !EXCLUSIONES_OPERACIONALES.some(ex =>
-        prov.includes(ex.proveedor) && entidad.includes(ex.entidad)
-      );
-    });
-    if (allAlerts.length < antesExclusiones) {
-      console.log(`🔕 Exclusiones operacionales aplicadas: ${antesExclusiones - allAlerts.length} alertas filtradas (viajes militares legítimos)`);
-    }
-
-    // S99 — Entity resolution: normalizar variantes de nombre del mismo proveedor.
-    // REGLA: usar nombre canónico (más corto/oficial). No modifica la BD — solo la vista en memoria.
-    const VENDOR_ALIASES = [
-      // SOLUCIONES INTEGRALES — 3 variantes, mismo proveedor, ~L 89M combinado
-      { patron: 'SOLINT',  canonico: 'SOLUCIONES INTEGRALES (SOLINTSA)' },
-      // INFRA DE HONDURAS — 6 variantes (incl. typo "IINFRA"), mismo proveedor, ~L 253M combinado (S100)
-      { patron: 'INFRA DE HONDUR', canonico: 'INFRA DE HONDURAS S.A.' },
-    ];
-    allAlerts.forEach(a => {
-      const prov = (a.proveedor_nombre || '').toUpperCase();
-      for (const alias of VENDOR_ALIASES) {
-        if (prov.includes(alias.patron)) {
-          a.proveedor_nombre = alias.canonico;
-          break;
-        }
-      }
-    });
-
-    // S100 — ERROR_DATOS: excluir contratos con monto claramente erróneo (error de captura ONCAE).
-    // Solo filtra cuando monto > umbral — contratos pequeños legítimos del proveedor permanecen visibles.
-    const ERROR_DATOS_CONTRATOS = [
-      { patron: 'RILMAC IMPRESORES', montoMin: 1_000_000_000 } // L 5.08B = error decimal ONCAE (monto real ~L 5.1M)
-    ];
-    allAlerts = allAlerts.filter(a => !ERROR_DATOS_CONTRATOS.some(e =>
-      (a.proveedor_nombre||'').toUpperCase().includes(e.patron) &&
-      (Number(a.monto_contrato)||0) > e.montoMin
-    ));
-
-    // S94 — FRACCIONAMIENTO fix global: solo mostrar si proveedor tiene ≥2 contratos en BD.
-    // Un solo contrato bajo el umbral = compra pequeña legítima, no fraccionamiento.
-    { const provConteo = {};
-      allAlerts.forEach(a => { const k=(a.proveedor_nombre||'').toUpperCase().trim(); provConteo[k]=(provConteo[k]||0)+1; });
-      allAlerts.forEach(a => { const k=(a.proveedor_nombre||'').toUpperCase().trim();
-        if (provConteo[k] < 2 && (a.patterns||'').includes('FRACCIONAMIENTO_ONCAE')) {
-          a.patterns = (a.patterns||'').split(',').filter(p => p.trim() !== 'FRACCIONAMIENTO_ONCAE').join(',');
-        }
-      });
-    }
-
-    window.allAlerts = allAlerts; // expose for Vista Ejecutiva
-    console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
-    updateBDCountDisplay(allAlerts.length); // S67 — número dinámico en UI
-    updateConsultasMetrics(allAlerts);      // S67 — métricas card ejecutivo
-    buildNewsMatchIndex(); // Opción E — entity/vendor index (all records)
-    buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
-    buildEngelIndex();     // P4 — Lista Engel EE.UU. cross-reference
-    buildRedFlagIndex();   // S59 — Entidades alto riesgo CNA/UFERCO/MP Honduras
-    loadRedFlagsFromSupabase(); // S64 — merge activo=true records from Supabase
-    renderCandidatosDetectados(); // Populate nav chip count on load
-    loadInvestigacionesDB();      // S69 — cargar investigaciones desde Supabase
-    loadBorradoresAuto();         // S89-B — detecciones automáticas pendientes
-    setStatus('connected');
-    hideError();
-    render();
-    poUpdateIndicators();  // Portal status band — data is now fully ready
-    // Si viene del landing page (#ejecutiva), mostrar Vista Ejecutiva directamente
-    if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
+    _applyAlertTransforms();
+    window.allAlerts = allAlerts;
+    console.log(`✅ Phase 2 complete: ${allAlerts.length} contratos cargados.`);
+    updateBDCountDisplay(allAlerts.length);
+    updateConsultasMetrics(allAlerts);
+    buildNewsMatchIndex();
+    buildHighRiskIndex();
+    buildEngelIndex();
+    buildRedFlagIndex();
+    renderCandidatosDetectados();
 
   } catch (err) {
     console.error('❌ loadAlerts failed:', err.message);

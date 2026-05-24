@@ -2298,6 +2298,11 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 </head>
 <body>
 
+<!-- ═══════════════════ LOAD PROGRESS BAR (fixed top) ═══════════════════ -->
+<div id="load-progress-wrap" style="position:fixed;top:0;left:0;width:100%;height:3px;z-index:99999;background:transparent;display:none;">
+  <div id="load-progress-bar" style="height:100%;width:0%;background:var(--electric);box-shadow:0 0 8px var(--electric);transition:width 0.35s ease;"></div>
+</div>
+
 <!-- ═══════════════════ DEMO WATERMARK ═══════════════════ -->
 <div id="sentinel-watermark" style="display:none;" data-wm="CONFIDENCIAL"></div>
 
@@ -3197,9 +3202,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div>
         <div class="exec-title">Resumen Ejecutivo</div>
         <div class="exec-subtitle" id="execSubtitle">Cargando datos...</div>
-        <div id="load-progress-wrap" style="margin-top:6px;width:220px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
-          <div id="load-progress-bar" style="height:100%;width:0%;background:var(--accent,#e05c1a);border-radius:2px;transition:width 0.3s ease;"></div>
-        </div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;margin-top:4px;">
         <button onclick="generarEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;">📄 PDF</button>
@@ -5905,11 +5907,12 @@ async function loadAlerts() {
     const totalPages = Math.ceil(count / PAGE_SIZE);
     console.log(`Alerts: ${count} total, ${totalPages} pages — loading in parallel batches of ${BATCH_SIZE}`);
 
-    // Progress bar helpers
+    // Progress bar helpers (fixed top bar)
     const progressBar  = document.getElementById('load-progress-bar');
     const progressWrap = document.getElementById('load-progress-wrap');
     const setProgress  = (pct) => { if (progressBar) progressBar.style.width = pct + '%'; };
-    setProgress(0);
+    if (progressWrap) progressWrap.style.display = 'block';
+    setProgress(2); // show immediately so user sees it
 
     let all = [];
     let pagesLoaded = 0;

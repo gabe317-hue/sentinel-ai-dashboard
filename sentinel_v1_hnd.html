@@ -5888,32 +5888,38 @@ function fmtDate(iso) {
 // Required console output for Week 3 Step 5 verification.
 // ════════════════════════════════════════════════════════════
 async function loadAlerts() {
-  // Supabase returns max 1,000 rows per request.
-  // With 18,571+ alerts we must paginate until we get them all.
+  // Parallel batch fetch — S124 optimization (was sequential, now 8 pages at a time)
   try {
     const PAGE_SIZE = 1000;
-    let page = 0;
-    let all  = [];
-    let done = false;
+    const BATCH_SIZE = 8; // 8 concurrent requests
 
-    while (!done) {
-      const from = page * PAGE_SIZE;
-      const to   = from + PAGE_SIZE - 1;
-      const { data, error } = await db
-        .from('alerts')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .range(from, to);
+    // Get total count first
+    const { count, error: countError } = await db
+      .from('alerts')
+      .select('*', { count: 'exact', head: true });
+    if (countError) throw countError;
 
-      if (error) throw error;
+    const totalPages = Math.ceil(count / PAGE_SIZE);
+    console.log(`Alerts: ${count} total, ${totalPages} pages — loading in parallel batches of ${BATCH_SIZE}`);
 
-      const batch = data || [];
-      all = all.concat(batch);
-      console.log(`Alerts loaded: page ${page + 1}, ${batch.length} rows (total so far: ${all.length})`);
-
-      // If we got fewer rows than PAGE_SIZE, we've reached the last page
-      if (batch.length < PAGE_SIZE) done = true;
-      else page++;
+    let all = [];
+    for (let batchStart = 0; batchStart < totalPages; batchStart += BATCH_SIZE) {
+      const batchEnd = Math.min(batchStart + BATCH_SIZE, totalPages);
+      const promises = [];
+      for (let p = batchStart; p < batchEnd; p++) {
+        promises.push(
+          db.from('alerts')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
+        );
+      }
+      const results = await Promise.all(promises);
+      for (const { data, error } of results) {
+        if (error) throw error;
+        all = all.concat(data || []);
+      }
+      console.log(`Alerts loaded: pages ${batchStart + 1}-${batchEnd} of ${totalPages} (total so far: ${all.length})`);
     }
 
     allAlerts = all;

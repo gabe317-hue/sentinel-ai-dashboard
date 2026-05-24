@@ -5942,92 +5942,64 @@ function _applyAlertTransforms() {
 }
 
 async function loadAlerts() {
-  // S125 — 2-phase loading:
-  //   Phase 1: First batch (8K records) → show portal immediately (<3s)
-  //   Phase 2: Remaining records → load in background, update counts when done
-  // Fixes: (1) order('id') uses PK index (fast), (2) select only needed columns (~60% less data),
-  //        (3) portal visible after first batch instead of waiting 138 pages.
-  const COLS = 'id,alert_id,proveedor_nombre,entity_name,monto_contrato,severity,patterns,fecha_contrato,description,created_at,data_source,alert_type,ocid';
-  const PAGE_SIZE  = 1000;
-  const BATCH_SIZE = 8;
-  const APPROX_PAGES = 145; // ~138K registros / 1000 + buffer
+  // S125-B — Nuclear fix: solo cargar CRÍTICA + ALTA (usa idx_alerts_severity de S124).
+  // ~10-15K registros máximo → carga en <3s garantizado sin importar el tamaño total de BD.
+  // MEDIA/BAJA nunca se cargan en memoria — son ruido para el análisis de fraude.
+  const COLS = 'id,alert_id,proveedor_nombre,entity_name,monto_contrato,severity,patterns,fecha_contrato,description,created_at,data_source';
+  const PAGE_SIZE = 1000;
 
   const progressBar  = document.getElementById('load-progress-bar');
   const progressWrap = document.getElementById('load-progress-wrap');
-  const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
+  const setProgress  = pct => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
   if (progressWrap) progressWrap.style.display = 'block';
-  setProgress(3);
+  setProgress(10);
 
   try {
     let all = [];
-    let batchStart = 0;
+    let page = 0;
     let done = false;
-    let pagesLoaded = 0;
-    let portalShown = false;
 
     while (!done) {
-      const promises = [];
-      for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) {
-        promises.push(
-          db.from('alerts')
-            .select(COLS)
-            .order('id', { ascending: false })   // PK index → sin full table scan
-            .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
-        );
-      }
-      const results = await Promise.all(promises);
-      for (const { data, error } of results) {
-        if (error) throw error;
-        const batch = data || [];
-        all = all.concat(batch);
-        pagesLoaded++;
-        if (batch.length < PAGE_SIZE) done = true;
-      }
-      setProgress(Math.round((pagesLoaded / APPROX_PAGES) * 95));
-      console.log(`Alerts loaded: pages ${batchStart + 1}–${batchStart + BATCH_SIZE} (total: ${all.length})`);
-      batchStart += BATCH_SIZE;
+      const { data, error } = await db
+        .from('alerts')
+        .select(COLS)
+        .in('severity', ['CRÍTICA', 'ALTA'])
+        .order('id', { ascending: false })
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-      // ── PHASE 1: mostrar portal tras el primer batch (no esperar carga completa)
-      if (!portalShown) {
-        portalShown = true;
-        allAlerts = all.slice(); // snapshot parcial
-        _applyAlertTransforms();
-        window.allAlerts = allAlerts;
-        updateBDCountDisplay(allAlerts.length);
-        updateConsultasMetrics(allAlerts);
-        buildNewsMatchIndex();
-        buildHighRiskIndex();
-        buildEngelIndex();
-        buildRedFlagIndex();
-        loadRedFlagsFromSupabase();
-        renderCandidatosDetectados();
-        loadInvestigacionesDB();
-        loadBorradoresAuto();
-        setStatus('connected');
-        hideError();
-        render();
-        poUpdateIndicators();
-        if (window.location.hash === '#ejecutiva') showVistaEjecutiva();
-        console.log(`✅ Phase 1: portal visible con ${allAlerts.length} contratos.`);
-      }
+      if (error) throw error;
+      const batch = data || [];
+      batch.forEach(r => all.push(r));
+      if (batch.length < PAGE_SIZE) done = true;
+      page++;
+      setProgress(Math.min(10 + page * 15, 90));
+      console.log(`loadAlerts page ${page}: ${batch.length} registros (total: ${all.length})`);
     }
 
-    // ── PHASE 2: dataset completo — actualizar conteos e índices silenciosamente
-    setProgress(100);
-    setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
-
-    // Phase 2 — full dataset ready, apply transforms and refresh indices silently
+    setProgress(95);
     allAlerts = all;
     _applyAlertTransforms();
     window.allAlerts = allAlerts;
-    console.log(`✅ Phase 2 complete: ${allAlerts.length} contratos cargados.`);
+    console.log(`✅ loadAlerts completo: ${allAlerts.length} contratos CRÍTICA+ALTA cargados.`);
+
+    setProgress(100);
+    setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
+
     updateBDCountDisplay(allAlerts.length);
     updateConsultasMetrics(allAlerts);
     buildNewsMatchIndex();
     buildHighRiskIndex();
     buildEngelIndex();
     buildRedFlagIndex();
+    loadRedFlagsFromSupabase();
     renderCandidatosDetectados();
+    loadInvestigacionesDB();
+    loadBorradoresAuto();
+    setStatus('connected');
+    hideError();
+    render();
+    poUpdateIndicators();
+    if (window.location.hash === '#ejecutiva') showVistaEjecutiva();
 
   } catch (err) {
     console.error('❌ loadAlerts failed:', err.message);

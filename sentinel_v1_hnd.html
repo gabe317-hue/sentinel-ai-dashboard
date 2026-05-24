@@ -5890,124 +5890,137 @@ function fmtDate(iso) {
 // NEVER falls back to localStorage on failure — shows error instead.
 // Required console output for Week 3 Step 5 verification.
 // ════════════════════════════════════════════════════════════
-// S125 — Transforms extraídos para reutilización en carga parcial y final.
-function _applyAlertTransforms() {
-  // Exclusiones operacionales: pares proveedor+entidad legítimos (viajes militares)
-  const EXCLUSIONES_OPERACIONALES = [
-    { proveedor: 'ASTRO TOUR', entidad: 'EJERCITO DE HONDURAS'  },
-    { proveedor: 'ASTRO TOUR', entidad: 'ESTADO MAYOR CONJUNTO' },
-    { proveedor: 'ASTRO TOUR', entidad: 'UNIDAD CENTRAL'        },
-    { proveedor: 'VOLARE',     entidad: 'EJERCITO DE HONDURAS'  },
-    { proveedor: 'VOLARE',     entidad: 'ESTADO MAYOR CONJUNTO' },
-    { proveedor: 'VOLARE',     entidad: 'UNIDAD CENTRAL'        },
-  ];
-  allAlerts = allAlerts.filter(a => {
-    const prov    = (a.proveedor_nombre || '').toUpperCase();
-    const entidad = (a.entity_name      || '').toUpperCase();
-    return !EXCLUSIONES_OPERACIONALES.some(ex =>
-      prov.includes(ex.proveedor) && entidad.includes(ex.entidad)
-    );
-  });
-
-  // Entity resolution: variantes del mismo proveedor → nombre canónico
-  const VENDOR_ALIASES = [
-    { patron: 'SOLINT',          canonico: 'SOLUCIONES INTEGRALES (SOLINTSA)' },
-    { patron: 'INFRA DE HONDUR', canonico: 'INFRA DE HONDURAS S.A.'           },
-  ];
-  allAlerts.forEach(a => {
-    const prov = (a.proveedor_nombre || '').toUpperCase();
-    for (const alias of VENDOR_ALIASES) {
-      if (prov.includes(alias.patron)) { a.proveedor_nombre = alias.canonico; break; }
-    }
-  });
-
-  // Error de datos: excluir contratos con monto claramente erróneo (error captura ONCAE)
-  const ERROR_DATOS_CONTRATOS = [
-    { patron: 'RILMAC IMPRESORES', montoMin: 1_000_000_000 }
-  ];
-  allAlerts = allAlerts.filter(a => !ERROR_DATOS_CONTRATOS.some(e =>
-    (a.proveedor_nombre || '').toUpperCase().includes(e.patron) &&
-    (Number(a.monto_contrato) || 0) > e.montoMin
-  ));
-
-  // FRACCIONAMIENTO scrub: solo mostrar si proveedor tiene ≥2 contratos en BD
-  { const provConteo = {};
-    allAlerts.forEach(a => { const k = (a.proveedor_nombre || '').toUpperCase().trim(); provConteo[k] = (provConteo[k] || 0) + 1; });
-    allAlerts.forEach(a => { const k = (a.proveedor_nombre || '').toUpperCase().trim();
-      if (provConteo[k] < 2 && (a.patterns || '').includes('FRACCIONAMIENTO_ONCAE')) {
-        a.patterns = (a.patterns || '').split(',').filter(p => p.trim() !== 'FRACCIONAMIENTO_ONCAE').join(',');
-      }
-    });
-  }
-}
-
 async function loadAlerts() {
-  // S125-B — Nuclear fix: solo cargar CRÍTICA + ALTA (usa idx_alerts_severity de S124).
-  // ~10-15K registros máximo → carga en <3s garantizado sin importar el tamaño total de BD.
-  // MEDIA/BAJA nunca se cargan en memoria — son ruido para el análisis de fraude.
-  const COLS = 'id,alert_id,proveedor_nombre,entity_name,monto_contrato,severity,patterns,fecha_contrato,description,created_at,data_source';
-  const PAGE_SIZE = 1000;
-
-  const progressBar  = document.getElementById('load-progress-bar');
-  const progressWrap = document.getElementById('load-progress-wrap');
-  const setProgress  = pct => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
-  if (progressWrap) progressWrap.style.display = 'block';
-  setProgress(10);
-
+  // Parallel batch fetch — S124 optimization. No count query needed.
+  // Fetches 8 pages at a time; stops when a batch returns a short page.
   try {
-    // Mostrar total BD conocido de inmediato (actualizado en background tras carga)
-    // Valor base: último conteo verificado. Se reemplaza con COUNT real al terminar.
-    const BD_TOTAL_CONOCIDO = 138330;
-    updateBDCountDisplay(BD_TOTAL_CONOCIDO);
+    const PAGE_SIZE  = 1000;
+    const BATCH_SIZE = 8;
+
+    // Progress bar (fixed top)
+    const progressBar  = document.getElementById('load-progress-bar');
+    const progressWrap = document.getElementById('load-progress-wrap');
+    const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
+    if (progressWrap) { progressWrap.style.display = 'block'; }
+    setProgress(3);
+
+    // Known approximate total (~40K records → ~40 pages). Used only for progress display.
+    const APPROX_PAGES = 42;
 
     let all = [];
-    let page = 0;
+    let batchStart = 0;
     let done = false;
+    let pagesLoaded = 0;
 
     while (!done) {
-      const { data, error } = await db
-        .from('alerts')
-        .select(COLS)
-        .in('severity', ['CRÍTICA', 'ALTA'])
-        .order('id', { ascending: false })
-        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-      if (error) throw error;
-      const batch = data || [];
-      batch.forEach(r => all.push(r));
-      if (batch.length < PAGE_SIZE) done = true;
-      page++;
-      setProgress(Math.min(10 + page * 15, 90));
-      console.log(`loadAlerts page ${page}: ${batch.length} registros (total: ${all.length})`);
+      const promises = [];
+      for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) {
+        promises.push(
+          db.from('alerts')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
+        );
+      }
+      const results = await Promise.all(promises);
+      for (const { data, error } of results) {
+        if (error) throw error;
+        const batch = data || [];
+        all = all.concat(batch);
+        pagesLoaded++;
+        if (batch.length < PAGE_SIZE) done = true;
+      }
+      setProgress(Math.round((pagesLoaded / APPROX_PAGES) * 95));
+      console.log(`Alerts loaded: pages ${batchStart + 1}-${batchStart + BATCH_SIZE} (total so far: ${all.length})`);
+      batchStart += BATCH_SIZE;
     }
 
-    setProgress(95);
-    allAlerts = all;
-    _applyAlertTransforms();
-    window.allAlerts = allAlerts;
-    console.log(`✅ loadAlerts completo: ${allAlerts.length} CRÍTICA+ALTA en memoria.`);
-
+    // Complete & hide
     setProgress(100);
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
-    // Actualizar con COUNT real desde BD en background (silencioso, no bloquea UI)
-    db.from('alerts').select('*', { count: 'exact', head: true })
-      .then(({ count }) => { if (count && count > 0) updateBDCountDisplay(count); })
-      .catch(() => { /* fallo silencioso — badge ya muestra BD_TOTAL_CONOCIDO */ });
-    updateConsultasMetrics(allAlerts);
-    buildNewsMatchIndex();
-    buildHighRiskIndex();
-    buildEngelIndex();
-    buildRedFlagIndex();
-    loadRedFlagsFromSupabase();
-    renderCandidatosDetectados();
-    loadInvestigacionesDB();
-    loadBorradoresAuto();
+    allAlerts = all;
+
+    // S92 — Exclusiones quirúrgicas: pares proveedor+entidad con justificación operacional legítima.
+    // REGLA: NO excluir por proveedor solo — una agencia de viajes vendiendo insumos a una Secretaría ES fraude.
+    // Solo excluir cuando AMBOS campos coinciden (proveedor + entidad compradora).
+    const EXCLUSIONES_OPERACIONALES = [
+      { proveedor: 'ASTRO TOUR',    entidad: 'EJERCITO DE HONDURAS'      },
+      { proveedor: 'ASTRO TOUR',    entidad: 'ESTADO MAYOR CONJUNTO'     },
+      { proveedor: 'ASTRO TOUR',    entidad: 'UNIDAD CENTRAL'            },
+      { proveedor: 'VOLARE',        entidad: 'EJERCITO DE HONDURAS'      },
+      { proveedor: 'VOLARE',        entidad: 'ESTADO MAYOR CONJUNTO'     },
+      { proveedor: 'VOLARE',        entidad: 'UNIDAD CENTRAL'            },
+    ];
+    const antesExclusiones = allAlerts.length;
+    allAlerts = allAlerts.filter(a => {
+      const prov   = (a.proveedor_nombre || '').toUpperCase();
+      const entidad = (a.entity_name || '').toUpperCase();
+      return !EXCLUSIONES_OPERACIONALES.some(ex =>
+        prov.includes(ex.proveedor) && entidad.includes(ex.entidad)
+      );
+    });
+    if (allAlerts.length < antesExclusiones) {
+      console.log(`🔕 Exclusiones operacionales aplicadas: ${antesExclusiones - allAlerts.length} alertas filtradas (viajes militares legítimos)`);
+    }
+
+    // S99 — Entity resolution: normalizar variantes de nombre del mismo proveedor.
+    // REGLA: usar nombre canónico (más corto/oficial). No modifica la BD — solo la vista en memoria.
+    const VENDOR_ALIASES = [
+      // SOLUCIONES INTEGRALES — 3 variantes, mismo proveedor, ~L 89M combinado
+      { patron: 'SOLINT',  canonico: 'SOLUCIONES INTEGRALES (SOLINTSA)' },
+      // INFRA DE HONDURAS — 6 variantes (incl. typo "IINFRA"), mismo proveedor, ~L 253M combinado (S100)
+      { patron: 'INFRA DE HONDUR', canonico: 'INFRA DE HONDURAS S.A.' },
+    ];
+    allAlerts.forEach(a => {
+      const prov = (a.proveedor_nombre || '').toUpperCase();
+      for (const alias of VENDOR_ALIASES) {
+        if (prov.includes(alias.patron)) {
+          a.proveedor_nombre = alias.canonico;
+          break;
+        }
+      }
+    });
+
+    // S100 — ERROR_DATOS: excluir contratos con monto claramente erróneo (error de captura ONCAE).
+    // Solo filtra cuando monto > umbral — contratos pequeños legítimos del proveedor permanecen visibles.
+    const ERROR_DATOS_CONTRATOS = [
+      { patron: 'RILMAC IMPRESORES', montoMin: 1_000_000_000 } // L 5.08B = error decimal ONCAE (monto real ~L 5.1M)
+    ];
+    allAlerts = allAlerts.filter(a => !ERROR_DATOS_CONTRATOS.some(e =>
+      (a.proveedor_nombre||'').toUpperCase().includes(e.patron) &&
+      (Number(a.monto_contrato)||0) > e.montoMin
+    ));
+
+    // S94 — FRACCIONAMIENTO fix global: solo mostrar si proveedor tiene ≥2 contratos en BD.
+    // Un solo contrato bajo el umbral = compra pequeña legítima, no fraccionamiento.
+    { const provConteo = {};
+      allAlerts.forEach(a => { const k=(a.proveedor_nombre||'').toUpperCase().trim(); provConteo[k]=(provConteo[k]||0)+1; });
+      allAlerts.forEach(a => { const k=(a.proveedor_nombre||'').toUpperCase().trim();
+        if (provConteo[k] < 2 && (a.patterns||'').includes('FRACCIONAMIENTO_ONCAE')) {
+          a.patterns = (a.patterns||'').split(',').filter(p => p.trim() !== 'FRACCIONAMIENTO_ONCAE').join(',');
+        }
+      });
+    }
+
+    window.allAlerts = allAlerts; // expose for Vista Ejecutiva
+    console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
+    updateBDCountDisplay(allAlerts.length); // S67 — número dinámico en UI
+    updateConsultasMetrics(allAlerts);      // S67 — métricas card ejecutivo
+    buildNewsMatchIndex(); // Opción E — entity/vendor index (all records)
+    buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
+    buildEngelIndex();     // P4 — Lista Engel EE.UU. cross-reference
+    buildRedFlagIndex();   // S59 — Entidades alto riesgo CNA/UFERCO/MP Honduras
+    loadRedFlagsFromSupabase(); // S64 — merge activo=true records from Supabase
+    renderCandidatosDetectados(); // Populate nav chip count on load
+    loadInvestigacionesDB();      // S69 — cargar investigaciones desde Supabase
+    loadBorradoresAuto();         // S89-B — detecciones automáticas pendientes
     setStatus('connected');
     hideError();
     render();
-    poUpdateIndicators();
-    if (window.location.hash === '#ejecutiva') showVistaEjecutiva();
+    poUpdateIndicators();  // Portal status band — data is now fully ready
+    // Si viene del landing page (#ejecutiva), mostrar Vista Ejecutiva directamente
+    if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
 
   } catch (err) {
     console.error('❌ loadAlerts failed:', err.message);

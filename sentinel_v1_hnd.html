@@ -5955,6 +5955,14 @@ async function loadAlerts() {
   setProgress(10);
 
   try {
+    // ── Obtener total real de BD (COUNT rápido, sin traer datos) ──────────────
+    let totalBD = 0;
+    const { count, error: countErr } = await db
+      .from('alerts')
+      .select('*', { count: 'exact', head: true });
+    if (!countErr && count) totalBD = count;
+    console.log(`BD total: ${totalBD} contratos`);
+
     let all = [];
     let page = 0;
     let done = false;
@@ -5980,12 +5988,13 @@ async function loadAlerts() {
     allAlerts = all;
     _applyAlertTransforms();
     window.allAlerts = allAlerts;
-    console.log(`✅ loadAlerts completo: ${allAlerts.length} contratos CRÍTICA+ALTA cargados.`);
+    console.log(`✅ loadAlerts completo: ${allAlerts.length} CRÍTICA+ALTA en memoria. BD total: ${totalBD}`);
 
     setProgress(100);
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
-    updateBDCountDisplay(allAlerts.length);
+    // Mostrar total real de BD (138K+), no solo los cargados en memoria
+    updateBDCountDisplay(totalBD || allAlerts.length);
     updateConsultasMetrics(allAlerts);
     buildNewsMatchIndex();
     buildHighRiskIndex();

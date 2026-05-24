@@ -5893,33 +5893,30 @@ function fmtDate(iso) {
 // Required console output for Week 3 Step 5 verification.
 // ════════════════════════════════════════════════════════════
 async function loadAlerts() {
-  // Parallel batch fetch — S124 optimization (was sequential, now 8 pages at a time)
+  // Parallel batch fetch — S124 optimization. No count query needed.
+  // Fetches 8 pages at a time; stops when a batch returns a short page.
   try {
-    const PAGE_SIZE = 1000;
-    const BATCH_SIZE = 8; // 8 concurrent requests
+    const PAGE_SIZE  = 1000;
+    const BATCH_SIZE = 8;
 
-    // Get total count first
-    const { count, error: countError } = await db
-      .from('alerts')
-      .select('*', { count: 'exact', head: true });
-    if (countError) throw countError;
-
-    const totalPages = Math.ceil(count / PAGE_SIZE);
-    console.log(`Alerts: ${count} total, ${totalPages} pages — loading in parallel batches of ${BATCH_SIZE}`);
-
-    // Progress bar helpers (fixed top bar)
+    // Progress bar (fixed top)
     const progressBar  = document.getElementById('load-progress-bar');
     const progressWrap = document.getElementById('load-progress-wrap');
-    const setProgress  = (pct) => { if (progressBar) progressBar.style.width = pct + '%'; };
-    if (progressWrap) progressWrap.style.display = 'block';
-    setProgress(2); // show immediately so user sees it
+    const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
+    if (progressWrap) { progressWrap.style.display = 'block'; }
+    setProgress(3);
+
+    // Known approximate total (~40K records → ~40 pages). Used only for progress display.
+    const APPROX_PAGES = 42;
 
     let all = [];
+    let batchStart = 0;
+    let done = false;
     let pagesLoaded = 0;
-    for (let batchStart = 0; batchStart < totalPages; batchStart += BATCH_SIZE) {
-      const batchEnd = Math.min(batchStart + BATCH_SIZE, totalPages);
+
+    while (!done) {
       const promises = [];
-      for (let p = batchStart; p < batchEnd; p++) {
+      for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) {
         promises.push(
           db.from('alerts')
             .select('*')
@@ -5930,15 +5927,19 @@ async function loadAlerts() {
       const results = await Promise.all(promises);
       for (const { data, error } of results) {
         if (error) throw error;
-        all = all.concat(data || []);
+        const batch = data || [];
+        all = all.concat(batch);
+        pagesLoaded++;
+        if (batch.length < PAGE_SIZE) done = true;
       }
-      pagesLoaded = batchEnd;
-      setProgress(Math.round((pagesLoaded / totalPages) * 100));
-      console.log(`Alerts loaded: pages ${batchStart + 1}-${batchEnd} of ${totalPages} (total so far: ${all.length})`);
+      setProgress(Math.round((pagesLoaded / APPROX_PAGES) * 95));
+      console.log(`Alerts loaded: pages ${batchStart + 1}-${batchStart + BATCH_SIZE} (total so far: ${all.length})`);
+      batchStart += BATCH_SIZE;
     }
 
-    // Hide bar after load
-    if (progressWrap) progressWrap.style.display = 'none';
+    // Complete & hide
+    setProgress(100);
+    setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
     allAlerts = all;
 

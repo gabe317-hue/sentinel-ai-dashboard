@@ -5955,13 +5955,10 @@ async function loadAlerts() {
   setProgress(10);
 
   try {
-    // ── Obtener total real de BD (COUNT rápido, sin traer datos) ──────────────
-    let totalBD = 0;
-    const { count, error: countErr } = await db
-      .from('alerts')
-      .select('*', { count: 'exact', head: true });
-    if (!countErr && count) totalBD = count;
-    console.log(`BD total: ${totalBD} contratos`);
+    // Mostrar total BD conocido de inmediato (actualizado en background tras carga)
+    // Valor base: último conteo verificado. Se reemplaza con COUNT real al terminar.
+    const BD_TOTAL_CONOCIDO = 138330;
+    updateBDCountDisplay(BD_TOTAL_CONOCIDO);
 
     let all = [];
     let page = 0;
@@ -5988,13 +5985,15 @@ async function loadAlerts() {
     allAlerts = all;
     _applyAlertTransforms();
     window.allAlerts = allAlerts;
-    console.log(`✅ loadAlerts completo: ${allAlerts.length} CRÍTICA+ALTA en memoria. BD total: ${totalBD}`);
+    console.log(`✅ loadAlerts completo: ${allAlerts.length} CRÍTICA+ALTA en memoria.`);
 
     setProgress(100);
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
-    // Mostrar total real de BD (138K+), no solo los cargados en memoria
-    updateBDCountDisplay(totalBD || allAlerts.length);
+    // Actualizar con COUNT real desde BD en background (silencioso, no bloquea UI)
+    db.from('alerts').select('*', { count: 'exact', head: true })
+      .then(({ count }) => { if (count && count > 0) updateBDCountDisplay(count); })
+      .catch(() => { /* fallo silencioso — badge ya muestra BD_TOTAL_CONOCIDO */ });
     updateConsultasMetrics(allAlerts);
     buildNewsMatchIndex();
     buildHighRiskIndex();

@@ -15720,6 +15720,18 @@ async function ccGenerarExpediente() {
     if (!res.ok || json.error) throw new Error((json.error || 'Error del servidor') + (json.detail ? '\n\nDetalle: ' + json.detail.substring(0,300) : '') + (json.key_hint ? '\n\nKey leído: ' + json.key_hint : ''));
 
     const narrativa = json.narrativa || '';
+
+    // ── Capturar gráficas del Constructor de Caso como base64 ────────────
+    const chartImgs = {};
+    ['ccChartAdmin', 'ccChartSev', 'ccChartConc'].forEach(id => {
+      try {
+        const canvas = document.getElementById(id);
+        if (canvas && canvas.tagName === 'CANVAS') {
+          chartImgs[id] = canvas.toDataURL('image/png');
+        }
+      } catch(e) { console.warn('chart capture:', id, e); }
+    });
+
     // Parse sections separated by ###
     const sections = narrativa.split(/###\s+/).filter(Boolean);
     const secMap = {};
@@ -15748,7 +15760,7 @@ async function ccGenerarExpediente() {
     };
 
     const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-    <title>Expediente Narrativo — ${_ccData.proveedor} × ${_ccData.entidad}</title>
+    <title>SENTINEL AI — Expediente Narrativo · ${_ccData.proveedor} × ${_ccData.entidad}</title>
     <style>
       body { background:#fff; color:#111; font-family:'Segoe UI',Arial,sans-serif; margin:0; padding:0; font-size:12px; }
       .page { padding:44px 54px; max-width:900px; margin:0 auto; }
@@ -15802,19 +15814,6 @@ async function ccGenerarExpediente() {
       <span class="sev-badge sev-b">● BAJA: ${sevCount.baja}</span>
     </div>
 
-    <!-- Top proveedores de la entidad -->
-    <div class="sec" style="margin-top:18px;">
-      <div class="sec-title">🏛️ Top Proveedores de ${_ccData.entidad} — Contratos CRÍTICA/ALTA</div>
-      <table class="data-table">
-        <thead><tr><th>#</th><th>Proveedor</th><th>Contratos</th><th>Monto total</th></tr></thead>
-        <tbody>
-          ${top_proveedores.map((p,i) => `<tr${p.nombre.toUpperCase().includes(_ccData.proveedor.toUpperCase().slice(0,10)) ? ' style="background:#faf5ff;font-weight:700;"' : ''}>
-            <td>${i+1}</td><td>${p.nombre}</td><td>${p.contratos}</td><td>${fmtM(p.monto)}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>
-
     <!-- Patrones con montos -->
     ${patron_montos.length ? `<div class="sec">
       <div class="sec-title">⚠️ Exposición por Patrón de Riesgo</div>
@@ -15831,6 +15830,25 @@ async function ccGenerarExpediente() {
         <span class="denuncia-folio">${dn.folio}</span> · <strong>${dn.estado}</strong><br>
         <span style="color:#374151;">${dn.descripcion}${dn.descripcion.length >= 200 ? '…' : ''}</span>
       </div>`).join('')}
+    </div>` : ''}
+
+    <!-- Gráficas del análisis -->
+    ${(chartImgs.ccChartAdmin || chartImgs.ccChartSev || chartImgs.ccChartConc) ? `<div class="sec">
+      <div class="sec-title">📊 Gráficas del Análisis</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;">
+        ${chartImgs.ccChartAdmin ? `<div style="flex:1;min-width:200px;text-align:center;">
+          <img src="${chartImgs.ccChartAdmin}" style="width:100%;border-radius:6px;border:1px solid #e5e7eb;">
+          <div style="font-size:9px;color:#6b7280;margin-top:4px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Actividad por Administración</div>
+        </div>` : ''}
+        ${chartImgs.ccChartSev ? `<div style="flex:1;min-width:160px;text-align:center;">
+          <img src="${chartImgs.ccChartSev}" style="width:100%;border-radius:6px;border:1px solid #e5e7eb;">
+          <div style="font-size:9px;color:#6b7280;margin-top:4px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Distribución por Severidad</div>
+        </div>` : ''}
+        ${chartImgs.ccChartConc ? `<div style="flex:1;min-width:200px;text-align:center;">
+          <img src="${chartImgs.ccChartConc}" style="width:100%;border-radius:6px;border:1px solid #e5e7eb;">
+          <div style="font-size:9px;color:#6b7280;margin-top:4px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Concentración Financiera</div>
+        </div>` : ''}
+      </div>
     </div>` : ''}
 
     <!-- Secciones narrativas IA -->

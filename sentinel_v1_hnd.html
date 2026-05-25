@@ -15641,19 +15641,75 @@ async function ccGenerarExpediente() {
   btn.style.opacity = '0.6';
 
   try {
-    // Build clean payload — strip large contract arrays, normalize patrones to array
     const d = _ccData;
     const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+    const fmtM = n => n >= 1e9 ? `L ${(n/1e9).toFixed(2)}B` : `L ${(n/1e6).toFixed(1)}M`;
+
+    // ── Top 10 proveedores de la entidad por monto ───────────────────────
+    const provMap = {};
+    (d.entityContratos || []).forEach(a => {
+      const k = (a.proveedor_nombre||'SIN NOMBRE').toUpperCase().trim();
+      if (!provMap[k]) provMap[k] = { nombre: a.proveedor_nombre||'SIN NOMBRE', monto: 0, n: 0 };
+      provMap[k].monto += Number(a.monto_contrato)||0;
+      provMap[k].n++;
+    });
+    const top_proveedores = Object.values(provMap)
+      .sort((a,b) => b.monto - a.monto)
+      .slice(0, 10)
+      .map(p => ({ nombre: p.nombre, monto: p.monto, contratos: p.n }));
+
+    // ── Montos por patrón detectado ───────────────────────────────────────
+    const patMontoMap = {};
+    (d.vendorContratos || []).forEach(a => {
+      (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(pat => {
+        if (!patMontoMap[pat]) patMontoMap[pat] = 0;
+        patMontoMap[pat] += Number(a.monto_contrato)||0;
+      });
+    });
+    const patron_montos = Object.entries(patMontoMap)
+      .sort((a,b) => b[1]-a[1])
+      .map(([pat, monto]) => ({ patron: pat, monto }));
+
+    // ── Severidad breakdown ───────────────────────────────────────────────
+    const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const sevCount = { critica: 0, alta: 0, media: 0, baja: 0 };
+    (d.vendorContratos || []).forEach(a => {
+      const sv = normSev(a.severity);
+      if (sv.includes('CRITICA')) sevCount.critica++;
+      else if (sv.includes('ALTA')) sevCount.alta++;
+      else if (sv.includes('MEDIA')) sevCount.media++;
+      else sevCount.baja++;
+    });
+
+    // ── Denuncias activas contra esta entidad / proveedor ─────────────────
+    let denuncias = [];
+    try {
+      const entLower = d.entidad.toLowerCase();
+      const provLower = d.proveedor.toLowerCase();
+      const { data: denData } = await db.from('denuncias')
+        .select('folio, descripcion, estado, created_at, resumen')
+        .neq('estado', 'Descartada')
+        .limit(20);
+      denuncias = (denData || []).filter(dn => {
+        const txt = ((dn.descripcion||'') + ' ' + (dn.resumen||'')).toLowerCase();
+        return txt.includes(entLower) || txt.includes(provLower);
+      }).map(dn => ({ folio: dn.folio, descripcion: (dn.descripcion||'').substring(0,200), estado: dn.estado }));
+    } catch(e) { console.warn('ccGenerarExpediente: denuncias fetch failed', e); }
+
     const payload = {
-      entidad:        d.entidad,
-      proveedor:      d.proveedor,
-      esquema:        d.esquema,
-      fecha:          ts,
-      concentracion:  { pct: d.concentracion.mntPct, contratos: d.concentracion.vendorCount, total_entidad: d.concentracion.entityCount, monto: d.concentracion.vendorMonto },
-      timeline:       (d.timeline || []).map(t => ({ periodo: t.nombre, contratos: t.count, monto: t.monto })),
-      patrones:       (d.score.criteria || []).map(c => ({ nombre: c.label, detectado: c.val, detalle: c.detail })),
-      score:          { total: d.score.total, max: d.score.max },
-      gaps:           d.gaps
+      entidad:         d.entidad,
+      proveedor:       d.proveedor,
+      esquema:         d.esquema,
+      fecha:           ts,
+      concentracion:   { pct: d.concentracion.mntPct, contratos: d.concentracion.vendorCount, total_entidad: d.concentracion.entityCount, monto: d.concentracion.vendorMonto },
+      timeline:        (d.timeline || []).map(t => ({ periodo: t.nombre, contratos: t.count, monto: t.monto })),
+      patrones:        (d.score.criteria || []).map(c => ({ nombre: c.label, detectado: c.val, detalle: c.detail })),
+      score:           { total: d.score.total, max: d.score.max },
+      gaps:            d.gaps,
+      top_proveedores,
+      patron_montos,
+      severidad:       sevCount,
+      denuncias,
     };
     const res = await fetch(`${SUPABASE_URL}/functions/v1/generar-expediente`, {
       method: 'POST',
@@ -15707,6 +15763,19 @@ async function ccGenerarExpediente() {
       .sec { margin-bottom:22px; }
       .sec-title { font-size:10px; letter-spacing:.15em; text-transform:uppercase; font-weight:800; color:#374151; border-bottom:1px solid #e5e7eb; padding-bottom:6px; margin-bottom:12px; }
       .sec-body { font-size:12px; line-height:1.7; color:#374151; }
+      .sec-legal { border-left:3px solid #dc2626; padding-left:12px; }
+      .data-table { width:100%; border-collapse:collapse; font-size:11px; margin-top:8px; }
+      .data-table th { background:#f9fafb; font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#6b7280; font-weight:700; padding:6px 10px; text-align:left; border-bottom:1px solid #e5e7eb; }
+      .data-table td { padding:6px 10px; border-bottom:1px solid #f3f4f6; color:#374151; }
+      .data-table tr:last-child td { border-bottom:none; }
+      .sev-bar { display:flex; gap:12px; margin-top:8px; font-size:11px; }
+      .sev-badge { padding:3px 10px; border-radius:12px; font-size:9px; font-weight:800; }
+      .sev-c { background:#fee2e2; color:#dc2626; }
+      .sev-a { background:#ffedd5; color:#ea580c; }
+      .sev-m { background:#fef9c3; color:#ca8a04; }
+      .sev-b { background:#f0fdf4; color:#16a34a; }
+      .denuncia-box { background:#fff7ed; border:1px solid #fed7aa; border-radius:6px; padding:10px 14px; margin-top:8px; font-size:11px; }
+      .denuncia-folio { font-weight:800; color:#ea580c; font-size:10px; }
       .disclaimer { margin-top:28px; padding:10px 14px; background:#f3e8ff; border:1px solid #e9d5ff; border-radius:6px; font-size:10px; color:#5b21b6; font-style:italic; }
       .footer { margin-top:20px; padding-top:10px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; }
       @media print { .no-print { display:none; } }
@@ -15718,20 +15787,66 @@ async function ccGenerarExpediente() {
     </div>
     <div class="meta">
       <div><label>Entidad</label><span>${_ccData.entidad}</span></div>
-      <div><label>Proveedor</label><span>${_ccData.proveedor}</span></div>
+      <div><label>Proveedor investigado</label><span>${_ccData.proveedor}</span></div>
       <div><label>Esquema</label><span>${_ccData.esquema || 'Por determinar'}</span></div>
+      <div><label>Score de riesgo</label><span>${_ccData.score.total}/${_ccData.score.max}</span></div>
+      <div><label>Total contratos (proveedor)</label><span>${_ccData.vendorContratos.length} · ${fmtM(_ccData.vendorContratos.reduce((s,c)=>s+(c.monto||0),0))}</span></div>
+      <div><label>Contratos CRÍTICA + ALTA</label><span>${sevCount.critica} CRÍTICA · ${sevCount.alta} ALTA</span></div>
     </div>
+
+    <!-- Severidades badge bar -->
+    <div class="sev-bar">
+      <span class="sev-badge sev-c">● CRÍTICA: ${sevCount.critica}</span>
+      <span class="sev-badge sev-a">● ALTA: ${sevCount.alta}</span>
+      <span class="sev-badge sev-m">● MEDIA: ${sevCount.media}</span>
+      <span class="sev-badge sev-b">● BAJA: ${sevCount.baja}</span>
+    </div>
+
+    <!-- Top proveedores de la entidad -->
+    <div class="sec" style="margin-top:18px;">
+      <div class="sec-title">🏛️ Top Proveedores de ${_ccData.entidad} — Contratos CRÍTICA/ALTA</div>
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Proveedor</th><th>Contratos</th><th>Monto total</th></tr></thead>
+        <tbody>
+          ${top_proveedores.map((p,i) => `<tr${p.nombre.toUpperCase().includes(_ccData.proveedor.toUpperCase().slice(0,10)) ? ' style="background:#faf5ff;font-weight:700;"' : ''}>
+            <td>${i+1}</td><td>${p.nombre}</td><td>${p.contratos}</td><td>${fmtM(p.monto)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Patrones con montos -->
+    ${patron_montos.length ? `<div class="sec">
+      <div class="sec-title">⚠️ Exposición por Patrón de Riesgo</div>
+      <table class="data-table">
+        <thead><tr><th>Patrón</th><th>Monto expuesto</th></tr></thead>
+        <tbody>${patron_montos.map(p => `<tr><td>${p.patron}</td><td>${fmtM(p.monto)}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>` : ''}
+
+    <!-- Denuncias ciudadanas -->
+    ${denuncias.length ? `<div class="sec">
+      <div class="sec-title">🚨 Denuncias Ciudadanas Relacionadas (${denuncias.length})</div>
+      ${denuncias.map(dn => `<div class="denuncia-box">
+        <span class="denuncia-folio">${dn.folio}</span> · <strong>${dn.estado}</strong><br>
+        <span style="color:#374151;">${dn.descripcion}${dn.descripcion.length >= 200 ? '…' : ''}</span>
+      </div>`).join('')}
+    </div>` : ''}
+
+    <!-- Secciones narrativas IA -->
     ${sections.filter(s => !s.trim().toUpperCase().startsWith('DISCLAIMER')).map(s => {
       const nl = s.indexOf('\n');
       const title = s.substring(0, nl).trim();
       const body  = s.substring(nl + 1).trim();
       if (!body || body === '#') return '';
-      const icons = { 'RESUMEN':'📋', 'HALLAZGOS':'🔍', 'ANÁLISIS':'⚠️', 'AN':'⚠️', 'PRÓXIMOS':'📌', 'PROX':'📌' };
+      const icons = { 'RESUMEN':'📋', 'HALLAZGOS':'🔍', 'ANÁLISIS':'⚠️', 'AN':'⚠️', 'PRÓXIMOS':'📌', 'PROX':'📌', 'RECOMENDACIONES':'⚖️', 'RECOM':'⚖️' };
       const icon = Object.entries(icons).find(([k]) => title.toUpperCase().startsWith(k))?.[1] || '▸';
-      return `<div class="sec"><div class="sec-title">${icon} ${title}</div><div class="sec-body">${mdToHtml(body)}</div></div>`;
+      const extraClass = title.toUpperCase().startsWith('RECOM') ? ' sec-legal' : '';
+      return `<div class="sec${extraClass}"><div class="sec-title">${icon} ${title}</div><div class="sec-body">${mdToHtml(body)}</div></div>`;
     }).join('')}
-    <div class="disclaimer">${secMap['DISCLAIMER'] || (sections.find(s=>s.trim().toUpperCase().startsWith('DISCLAIMER'))?.split('\n').slice(1).join(' ').trim()) || 'Este reporte fue generado por Sentinel AI con datos de ONCAE/SEFIN y es de carácter preliminar; no constituye prueba judicial ni opinión legal.'}</div>
-    <div class="footer"><span>Sentinel AI — Sistema de Detección de Riesgo</span><span>Generado: ${ts} · Folio: ${folio}</span></div>
+
+    <div class="disclaimer">${secMap['DISCLAIMER'] || 'Este reporte fue generado por Sentinel AI con datos de ONCAE/SEFIN y es de carácter preliminar; no constituye prueba judicial ni opinión legal.'}</div>
+    <div class="footer"><span>Sentinel AI — Sistema de Detección de Riesgo · Honduras</span><span>Generado: ${ts} · Folio: ${folio}</span></div>
     </div></body></html>`;
 
     const pw = window.open('', '_blank', 'width=1100,height=800');

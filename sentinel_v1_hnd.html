@@ -5994,65 +5994,91 @@ async function _loadRemainingAlertsBackground() {
 }
 
 async function loadAlerts() {
-  // S126 — Two-phase load:
-  // Phase 1 (fast, <5s): CRÍTICA + ALTA only (~28K records) → UI immediately available
-  // Phase 2 (background): MEDIA + BAJA loaded silently after UI is live
+  // S126 — Full load, all records, with per-page timeout + retry.
+  // Root cause of freeze: Promise.all with 8 concurrent requests → one slow/hung request blocked everything.
+  // Fix: Promise.allSettled (never hangs) + 12s timeout per page + automatic retry of failed pages.
+  // Scales naturally as records grow — paginator handles any size.
   try {
-    const PAGE_SIZE  = 1000;
-    const BATCH_SIZE = 4; // reduced from 8 — avoids Supabase connection pool exhaustion
+    const PAGE_SIZE    = 1000;
+    const BATCH_SIZE   = 4;    // conservative — avoids Supabase connection pool exhaustion
+    const PAGE_TIMEOUT = 12000; // 12s max per page — if hung, skip and retry
 
     const progressBar  = document.getElementById('load-progress-bar');
     const progressWrap = document.getElementById('load-progress-wrap');
     const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
     if (progressWrap) { progressWrap.style.display = 'block'; }
-    setProgress(3);
+    setProgress(2);
 
-    // Phase 1: priority severities only (~28.5K records → ~29 pages)
-    const PRIORITY_SEVERITIES = ['CRÍTICA', 'Crítica', 'ALTA', 'Alta'];
-    const APPROX_PRIORITY_PAGES = 30;
+    // Fetch real total count first (HEAD request — no data, near-instant)
+    let approxPages = 139;
+    try {
+      const { count } = await db.from('alerts').select('*', { count: 'exact', head: true });
+      if (count) {
+        window._bdTotalCount = count;
+        updateBDCountDisplay(count);
+        approxPages = Math.ceil(count / PAGE_SIZE);
+      }
+    } catch(_) {}
+    setProgress(5);
+
+    // Fetch one page with a hard timeout — never blocks forever
+    const fetchPage = (p) => {
+      const req = db.from('alerts').select('*').order('id', { ascending: false })
+        .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1);
+      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), PAGE_TIMEOUT));
+      return Promise.race([req, timeout]).catch(e => ({ data: null, error: e }));
+    };
 
     let all = [];
     let batchStart = 0;
     let done = false;
     let pagesLoaded = 0;
+    const failedPages = [];
 
     while (!done) {
-      const promises = [];
-      for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) {
-        promises.push(
-          db.from('alerts')
-            .select('*')
-            .in('severity', PRIORITY_SEVERITIES)
-            .order('id', { ascending: false })
-            .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
-        );
+      const pageNums = [];
+      for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) pageNums.push(p);
+
+      // allSettled: even if one page times out, others succeed — never freezes
+      const results = await Promise.allSettled(pageNums.map(p => fetchPage(p)));
+
+      for (let i = 0; i < results.length; i++) {
+        const r = results[i];
+        const val = r.status === 'fulfilled' ? r.value : { data: null, error: r.reason };
+        if (!val.error && val.data) {
+          all = all.concat(val.data);
+          pagesLoaded++;
+          if (val.data.length < PAGE_SIZE) done = true;
+        } else {
+          failedPages.push(pageNums[i]);
+          console.warn(`⚠️ Page ${pageNums[i]} failed (${val.error?.message}) — will retry`);
+        }
       }
-      const results = await Promise.all(promises);
-      for (const { data, error } of results) {
-        if (error) throw error;
-        const batch = data || [];
-        all = all.concat(batch);
-        pagesLoaded++;
-        if (batch.length < PAGE_SIZE) done = true;
-      }
-      setProgress(Math.round((pagesLoaded / APPROX_PRIORITY_PAGES) * 95));
-      console.log(`Phase 1 loaded: pages ${batchStart + 1}-${batchStart + BATCH_SIZE} (${all.length} records)`);
+
+      setProgress(5 + Math.round((pagesLoaded / approxPages) * 90));
       batchStart += BATCH_SIZE;
+      if (batchStart > approxPages + BATCH_SIZE) done = true; // safety stop
+    }
+
+    // Retry failed pages one at a time
+    if (failedPages.length) {
+      console.log(`Retrying ${failedPages.length} failed pages...`);
+      for (const p of failedPages) {
+        const { data, error } = await fetchPage(p);
+        if (!error && data) { all = all.concat(data); pagesLoaded++; }
+        else console.warn(`⚠️ Page ${p} failed on retry — skipped`);
+      }
     }
 
     setProgress(100);
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
     allAlerts = _applyFraccionamientoScrub(_applyAlertsFilters(all));
-    console.log(`✅ Phase 1 complete: ${allAlerts.length} CRÍTICA+ALTA alerts loaded`);
-
     window.allAlerts = allAlerts;
-    // Fetch real total count (no data transfer — just a number) for display
-    try {
-      const { count: realTotal } = await db.from('alerts').select('*', { count: 'exact', head: true });
-      window._bdTotalCount = realTotal || allAlerts.length;
-    } catch(_) { window._bdTotalCount = allAlerts.length; }
+    window._bdTotalCount = window._bdTotalCount || allAlerts.length;
     updateBDCountDisplay(window._bdTotalCount);
+    console.log(`✅ All alerts loaded: ${allAlerts.length} records (${failedPages.length} retried)`);
+
     updateConsultasMetrics(allAlerts);
     buildNewsMatchIndex();
     buildHighRiskIndex();
@@ -6067,9 +6093,6 @@ async function loadAlerts() {
     render();
     poUpdateIndicators();
     if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
-
-    // Phase 2: load MEDIA + BAJA in background — non-blocking, UI already live
-    _loadRemainingAlertsBackground();
 
   } catch (err) {
     console.error('❌ loadAlerts failed:', err.message);

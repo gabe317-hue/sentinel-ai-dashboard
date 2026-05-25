@@ -16165,11 +16165,14 @@ async function renderTop5PorEntidad(body, EXCLUIR) {
     .filter(a => !EXCLUIR.some(ex => (a.proveedor_nombre||'').toUpperCase().includes(ex)))
     .forEach(a => {
       const key = (a.entity_name||'').toUpperCase().trim();
-      if (!map[key]) map[key] = { entidad: a.entity_name, proveedores: new Set(), monto: 0, n: 0, patrones: new Set(), nReciente: 0, fuentes: new Set() };
+      if (!map[key]) map[key] = { entidad: a.entity_name, proveedores: new Set(), provMontos: {}, monto: 0, n: 0, patrones: new Set(), nReciente: 0, fuentes: new Set() };
       const c = map[key];
       c.monto += Number(a.monto_contrato);
       c.n++;
-      if (a.proveedor_nombre) c.proveedores.add(a.proveedor_nombre);
+      if (a.proveedor_nombre) {
+        c.proveedores.add(a.proveedor_nombre);
+        c.provMontos[a.proveedor_nombre] = (c.provMontos[a.proveedor_nombre]||0) + Number(a.monto_contrato);
+      }
       (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(p => c.patrones.add(p));
       if (a.source) c.fuentes.add(a.source);
       const mes = (a.fecha_contrato||'').slice(0,7);
@@ -16205,7 +16208,8 @@ async function renderTop5PorEntidad(body, EXCLUIR) {
     ];
     const dominante = dims.reduce((a, b) => b.val > a.val ? b : a);
     const sector = detectarSectorEntidad(c.entidad);
-    return { ...c, dMonto, comportamiento, score, dims, dominante, sector };
+    const topProveedor = Object.entries(c.provMontos).sort((a,b) => b[1]-a[1])[0]?.[0] || '';
+    return { ...c, dMonto, comportamiento, score, dims, dominante, sector, topProveedor };
   });
 
   const top10 = candidatos.sort((a, b) => b.score - a.score).slice(0, 10);
@@ -16258,8 +16262,13 @@ async function renderTop5PorEntidad(body, EXCLUIR) {
           <button onclick="investigarDesdeTop10('${esc(c.entidad).replace(/'/g,"\\'")}');event.stopPropagation();"
             style="padding:6px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
             background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left;">
-            🔍 Investigar →
+            🏛️ Por Entidad →
           </button>
+          ${c.topProveedor ? `<button onclick="investigarDesdeTop10PorProveedor('${esc(c.topProveedor).replace(/'/g,"\\'")}');event.stopPropagation();"
+            style="padding:6px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
+            background:rgba(52,211,153,0.1);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left;">
+            📦 Por Proveedor →
+          </button>` : ''}
         </div>
       </div>
     </div>`;

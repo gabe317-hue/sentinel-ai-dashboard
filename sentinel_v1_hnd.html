@@ -15976,14 +15976,27 @@ async function ccMisExpedientes() {
 
 function ccCargarExpediente(exp) {
   document.getElementById('ccExpedientesModal').style.display = 'none';
-  if (exp.entidad) document.getElementById('ccEntidad').value = exp.entidad;
-  if (exp.proveedor) document.getElementById('ccProveedor').value = exp.proveedor;
-  const esqSel = document.getElementById('ccEsquema');
-  if (esqSel && exp.esquema) {
-    const opt = Array.from(esqSel.options).find(o => o.value === exp.esquema);
-    if (opt) esqSel.value = exp.esquema;
+
+  const doCargar = () => {
+    if (exp.entidad)   { const el = document.getElementById('ccEntidad');   if (el) el.value = exp.entidad; }
+    if (exp.proveedor) { const el = document.getElementById('ccProveedor'); if (el) el.value = exp.proveedor; }
+    const esqSel = document.getElementById('ccEsquema');
+    if (esqSel && exp.esquema) {
+      const opt = Array.from(esqSel.options).find(o => o.value === exp.esquema);
+      if (opt) esqSel.value = exp.esquema;
+    }
+    ccAnalizar();
+  };
+
+  // Si el Constructor de Caso ya está visible, cargar directo
+  const panel = document.getElementById('constructorCasoPanel');
+  if (panel && panel.style.display !== 'none' && panel.style.display !== '') {
+    doCargar();
+  } else {
+    // Abrirlo primero, luego cargar
+    abrirConstructorCaso();
+    setTimeout(doCargar, 400);
   }
-  ccAnalizar();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

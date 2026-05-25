@@ -5985,6 +5985,7 @@ async function _loadRemainingAlertsBackground() {
     );
     allAlerts = combined;
     window.allAlerts = allAlerts;
+    window._bdTotalCount = allAlerts.length; // update to exact count now that full data is ready
     updateBDCountDisplay(allAlerts.length);
     console.log(`✅ Background load complete: ${allAlerts.length} total alerts`);
   } catch (err) {
@@ -6046,7 +6047,12 @@ async function loadAlerts() {
     console.log(`✅ Phase 1 complete: ${allAlerts.length} CRÍTICA+ALTA alerts loaded`);
 
     window.allAlerts = allAlerts;
-    updateBDCountDisplay(138423); // Show real BD total — Phase 2 will update with exact count
+    // Fetch real total count (no data transfer — just a number) for display
+    try {
+      const { count: realTotal } = await db.from('alerts').select('*', { count: 'exact', head: true });
+      window._bdTotalCount = realTotal || allAlerts.length;
+    } catch(_) { window._bdTotalCount = allAlerts.length; }
+    updateBDCountDisplay(window._bdTotalCount);
     updateConsultasMetrics(allAlerts);
     buildNewsMatchIndex();
     buildHighRiskIndex();
@@ -16115,8 +16121,9 @@ function poUpdateIndicators() {
     document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
     document.getElementById('po-ind-intl').textContent  = (engel + ofac).toLocaleString('es-HN');
     document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
-    document.getElementById('po-ind-total').textContent = data.length.toLocaleString('es-HN');
-    document.getElementById('po-db-badge').textContent  = data.length.toLocaleString('es-HN') + ' contratos monitoreados';
+    const displayTotal = window._bdTotalCount || data.length;
+    document.getElementById('po-ind-total').textContent = displayTotal.toLocaleString('es-HN');
+    document.getElementById('po-db-badge').textContent  = displayTotal.toLocaleString('es-HN') + ' contratos monitoreados';
 
     // Delta counter — compara contra último conteo guardado
     try {
@@ -16124,7 +16131,7 @@ function poUpdateIndicators() {
       const LS_DATE  = 'sentinel_prev_date';
       const prevCount = parseInt(localStorage.getItem(LS_COUNT) || '0', 10);
       const prevDate  = localStorage.getItem(LS_DATE) || '';
-      const curCount  = data.length;
+      const curCount  = displayTotal;
       const deltaBadge = document.getElementById('po-delta-badge');
       if (deltaBadge) {
         if (prevCount > 0 && curCount > prevCount) {

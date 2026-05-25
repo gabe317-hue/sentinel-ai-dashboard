@@ -5998,7 +5998,8 @@ async function _loadRemainingAlertsBackground() {
     );
     allAlerts = combined;
     window.allAlerts = allAlerts;
-    window._bdTotalCount = allAlerts.length; // update to exact count now that full data is ready
+    window._bdTotalCount = allAlerts.length;
+    window._bdFinalCount = allAlerts.length; // señal: filtrado completo
     updateBDCountDisplay(allAlerts.length);
     console.log(`✅ Background load complete: ${allAlerts.length} total alerts`);
   } catch (err) {
@@ -6088,7 +6089,8 @@ async function loadAlerts() {
 
     allAlerts = _applyFraccionamientoScrub(_applyAlertsFilters(all));
     window.allAlerts = allAlerts;
-    window._bdTotalCount = window._bdTotalCount || allAlerts.length;
+    window._bdTotalCount = allAlerts.length; // usar siempre el conteo filtrado final
+    window._bdFinalCount = allAlerts.length; // señal: filtrado completo, seguro para localStorage
     updateBDCountDisplay(window._bdTotalCount);
     console.log(`✅ All alerts loaded: ${allAlerts.length} records (${failedPages.length} retried)`);
 
@@ -16516,8 +16518,8 @@ function poUpdateIndicators() {
         }
         deltaBadge.style.display = 'inline-block';
       }
-      // Actualizar localStorage solo si el conteo cambió (o es primera vez)
-      if (curCount !== prevCount) {
+      // Actualizar localStorage solo con el conteo filtrado final (no HEAD pre-filtro)
+      if (window._bdFinalCount && curCount !== prevCount) {
         localStorage.setItem(LS_COUNT, curCount);
         localStorage.setItem(LS_DATE, new Date().toISOString());
       }

@@ -15789,9 +15789,16 @@ async function ccGenerarExpediente() {
       .denuncia-box { background:#fff7ed; border:1px solid #fed7aa; border-radius:6px; padding:10px 14px; margin-top:8px; font-size:11px; }
       .denuncia-folio { font-weight:800; color:#ea580c; font-size:10px; }
       .disclaimer { margin-top:28px; padding:10px 14px; background:#f3e8ff; border:1px solid #e9d5ff; border-radius:6px; font-size:10px; color:#5b21b6; font-style:italic; }
+      .sentinel-top-bar { background:#7c3aed; color:#fff; font-size:9px; font-weight:800; letter-spacing:.15em; text-transform:uppercase; padding:8px 54px; display:flex; justify-content:space-between; align-items:center; }
       .footer { margin-top:20px; padding-top:10px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; }
-      @media print { .no-print { display:none; } }
-    </style></head><body><div class="page">
+      @page { margin-bottom:36px; @bottom-left { content: "SENTINEL AI — Sistema de Detección de Riesgo · Honduras"; font-size:8px; color:#9ca3af; font-family:Arial,sans-serif; } @bottom-right { content: "Pág. " counter(page) " de " counter(pages) " · Folio: ${folio}"; font-size:8px; color:#9ca3af; font-family:Arial,sans-serif; } }
+      @media print { .no-print { display:none; } .sentinel-top-bar { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+    </style></head><body>
+    <div class="sentinel-top-bar">
+      <span>✦ SENTINEL AI — Sistema Antifraude Honduras</span>
+      <span>CONFIDENCIAL · ${ts}</span>
+    </div>
+    <div class="page">
     <div class="hdr">
       <div class="hdr-eyebrow">República de Honduras · ONCAE / SEFIN · ${ts}</div>
       <div class="hdr-title">Expediente Narrativo de Investigación <span class="ai-badge">✦ IA</span></div>

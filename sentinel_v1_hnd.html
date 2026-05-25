@@ -15927,10 +15927,22 @@ async function ccConfirmarGuardar() {
       contratos_count: d.vendorContratos?.length ?? null,
       monto_total:     d.vendorContratos?.reduce((s,c)=>s+(c.monto||0),0) ?? null,
     };
-    const { error } = await db.from('expedientes').insert([payload]);
-    if (error) throw new Error(error.message);
-    document.getElementById('ccGuardarModal').style.display = 'none';
-    alert(`✅ Expediente "${nombre}" guardado correctamente.`);
+    // Verificar si ya existe un expediente para este proveedor × entidad
+    const { data: existe } = await db.from('expedientes')
+      .select('id').eq('proveedor', d.proveedor).eq('entidad', d.entidad).limit(1);
+    if (existe && existe.length > 0) {
+      const sobreescribir = confirm(`Ya existe un expediente para "${d.proveedor} × ${d.entidad}".\n¿Deseas actualizarlo con el análisis actual?`);
+      if (!sobreescribir) { btn.disabled = false; btn.innerHTML = '💾 GUARDAR'; return; }
+      const { error: errUpd } = await db.from('expedientes').update(payload).eq('id', existe[0].id);
+      if (errUpd) throw new Error(errUpd.message);
+      document.getElementById('ccGuardarModal').style.display = 'none';
+      alert(`✅ Expediente actualizado correctamente.`);
+    } else {
+      const { error } = await db.from('expedientes').insert([payload]);
+      if (error) throw new Error(error.message);
+      document.getElementById('ccGuardarModal').style.display = 'none';
+      alert(`✅ Expediente "${nombre}" guardado correctamente.`);
+    }
   } catch(e) {
     alert('Error al guardar: ' + e.message);
   } finally {

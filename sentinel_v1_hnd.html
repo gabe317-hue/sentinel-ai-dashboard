@@ -2552,12 +2552,25 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </button>
 </div>
 
-<!-- ═══════════════════ TOP 10 CASOS CRÍTICOS — S93A ═══════════════════ -->
+<!-- ═══════════════════ TOP 10 CASOS CRÍTICOS — S93A / S127 ═══════════════════ -->
 <div id="top5Panel" class="hidden">
   <div class="t5-header">
     <div class="t5-header-left">
-      <h2>🚨 Top 10 Casos Críticos</h2>
-      <p>ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · DATOS EN TIEMPO REAL</p>
+      <h2 id="top10Title">🚨 Top 10 Casos Críticos</h2>
+      <p id="top10Subtitle">ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · DATOS EN TIEMPO REAL</p>
+      <!-- Toggle Por Proveedor / Por Entidad — S127 -->
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button id="btnModeProveedor" onclick="switchTop10Mode('proveedor')"
+          style="padding:5px 12px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.08em;
+          background:rgba(96,165,250,0.2);color:#60a5fa;border:1px solid rgba(96,165,250,0.5);border-radius:6px;cursor:pointer;">
+          📦 Por Proveedor
+        </button>
+        <button id="btnModeEntidad" onclick="switchTop10Mode('entidad')"
+          style="padding:5px 12px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.08em;
+          background:rgba(160,180,210,0.08);color:rgba(160,180,210,0.5);border:1px solid rgba(160,180,210,0.2);border-radius:6px;cursor:pointer;">
+          🏛️ Por Entidad
+        </button>
+      </div>
     </div>
     <div style="display:flex;gap:10px;">
       <button onclick="exportarTop10PDF()"
@@ -15898,6 +15911,41 @@ function exportarTop10PDF() {
   pw.addEventListener('load', () => pw.focus());
 }
 
+// ── Top 10 mode toggle — S127 ─────────────────────────────────────────────
+let _top10Mode = 'proveedor'; // 'proveedor' | 'entidad'
+
+function switchTop10Mode(mode) {
+  _top10Mode = mode;
+  // Update toggle button styles
+  const btnProv = document.getElementById('btnModeProveedor');
+  const btnEnt  = document.getElementById('btnModeEntidad');
+  if (btnProv && btnEnt) {
+    if (mode === 'proveedor') {
+      btnProv.style.background = 'rgba(96,165,250,0.2)';
+      btnProv.style.color      = '#60a5fa';
+      btnProv.style.border     = '1px solid rgba(96,165,250,0.5)';
+      btnEnt.style.background  = 'rgba(160,180,210,0.08)';
+      btnEnt.style.color       = 'rgba(160,180,210,0.5)';
+      btnEnt.style.border      = '1px solid rgba(160,180,210,0.2)';
+    } else {
+      btnEnt.style.background  = 'rgba(52,211,153,0.2)';
+      btnEnt.style.color       = '#34d399';
+      btnEnt.style.border      = '1px solid rgba(52,211,153,0.5)';
+      btnProv.style.background = 'rgba(160,180,210,0.08)';
+      btnProv.style.color      = 'rgba(160,180,210,0.5)';
+      btnProv.style.border     = '1px solid rgba(160,180,210,0.2)';
+    }
+  }
+  // Update title/subtitle
+  const title    = document.getElementById('top10Title');
+  const subtitle = document.getElementById('top10Subtitle');
+  if (title)    title.textContent    = mode === 'entidad' ? '🏛️ Top 10 Entidades Críticas' : '🚨 Top 10 Casos Críticos';
+  if (subtitle) subtitle.textContent = mode === 'entidad'
+    ? 'ANÁLISIS MULTI-DIMENSIONAL · MONTO × CONCENTRACIÓN DE PROVEEDORES · DATOS EN TIEMPO REAL'
+    : 'ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · DATOS EN TIEMPO REAL';
+  renderTop5();
+}
+
 async function renderTop5() {
   const body = document.getElementById('top5Body');
   if (!allAlerts || !allAlerts.length) {
@@ -15910,6 +15958,12 @@ async function renderTop5() {
 
   // ── Excluidos por error de datos conocido
   const EXCLUIR = ['RILMAC IMPRESORES'];
+
+  // ── Branch: modo entidad ─────────────────────────────────────────────────
+  if (_top10Mode === 'entidad') {
+    await renderTop5PorEntidad(body, EXCLUIR);
+    return;
+  }
 
   // ── Investigaciones confirmadas (timeout 5s)
   let investigados = new Map();
@@ -16082,6 +16136,134 @@ async function renderTop5() {
       Error al calcular Top 10.<br><span style="color:rgba(160,180,210,0.4);font-size:10px;margin-top:8px;display:block;">${err.message||err}</span>
     </div>`;
   }
+}
+
+// ── Top 10 Por Entidad — S127 ─────────────────────────────────────────────
+async function renderTop5PorEntidad(body, EXCLUIR) {
+  const esc  = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
+  const ahora  = new Date();
+  const hace18m = new Date(ahora.getFullYear(), ahora.getMonth() - 18, 1).toISOString().slice(0,7);
+
+  function detectarSectorEntidad(entityName) {
+    const txt = (entityName||'').toLowerCase();
+    if (/salud|hospital|sesal|farma|medic/.test(txt)) return 'SALUD';
+    if (/constru|obras|infraestruc|ingenie/.test(txt)) return 'CONSTRUCCIÓN';
+    if (/educac|unah|universidad/.test(txt)) return 'EDUCACIÓN';
+    if (/energia|enee|combustib/.test(txt)) return 'ENERGÍA';
+    if (/seguro|asegurad/.test(txt)) return 'SEGUROS';
+    if (/planific|seplan|presidenc/.test(txt)) return 'GOBIERNO CENTRAL';
+    return 'INSTITUCIONAL';
+  }
+
+  // Agrupar CRÍTICOS por entidad
+  const map = {};
+  allAlerts
+    .filter(a => normSev(a.severity).includes('CRITICA'))
+    .filter(a => Number(a.monto_contrato) > 0 && a.entity_name)
+    .filter(a => !EXCLUIR.some(ex => (a.proveedor_nombre||'').toUpperCase().includes(ex)))
+    .forEach(a => {
+      const key = (a.entity_name||'').toUpperCase().trim();
+      if (!map[key]) map[key] = { entidad: a.entity_name, proveedores: new Set(), monto: 0, n: 0, patrones: new Set(), nReciente: 0, fuentes: new Set() };
+      const c = map[key];
+      c.monto += Number(a.monto_contrato);
+      c.n++;
+      if (a.proveedor_nombre) c.proveedores.add(a.proveedor_nombre);
+      (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(p => c.patrones.add(p));
+      if (a.source) c.fuentes.add(a.source);
+      const mes = (a.fecha_contrato||'').slice(0,7);
+      if (mes && mes >= hace18m) c.nReciente++;
+    });
+
+  const todos = Object.values(map).filter(c => c.monto >= 100000000);
+  if (!todos.length) {
+    body.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Sin entidades con contratos CRÍTICA ≥ L 100M.</div>';
+    return;
+  }
+
+  const maxMonto     = Math.max(...todos.map(c => c.monto));
+  const maxPatrones  = Math.max(...todos.map(c => c.patrones.size)) || 1;
+  const maxProv      = Math.max(...todos.map(c => c.proveedores.size)) || 1;
+  const maxReciente  = Math.max(...todos.map(c => c.nReciente)) || 1;
+  const norm = (val, mx) => mx > 0 ? Math.min(100, Math.round((val / mx) * 100)) : 0;
+
+  const candidatos = todos.map(c => {
+    const dMonto    = norm(c.monto, maxMonto);
+    const dPatron   = norm(c.patrones.size, maxPatrones);
+    const dConc     = norm(c.proveedores.size, maxProv);  // concentración de proveedores
+    const dRecente  = norm(c.nReciente, maxReciente);
+    const dMulti    = c.proveedores.size >= 10 ? 100 : Math.round((c.proveedores.size / 10) * 100);
+    const comportamiento = Math.round(dPatron*0.35 + dConc*0.30 + dRecente*0.20 + dMulti*0.15);
+    const score = Math.round(Math.sqrt(dMonto * comportamiento));
+    const dims = [
+      { label: 'MONTO',      val: dMonto,   color: '#ff3d57' },
+      { label: 'PATRONES',   val: dPatron,  color: '#a78bfa' },
+      { label: 'PROVEEDORES',val: dConc,    color: '#60a5fa' },
+      { label: 'RECENCIA',   val: dRecente, color: '#34d399' },
+      { label: 'MULTI-PROV', val: dMulti,   color: '#fbbf24' },
+    ];
+    const dominante = dims.reduce((a, b) => b.val > a.val ? b : a);
+    const sector = detectarSectorEntidad(c.entidad);
+    return { ...c, dMonto, comportamiento, score, dims, dominante, sector };
+  });
+
+  const top10 = candidatos.sort((a, b) => b.score - a.score).slice(0, 10);
+
+  const sectorCount = {};
+  top10.forEach(c => { sectorCount[c.sector] = (sectorCount[c.sector]||0) + 1; });
+  const sectorTop  = Object.entries(sectorCount).sort((a,b) => b[1]-a[1]);
+  const montoTotal = top10.reduce((s, c) => s + c.monto, 0);
+  const insightHtml = `<div class="t5-insight">
+    <strong>PATRÓN DETECTADO:</strong> ${sectorTop.map(([s,n]) => `${n} de 10 entidades — ${s}`).join(' · ')}
+    &nbsp;·&nbsp; Exposición total Top 10: <strong>${fmtM(montoTotal)}</strong>
+  </div>`;
+
+  const nivelBadge = rank =>
+    rank <= 3  ? '<span class="t5-nivel t5-nivel-max">● RIESGO MÁXIMO</span>' :
+    rank <= 7  ? '<span class="t5-nivel t5-nivel-alto">● RIESGO ALTO</span>' :
+                 '<span class="t5-nivel t5-nivel-elev">● RIESGO ELEVADO</span>';
+
+  body.innerHTML = insightHtml + top10.map((c, i) => {
+    const rank = i + 1;
+    const rankClass = rank <= 3 ? ' rank-'+rank : '';
+    const provLista = [...c.proveedores].slice(0, 3).join(' · ') + (c.proveedores.size > 3 ? ` +${c.proveedores.size-3}` : '');
+    const patArr = [...c.patrones].slice(0, 4);
+    const dimRows = c.dims.map(d => `
+      <div class="t5-dim-row">
+        <span class="t5-dim-label">${d.label}</span>
+        <div class="t5-dim-track"><div class="t5-dim-fill" style="width:${d.val}%;background:${d.color};opacity:0.8;"></div></div>
+        <span class="t5-dim-val" style="color:${d.color};">${d.val}</span>
+      </div>`).join('');
+
+    return `<div class="t5-case">
+      <div class="t5-rank${rankClass}">${rank < 10 ? '0'+rank : rank}</div>
+      <div class="t5-info">
+        ${nivelBadge(rank)}
+        <div class="t5-proveedor">${esc(c.entidad)}</div>
+        <div class="t5-entidades">Proveedores: ${esc(provLista) || '—'}</div>
+        <div class="t5-meta">
+          ${patArr.map(p=>`<span class="t5-tag t5-tag-patron">${esc(p)}</span>`).join('')}
+          <span class="t5-tag t5-tag-n">${c.n} contrato${c.n!==1?'s':''}</span>
+          <span class="t5-sector">${esc(c.sector)}</span>
+          <span class="t5-tag t5-tag-n">${c.proveedores.size} proveedor${c.proveedores.size!==1?'es':''}</span>
+        </div>
+        <div class="t5-badge-dominante">▲ ${esc(c.dominante.label)}: ${c.dominante.val}</div>
+        <div class="t5-dims">${dimRows}</div>
+      </div>
+      <div class="t5-right">
+        <div class="t5-monto-val">${fmtM(c.monto)}</div>
+        <div class="t5-monto-label">monto en riesgo</div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">
+          <button onclick="investigarDesdeTop10('${esc(c.entidad).replace(/'/g,"\\'")}');event.stopPropagation();"
+            style="padding:6px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
+            background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left;">
+            🔍 Investigar →
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function poGo(fn) {

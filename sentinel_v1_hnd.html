@@ -5904,8 +5904,8 @@ async function loadAlerts() {
     if (progressWrap) { progressWrap.style.display = 'block'; }
     setProgress(3);
 
-    // Known approximate total (~40K records → ~40 pages). Used only for progress display.
-    const APPROX_PAGES = 42;
+    // Known approximate total (~138K records → ~139 pages). Used only for progress display.
+    const APPROX_PAGES = 139;
 
     let all = [];
     let batchStart = 0;
@@ -5918,7 +5918,7 @@ async function loadAlerts() {
         promises.push(
           db.from('alerts')
             .select('*')
-            .order('created_at', { ascending: false })
+            .order('id', { ascending: false })
             .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
         );
       }

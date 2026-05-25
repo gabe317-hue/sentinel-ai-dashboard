@@ -5890,22 +5890,125 @@ function fmtDate(iso) {
 // NEVER falls back to localStorage on failure — shows error instead.
 // Required console output for Week 3 Step 5 verification.
 // ════════════════════════════════════════════════════════════
-async function loadAlerts() {
-  // Parallel batch fetch — S124 optimization. No count query needed.
-  // Fetches 8 pages at a time; stops when a batch returns a short page.
+// S126 — Helper: apply exclusiones, entity resolution, error_datos filters to a records array.
+// Does NOT include FRACCIONAMIENTO scrub (needs full dataset) — caller handles that separately.
+function _applyAlertsFilters(records) {
+  let arr = records;
+
+  // S92 — Exclusiones quirúrgicas: pares proveedor+entidad con justificación operacional legítima.
+  const EXCLUSIONES_OPERACIONALES = [
+    { proveedor: 'ASTRO TOUR',    entidad: 'EJERCITO DE HONDURAS'      },
+    { proveedor: 'ASTRO TOUR',    entidad: 'ESTADO MAYOR CONJUNTO'     },
+    { proveedor: 'ASTRO TOUR',    entidad: 'UNIDAD CENTRAL'            },
+    { proveedor: 'VOLARE',        entidad: 'EJERCITO DE HONDURAS'      },
+    { proveedor: 'VOLARE',        entidad: 'ESTADO MAYOR CONJUNTO'     },
+    { proveedor: 'VOLARE',        entidad: 'UNIDAD CENTRAL'            },
+  ];
+  arr = arr.filter(a => {
+    const prov    = (a.proveedor_nombre || '').toUpperCase();
+    const entidad = (a.entity_name     || '').toUpperCase();
+    return !EXCLUSIONES_OPERACIONALES.some(ex =>
+      prov.includes(ex.proveedor) && entidad.includes(ex.entidad)
+    );
+  });
+
+  // S99 — Entity resolution
+  const VENDOR_ALIASES = [
+    { patron: 'SOLINT',          canonico: 'SOLUCIONES INTEGRALES (SOLINTSA)' },
+    { patron: 'INFRA DE HONDUR', canonico: 'INFRA DE HONDURAS S.A.'           },
+  ];
+  arr.forEach(a => {
+    const prov = (a.proveedor_nombre || '').toUpperCase();
+    for (const alias of VENDOR_ALIASES) {
+      if (prov.includes(alias.patron)) { a.proveedor_nombre = alias.canonico; break; }
+    }
+  });
+
+  // S100 — ERROR_DATOS
+  const ERROR_DATOS_CONTRATOS = [
+    { patron: 'RILMAC IMPRESORES', montoMin: 1_000_000_000 }
+  ];
+  arr = arr.filter(a => !ERROR_DATOS_CONTRATOS.some(e =>
+    (a.proveedor_nombre||'').toUpperCase().includes(e.patron) &&
+    (Number(a.monto_contrato)||0) > e.montoMin
+  ));
+
+  return arr;
+}
+
+// S126 — FRACCIONAMIENTO scrub: needs full dataset to build cross-record count.
+function _applyFraccionamientoScrub(arr) {
+  const provConteo = {};
+  arr.forEach(a => { const k=(a.proveedor_nombre||'').toUpperCase().trim(); provConteo[k]=(provConteo[k]||0)+1; });
+  arr.forEach(a => { const k=(a.proveedor_nombre||'').toUpperCase().trim();
+    if (provConteo[k] < 2 && (a.patterns||'').includes('FRACCIONAMIENTO_ONCAE')) {
+      a.patterns = (a.patterns||'').split(',').filter(p => p.trim() !== 'FRACCIONAMIENTO_ONCAE').join(',');
+    }
+  });
+  return arr;
+}
+
+// S126 — Background loader: fetches MEDIA + BAJA records after UI is already live.
+// Merges into allAlerts silently — no UI freeze, no blocking.
+async function _loadRemainingAlertsBackground() {
   try {
     const PAGE_SIZE  = 1000;
-    const BATCH_SIZE = 8;
+    const BATCH_SIZE = 4;
+    const REMAINING_SEVERITIES = ['MEDIA', 'Media', 'BAJA', 'Baja'];
+    let remaining = [];
+    let batchStart = 0;
+    let done = false;
+    while (!done) {
+      const promises = [];
+      for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) {
+        promises.push(
+          db.from('alerts')
+            .select('*')
+            .in('severity', REMAINING_SEVERITIES)
+            .order('id', { ascending: false })
+            .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
+        );
+      }
+      const results = await Promise.all(promises);
+      for (const { data, error } of results) {
+        if (error) { done = true; break; }
+        const batch = data || [];
+        remaining = remaining.concat(batch);
+        if (batch.length < PAGE_SIZE) done = true;
+      }
+      batchStart += BATCH_SIZE;
+      await new Promise(r => setTimeout(r, 50)); // yield to UI between batches
+    }
+    // Merge: apply filters to new records, then re-run FRACCIONAMIENTO on full combined set
+    const combined = _applyFraccionamientoScrub(
+      allAlerts.concat(_applyAlertsFilters(remaining))
+    );
+    allAlerts = combined;
+    window.allAlerts = allAlerts;
+    updateBDCountDisplay(allAlerts.length);
+    console.log(`✅ Background load complete: ${allAlerts.length} total alerts`);
+  } catch (err) {
+    console.warn('⚠️ Background load partial — using priority data only:', err.message);
+  }
+}
 
-    // Progress bar (fixed top)
+async function loadAlerts() {
+  // S126 — Two-phase load:
+  // Phase 1 (fast, <5s): CRÍTICA + ALTA only (~28K records) → UI immediately available
+  // Phase 2 (background): MEDIA + BAJA loaded silently after UI is live
+  try {
+    const PAGE_SIZE  = 1000;
+    const BATCH_SIZE = 4; // reduced from 8 — avoids Supabase connection pool exhaustion
+
     const progressBar  = document.getElementById('load-progress-bar');
     const progressWrap = document.getElementById('load-progress-wrap');
     const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
     if (progressWrap) { progressWrap.style.display = 'block'; }
     setProgress(3);
 
-    // Known approximate total (~138K records → ~139 pages). Used only for progress display.
-    const APPROX_PAGES = 139;
+    // Phase 1: priority severities only (~28.5K records → ~29 pages)
+    const PRIORITY_SEVERITIES = ['CRÍTICA', 'Crítica', 'ALTA', 'Alta'];
+    const APPROX_PRIORITY_PAGES = 30;
 
     let all = [];
     let batchStart = 0;
@@ -5918,6 +6021,7 @@ async function loadAlerts() {
         promises.push(
           db.from('alerts')
             .select('*')
+            .in('severity', PRIORITY_SEVERITIES)
             .order('id', { ascending: false })
             .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
         );
@@ -5930,97 +6034,36 @@ async function loadAlerts() {
         pagesLoaded++;
         if (batch.length < PAGE_SIZE) done = true;
       }
-      setProgress(Math.round((pagesLoaded / APPROX_PAGES) * 95));
-      console.log(`Alerts loaded: pages ${batchStart + 1}-${batchStart + BATCH_SIZE} (total so far: ${all.length})`);
+      setProgress(Math.round((pagesLoaded / APPROX_PRIORITY_PAGES) * 95));
+      console.log(`Phase 1 loaded: pages ${batchStart + 1}-${batchStart + BATCH_SIZE} (${all.length} records)`);
       batchStart += BATCH_SIZE;
     }
 
-    // Complete & hide
     setProgress(100);
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
-    allAlerts = all;
+    allAlerts = _applyFraccionamientoScrub(_applyAlertsFilters(all));
+    console.log(`✅ Phase 1 complete: ${allAlerts.length} CRÍTICA+ALTA alerts loaded`);
 
-    // S92 — Exclusiones quirúrgicas: pares proveedor+entidad con justificación operacional legítima.
-    // REGLA: NO excluir por proveedor solo — una agencia de viajes vendiendo insumos a una Secretaría ES fraude.
-    // Solo excluir cuando AMBOS campos coinciden (proveedor + entidad compradora).
-    const EXCLUSIONES_OPERACIONALES = [
-      { proveedor: 'ASTRO TOUR',    entidad: 'EJERCITO DE HONDURAS'      },
-      { proveedor: 'ASTRO TOUR',    entidad: 'ESTADO MAYOR CONJUNTO'     },
-      { proveedor: 'ASTRO TOUR',    entidad: 'UNIDAD CENTRAL'            },
-      { proveedor: 'VOLARE',        entidad: 'EJERCITO DE HONDURAS'      },
-      { proveedor: 'VOLARE',        entidad: 'ESTADO MAYOR CONJUNTO'     },
-      { proveedor: 'VOLARE',        entidad: 'UNIDAD CENTRAL'            },
-    ];
-    const antesExclusiones = allAlerts.length;
-    allAlerts = allAlerts.filter(a => {
-      const prov   = (a.proveedor_nombre || '').toUpperCase();
-      const entidad = (a.entity_name || '').toUpperCase();
-      return !EXCLUSIONES_OPERACIONALES.some(ex =>
-        prov.includes(ex.proveedor) && entidad.includes(ex.entidad)
-      );
-    });
-    if (allAlerts.length < antesExclusiones) {
-      console.log(`🔕 Exclusiones operacionales aplicadas: ${antesExclusiones - allAlerts.length} alertas filtradas (viajes militares legítimos)`);
-    }
-
-    // S99 — Entity resolution: normalizar variantes de nombre del mismo proveedor.
-    // REGLA: usar nombre canónico (más corto/oficial). No modifica la BD — solo la vista en memoria.
-    const VENDOR_ALIASES = [
-      // SOLUCIONES INTEGRALES — 3 variantes, mismo proveedor, ~L 89M combinado
-      { patron: 'SOLINT',  canonico: 'SOLUCIONES INTEGRALES (SOLINTSA)' },
-      // INFRA DE HONDURAS — 6 variantes (incl. typo "IINFRA"), mismo proveedor, ~L 253M combinado (S100)
-      { patron: 'INFRA DE HONDUR', canonico: 'INFRA DE HONDURAS S.A.' },
-    ];
-    allAlerts.forEach(a => {
-      const prov = (a.proveedor_nombre || '').toUpperCase();
-      for (const alias of VENDOR_ALIASES) {
-        if (prov.includes(alias.patron)) {
-          a.proveedor_nombre = alias.canonico;
-          break;
-        }
-      }
-    });
-
-    // S100 — ERROR_DATOS: excluir contratos con monto claramente erróneo (error de captura ONCAE).
-    // Solo filtra cuando monto > umbral — contratos pequeños legítimos del proveedor permanecen visibles.
-    const ERROR_DATOS_CONTRATOS = [
-      { patron: 'RILMAC IMPRESORES', montoMin: 1_000_000_000 } // L 5.08B = error decimal ONCAE (monto real ~L 5.1M)
-    ];
-    allAlerts = allAlerts.filter(a => !ERROR_DATOS_CONTRATOS.some(e =>
-      (a.proveedor_nombre||'').toUpperCase().includes(e.patron) &&
-      (Number(a.monto_contrato)||0) > e.montoMin
-    ));
-
-    // S94 — FRACCIONAMIENTO fix global: solo mostrar si proveedor tiene ≥2 contratos en BD.
-    // Un solo contrato bajo el umbral = compra pequeña legítima, no fraccionamiento.
-    { const provConteo = {};
-      allAlerts.forEach(a => { const k=(a.proveedor_nombre||'').toUpperCase().trim(); provConteo[k]=(provConteo[k]||0)+1; });
-      allAlerts.forEach(a => { const k=(a.proveedor_nombre||'').toUpperCase().trim();
-        if (provConteo[k] < 2 && (a.patterns||'').includes('FRACCIONAMIENTO_ONCAE')) {
-          a.patterns = (a.patterns||'').split(',').filter(p => p.trim() !== 'FRACCIONAMIENTO_ONCAE').join(',');
-        }
-      });
-    }
-
-    window.allAlerts = allAlerts; // expose for Vista Ejecutiva
-    console.log(`✅ All alerts loaded: ${allAlerts.length} total`);
-    updateBDCountDisplay(allAlerts.length); // S67 — número dinámico en UI
-    updateConsultasMetrics(allAlerts);      // S67 — métricas card ejecutivo
-    buildNewsMatchIndex(); // Opción E — entity/vendor index (all records)
-    buildHighRiskIndex();  // Opción F — entity/vendor index (CRÍTICA/ALTA severity only)
-    buildEngelIndex();     // P4 — Lista Engel EE.UU. cross-reference
-    buildRedFlagIndex();   // S59 — Entidades alto riesgo CNA/UFERCO/MP Honduras
-    loadRedFlagsFromSupabase(); // S64 — merge activo=true records from Supabase
-    renderCandidatosDetectados(); // Populate nav chip count on load
-    loadInvestigacionesDB();      // S69 — cargar investigaciones desde Supabase
-    loadBorradoresAuto();         // S89-B — detecciones automáticas pendientes
+    window.allAlerts = allAlerts;
+    updateBDCountDisplay(138423); // Show real BD total — Phase 2 will update with exact count
+    updateConsultasMetrics(allAlerts);
+    buildNewsMatchIndex();
+    buildHighRiskIndex();
+    buildEngelIndex();
+    buildRedFlagIndex();
+    loadRedFlagsFromSupabase();
+    renderCandidatosDetectados();
+    loadInvestigacionesDB();
+    loadBorradoresAuto();
     setStatus('connected');
     hideError();
     render();
-    poUpdateIndicators();  // Portal status band — data is now fully ready
-    // Si viene del landing page (#ejecutiva), mostrar Vista Ejecutiva directamente
+    poUpdateIndicators();
     if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
+
+    // Phase 2: load MEDIA + BAJA in background — non-blocking, UI already live
+    _loadRemainingAlertsBackground();
 
   } catch (err) {
     console.error('❌ loadAlerts failed:', err.message);

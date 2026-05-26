@@ -3599,7 +3599,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- Severity filter bar -->
   <div class="controls-bar">
-    <button class="filter-btn active" data-f="all"     onclick="setFilter('all')">TODAS</button>
+    <button class="filter-btn"        data-f="all"     onclick="setFilter('all')">TODAS</button>
+    <button class="filter-btn active" data-f="signal"  onclick="setFilter('signal')">⚡ SEÑAL</button>
     <button class="filter-btn"        data-f="critica" onclick="setFilter('critica')">CRÍTICAS</button>
     <button class="filter-btn"        data-f="alta"    onclick="setFilter('alta')">ALTAS</button>
     <button class="filter-btn"        data-f="media"   onclick="setFilter('media')">MEDIAS</button>
@@ -5947,7 +5948,7 @@ try {
 // APP STATE
 // ════════════════════════════════════════════════════════════
 let allAlerts      = [];    // Full dataset from Supabase
-let activeFilter   = 'all'; // Active severity filter
+let activeFilter   = 'signal'; // Active severity filter (default: CRÍTICA+ALTA+MEDIA = señal real)
 let activePattern  = 'all'; // Active pattern filter
 let searchQuery    = '';    // Global search — proveedor, entidad, ID
 let selectedSev    = null;  // Severity selected in modal form
@@ -6265,6 +6266,8 @@ function render() {
   // ── Filter for table display ──
   let filtered = activeFilter === 'all'
     ? allAlerts
+    : activeFilter === 'signal'
+    ? allAlerts.filter(a => ['crítica','alta','media'].includes(normSev(a.severity)))
     : allAlerts.filter(a => normSev(a.severity) === activeFilter);
   if (activePattern !== 'all') {
     if (activePattern === 'ENGEL') {
@@ -6456,7 +6459,9 @@ async function generateReport(mode = 'todo') {
 
     // ── 1. Collect alerts from window.allAlerts (always fresh) ──
     let filtered = (window.allAlerts || []);
-    if (activeFilter !== 'all') {
+    if (activeFilter === 'signal') {
+      filtered = filtered.filter(a => ['crítica','alta','media'].includes(normSev(a.severity)));
+    } else if (activeFilter !== 'all') {
       filtered = filtered.filter(a => normSev(a.severity) === activeFilter);
     }
     if (activePattern !== 'all') {
@@ -6473,7 +6478,7 @@ async function generateReport(mode = 'todo') {
     const fechaStr = now.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
     const horaStr  = now.toLocaleTimeString('es-HN', { hour:'2-digit', minute:'2-digit' });
     const filterLabel = (() => {
-      const sev = activeFilter === 'all' ? 'Todas las severidades' : activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
+      const sev = activeFilter === 'all' ? 'Todas las severidades' : activeFilter === 'signal' ? 'Señal (CRÍTICA+ALTA+MEDIA)' : activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
       const pat = activePattern === 'all' ? 'Todos los patrones' : (PATTERN_LABELS[activePattern] || activePattern);
       return `${sev} · ${pat}`;
     })();

@@ -2506,6 +2506,51 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 </div>
 
 <!-- ═══ MODAL: GUARDAR EXPEDIENTE ═══ -->
+<!-- ── MODAL GESTIONAR CONTACTOS ─────────────────────────────── -->
+<div id="niContactosModal" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
+  <div style="background:#0d1117;border:1px solid rgba(13,148,136,0.4);border-radius:14px;padding:28px;width:640px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,0.6);max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#0d9488;margin-bottom:4px;">Notificaciones · Mejora #3</div>
+        <div style="font-size:16px;font-weight:800;color:#e2e8f0;">📋 Gestionar Contactos de Instituciones</div>
+      </div>
+      <button onclick="niContactosCerrar()" style="background:transparent;border:none;color:#64748b;font-size:20px;cursor:pointer;padding:4px 8px;">✕</button>
+    </div>
+
+    <!-- Formulario agregar -->
+    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:16px;margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:#0d9488;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">➕ Agregar Contacto</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Institución *</div>
+          <input id="niCInst" placeholder="Ej: Secretaria de Salud" style="width:100%;background:#1e293b;border:1px solid #334155;color:#e2e8f0;border-radius:6px;padding:7px 10px;font-size:12px;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Email *</div>
+          <input id="niCEmail" placeholder="contacto@institución.gob.hn" type="email" style="width:100%;background:#1e293b;border:1px solid #334155;color:#e2e8f0;border-radius:6px;padding:7px 10px;font-size:12px;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Nombre del Contacto</div>
+          <input id="niCNombre" placeholder="Ej: Juan Pérez" style="width:100%;background:#1e293b;border:1px solid #334155;color:#e2e8f0;border-radius:6px;padding:7px 10px;font-size:12px;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Cargo</div>
+          <input id="niCCargo" placeholder="Ej: Director Administrativo" style="width:100%;background:#1e293b;border:1px solid #334155;color:#e2e8f0;border-radius:6px;padding:7px 10px;font-size:12px;box-sizing:border-box;">
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="niContactosAgregar()" style="padding:8px 20px;background:#0d9488;border:none;color:#fff;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">Agregar</button>
+        <div id="niCMsg" style="font-size:12px;color:#64748b;"></div>
+      </div>
+    </div>
+
+    <!-- Lista de contactos -->
+    <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Contactos Registrados</div>
+    <div id="niContactosLista" style="font-size:13px;color:#94a3b8;">Cargando...</div>
+  </div>
+</div>
+<!-- ──────────────────────────────────────────────────────────── -->
+
 <!-- ── MODAL NOTIFICAR INSTITUCIONES ─────────────────────────── -->
 <div id="niModal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
   <div style="background:#0d1117;border:1px solid rgba(124,58,237,0.4);border-radius:14px;padding:32px;width:560px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.6);max-height:80vh;overflow-y:auto;">
@@ -3100,6 +3145,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </button>
         <button onclick="niAbrir()" class="notif-trigger-btn" style="border-color:#7c3aed;color:#7c3aed;" title="Notificación directa a instituciones con alertas activas">
           🏛️ Notificar Instituciones
+        </button>
+        <button onclick="niContactosAbrir()" class="notif-trigger-btn" style="border-color:#0d9488;color:#0d9488;" title="Gestionar contactos de instituciones">
+          📋 Gestionar Contactos
         </button>
       </div>
       <div id="notif-status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);display:none;"></div>
@@ -16776,6 +16824,76 @@ async function doLogin() {
 }
 
 // ── Disparar notificación manual (S91) ──────────────────────────────────────
+// ── GESTIONAR CONTACTOS INSTITUCIONES ────────────────────────────
+async function niContactosAbrir() {
+  document.getElementById('niContactosModal').style.display = 'flex';
+  await niContactosCargar();
+}
+function niContactosCerrar() {
+  document.getElementById('niContactosModal').style.display = 'none';
+}
+async function niContactosCargar() {
+  const lista = document.getElementById('niContactosLista');
+  lista.innerHTML = '<div style="color:#64748b;">⏳ Cargando...</div>';
+  const { data, error } = await db.from('instituciones_contactos').select('*').order('institucion');
+  if (error || !data) { lista.innerHTML = '<div style="color:#f87171;">Error al cargar contactos.</div>'; return; }
+  if (data.length === 0) {
+    lista.innerHTML = '<div style="color:#475569;font-size:12px;padding:12px 0;">No hay contactos registrados. Agrega el primero arriba.</div>';
+    return;
+  }
+  lista.innerHTML = `<table style="width:100%;border-collapse:collapse;">
+    <thead><tr style="background:#1e293b;">
+      <th style="padding:7px 10px;text-align:left;font-size:11px;color:#64748b;">Institución</th>
+      <th style="padding:7px 10px;text-align:left;font-size:11px;color:#64748b;">Nombre</th>
+      <th style="padding:7px 10px;text-align:left;font-size:11px;color:#64748b;">Email</th>
+      <th style="padding:7px 10px;text-align:left;font-size:11px;color:#64748b;">Cargo</th>
+      <th style="padding:7px 10px;text-align:center;font-size:11px;color:#64748b;">Activo</th>
+      <th style="padding:7px 10px;font-size:11px;color:#64748b;"></th>
+    </tr></thead>
+    <tbody>${data.map(c => `
+      <tr id="niRow_${c.id}" style="border-bottom:1px solid #1e293b;">
+        <td style="padding:7px 10px;font-size:12px;color:#e2e8f0;">${c.institucion}</td>
+        <td style="padding:7px 10px;font-size:12px;color:#94a3b8;">${c.contacto_nombre || '—'}</td>
+        <td style="padding:7px 10px;font-size:12px;color:#94a3b8;">${c.email}</td>
+        <td style="padding:7px 10px;font-size:12px;color:#94a3b8;">${c.cargo || '—'}</td>
+        <td style="padding:7px 10px;text-align:center;">
+          <button onclick="niContactosToggle(${c.id},${c.activo})" style="background:${c.activo ? '#14532d' : '#1e293b'};border:1px solid ${c.activo ? '#16a34a' : '#334155'};color:${c.activo ? '#4ade80' : '#64748b'};border-radius:20px;padding:2px 10px;font-size:11px;cursor:pointer;font-weight:700;">
+            ${c.activo ? 'SÍ' : 'NO'}
+          </button>
+        </td>
+        <td style="padding:7px 10px;text-align:right;">
+          <button onclick="niContactosEliminar(${c.id})" style="background:transparent;border:none;color:#64748b;cursor:pointer;font-size:14px;padding:2px 6px;" title="Eliminar">🗑</button>
+        </td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+async function niContactosAgregar() {
+  const inst   = document.getElementById('niCInst').value.trim();
+  const email  = document.getElementById('niCEmail').value.trim();
+  const nombre = document.getElementById('niCNombre').value.trim();
+  const cargo  = document.getElementById('niCCargo').value.trim();
+  const msg    = document.getElementById('niCMsg');
+  if (!inst || !email) { msg.style.color = '#f87171'; msg.textContent = 'Institución y email son obligatorios.'; return; }
+  msg.style.color = '#64748b'; msg.textContent = 'Guardando...';
+  const { error } = await db.from('instituciones_contactos').insert([{ institucion: inst, email, contacto_nombre: nombre || null, cargo: cargo || null, activo: true }]);
+  if (error) { msg.style.color = '#f87171'; msg.textContent = 'Error: ' + error.message; return; }
+  msg.style.color = '#4ade80'; msg.textContent = '✅ Contacto agregado.';
+  ['niCInst','niCEmail','niCNombre','niCCargo'].forEach(id => document.getElementById(id).value = '');
+  setTimeout(() => { msg.textContent = ''; }, 3000);
+  await niContactosCargar();
+}
+async function niContactosToggle(id, activo) {
+  await db.from('instituciones_contactos').update({ activo: !activo }).eq('id', id);
+  await niContactosCargar();
+}
+async function niContactosEliminar(id) {
+  if (!confirm('¿Eliminar este contacto?')) return;
+  await db.from('instituciones_contactos').delete().eq('id', id);
+  await niContactosCargar();
+}
+// ─────────────────────────────────────────────────────────────────
+
 // ── NOTIFICAR INSTITUCIONES (Mejora #3) ──────────────────────────
 async function niAbrir() {
   const modal = document.getElementById('niModal');

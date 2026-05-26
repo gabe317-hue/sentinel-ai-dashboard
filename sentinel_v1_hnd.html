@@ -6108,19 +6108,32 @@ async function loadAlerts() {
     if (progressWrap) { progressWrap.style.display = 'block'; }
     setProgress(2);
 
-    // Fetch real total count first (HEAD request — no data, near-instant)
-    let approxPages = 526;
+    // S132 PERFORMANCE FIX:
+    // Loading 525K records takes ~65s (525 pages × 4 concurrent × ~500ms).
+    // Solution: load only CRÍTICA+ALTA+MEDIA records (~41K) by default.
+    // These are the only actionable records for fraud detection.
+    // BAJA records (484K) are low-risk noise — excluded from default view.
+    // Full DB count is fetched separately and shown in the badge.
+
+    // Fetch both counts in parallel: signal (non-BAJA) and total DB
+    let approxPages = 42;
     try {
-      const { count } = await db.from('alerts').select('*', { count: 'exact', head: true });
-      if (count) {
-        window._bdTotalCount = count;
-        updateBDCountDisplay(count);
-        approxPages = Math.ceil(count / PAGE_SIZE);
-      }
+      const [signalRes, totalRes] = await Promise.all([
+        db.from('alerts').select('*', { count: 'exact', head: true }).not('severity', 'ilike', 'baja'),
+        db.from('alerts').select('*', { count: 'exact', head: true })
+      ]);
+      const signalCount = signalRes.count || 0;
+      const totalCount  = totalRes.count  || 0;
+      window._bdSignalCount = signalCount;
+      window._bdFullDBCount = totalCount;
+      approxPages = Math.ceil(signalCount / PAGE_SIZE);
+      updateBDCountDisplay(signalCount, totalCount);
     } catch(_) {}
     setProgress(5);
+
     const fetchPage = (p) => {
       let req = db.from('alerts').select('*').order('id', { ascending: false })
+        .not('severity', 'ilike', 'baja')
         .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1);
       const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), PAGE_TIMEOUT));
       return Promise.race([req, timeout]).catch(e => ({ data: null, error: e }));
@@ -16564,13 +16577,17 @@ function poToggle(id) {
   if (!wasOpen) card.classList.add('po-expanded');
 }
 
-// S67 — número de registros dinámico en UI
-function updateBDCountDisplay(n) {
+// S67 / S132 — número de registros dinámico en UI
+// signalN = registros cargados (no-BAJA); totalN = total en BD (incluye BAJA)
+function updateBDCountDisplay(signalN, totalN) {
+  const n = signalN || totalN || 0;
   const fmt = n ? n.toLocaleString('es-HN') : '—';
   ['bd-total-registros','scanner-total-registros','busqueda-card-count'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = fmt;
   });
+  // Guardar total real en DB para delta badge y badge principal
+  if (totalN) window._bdFullDBCount = totalN;
 }
 
 // S67 — métricas del card ejecutivo Consultas
@@ -16612,9 +16629,12 @@ function poUpdateIndicators() {
     document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
     document.getElementById('po-ind-intl').textContent  = (engel + ofac).toLocaleString('es-HN');
     document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
-    const displayTotal = window._bdTotalCount || data.length;
-    document.getElementById('po-ind-total').textContent = displayTotal.toLocaleString('es-HN');
-    document.getElementById('po-db-badge').textContent  = displayTotal.toLocaleString('es-HN') + ' contratos monitoreados';
+    // S132: show full DB count in badge; signal count in indicator
+    const signalTotal = window._bdSignalCount || window._bdTotalCount || data.length;
+    const dbTotal     = window._bdFullDBCount || signalTotal;
+    document.getElementById('po-ind-total').textContent = signalTotal.toLocaleString('es-HN');
+    document.getElementById('po-db-badge').textContent  = dbTotal.toLocaleString('es-HN') + ' contratos monitoreados';
+    const displayTotal = dbTotal;
 
     // Delta counter — compara contra último conteo guardado
     try {

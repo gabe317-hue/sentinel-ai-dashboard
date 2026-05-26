@@ -2506,6 +2506,21 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 </div>
 
 <!-- ═══ MODAL: GUARDAR EXPEDIENTE ═══ -->
+<!-- ── MODAL NOTIFICAR INSTITUCIONES ─────────────────────────── -->
+<div id="niModal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
+  <div style="background:#0d1117;border:1px solid rgba(124,58,237,0.4);border-radius:14px;padding:32px;width:560px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.6);max-height:80vh;overflow-y:auto;">
+    <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7c3aed;margin-bottom:6px;">Mejora #3 · Notificaciones</div>
+    <div style="font-size:16px;font-weight:800;color:#e2e8f0;margin-bottom:4px;">🏛️ Notificar Instituciones</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:20px;">Envía alerta formal a las instituciones con contratos CRÍTICOS/ALTOS activos.</div>
+    <div id="niContenido" style="margin-bottom:20px;font-size:13px;color:#94a3b8;">Cargando vista previa...</div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;">
+      <button onclick="niCerrar()" style="padding:8px 20px;background:transparent;border:1px solid #334155;color:#94a3b8;border-radius:8px;cursor:pointer;font-size:13px;">Cancelar</button>
+      <button id="niBtnEnviar" onclick="niEnviar()" style="padding:8px 20px;background:#7c3aed;border:none;color:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;display:none;">📤 Enviar Notificaciones</button>
+    </div>
+  </div>
+</div>
+<!-- ──────────────────────────────────────────────────────────── -->
+
 <div id="ccGuardarModal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
   <div style="background:#0d1117;border:1px solid rgba(160,180,210,0.2);border-radius:14px;padding:32px;width:480px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
     <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#64748b;margin-bottom:6px;">Constructor de Caso</div>
@@ -3082,6 +3097,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </button>
         <button onclick="dispararNotificacion('alerta-sobrepresupuesto','Alerta Sobrepresupuesto')" class="notif-trigger-btn">
           ⚠️ Sobrepresupuesto SEFIN
+        </button>
+        <button onclick="niAbrir()" class="notif-trigger-btn" style="border-color:#7c3aed;color:#7c3aed;" title="Notificación directa a instituciones con alertas activas">
+          🏛️ Notificar Instituciones
         </button>
       </div>
       <div id="notif-status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);display:none;"></div>
@@ -16758,6 +16776,92 @@ async function doLogin() {
 }
 
 // ── Disparar notificación manual (S91) ──────────────────────────────────────
+// ── NOTIFICAR INSTITUCIONES (Mejora #3) ──────────────────────────
+async function niAbrir() {
+  const modal = document.getElementById('niModal');
+  const contenido = document.getElementById('niContenido');
+  const btnEnviar = document.getElementById('niBtnEnviar');
+  modal.style.display = 'flex';
+  contenido.innerHTML = '<div style="color:#64748b;">⏳ Cargando vista previa...</div>';
+  if (btnEnviar) btnEnviar.style.display = 'none';
+  try {
+    const SUPABASE_URL = 'https://yxvfpeigwthtokqsarvs.supabase.co';
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/notificacion-instituciones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ preview: true }),
+    });
+    const data = await res.json();
+    if (data.sin_destinatarios) {
+      const filas = (data.instituciones_con_alertas || []).slice(0, 10).map(i =>
+        `<tr><td style="padding:6px 10px;font-size:12px;border-bottom:1px solid #1e293b;">${i.institucion}</td>
+         <td style="padding:6px 10px;font-size:12px;text-align:right;border-bottom:1px solid #1e293b;color:#f87171;">${i.alertas}</td>
+         <td style="padding:6px 10px;font-size:12px;text-align:right;border-bottom:1px solid #1e293b;">${i.monto_expuesto >= 1e9 ? 'L '+(i.monto_expuesto/1e9).toFixed(2)+'B' : 'L '+(i.monto_expuesto/1e6).toFixed(1)+'M'}</td></tr>`
+      ).join('');
+      contenido.innerHTML = `
+        <div style="background:#1e293b;border:1px solid #7c3aed44;border-radius:8px;padding:12px 16px;margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:700;color:#a78bfa;margin-bottom:4px;">⚠️ Sin destinatarios configurados</div>
+          <div style="font-size:12px;color:#94a3b8;">${data.mensaje}</div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Instituciones que serían notificadas:</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="background:#1e293b;">
+            <th style="padding:6px 10px;text-align:left;font-size:11px;color:#64748b;">Institución</th>
+            <th style="padding:6px 10px;text-align:right;font-size:11px;color:#64748b;">Alertas</th>
+            <th style="padding:6px 10px;text-align:right;font-size:11px;color:#64748b;">Monto</th>
+          </tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+        <div style="margin-top:12px;font-size:11px;color:#475569;">Para activar: agregar contactos en la tabla <code style="color:#a78bfa;">instituciones_contactos</code> en Supabase.</div>`;
+    } else {
+      const filas = (data.preview || []).map(p =>
+        `<tr><td style="padding:6px 10px;font-size:12px;border-bottom:1px solid #1e293b;">${p.institucion}</td>
+         <td style="padding:6px 10px;font-size:12px;border-bottom:1px solid #1e293b;color:#94a3b8;">${p.email}</td>
+         <td style="padding:6px 10px;font-size:12px;text-align:right;border-bottom:1px solid #1e293b;color:#f87171;">${p.alertas}</td></tr>`
+      ).join('');
+      contenido.innerHTML = `
+        <div style="background:#14532d22;border:1px solid #16a34a44;border-radius:8px;padding:10px 14px;margin-bottom:14px;">
+          <div style="font-size:12px;color:#4ade80;">${data.total_contactos} destinatario${data.total_contactos!==1?'s':''} configurado${data.total_contactos!==1?'s':''}.</div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="background:#1e293b;">
+            <th style="padding:6px 10px;text-align:left;font-size:11px;color:#64748b;">Institución</th>
+            <th style="padding:6px 10px;text-align:left;font-size:11px;color:#64748b;">Email</th>
+            <th style="padding:6px 10px;text-align:right;font-size:11px;color:#64748b;">Alertas</th>
+          </tr></thead>
+          <tbody>${filas}</tbody>
+        </table>`;
+      if (btnEnviar) btnEnviar.style.display = 'inline-block';
+    }
+  } catch(e) {
+    contenido.innerHTML = `<div style="color:#f87171;">Error al cargar vista previa: ${e.message}</div>`;
+  }
+}
+function niCerrar() {
+  document.getElementById('niModal').style.display = 'none';
+}
+async function niEnviar() {
+  const btnEnviar = document.getElementById('niBtnEnviar');
+  const contenido = document.getElementById('niContenido');
+  if (btnEnviar) { btnEnviar.disabled = true; btnEnviar.textContent = '⏳ Enviando...'; }
+  try {
+    const SUPABASE_URL = 'https://yxvfpeigwthtokqsarvs.supabase.co';
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/notificacion-instituciones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ preview: false }),
+    });
+    const data = await res.json();
+    contenido.innerHTML = `<div style="color:#4ade80;font-size:13px;">✅ ${data.enviados} notificación${data.enviados!==1?'es':''} enviada${data.enviados!==1?'s':''} correctamente.</div>`;
+    if (btnEnviar) btnEnviar.style.display = 'none';
+    setTimeout(niCerrar, 2500);
+  } catch(e) {
+    contenido.innerHTML = `<div style="color:#f87171;">Error: ${e.message}</div>`;
+    if (btnEnviar) { btnEnviar.disabled = false; btnEnviar.textContent = '📤 Enviar Notificaciones'; }
+  }
+}
+// ─────────────────────────────────────────────────────────────────
+
 async function dispararNotificacion(fnName, label) {
   const statusEl = document.getElementById('notif-status');
   const btns = document.querySelectorAll('.notif-trigger-btn');

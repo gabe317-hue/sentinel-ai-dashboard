@@ -6290,12 +6290,7 @@ function render() {
     );
   }
 
-  // ── Sort by most recent first ──
-  filtered = filtered.sort((a, b) => {
-    const dateA = new Date(a.created_at || a.fecha_contrato || 0);
-    const dateB = new Date(b.created_at || b.fecha_contrato || 0);
-    return dateB - dateA; // Descending (newest first)
-  });
+  // S132: sort removed — data already ordered id DESC from Supabase (new Date() on 71K records froze JS thread)
 
   document.getElementById('tableCount').textContent =
     `${filtered.length} de ${allAlerts.length} contratos`;

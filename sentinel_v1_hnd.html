@@ -6108,15 +6108,10 @@ async function loadAlerts() {
     if (progressWrap) { progressWrap.style.display = 'block'; }
     setProgress(2);
 
-    // S132: fullLoad=true loads all 525K; default loads only non-BAJA ~71K
-    const fullLoad = (window._bdFullLoad === true);
-
     // Fetch real total count first (HEAD request — no data, near-instant)
-    let approxPages = fullLoad ? 526 : 72;
+    let approxPages = 526;
     try {
-      let cq = db.from('alerts').select('*', { count: 'exact', head: true });
-      if (!fullLoad) cq = cq.not('severity', 'ilike', 'baja');
-      const { count } = await cq;
+      const { count } = await db.from('alerts').select('*', { count: 'exact', head: true });
       if (count) {
         window._bdTotalCount = count;
         updateBDCountDisplay(count);
@@ -6127,7 +6122,6 @@ async function loadAlerts() {
     const fetchPage = (p) => {
       let req = db.from('alerts').select('*').order('id', { ascending: false })
         .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1);
-      if (!fullLoad) req = req.not('severity', 'ilike', 'baja');
       const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), PAGE_TIMEOUT));
       return Promise.race([req, timeout]).catch(e => ({ data: null, error: e }));
     };
@@ -6419,20 +6413,6 @@ function setFilter(f) {
   document.querySelectorAll('.filter-btn[data-f]').forEach(b =>
     b.classList.toggle('active', b.dataset.f === f)
   );
-  // S132: 'all' and 'baja' need full dataset — reload if not already loaded
-  const needsFull = (f === 'all' || f === 'baja');
-  const hasFull = (window._bdFullLoad === true);
-  const hasSignal = (window._bdFullLoad === false || window._bdFullLoad === undefined);
-  if (needsFull && !hasFull) {
-    window._bdFullLoad = true;
-    loadAlerts();
-    return;
-  }
-  if (!needsFull && hasFull) {
-    window._bdFullLoad = false;
-    loadAlerts();
-    return;
-  }
   render();
 }
 

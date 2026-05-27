@@ -3620,6 +3620,19 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')">🇺🇸 LISTA ENGEL</button>
   </div>
 
+  <!-- Source filter bar — S134 -->
+  <div class="controls-bar" style="margin-top:6px; gap:6px;">
+    <span style="color:var(--muted);font-size:11px;letter-spacing:.06em;align-self:center;margin-right:4px;">FUENTE:</span>
+    <button class="filter-btn active" data-s="all"        onclick="setSourceFilter('all')">TODAS</button>
+    <button class="filter-btn"        data-s="SEFIN"      onclick="setSourceFilter('SEFIN')">SEFIN</button>
+    <button class="filter-btn"        data-s="ONCAE"      onclick="setSourceFilter('ONCAE')">ONCAE</button>
+    <button class="filter-btn"        data-s="IAIP-COVID" onclick="setSourceFilter('IAIP-COVID')">🦠 COVID-19</button>
+    <button class="filter-btn"        data-s="IAIP-ETA"   onclick="setSourceFilter('IAIP-ETA')">🌀 Eta</button>
+    <button class="filter-btn"        data-s="IAIP-2021"  onclick="setSourceFilter('IAIP-2021')">IAIP 2021</button>
+    <button class="filter-btn"        data-s="IAIP-2022"  onclick="setSourceFilter('IAIP-2022')">IAIP 2022</button>
+    <button class="filter-btn"        data-s="IAIP-2023"  onclick="setSourceFilter('IAIP-2023')">IAIP 2023</button>
+  </div>
+
   <!-- Risk scoring legend -->
   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 4px;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text-dim);">
     <span style="letter-spacing:.06em;opacity:0.6;margin-right:4px;">PUNTAJE DE RIESGO:</span>
@@ -5950,6 +5963,7 @@ try {
 let allAlerts      = [];    // Background cross-reference dataset (Engel/RedFlag/News)
 let activeFilter   = 'all'; // S132: server-side pagination — 'all' loads instantly
 let activePattern  = 'all'; // Active pattern filter
+let activeSource   = 'all'; // S134: data_source filter (SEFIN/ONCAE/IAIP-*)
 let searchQuery    = '';    // Global search — proveedor, entidad, ID
 let selectedSev    = null;  // Severity selected in modal form
 let currentPage    = 0;     // Current pagination page (0-indexed)
@@ -6194,9 +6208,18 @@ async function fetchAndRender(page) {
   }
 
   let query = db.from('alerts')
-    .select('*')
+    .select('*', activeSource !== 'all' ? { count: 'exact' } : undefined)
     .order('id', { ascending: false })
     .range(offset, offset + ALERTS_PER_PAGE - 1);
+
+  // Source filter — server-side (S134)
+  if (activeSource === 'SEFIN') {
+    query = query.ilike('data_source', '%SEFIN%');
+  } else if (activeSource === 'ONCAE') {
+    query = query.ilike('data_source', '%ONCAE%');
+  } else if (activeSource !== 'all') {
+    query = query.eq('data_source', activeSource); // IAIP-COVID, IAIP-ETA, IAIP-2021/2/3
+  }
 
   // Severity filter — server-side
   if (activeFilter === 'signal') {
@@ -6230,8 +6253,11 @@ async function fetchAndRender(page) {
 
   _currentPageData  = data || [];
   // Use cached stats for total — avoids expensive COUNT(*) on every page fetch
+  // Exception: when source filter active, use exact count returned by query (S134)
   const cs = _cachedStats || {};
-  if (activeFilter === 'all')     _currentPageTotal = cs.total  || 0;
+  if (activeSource !== 'all' && count != null) {
+    _currentPageTotal = count; // Exact count from Supabase when source filtered
+  } else if (activeFilter === 'all')     _currentPageTotal = cs.total  || 0;
   else if (activeFilter === 'signal') _currentPageTotal = (cs.critica||0) + (cs.alta||0) + (cs.media||0);
   else if (activeFilter === 'critica') _currentPageTotal = cs.critica || 0;
   else if (activeFilter === 'alta')    _currentPageTotal = cs.alta    || 0;
@@ -6510,6 +6536,15 @@ function setPatternFilter(p) {
     b.classList.toggle('active', b.dataset.p === p)
   );
   fetchAndRender(0); // S132: server-side filter (ENGEL handled inside fetchAndRender)
+}
+
+function setSourceFilter(s) {
+  activeSource = s;
+  currentPage = 0;
+  document.querySelectorAll('.filter-btn[data-s]').forEach(b =>
+    b.classList.toggle('active', b.dataset.s === s)
+  );
+  fetchAndRender(0); // S134: server-side source filter
 }
 
 function setPage(n) {

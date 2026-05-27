@@ -4968,13 +4968,16 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- Tabla triage -->
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Denuncias Entrantes — Triage IA</span>
+          <span class="card-title">Denuncias Ciudadanas</span>
           <span class="card-badge" style="color:var(--purple);border-color:rgba(168,85,247,0.3);background:var(--purple-dim);" id="mf-canal-status">● Canal Activo</span>
+        </div>
+        <div style="padding:10px 16px 0;display:flex;gap:6px;flex-wrap:wrap;" id="mf-filtros-bar">
+          <!-- chips inyectados por JS -->
         </div>
         <div class="card-body" style="padding:0;">
           <table class="alert-table">
             <thead>
-              <tr><th>ID</th><th>Canal</th><th>Resumen</th><th>Score IA</th><th>Corrobora BD</th><th>Acción</th></tr>
+              <tr><th>ID</th><th>Canal</th><th>Resumen</th><th>Score IA</th><th>Estado</th><th>Acc.</th></tr>
             </thead>
             <tbody id="mf-triage-tbody">
               <tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Cargando denuncias...</td></tr>
@@ -23701,10 +23704,53 @@ function mfScoreBadge(score) {
 }
 
 function mfAccionBtn(d) {
-  if (d.accion === 'escalar')    return `<button class="btn-mp" style="background:rgba(168,85,247,0.15);color:var(--purple);border-color:rgba(168,85,247,0.35);">📤 PGR</button>`;
-  if (d.accion === 'investigar') return `<span class="severity alta" style="cursor:default;">Investigar</span>`;
-  return `<span class="severity baja" style="cursor:default;">Archivar</span>`;
+  // Botón cross-reference alerts por entidad
+  const xref = d.entidad ? `<button onclick="mfVerEnBD('${d.entidad.replace(/'/g,"\\'")}')" title="Ver contratos de esta entidad" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.2);border-radius:6px;padding:3px 8px;font-size:10px;cursor:pointer;margin-bottom:4px;">🔍 BD</button>` : '';
+  return `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">${xref}<select onchange="mfCambiarEstado(${d.id},this.value)" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:3px 6px;font-size:10px;color:var(--text);outline:none;cursor:pointer;" title="Cambiar estado">
+    <option value="nuevo" ${d.estado==='nuevo'?'selected':''}>Nuevo</option>
+    <option value="en_revision" ${d.estado==='en_revision'?'selected':''}>En revisión</option>
+    <option value="investigando" ${d.estado==='investigando'?'selected':''}>Investigando</option>
+    <option value="cerrado" ${d.estado==='cerrado'?'selected':''}>Cerrado</option>
+    <option value="descartado" ${d.estado==='descartado'?'selected':''}>Descartado</option>
+  </select></div>`;
 }
+
+function mfEstadoBadge(estado) {
+  const map = {
+    'nuevo':        { color:'var(--electric)',  bg:'rgba(0,200,255,0.1)',   label:'🆕 Nuevo' },
+    'en_revision':  { color:'var(--amber)',      bg:'rgba(255,171,0,0.1)',   label:'🔍 En revisión' },
+    'investigando': { color:'var(--purple)',     bg:'rgba(168,85,247,0.1)',  label:'◈ Investigando' },
+    'cerrado':      { color:'var(--green)',      bg:'rgba(0,230,118,0.1)',   label:'✓ Cerrado' },
+    'descartado':   { color:'var(--text-dim)',   bg:'rgba(120,139,168,0.1)', label:'✕ Descartado' },
+  };
+  const s = map[estado] || map['nuevo'];
+  return `<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:${s.bg};color:${s.color};">${s.label}</span>`;
+}
+
+async function mfCambiarEstado(id, nuevoEstado) {
+  try {
+    const { error } = await db.from('denuncias').update({ estado: nuevoEstado, actualizado_en: new Date().toISOString() }).eq('id', id);
+    if (error) throw error;
+    // Refrescar silenciosamente
+    renderModuloF();
+  } catch(e) {
+    console.error('Error cambiando estado:', e.message);
+  }
+}
+
+function mfVerEnBD(entidad) {
+  // Filtrar contratos por entidad en el panel principal
+  hideModuloFPanel();
+  setTimeout(() => {
+    const searchInput = document.getElementById('searchInput') || document.getElementById('globalSearch');
+    if (searchInput) {
+      searchInput.value = entidad;
+      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }, 300);
+}
+
+let _mfEstadoFiltro = '';
 
 function mfRenderTabla(denuncias) {
   const total = denuncias.length || 1;
@@ -23723,14 +23769,31 @@ function mfRenderTabla(denuncias) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Sin denuncias registradas</td></tr>';
     return;
   }
+  // Inyectar filtros chips
+  const filtrosBar = document.getElementById('mf-filtros-bar');
+  if (filtrosBar) {
+    const estados = [
+      { val:'', label:'Todas' },
+      { val:'nuevo', label:'🆕 Nuevo' },
+      { val:'en_revision', label:'🔍 En revisión' },
+      { val:'investigando', label:'◈ Investigando' },
+      { val:'cerrado', label:'✓ Cerrado' },
+      { val:'descartado', label:'✕ Descartado' },
+    ];
+    filtrosBar.innerHTML = estados.map(e =>
+      `<button onclick="_mfEstadoFiltro='${e.val}';renderModuloF();" style="padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:1px solid ${_mfEstadoFiltro===e.val?'rgba(168,85,247,0.5)':'rgba(255,255,255,0.1)'};background:${_mfEstadoFiltro===e.val?'rgba(168,85,247,0.15)':'rgba(255,255,255,0.04)'};color:${_mfEstadoFiltro===e.val?'var(--purple)':'var(--text-dim)'};">${e.label}</button>`
+    ).join('');
+  }
+
   tbody.innerHTML = denuncias.map(d => {
     const c = MF_CANAL_COLORS[d.canal] || MF_CANAL_COLORS['WEB'];
+    const emailIcon = d.email_ciudadano ? `<span title="${d.email_ciudadano}" style="font-size:10px;margin-left:4px;cursor:help;">📧</span>` : '';
     return `<tr>
-      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${d.folio}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${d.folio}${emailIcon}</td>
       <td><span style="font-size:10px;background:${c.bg};color:${c.color};border:1px solid ${c.border};padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${d.canal}</span></td>
-      <td style="font-size:12px;">${d.resumen}</td>
+      <td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${d.resumen}">${d.resumen}</td>
       <td>${mfScoreBadge(d.score_ia)}</td>
-      <td style="font-size:11px;font-weight:600;color:${d.score_ia>=75?'var(--green)':'var(--amber)'};">${d.corrobora_bd}</td>
+      <td>${mfEstadoBadge(d.estado)}</td>
       <td>${mfAccionBtn(d)}</td>
     </tr>`;
   }).join('');
@@ -23756,11 +23819,9 @@ async function renderModuloF() {
   const tbody = document.getElementById('mf-triage-tbody');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Cargando...</td></tr>';
   try {
-    const { data, error } = await db
-      .from('denuncias')
-      .select('*')
-      .order('creado_en', { ascending: false })
-      .limit(50);
+    let q = db.from('denuncias').select('*').order('creado_en', { ascending: false }).limit(100);
+    if (_mfEstadoFiltro) q = q.eq('estado', _mfEstadoFiltro);
+    const { data, error } = await q;
     if (error) throw error;
     mfRenderTabla(data || []);
   } catch(e) {

@@ -6981,11 +6981,12 @@ function startRealtime() {
       event:  'INSERT',
       schema: 'public',
       table:  'alerts'
-    }, payload => {
+    }, async payload => {
       console.log('🔴 Realtime INSERT received:', payload.new.alert_id);
-      // Prepend to local state and re-render instantly
-      allAlerts.unshift(payload.new);
-      render();
+      // S132: refresh stats + first page from server (server-side pagination)
+      const { data: stats } = await db.rpc('get_alert_stats').catch(() => ({ data: null }));
+      if (stats) { _cachedStats = stats; window._cachedStats = stats; window._bdFullDBCount = stats.total; }
+      fetchAndRender(0);
       showToast('🔴 Nueva alerta recibida en tiempo real');
     })
     .subscribe(status => {

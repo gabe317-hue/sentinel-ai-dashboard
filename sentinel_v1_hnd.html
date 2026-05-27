@@ -6194,7 +6194,7 @@ async function fetchAndRender(page) {
   }
 
   let query = db.from('alerts')
-    .select('*', { count: 'estimated' })
+    .select('*')
     .order('id', { ascending: false })
     .range(offset, offset + ALERTS_PER_PAGE - 1);
 
@@ -6229,7 +6229,15 @@ async function fetchAndRender(page) {
   }
 
   _currentPageData  = data || [];
-  _currentPageTotal = count || 0;
+  // Use cached stats for total — avoids expensive COUNT(*) on every page fetch
+  const cs = _cachedStats || {};
+  if (activeFilter === 'all')     _currentPageTotal = cs.total  || 0;
+  else if (activeFilter === 'signal') _currentPageTotal = (cs.critica||0) + (cs.alta||0) + (cs.media||0);
+  else if (activeFilter === 'critica') _currentPageTotal = cs.critica || 0;
+  else if (activeFilter === 'alta')    _currentPageTotal = cs.alta    || 0;
+  else if (activeFilter === 'media')   _currentPageTotal = cs.media   || 0;
+  else if (activeFilter === 'baja')    _currentPageTotal = cs.baja    || 0;
+  else _currentPageTotal = data ? data.length : 0;
 
   // ENGEL cross-reference filter (client-side, needs background data)
   if (activePattern === 'ENGEL') {

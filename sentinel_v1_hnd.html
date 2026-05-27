@@ -6283,7 +6283,7 @@ async function _loadCrossReferenceData() {
         if (r.status === 'fulfilled' && r.value.data) all = all.concat(r.value.data);
       }
       batchStart += BATCH_SIZE;
-      await new Promise(r => setTimeout(r, 150)); // S133: increased 30→150ms to throttle DB load
+      await new Promise(r => setTimeout(r, 50)); // S133: 50ms between batches — safe but fast
     }
 
     allAlerts = _applyFraccionamientoScrub(_applyAlertsFilters(all));
@@ -16313,7 +16313,11 @@ function switchTop10Mode(mode) {
 async function renderTop5() {
   const body = document.getElementById('top5Body');
   if (!allAlerts || !allAlerts.length) {
-    body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Datos aún cargando — intenta en unos segundos.</div>';
+    body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">⏳ Cargando datos en segundo plano… espera unos segundos.</div>';
+    // S133: auto-retry every 2s until data is ready
+    const retry = setInterval(() => {
+      if (allAlerts && allAlerts.length) { clearInterval(retry); renderTop5(); }
+    }, 2000);
     return;
   }
   body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Calculando análisis multi-dimensional…</div>';

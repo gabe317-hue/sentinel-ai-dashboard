@@ -6124,6 +6124,23 @@ async function loadAlerts() {
       window._bdFullDBCount = stats.total;
       window._bdFinalCount  = stats.total;
       updateBDCountDisplay(stats.total, stats.total);
+      console.log('✅ get_alert_stats RPC OK — total:', stats.total);
+    } else {
+      // Fallback: RPC not available — use direct count query
+      console.warn('⚠️ get_alert_stats RPC failed:', statsErr?.message, '— falling back to COUNT');
+      const { count: fallbackCount, error: cntErr } = await db.from('alerts')
+        .select('*', { count: 'exact', head: true });
+      if (!cntErr && fallbackCount) {
+        _cachedStats = { total: fallbackCount, critica: 0, alta: 0, media: 0, baja: 0,
+          monto_total: 0, monto_critica: 0, monto_alta: 0, monto_media: 0, monto_baja: 0 };
+        window._cachedStats   = _cachedStats;
+        window._bdTotalCount  = fallbackCount;
+        window._bdFullDBCount = fallbackCount;
+        updateBDCountDisplay(fallbackCount, fallbackCount);
+        console.log('✅ Fallback COUNT OK — total:', fallbackCount);
+      } else {
+        console.error('❌ Fallback COUNT also failed:', cntErr?.message);
+      }
     }
     setProgress(40);
 
@@ -16656,7 +16673,7 @@ function poUpdateIndicators() {
   try {
     // S132: use _cachedStats for DB-accurate counts (no client-side array scan needed)
     const cs = _cachedStats || {};
-    const dbTotal = cs.total || window._bdFullDBCount || window._bdTotalCount || 0;
+    const dbTotal = cs.total || window._bdFullDBCount || window._bdTotalCount || _currentPageTotal || 0;
     if (!dbTotal) return;
     const crit = cs.critica || 0;
     const alto = cs.alta    || 0;

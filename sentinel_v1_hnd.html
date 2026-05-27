@@ -6130,10 +6130,10 @@ async function loadAlerts() {
       console.warn('⚠️ get_alert_stats RPC failed:', statsErr?.message, '— falling back to parallel counts');
       const [totalR, critR, altaR, mediaR, bajaR] = await Promise.all([
         db.from('alerts').select('*', { count: 'exact', head: true }),
-        db.from('alerts').select('*', { count: 'exact', head: true }).or('severity.ilike.cr_tica,severity.ilike.critica'),
-        db.from('alerts').select('*', { count: 'exact', head: true }).ilike('severity', 'alta'),
-        db.from('alerts').select('*', { count: 'exact', head: true }).ilike('severity', 'media'),
-        db.from('alerts').select('*', { count: 'exact', head: true }).ilike('severity', 'baja'),
+        db.from('alerts').select('*', { count: 'exact', head: true }).in('severity', ['Crítica','crítica','CRÍTICA','Critica','critica']),
+        db.from('alerts').select('*', { count: 'exact', head: true }).in('severity', ['Alta','alta','ALTA']),
+        db.from('alerts').select('*', { count: 'exact', head: true }).in('severity', ['Media','media','MEDIA']),
+        db.from('alerts').select('*', { count: 'exact', head: true }).in('severity', ['Baja','baja','BAJA']),
       ]);
       const tc = totalR.count || 0;
       _cachedStats = {
@@ -6169,9 +6169,8 @@ async function loadAlerts() {
     loadBorradoresAuto();
     if (window.location.hash === '#ejecutiva') showVistaEjecutiva();
 
-    // ── 4. Background load for Engel/RedFlag/News cross-references ──
-    // Non-blocking — UI is already fully interactive above
-    setTimeout(() => _loadCrossReferenceData(), 500);
+    // ── 4. Background cross-reference load disabled on free-tier DB ──
+    // Re-enable once severity index exists: setTimeout(() => _loadCrossReferenceData(), 500);
 
     console.log('✅ loadAlerts complete — stats from RPC, table from server-side pagination');
 
@@ -6203,7 +6202,7 @@ async function fetchAndRender(page) {
   if (activeFilter === 'signal') {
     query = query.not('severity', 'ilike', 'baja');
   } else if (activeFilter === 'critica') {
-    query = query.or('severity.ilike.cr_tica,severity.ilike.critica');
+    query = query.in('severity', ['Crítica','crítica','CRÍTICA','Critica','critica']);
   } else if (activeFilter !== 'all') {
     query = query.ilike('severity', activeFilter);
   }

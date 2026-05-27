@@ -6169,8 +6169,8 @@ async function loadAlerts() {
     loadBorradoresAuto();
     if (window.location.hash === '#ejecutiva') showVistaEjecutiva();
 
-    // ── 4. Background cross-reference load disabled on free-tier DB ──
-    // Re-enable once severity index exists: setTimeout(() => _loadCrossReferenceData(), 500);
+    // ── 4. Background load for Engel/RedFlag/News cross-references ──
+    setTimeout(() => _loadCrossReferenceData(), 500);
 
     console.log('✅ loadAlerts complete — stats from RPC, table from server-side pagination');
 
@@ -6200,7 +6200,7 @@ async function fetchAndRender(page) {
 
   // Severity filter — server-side
   if (activeFilter === 'signal') {
-    query = query.not('severity', 'ilike', 'baja');
+    query = query.in('severity', ['Crítica','crítica','CRÍTICA','Critica','critica','Alta','alta','ALTA','Media','media','MEDIA']);
   } else if (activeFilter === 'critica') {
     query = query.in('severity', ['Crítica','crítica','CRÍTICA','Critica','critica']);
   } else if (activeFilter !== 'all') {
@@ -6255,7 +6255,7 @@ async function _loadCrossReferenceData() {
     const BATCH_SIZE = 6;
     const { count }  = await db.from('alerts')
       .select('*', { count: 'exact', head: true })
-      .not('severity', 'ilike', 'baja');
+      .in('severity', ['Crítica','crítica','CRÍTICA','Critica','critica','Alta','alta','ALTA','Media','media','MEDIA']);
     if (!count) return;
 
     const totalPages = Math.ceil(count / PAGE_SIZE);

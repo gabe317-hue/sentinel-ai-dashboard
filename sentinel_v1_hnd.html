@@ -6194,7 +6194,7 @@ async function fetchAndRender(page) {
   }
 
   let query = db.from('alerts')
-    .select('*', { count: 'exact' })
+    .select('*', { count: 'estimated' })
     .order('id', { ascending: false })
     .range(offset, offset + ALERTS_PER_PAGE - 1);
 

@@ -3599,8 +3599,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- Severity filter bar -->
   <div class="controls-bar">
-    <button class="filter-btn"        data-f="all"     onclick="setFilter('all')">TODAS</button>
-    <button class="filter-btn active" data-f="signal"  onclick="setFilter('signal')">⚡ SEÑAL</button>
+    <button class="filter-btn active" data-f="all"     onclick="setFilter('all')">TODAS</button>
+    <button class="filter-btn"        data-f="signal"  onclick="setFilter('signal')">⚡ SEÑAL</button>
     <button class="filter-btn"        data-f="critica" onclick="setFilter('critica')">CRÍTICAS</button>
     <button class="filter-btn"        data-f="alta"    onclick="setFilter('alta')">ALTAS</button>
     <button class="filter-btn"        data-f="media"   onclick="setFilter('media')">MEDIAS</button>
@@ -5947,13 +5947,20 @@ try {
 // ════════════════════════════════════════════════════════════
 // APP STATE
 // ════════════════════════════════════════════════════════════
-let allAlerts      = [];    // Full dataset from Supabase
-let activeFilter   = 'signal'; // Active severity filter (default: CRÍTICA+ALTA+MEDIA = señal real)
+let allAlerts      = [];    // Background cross-reference dataset (Engel/RedFlag/News)
+let activeFilter   = 'all'; // S132: server-side pagination — 'all' loads instantly
 let activePattern  = 'all'; // Active pattern filter
 let searchQuery    = '';    // Global search — proveedor, entidad, ID
 let selectedSev    = null;  // Severity selected in modal form
 let currentPage    = 0;     // Current pagination page (0-indexed)
 const ALERTS_PER_PAGE = 50; // Rows per page
+
+// S132 — Server-side pagination globals
+let _cachedStats      = null; // Aggregate stats from get_alert_stats() RPC
+let _currentPageData  = [];   // Current 50-row page fetched from Supabase
+let _currentPageTotal = 0;    // Total records matching current filter
+let _allAlertsReady   = false; // True when background cross-reference load is done
+let _searchDebounce   = null;  // Debounce timer for search input
 
 // ════════════════════════════════════════════════════════════
 // normSev() — CRITICAL FIX FOR STAT CARD BUG
@@ -6092,125 +6099,174 @@ async function _loadRemainingAlertsBackground() {
   }
 }
 
+// ════════════════════════════════════════════════════════════
+// S132 — SERVER-SIDE PAGINATION ARCHITECTURE
+// Problem: 525K records × ~500ms/batch = 65s load. Unacceptable.
+// Solution: Stats from DB aggregate RPC (instant). Table pages
+//           fetched on demand from Supabase (50 rows, ~200ms each).
+//           Cross-reference indexes (Engel/RedFlag/News) load in background.
+// ════════════════════════════════════════════════════════════
+
 async function loadAlerts() {
-  // S126 — Full load, all records, with per-page timeout + retry.
-  // Root cause of freeze: Promise.all with 8 concurrent requests → one slow/hung request blocked everything.
-  // Fix: Promise.allSettled (never hangs) + 12s timeout per page + automatic retry of failed pages.
-  // Scales naturally as records grow — paginator handles any size.
+  const progressBar  = document.getElementById('load-progress-bar');
+  const progressWrap = document.getElementById('load-progress-wrap');
+  const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct,98)+'%'; };
+  if (progressWrap) progressWrap.style.display = 'block';
+  setProgress(10);
+
   try {
-    const PAGE_SIZE    = 1000;
-    const BATCH_SIZE   = 4;    // conservative — avoids Supabase connection pool exhaustion
-    const PAGE_TIMEOUT = 12000; // 12s max per page — if hung, skip and retry
-
-    const progressBar  = document.getElementById('load-progress-bar');
-    const progressWrap = document.getElementById('load-progress-wrap');
-    const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
-    if (progressWrap) { progressWrap.style.display = 'block'; }
-    setProgress(2);
-
-    // S132 PERFORMANCE FIX:
-    // Loading 525K records takes ~65s (525 pages × 4 concurrent × ~500ms).
-    // Solution: load only CRÍTICA+ALTA+MEDIA records (~41K) by default.
-    // These are the only actionable records for fraud detection.
-    // BAJA records (484K) are low-risk noise — excluded from default view.
-    // Full DB count is fetched separately and shown in the badge.
-
-    // Fetch both counts in parallel: signal (non-BAJA) and total DB
-    let approxPages = 42;
-    try {
-      const [signalRes, totalRes] = await Promise.all([
-        db.from('alerts').select('*', { count: 'exact', head: true }).not('severity', 'ilike', 'baja'),
-        db.from('alerts').select('*', { count: 'exact', head: true })
-      ]);
-      const signalCount = signalRes.count || 0;
-      const totalCount  = totalRes.count  || 0;
-      window._bdSignalCount = signalCount;
-      window._bdFullDBCount = totalCount;
-      approxPages = Math.ceil(signalCount / PAGE_SIZE);
-      updateBDCountDisplay(signalCount, totalCount);
-    } catch(_) {}
-    setProgress(5);
-
-    const fetchPage = (p) => {
-      let req = db.from('alerts').select('*').order('id', { ascending: false })
-        .not('severity', 'ilike', 'baja')
-        .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1);
-      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), PAGE_TIMEOUT));
-      return Promise.race([req, timeout]).catch(e => ({ data: null, error: e }));
-    };
-
-    let all = [];
-    let batchStart = 0;
-    let done = false;
-    let pagesLoaded = 0;
-    const failedPages = [];
-
-    while (!done) {
-      const pageNums = [];
-      for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) pageNums.push(p);
-
-      // allSettled: even if one page times out, others succeed — never freezes
-      const results = await Promise.allSettled(pageNums.map(p => fetchPage(p)));
-
-      for (let i = 0; i < results.length; i++) {
-        const r = results[i];
-        const val = r.status === 'fulfilled' ? r.value : { data: null, error: r.reason };
-        if (!val.error && val.data) {
-          all = all.concat(val.data);
-          pagesLoaded++;
-          if (val.data.length < PAGE_SIZE) done = true;
-        } else {
-          failedPages.push(pageNums[i]);
-          console.warn(`⚠️ Page ${pageNums[i]} failed (${val.error?.message}) — will retry`);
-        }
-      }
-
-      setProgress(5 + Math.round((pagesLoaded / approxPages) * 90));
-      batchStart += BATCH_SIZE;
-      if (batchStart > approxPages + BATCH_SIZE) done = true; // safety stop
+    // ── 1. Stats from RPC — one DB query, returns all counts+montos instantly ──
+    const { data: stats, error: statsErr } = await db.rpc('get_alert_stats');
+    if (!statsErr && stats) {
+      _cachedStats = stats;
+      window._cachedStats   = stats;
+      window._bdTotalCount  = stats.total;
+      window._bdFullDBCount = stats.total;
+      window._bdFinalCount  = stats.total;
+      updateBDCountDisplay(stats.total, stats.total);
     }
+    setProgress(40);
 
-    // Retry failed pages one at a time
-    if (failedPages.length) {
-      console.log(`Retrying ${failedPages.length} failed pages...`);
-      for (const p of failedPages) {
-        const { data, error } = await fetchPage(p);
-        if (!error && data) { all = all.concat(data); pagesLoaded++; }
-        else console.warn(`⚠️ Page ${p} failed on retry — skipped`);
-      }
-    }
+    // ── 2. Fetch first table page — 50 rows, ~200ms ──
+    await fetchAndRender(0);
+    setProgress(90);
 
     setProgress(100);
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
+    // ── 3. Initialize all other features ──
+    setStatus('connected');
+    hideError();
+    poUpdateIndicators();
+    loadRedFlagsFromSupabase();
+    renderCandidatosDetectados();
+    loadInvestigacionesDB();
+    loadBorradoresAuto();
+    if (window.location.hash === '#ejecutiva') showVistaEjecutiva();
+
+    // ── 4. Background load for Engel/RedFlag/News cross-references ──
+    // Non-blocking — UI is already fully interactive above
+    setTimeout(() => _loadCrossReferenceData(), 500);
+
+    console.log('✅ loadAlerts complete — stats from RPC, table from server-side pagination');
+
+  } catch (err) {
+    console.error('❌ loadAlerts failed:', err.message);
+    showError('Error al cargar contratos: ' + err.message);
+    setStatus('error');
+    if (progressWrap) progressWrap.style.display = 'none';
+  }
+}
+
+// ── Server-side table fetch — called by render triggers ──
+async function fetchAndRender(page) {
+  currentPage = page;
+  const offset = page * ALERTS_PER_PAGE;
+
+  // Show spinner in table while fetching
+  const tbody = document.getElementById('alertTbody');
+  if (tbody && page === 0) {
+    tbody.innerHTML = '<tr class="state-row"><td colspan="10"><span class="spinner"></span>Cargando contratos...</td></tr>';
+  }
+
+  let query = db.from('alerts')
+    .select('*', { count: 'exact' })
+    .order('id', { ascending: false })
+    .range(offset, offset + ALERTS_PER_PAGE - 1);
+
+  // Severity filter — server-side
+  if (activeFilter === 'signal') {
+    query = query.not('severity', 'ilike', 'baja');
+  } else if (activeFilter === 'critica') {
+    query = query.or('severity.ilike.cr_tica,severity.ilike.critica');
+  } else if (activeFilter !== 'all') {
+    query = query.ilike('severity', activeFilter);
+  }
+
+  // Search — server-side
+  if (searchQuery.length >= 2) {
+    const q = searchQuery.replace(/'/g, "''"); // basic escape
+    query = query.or(
+      `proveedor_nombre.ilike.%${q}%,entity_name.ilike.%${q}%,entidad.ilike.%${q}%,description.ilike.%${q}%,contract_id.ilike.%${q}%`
+    );
+  }
+
+  // Pattern filter — server-side (except ENGEL which needs cross-reference index)
+  if (activePattern !== 'all' && activePattern !== 'ENGEL') {
+    query = query.ilike('patterns', `%${activePattern}%`);
+  }
+
+  const { data, count, error } = await query;
+
+  if (error) {
+    console.error('fetchAndRender error:', error.message);
+    if (tbody) tbody.innerHTML = `<tr class="state-row"><td colspan="10">Error: ${error.message}</td></tr>`;
+    return;
+  }
+
+  _currentPageData  = data || [];
+  _currentPageTotal = count || 0;
+
+  // ENGEL cross-reference filter (client-side, needs background data)
+  if (activePattern === 'ENGEL') {
+    if (_allAlertsReady) {
+      _currentPageData  = allAlerts.filter(a => _engelMatchedIds.has(a.alert_id || a.id));
+      _currentPageTotal = _currentPageData.length;
+      // Paginate client-side for ENGEL
+      _currentPageData = _currentPageData.slice(offset, offset + ALERTS_PER_PAGE);
+    } else {
+      if (tbody) tbody.innerHTML = '<tr class="state-row"><td colspan="10">⏳ Índice Engel cargando en segundo plano... intenta en unos segundos.</td></tr>';
+      return;
+    }
+  }
+
+  render();
+}
+
+// ── Background cross-reference loader (Engel/RedFlag/News) ──
+// Loads non-BAJA records asynchronously. UI remains fully interactive.
+async function _loadCrossReferenceData() {
+  try {
+    const PAGE_SIZE  = 1000;
+    const BATCH_SIZE = 6;
+    const { count }  = await db.from('alerts')
+      .select('*', { count: 'exact', head: true })
+      .not('severity', 'ilike', 'baja');
+    if (!count) return;
+
+    const totalPages = Math.ceil(count / PAGE_SIZE);
+    let all = [];
+    let batchStart = 0;
+
+    while (batchStart < totalPages) {
+      const end = Math.min(batchStart + BATCH_SIZE, totalPages);
+      const results = await Promise.allSettled(
+        Array.from({ length: end - batchStart }, (_, i) => batchStart + i).map(p =>
+          db.from('alerts').select('*').order('id', { ascending: false })
+            .not('severity', 'ilike', 'baja')
+            .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
+        )
+      );
+      for (const r of results) {
+        if (r.status === 'fulfilled' && r.value.data) all = all.concat(r.value.data);
+      }
+      batchStart += BATCH_SIZE;
+      await new Promise(r => setTimeout(r, 30)); // yield to UI
+    }
+
     allAlerts = _applyFraccionamientoScrub(_applyAlertsFilters(all));
     window.allAlerts = allAlerts;
-    window._bdTotalCount = allAlerts.length; // usar siempre el conteo filtrado final
-    window._bdFinalCount = allAlerts.length; // señal: filtrado completo, seguro para localStorage
-    updateBDCountDisplay(window._bdTotalCount);
-    console.log(`✅ All alerts loaded: ${allAlerts.length} records (${failedPages.length} retried)`);
+    _allAlertsReady = true;
 
     updateConsultasMetrics(allAlerts);
     buildNewsMatchIndex();
     buildHighRiskIndex();
     buildEngelIndex();
     buildRedFlagIndex();
-    loadRedFlagsFromSupabase();
-    renderCandidatosDetectados();
-    loadInvestigacionesDB();
-    loadBorradoresAuto();
-    setStatus('connected');
-    hideError();
-    render();
     poUpdateIndicators();
-    if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
-
-  } catch (err) {
-    console.error('❌ loadAlerts failed:', err.message);
-    showError('Error al cargar contratos: ' + err.message);
-    setStatus('error');
-    allAlerts = [];
-    render();
+    console.log(`✅ Background cross-reference load: ${allAlerts.length} records`);
+  } catch(e) {
+    console.warn('Background cross-reference load failed:', e.message);
   }
 }
 
@@ -6220,26 +6276,31 @@ async function loadAlerts() {
 // Called after every data change (load, insert, update, delete).
 // ════════════════════════════════════════════════════════════
 function render() {
-  // ── Stat cards ──
-  // normSev() converts 'Crítica' → 'critica', 'Alta' → 'alta', etc.
-  // Without this, 'crítica'.includes('critica') = false → count stays 0
-  const c = { critica: 0, alta: 0, media: 0, baja: 0 };
-  const m = { critica: 0, alta: 0, media: 0, baja: 0 };
-  allAlerts.forEach(a => {
-    const k = normSev(a.severity);
-    if (k in c) { c[k]++; m[k] += Number(a.monto_contrato || 0); }
-  });
-  const totalMonto = Object.values(m).reduce((s, v) => s + v, 0);
+  // ── Stat cards — S132: use _cachedStats from RPC (instant, no client-side iteration) ──
+  const cs = _cachedStats || {};
+  const c = {
+    critica: cs.critica || 0,
+    alta:    cs.alta    || 0,
+    media:   cs.media   || 0,
+    baja:    cs.baja    || 0
+  };
+  const m = {
+    critica: Number(cs.monto_critica || 0),
+    alta:    Number(cs.monto_alta    || 0),
+    media:   Number(cs.monto_media   || 0),
+    baja:    Number(cs.monto_baja    || 0)
+  };
+  const totalMonto = Number(cs.monto_total || 0) || Object.values(m).reduce((s, v) => s + v, 0);
   const fmtL = n => n > 0
     ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
     : 'L —';
   const fmtPct = (n, total) => total > 0 ? (n / total * 100).toFixed(1) + '% del total' : '— %';
 
-  document.getElementById('cnt-total').textContent         = allAlerts.length;
-  document.getElementById('cnt-critica').textContent       = c.critica;
-  document.getElementById('cnt-alta').textContent          = c.alta;
-  document.getElementById('cnt-media').textContent         = c.media;
-  document.getElementById('cnt-baja').textContent          = c.baja;
+  document.getElementById('cnt-total').textContent         = (cs.total || 0).toLocaleString('es-HN');
+  document.getElementById('cnt-critica').textContent       = c.critica.toLocaleString('es-HN');
+  document.getElementById('cnt-alta').textContent          = c.alta.toLocaleString('es-HN');
+  document.getElementById('cnt-media').textContent         = c.media.toLocaleString('es-HN');
+  document.getElementById('cnt-baja').textContent          = c.baja.toLocaleString('es-HN');
   document.getElementById('cnt-monto-total').textContent   = fmtL(totalMonto);
   document.getElementById('cnt-monto-critica').textContent = fmtL(m.critica);
   document.getElementById('cnt-pct-critica').textContent   = fmtPct(m.critica, totalMonto);
@@ -6264,9 +6325,9 @@ function render() {
     _rb('risk-band-budget').textContent = `≈ ${riskPct}% del Presupuesto General de la República (L 309B aprobado 2024)`;
   }
 
-  // ── Freshness indicator ──
-  if (allAlerts.length > 0) {
-    const maxFecha = allAlerts.reduce((max, a) => {
+  // ── Freshness indicator — use first record of current page ──
+  if (_currentPageData.length > 0) {
+    const maxFecha = _currentPageData.reduce((max, a) => {
       const d = a.fecha_contrato || a.created_at || '';
       return d > max ? d : max;
     }, '');
@@ -6274,40 +6335,17 @@ function render() {
     if (freshnessEl) freshnessEl.textContent = maxFecha ? maxFecha.substring(0, 10) : '—';
   }
 
-  // ── Filter for table display ──
-  let filtered = activeFilter === 'all'
-    ? allAlerts
-    : activeFilter === 'signal'
-    ? allAlerts.filter(a => ['crítica','alta','media'].includes(normSev(a.severity)))
-    : allAlerts.filter(a => normSev(a.severity) === activeFilter);
-  if (activePattern !== 'all') {
-    if (activePattern === 'ENGEL') {
-      filtered = filtered.filter(a => _engelMatchedIds.has(a.alert_id || a.id));
-    } else {
-      filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
-    }
-  }
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    filtered = filtered.filter(a =>
-      (a.proveedor_nombre || a.proveedor || '').toLowerCase().includes(q) ||
-      (a.entity_name || a.entidad || '').toLowerCase().includes(q) ||
-      (a.description || '').toLowerCase().includes(q) ||
-      (a.alert_id || a.id || '').toString().toLowerCase().includes(q)
-    );
-  }
-
-  // S132: sort removed — data already ordered id DESC from Supabase (new Date() on 71K records froze JS thread)
+  // ── S132: filter/sort removed — server-side pagination, data pre-filtered by fetchAndRender() ──
+  const filtered = _currentPageData;
 
   document.getElementById('tableCount').textContent =
-    `${filtered.length} de ${allAlerts.length} contratos`;
+    `${_currentPageTotal.toLocaleString('es-HN')} de ${(cs.total || 0).toLocaleString('es-HN')} contratos`;
 
-  // ── Pagination ──
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ALERTS_PER_PAGE));
-  if (currentPage >= totalPages) currentPage = totalPages - 1;
+  // ── Pagination — server-side totals ──
+  const totalPages = Math.max(1, Math.ceil(_currentPageTotal / ALERTS_PER_PAGE));
   const pageStart  = currentPage * ALERTS_PER_PAGE;
-  const pageEnd    = Math.min(pageStart + ALERTS_PER_PAGE, filtered.length);
-  const paged      = filtered.slice(pageStart, pageEnd);
+  const pageEnd    = Math.min(pageStart + ALERTS_PER_PAGE, pageStart + filtered.length);
+  const paged      = filtered; // already the correct page from Supabase
 
   const paginationBar  = document.getElementById('paginationBar');
   const paginationInfo = document.getElementById('paginationInfo');
@@ -6315,9 +6353,9 @@ function render() {
   const btnPrev        = document.getElementById('btnPrevPage');
   const btnNext        = document.getElementById('btnNextPage');
 
-  if (filtered.length > ALERTS_PER_PAGE) {
+  if (_currentPageTotal > ALERTS_PER_PAGE) {
     paginationBar.style.display = '';
-    paginationInfo.textContent  = `Mostrando ${pageStart + 1}–${pageEnd} de ${filtered.length} contratos`;
+    paginationInfo.textContent  = `Mostrando ${pageStart + 1}–${pageEnd} de ${_currentPageTotal.toLocaleString('es-HN')} contratos`;
     paginationPage.textContent  = `Página ${currentPage + 1} de ${totalPages}`;
     btnPrev.disabled = currentPage === 0;
     btnNext.disabled = currentPage >= totalPages - 1;
@@ -6330,7 +6368,7 @@ function render() {
 
   if (paged.length === 0) {
     tbody.innerHTML = `<tr class="state-row"><td colspan="10">
-      ${allAlerts.length === 0
+      ${(cs.total || 0) === 0
         ? 'No hay contratos. Usa el botón ➕ Nueva Alerta para crear el primero.'
         : 'No hay contratos con este filtro.'}
     </td></tr>`;
@@ -6405,8 +6443,12 @@ function render() {
 // ════════════════════════════════════════════════════════════
 function setSearch(val) {
   searchQuery = (val || '').trim();
-  currentPage = 0;
-  render();
+  // S132: debounced server-side fetch (min 2 chars or empty)
+  if (_searchDebounce) clearTimeout(_searchDebounce);
+  _searchDebounce = setTimeout(() => {
+    currentPage = 0;
+    fetchAndRender(0);
+  }, 350);
 }
 
 function clearSearch() {
@@ -6414,7 +6456,7 @@ function clearSearch() {
   currentPage = 0;
   const el = document.getElementById('global-search');
   if (el) el.value = '';
-  render();
+  fetchAndRender(0);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -6426,22 +6468,21 @@ function setFilter(f) {
   document.querySelectorAll('.filter-btn[data-f]').forEach(b =>
     b.classList.toggle('active', b.dataset.f === f)
   );
-  render();
+  fetchAndRender(0); // S132: server-side filter
 }
 
 function setPatternFilter(p) {
   activePattern = p;
-  currentPage = 0; // reset to first page on filter change
+  currentPage = 0;
   document.querySelectorAll('.filter-btn[data-p]').forEach(b =>
     b.classList.toggle('active', b.dataset.p === p)
   );
-  render();
+  fetchAndRender(0); // S132: server-side filter (ENGEL handled inside fetchAndRender)
 }
 
 function setPage(n) {
   currentPage = n;
-  render();
-  // Scroll table into view smoothly
+  fetchAndRender(n); // S132: server-side pagination
   document.getElementById('mainTableContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -16612,10 +16653,15 @@ function updateConsultasMetrics(all) {
 
 function poUpdateIndicators() {
   try {
-    const data = (typeof allAlerts !== 'undefined') ? allAlerts : [];
-    if (!data.length) return;
-    const crit  = data.filter(a => a.severity === 'CRÍTICA').length;
-    const alto  = data.filter(a => a.severity === 'ALTA').length;
+    // S132: use _cachedStats for DB-accurate counts (no client-side array scan needed)
+    const cs = _cachedStats || {};
+    const dbTotal = cs.total || window._bdFullDBCount || window._bdTotalCount || 0;
+    if (!dbTotal) return;
+    const crit = cs.critica || 0;
+    const alto = cs.alta    || 0;
+
+    // Sobrecosto/Engel/OFAC — still from background-loaded allAlerts (pattern matching)
+    const data  = (typeof allAlerts !== 'undefined') ? allAlerts : [];
     const sob   = data.filter(a => {
       const mc = Number(a.monto_contrato||0);
       const budget = Number(a.budget_amount||0);
@@ -16629,9 +16675,7 @@ function poUpdateIndicators() {
     document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
     document.getElementById('po-ind-intl').textContent  = (engel + ofac).toLocaleString('es-HN');
     document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
-    // S132: show full DB count in badge; signal count in indicator
-    const signalTotal = window._bdSignalCount || window._bdTotalCount || data.length;
-    const dbTotal     = window._bdFullDBCount || signalTotal;
+    const signalTotal = (crit + alto + (cs.media || 0)) || window._bdSignalCount || dbTotal;
     document.getElementById('po-ind-total').textContent = signalTotal.toLocaleString('es-HN');
     document.getElementById('po-db-badge').textContent  = dbTotal.toLocaleString('es-HN') + ' contratos monitoreados';
     const displayTotal = dbTotal;

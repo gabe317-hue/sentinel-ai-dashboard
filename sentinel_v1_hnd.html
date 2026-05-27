@@ -6126,21 +6126,29 @@ async function loadAlerts() {
       updateBDCountDisplay(stats.total, stats.total);
       console.log('✅ get_alert_stats RPC OK — total:', stats.total);
     } else {
-      // Fallback: RPC not available — use direct count query
-      console.warn('⚠️ get_alert_stats RPC failed:', statsErr?.message, '— falling back to COUNT');
-      const { count: fallbackCount, error: cntErr } = await db.from('alerts')
-        .select('*', { count: 'exact', head: true });
-      if (!cntErr && fallbackCount) {
-        _cachedStats = { total: fallbackCount, critica: 0, alta: 0, media: 0, baja: 0,
-          monto_total: 0, monto_critica: 0, monto_alta: 0, monto_media: 0, monto_baja: 0 };
-        window._cachedStats   = _cachedStats;
-        window._bdTotalCount  = fallbackCount;
-        window._bdFullDBCount = fallbackCount;
-        updateBDCountDisplay(fallbackCount, fallbackCount);
-        console.log('✅ Fallback COUNT OK — total:', fallbackCount);
-      } else {
-        console.error('❌ Fallback COUNT also failed:', cntErr?.message);
-      }
+      // Fallback: RPC not available — 5 parallel HEAD queries (count only, no data transfer)
+      console.warn('⚠️ get_alert_stats RPC failed:', statsErr?.message, '— falling back to parallel counts');
+      const [totalR, critR, altaR, mediaR, bajaR] = await Promise.all([
+        db.from('alerts').select('*', { count: 'exact', head: true }),
+        db.from('alerts').select('*', { count: 'exact', head: true }).or('severity.ilike.cr_tica,severity.ilike.critica'),
+        db.from('alerts').select('*', { count: 'exact', head: true }).ilike('severity', 'alta'),
+        db.from('alerts').select('*', { count: 'exact', head: true }).ilike('severity', 'media'),
+        db.from('alerts').select('*', { count: 'exact', head: true }).ilike('severity', 'baja'),
+      ]);
+      const tc = totalR.count || 0;
+      _cachedStats = {
+        total:   tc,
+        critica: critR.count  || 0,
+        alta:    altaR.count  || 0,
+        media:   mediaR.count || 0,
+        baja:    bajaR.count  || 0,
+        monto_total: 0, monto_critica: 0, monto_alta: 0, monto_media: 0, monto_baja: 0
+      };
+      window._cachedStats   = _cachedStats;
+      window._bdTotalCount  = tc;
+      window._bdFullDBCount = tc;
+      updateBDCountDisplay(tc, tc);
+      console.log('✅ Fallback counts OK — total:', tc, 'critica:', _cachedStats.critica, 'alta:', _cachedStats.alta);
     }
     setProgress(40);
 

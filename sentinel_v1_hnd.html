@@ -6170,7 +6170,7 @@ async function loadAlerts() {
     if (window.location.hash === '#ejecutiva') showVistaEjecutiva();
 
     // ── 4. Background load for Engel/RedFlag/News cross-references ──
-    setTimeout(() => _loadCrossReferenceData(), 500);
+    setTimeout(() => _loadCrossReferenceData(), 3000); // S133: 500→3000ms, let table render first
 
     console.log('✅ loadAlerts complete — stats from RPC, table from server-side pagination');
 
@@ -6260,7 +6260,7 @@ async function fetchAndRender(page) {
 async function _loadCrossReferenceData() {
   try {
     const PAGE_SIZE  = 1000;
-    const BATCH_SIZE = 6;
+    const BATCH_SIZE = 2; // S133: reduced from 6 → 2 to avoid DB overload on 166K records
     const { count }  = await db.from('alerts')
       .select('*', { count: 'exact', head: true })
       .in('severity', ['Crítica','crítica','CRÍTICA','Critica','critica','Alta','alta','ALTA','Media','media','MEDIA']);
@@ -6283,7 +6283,7 @@ async function _loadCrossReferenceData() {
         if (r.status === 'fulfilled' && r.value.data) all = all.concat(r.value.data);
       }
       batchStart += BATCH_SIZE;
-      await new Promise(r => setTimeout(r, 30)); // yield to UI
+      await new Promise(r => setTimeout(r, 150)); // S133: increased 30→150ms to throttle DB load
     }
 
     allAlerts = _applyFraccionamientoScrub(_applyAlertsFilters(all));

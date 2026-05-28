@@ -877,7 +877,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   padding: 6px 10px; background: var(--navy); border-radius: 6px;
   font-size: 12px;
 }
-.adp-hi-id   { color: var(--electric); font-family: 'JetBrains Mono', monospace; width: 60px; flex-shrink: 0; }
+.adp-hi-id   { color: var(--electric); font-family: 'JetBrains Mono', monospace; width: 90px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adp-hi-sev  { font-size: 10px; font-weight: 600; letter-spacing: .04em; flex-shrink: 0; width: 54px; }
 .adp-hi-desc { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 
@@ -8264,7 +8264,7 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   document.getElementById('adp-vendor-history').innerHTML = vendorAlerts.length
     ? vendorAlerts.map(x => `
         <div class="adp-history-item">
-          <span class="adp-hi-id">${x.alert_id || '#' + x.id}</span>
+          <span class="adp-hi-id" title="${(x.alert_id || '#' + x.id)}">${_shortId(x.alert_id || '#' + x.id)}</span>
           <span class="adp-hi-sev" style="color:${_sevColor(x.severity)}">${x.severity || '—'}</span>
           <span class="adp-hi-desc" title="${(x.description||'').replace(/"/g,'&quot;')}">${(x.description||'—').substring(0,80)}</span>
         </div>`)
@@ -8286,7 +8286,7 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   document.getElementById('adp-entity-history').innerHTML = entityAlerts.length
     ? entityAlerts.map(x => `
         <div class="adp-history-item">
-          <span class="adp-hi-id">${x.alert_id || '#' + x.id}</span>
+          <span class="adp-hi-id" title="${(x.alert_id || '#' + x.id)}">${_shortId(x.alert_id || '#' + x.id)}</span>
           <span class="adp-hi-sev" style="color:${_sevColor(x.severity)}">${x.severity || '—'}</span>
           <span class="adp-hi-desc" title="${(x.description||'').replace(/"/g,'&quot;')}">${(x.description||'—').substring(0,80)}</span>
         </div>`)
@@ -8487,6 +8487,12 @@ ${sobrecostoHtml}
   w.document.close();
 }
 
+function _shortId(id) {
+  if (!id) return '—';
+  // IAIP records have long hash IDs — show prefix + short hash
+  if (id.startsWith('IAIP-') && id.length > 12) return 'IAIP-' + id.substring(5, 11) + '…';
+  return id.length > 14 ? id.substring(0, 13) + '…' : id;
+}
 function _sevColor(s) {
   const n = normSev(s);
   if (n.includes('critica')) return 'var(--red)';

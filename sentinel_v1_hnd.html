@@ -20102,8 +20102,20 @@ function renderEjecutiva() {
   // Uses the global `allAlerts` array already loaded by loadAlerts()
   if (!window.allAlerts || window.allAlerts.length === 0) {
     document.getElementById('execSubtitle').textContent = 'Cargando datos desde Supabase...';
+    // Auto-retry cada 1.5s hasta que allAlerts esté listo (S137)
+    if (!window._execRetryInterval) {
+      window._execRetryInterval = setInterval(() => {
+        if (window.allAlerts && window.allAlerts.length > 0) {
+          clearInterval(window._execRetryInterval);
+          window._execRetryInterval = null;
+          renderEjecutiva();
+        }
+      }, 1500);
+    }
     return;
   }
+  // Limpiar retry si ya cargó
+  if (window._execRetryInterval) { clearInterval(window._execRetryInterval); window._execRetryInterval = null; }
   const alerts = window.allAlerts;
   const normSevLocal = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'');
 

@@ -5404,7 +5404,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="fuente-header">
       <div class="fuente-title">🔎 <span>Búsqueda en Base de Datos</span></div>
       <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
-        Consulta los <span id="bd-total-registros">127,832</span> registros de SEFIN y ONCAE con filtros combinados.
+        Consulta los <span id="bd-total-registros">166,006</span> registros de SEFIN y ONCAE con filtros combinados.
       </div>
     </div>
 
@@ -16720,10 +16720,12 @@ function updateBDCountDisplay(signalN, totalN) {
 
 // S67 — métricas del card ejecutivo Consultas
 function updateConsultasMetrics(all) {
-  const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-  const criticos = all.filter(a => normSev(a.severity||a.severidad) === 'critica');
-  const monto = criticos.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
+  // S137 QA: usar _cachedStats para críticos y monto (mv_alert_stats = fuente única de verdad)
+  const cs = _cachedStats || {};
+  const critCount = cs.critica || 0;
+  const montoC    = Number(cs.monto_critica || 0);
   const fmtM = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(1) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(0) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+  // Sobrecosto sigue de allAlerts — requiere comparar budget_amount (no disponible en mv)
   const sobre = all.filter(a => {
     const mc = Number(a.monto_contrato||0);
     const budget = Number(a.budget_amount||0);
@@ -16733,8 +16735,8 @@ function updateConsultasMetrics(all) {
   const elC = document.getElementById('exec-m-criticos');
   const elM = document.getElementById('exec-m-monto');
   const elS = document.getElementById('exec-m-sobre');
-  if (elC) elC.textContent = criticos.length.toLocaleString('es-HN');
-  if (elM) elM.textContent = fmtM(monto);
+  if (elC) elC.textContent = critCount > 0 ? critCount.toLocaleString('es-HN') : (all.filter(a=>(a.severity||'').toUpperCase().includes('CRIT')).length.toLocaleString('es-HN'));
+  if (elM) elM.textContent = montoC > 0 ? fmtM(montoC) : '—';
   if (elS) elS.textContent = sobreInst > 0 ? sobreInst + ' inst.' : '—';
 }
 
@@ -20152,10 +20154,11 @@ function renderEjecutiva() {
     _re('exec-risk-budget').textContent = `≈ ${riskPctE}% del Presupuesto General de la República (L 309B aprobado 2024)`;
   }
 
-  document.getElementById('exec-criticos').textContent       = criticos.length.toLocaleString();
-  document.getElementById('exec-criticos-monto').textContent = fmtL(sumMonto(criticos));
-  document.getElementById('exec-altos').textContent          = altos.length.toLocaleString();
-  document.getElementById('exec-altos-monto').textContent    = fmtL(sumMonto(altos));
+  // S137 QA: conteos de allAlerts, montos de _cachedStats (fuente única)
+  document.getElementById('exec-criticos').textContent       = (_csE.critica || criticos.length).toLocaleString();
+  document.getElementById('exec-criticos-monto').textContent = fmtLfull(montoC);
+  document.getElementById('exec-altos').textContent          = (_csE.alta || altos.length).toLocaleString();
+  document.getElementById('exec-altos-monto').textContent    = fmtLfull(montoA);
   document.getElementById('exec-ofac').textContent           = ofac.length.toLocaleString();
   document.getElementById('exec-engel').textContent          = _engelMatchedIds.size.toLocaleString();
   const listaNegra = new Set([...ofac.map(a=>a.id), ..._engelMatchedIds]);
@@ -24355,7 +24358,7 @@ function exportReporteS36PDF() {
 
   <div style="margin-top:28px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:10px;color:#9ca3af;">
     Sistema Sentinel — Honduras · ${folio} · ${ds} · Fuente: ONCAE HC1-2025 JSON verificado<br>
-    Base de datos: 127,832 registros | SEFIN + ONCAE 2019–2025 | Clasificación: RESERVADO
+    Base de datos: 166,006 registros | SEFIN + ONCAE + IAIP 2019–2026 | Clasificación: RESERVADO
   </div>
   </body></html>`;
 
@@ -24809,7 +24812,7 @@ function exportScannerPDF(patternId) {
     <div style="font-size:11px;opacity:.65;margin-bottom:12px;">SENTINEL-AI · ESCÁNER AUTOMÁTICO · ${ds}</div>
     <div class="cover-title">${pattern.icon} ${pattern.title}</div>
     <div class="cover-sub">${pattern.desc}</div>
-    <div class="cover-folio">Folio: ${folio} | Base: 127,832 contratos SEFIN/ONCAE 2019–2025</div>
+    <div class="cover-folio">Folio: ${folio} | Base: 166,006 contratos SEFIN/ONCAE/IAIP 2019–2026</div>
   </div>
   <div class="stats">
     <div class="stat"><div class="stat-num">${results.length}</div><div class="stat-label">Registros Detectados</div></div>
@@ -24886,7 +24889,7 @@ function exportReporteFueraGiroPDF() {
   <div class="cover">
     <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
     <div class="cover-title">🏪 INVESTIGACIÓN ESPECIAL — EMPRESAS FUERA DE GIRO</div>
-    <div class="cover-sub">Patrón DICOMARCA Generalizado · Búsqueda Sistemática en 127,832 Contratos</div>
+    <div class="cover-sub">Patrón DICOMARCA Generalizado · Búsqueda Sistemática en 166,006 Contratos</div>
     <div class="cover-sub">5 Casos CRÍTICA · L 42M+ · Cluster SEDESOL 2022 · INFOP · UNAH · Hospital Sur</div>
     <div class="cover-folio">Folio: ${folio} | Fecha: ${ds} | Base de datos: SEFIN/ONCAE 2019–2025</div>
     <div class="cover-reservado">🔒 RESERVADO — USO INVESTIGATIVO</div>
@@ -25108,7 +25111,7 @@ function exportReportePJPDF() {
   </div>
   <div class="content">
     <h1>I. HALLAZGO PRINCIPAL — OPACIDAD TOTAL</h1>
-    <p>La base de datos Sentinel (127,832 contratos SEFIN/ONCAE 2019–2025) registra <strong>22 contratos del Poder Judicial</strong> por L 30.2M. Sin embargo, ICN Digital documentó que el Poder Judicial ejecutó contratos de arrendamiento vehicular por <strong style="color:#dc2626">L 182 millones</strong> en el mismo período — una brecha de <strong style="color:#dc2626">L 151.8M completamente ausente de SEFIN y ONCAE</strong>.</p>
+    <p>La base de datos Sentinel (166,006 contratos SEFIN/ONCAE/IAIP 2019–2026) registra <strong>22 contratos del Poder Judicial</strong> por L 30.2M. Sin embargo, ICN Digital documentó que el Poder Judicial ejecutó contratos de arrendamiento vehicular por <strong style="color:#dc2626">L 182 millones</strong> en el mismo período — una brecha de <strong style="color:#dc2626">L 151.8M completamente ausente de SEFIN y ONCAE</strong>.</p>
     <p>Esta brecha indica uso sistemático de <strong>contratación directa sin publicación</strong> o pagos fuera del sistema oficial — mecanismo que viola la Ley de Contratación del Estado y permite opacidad total sobre el proveedor, precio y justificación.</p>
     <h1>II. CONTRATOS PJ EN BASE DE DATOS SENTINEL</h1>
     <table>

@@ -20123,14 +20123,17 @@ function renderEjecutiva() {
   const fmtL = n => n > 0 ? 'L ' + (n >= 1e6 ? (n/1e6).toFixed(1)+'M' : (n/1e3).toFixed(0)+'K') : 'L —';
   const sumMonto = arr => arr.reduce((s,a) => s + (parseFloat(a.monto_contrato)||0), 0);
 
-  // ── P1 inside Vista Ejecutiva ──
-  const riskMontoE  = sumMonto(criticos) + sumMonto(altos);
+  // ── P1 inside Vista Ejecutiva — usar _cachedStats para montos exactos (mv_alert_stats) ──
+  const _csE = _cachedStats || {};
+  const montoC      = Number(_csE.monto_critica || 0) || sumMonto(criticos);
+  const montoA      = Number(_csE.monto_alta    || 0) || sumMonto(altos);
+  const riskMontoE  = montoC + montoA;
   const riskPctE    = riskMontoE > 0 ? (riskMontoE / 309_000_000_000 * 100).toFixed(2) : null;
   const fmtLfull = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : 'L —';
   const _re = id => document.getElementById(id);
   if (_re('exec-risk-total'))       _re('exec-risk-total').textContent       = fmtLfull(riskMontoE);
-  if (_re('exec-risk-critica'))     _re('exec-risk-critica').textContent     = fmtLfull(sumMonto(criticos));
-  if (_re('exec-risk-alta'))        _re('exec-risk-alta').textContent        = fmtLfull(sumMonto(altos));
+  if (_re('exec-risk-critica'))     _re('exec-risk-critica').textContent     = fmtLfull(montoC);
+  if (_re('exec-risk-alta'))        _re('exec-risk-alta').textContent        = fmtLfull(montoA);
   if (_re('exec-risk-critica-cnt')) _re('exec-risk-critica-cnt').textContent = criticos.length.toLocaleString() + ' contratos';
   if (_re('exec-risk-alta-cnt'))    _re('exec-risk-alta-cnt').textContent    = altos.length.toLocaleString() + ' contratos';
   if (_re('exec-risk-budget') && riskPctE) {

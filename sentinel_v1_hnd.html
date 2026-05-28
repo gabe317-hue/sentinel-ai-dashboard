@@ -6212,7 +6212,8 @@ async function fetchAndRender(page) {
 
   let query = db.from('alerts')
     .select('*', activeSource !== 'all' ? { count: 'exact' } : undefined)
-    .order('id', { ascending: false })
+    .order('severity_rank', { ascending: true })
+    .order('monto_contrato', { ascending: false, nullsFirst: false })
     .range(offset, offset + ALERTS_PER_PAGE - 1);
 
   // Source filter — server-side (S134)

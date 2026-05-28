@@ -17340,7 +17340,7 @@ function renderAuditLog() {
 // ════════════════════════════════════════════════════════════
 // ANALYTICS PANEL
 // ════════════════════════════════════════════════════════════
-const USD_RATE = 24.5; // HNL per USD (approx 2025)
+const USD_RATE = 26.7; // HNL per USD — BCH tasa vigente May 2026
 
 // ── RED FLAGS CNA/UFERCO Honduras (Entidades de Alto Riesgo) ──
 // Fuente: CNA, UFERCO, Ministerio Público — incorporado S59 (2026-05-04)
@@ -17542,13 +17542,14 @@ function fmtUSD(n) {
 function renderAnalytics() {
   const alerts = getAnalyticsAlerts();
   const totalAlerts = alerts.length;
-  const totalMonto  = alerts.reduce((s, a) => s + Number(a.monto_contrato || 0), 0);
+  const totalMonto  = alerts.reduce((s, a) => s + Number(a.monto_contrato || a.monto || 0), 0);
+  const dbTotal = window._bdTotalCount || window._cachedStats?.total || totalAlerts;
 
   // ── Headline cards ──
   document.getElementById('analyticsHeadline').innerHTML = [
-    { label: 'Contratos Analizados', value: '147,122', sub: 'Año 2025 · SEFIN OCDS' },
-    { label: 'Total Contratos',        value: totalAlerts.toLocaleString(), sub: (totalAlerts/147122*100).toFixed(1) + '% de contratos flaggeados' },
-    { label: 'Exposición Total',     value: fmtLarge(totalMonto), sub: fmtUSD(totalMonto) + ' USD estimado' },
+    { label: 'Contratos Monitoreados', value: dbTotal.toLocaleString('es-HN'), sub: 'Total en base de datos · todas las fuentes' },
+    { label: 'Contratos Flaggeados',   value: totalAlerts.toLocaleString('es-HN'), sub: (totalAlerts/dbTotal*100).toFixed(1) + '% del total monitoreado' },
+    { label: 'Exposición Total',       value: fmtLarge(totalMonto), sub: fmtUSD(totalMonto) + ' USD estimado' },
   ].map(c => `
     <div style="background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:20px;">
       <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:8px;">${c.label}</div>

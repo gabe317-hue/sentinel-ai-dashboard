@@ -2981,22 +2981,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <div><div class="po-card-title">Análisis</div><div class="po-card-desc">5 módulos · Riesgo cuantitativo</div></div>
           <div class="po-chevron">▼</div>
         </div>
-        <div class="po-submenu">
-          <button class="po-item" onclick="poGo(showAnalyticsPanel)">
-            <span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span>
-          </button>
-          <button class="po-item" onclick="poGo(showVendorConcentrationPanel)">
-            <span class="po-item-icon">🎯</span><span class="po-item-label">Concentración</span><span class="po-arrow">›</span>
-          </button>
-          <button class="po-item" onclick="poGo(showGlobalSobrecostos)">
-            <span class="po-item-icon">💰</span><span class="po-item-label">Sobrepago</span><span class="po-item-tag tag-n">43 casos</span><span class="po-arrow">›</span>
-          </button>
-          <button class="po-item" onclick="poGo(showPhase4Detection)">
-            <span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span>
-          </button>
-          <button class="po-item" onclick="poGo(showSectorPanel)">
-            <span class="po-item-icon">🏛️</span><span class="po-item-label">Sectores Institucionales</span><span class="po-arrow">›</span>
-          </button>
+        <div style="padding:8px 12px 4px;display:flex;flex-direction:column;gap:2px;">
+          <button class="po-item" onclick="event.stopPropagation();poGo(showAnalyticsPanel)"><span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span></button>
+          <button class="po-item" onclick="event.stopPropagation();poGo(showVendorConcentrationPanel)"><span class="po-item-icon">🎯</span><span class="po-item-label">Concentración</span><span class="po-arrow">›</span></button>
+          <button class="po-item" onclick="event.stopPropagation();poGo(showGlobalSobrecostos)"><span class="po-item-icon">💰</span><span class="po-item-label">Sobrepago</span><span class="po-item-tag tag-n">43 casos</span><span class="po-arrow">›</span></button>
+          <button class="po-item" onclick="event.stopPropagation();poGo(showPhase4Detection)"><span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span></button>
+          <button class="po-item" onclick="event.stopPropagation();poGo(showSectorPanel)"><span class="po-item-icon">🏛️</span><span class="po-item-label">Sectores Institucionales</span><span class="po-arrow">›</span></button>
         </div>
       </div>
 

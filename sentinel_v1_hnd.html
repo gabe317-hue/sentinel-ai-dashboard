@@ -6186,15 +6186,17 @@ async function _loadTSCEntidades() {
 }
 
 function _getTSCKey(entityName) {
-  if (!entityName || Object.keys(_tscMap).length === 0) return null;
-  const n = entityName.toLowerCase();
-  for (const [key, patterns] of Object.entries(_TSC_KEYWORD_MAP)) {
-    if (_tscMap[key] && patterns.some(p => n.includes(p))) return key;
-  }
+  try {
+    if (!entityName || !_tscMap || Object.keys(_tscMap).length === 0) return null;
+    const n = entityName.toLowerCase();
+    for (const k in _TSC_KEYWORD_MAP) {
+      if (_tscMap[k] && _TSC_KEYWORD_MAP[k].some(function(p){ return n.indexOf(p) >= 0; })) return k;
+    }
+  } catch(e) {}
   return null;
 }
 
-function _hasTSC(entityName) { return _getTSCKey(entityName) !== null; }
+function _hasTSC(entityName) { try { return _getTSCKey(entityName) !== null; } catch(e){ return false; } }
 
 async function loadAlerts() {
   const progressBar  = document.getElementById('load-progress-bar');
@@ -6548,12 +6550,13 @@ function render() {
     };
     const proveedorDisplay = parseDesc('Proveedor') || a.proveedor_nombre || '—';
     const entidadDisplay   = parseDesc('Entidad compradora') || a.entity_name || '—';
+    const tscBadge = (function(){ try { return _hasTSC(entidadDisplay) ? '<span title="Informes TSC" style="cursor:help;margin-left:4px;font-size:10px;background:rgba(255,200,0,0.15);border:1px solid rgba(255,200,0,0.4);border-radius:3px;padding:1px 5px;color:#e6a800;font-weight:600;">TSC</span>' : ''; } catch(e){ return ''; } })();
 
     return `<tr onclick="openAlertDetail(${a.id}, event)">
       <td><span class="cell-id">${a.alert_id || ('#' + a.id)}</span></td>
       <td><span class="cell-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${desc}</span></td>
       <td>${proveedorDisplay !== '—' ? `<button class="cell-entity-link" onclick="event.stopPropagation();showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button>` : `<span style="color:var(--text-dim);">—</span>`}</td>
-      <td><button class="cell-entity-link" onclick="event.stopPropagation();showEntityPanel('${entidadDisplay.replace(/'/g,"\\'")}')">${entidadDisplay}</button>${_hasTSC(entidadDisplay)?'<span title="Entidad con informes de auditoría TSC" style="cursor:help;margin-left:4px;font-size:10px;background:rgba(255,200,0,0.15);border:1px solid rgba(255,200,0,0.5);border-radius:3px;padding:1px 5px;color:#e6a800;font-weight:600;">🔍 TSC</span>':''}</td>
+      <td><button class="cell-entity-link" onclick="event.stopPropagation();showEntityPanel('${entidadDisplay.replace(/'/g,"\\'")}')">${entidadDisplay}</button>${tscBadge}</td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
       <td><span class="cell-source">${a.data_source || '—'}</span>${(a.data_source === 'IAIP-COVID') ? ' <span class="iaip-badge iaip-covid" title="Contratación directa de emergencia COVID-19">🦠 COVID-19</span>' : (a.data_source === 'IAIP-ETA') ? ' <span class="iaip-badge iaip-eta" title="Contratación directa de emergencia Huracán Eta">🌀 Eta</span>' : ''}</td>
       <td><span class="cell-date">${fmtDate(a.fecha_contrato)}</span></td>

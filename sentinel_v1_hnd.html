@@ -13544,10 +13544,16 @@ function showPhase4Detection() {
   // Defer heavy computation so panel renders first
   setTimeout(() => {
     if (!allAlerts || allAlerts.length === 0) {
-      const emptyHTML = '<div style="padding:12px;color:var(--text-dim);">Sin datos cargados. Espere a que termine la carga.</div>';
-      document.getElementById('p4-velocity-list').innerHTML = emptyHTML;
-      document.getElementById('p4-risk-list').innerHTML = emptyHTML;
-      document.getElementById('p4-anomaly-list').innerHTML = emptyHTML;
+      // S138: auto-retry cada 1.5s hasta que allAlerts esté listo
+      if (!window._phase4RetryInterval) {
+        window._phase4RetryInterval = setInterval(() => {
+          if (window.allAlerts && window.allAlerts.length > 0) {
+            clearInterval(window._phase4RetryInterval);
+            window._phase4RetryInterval = null;
+            populatePhase4Detection();
+          }
+        }, 1500);
+      }
       return;
     }
     populatePhase4Detection();

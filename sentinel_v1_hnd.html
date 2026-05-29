@@ -9702,29 +9702,7 @@ function generarMemorandum() {
   const sevLow = (d.severity || '').toLowerCase();
   const sevColor = sevLow.includes('cr') ? '#c0392b' : sevLow.includes('alt') ? '#d35400' : '#e67e22';
 
-  // S140 — TSC antecedentes para el memorándum
-  const tscKey = _getTSCKey(d.entity || '');
-  const tscInformes = tscKey ? (_tscMap[tscKey] || []) : [];
-  let tscSection = '';
-  if (tscInformes.length > 0) {
-    const _tRows = tscInformes.slice(0,5).map(function(inf){
-      const _yr = (inf.fecha_publicacion||'').substring(0,4);
-      return '<li style="padding:5px 0;border-bottom:1px solid #f0e6c8;font-size:9.5pt;display:flex;gap:10px;">'
-        +'<span style="color:#d97706;font-weight:bold;min-width:34px;">'+_yr+'</span>'
-        +'<span>'+(inf.titulo||'')+'</span></li>';
-    }).join('');
-    const _tExtra = tscInformes.length > 5
-      ? '<li style="padding:5px 0;font-size:9pt;color:#888;font-style:italic;">&hellip; y '+(tscInformes.length-5)+' informes adicionales en tsc.gob.hn</li>' : '';
-    tscSection = '<div class="sec">'
-      +'<div class="sec-t" style="color:#856404;border-color:#856404;">III. Antecedentes &mdash; Tribunal Superior de Cuentas (TSC)</div>'
-      +'<div style="background:#fffbeb;border-left:4px solid #d97706;padding:12px 16px;border-radius:0 6px 6px 0;">'
-      +'<p style="font-size:10pt;color:#444;margin-bottom:8px;">La entidad <strong>'+d.entity+'</strong> cuenta con <strong>'
-      +tscInformes.length+' informe'+(tscInformes.length>1?'s':'')+'</strong> de auditoría publicados por el TSC que refuerzan esta referencia:</p>'
-      +'<ul style="list-style:none;padding:0;margin:0;">'+_tRows+_tExtra+'</ul>'
-      +'</div></div>';
-  }
-
-  const patronTags = d.patrones !== '—'
+    const patronTags = d.patrones !== '—'
     ? d.patrones.split(',').map(p => `<span style="display:inline-block;background:${ent.color}18;border:1px solid ${ent.color}40;color:${ent.color};padding:2px 9px;border-radius:3px;font-size:8.5pt;margin:2px;">${p.trim()}</span>`).join('')
     : '<span style="color:#888;font-size:10pt;">Sin patrones específicos registrados</span>';
 
@@ -9814,10 +9792,8 @@ function generarMemorandum() {
   </ul>
 </div>
 
-${tscSection}
-
 <div class="sec">
-  <div class="sec-t">${tscInformes.length > 0 ? 'IV' : 'III'}. Recomendación</div>
+  <div class="sec-t">III. Recomendación</div>
   <div class="recom">
     <p>El Sistema <strong>SENTINEL</strong> recomienda a la <strong>${ent.nombre}</strong> iniciar revisión formal del contrato identificado bajo el folio <strong>${d.alertId}</strong>, suscrito entre la entidad <strong>${d.entity}</strong> y el proveedor <strong>${d.vendor}</strong>, en virtud de los patrones de riesgo detectados por análisis automatizado de datos de contratación pública de Honduras.<br><br>
     Se sugiere solicitar la documentación contractual completa, verificar el cumplimiento de los procedimientos de licitación aplicables conforme a la <em>Ley de Contratación del Estado</em> y evaluar la trazabilidad del gasto ejecutado, con especial atención a los patrones identificados por el sistema.</p>

@@ -9702,17 +9702,24 @@ function generarMemorandum() {
   // S140 — TSC antecedentes para el memorándum
   const tscKey = _getTSCKey(d.entity || '');
   const tscInformes = tscKey ? (_tscMap[tscKey] || []) : [];
-  const tscSection = tscInformes.length > 0 ? `
-<div class="sec">
-  <div class="sec-t" style="color:#856404;border-color:#856404;">III. Antecedentes — Tribunal Superior de Cuentas (TSC)</div>
-  <div style="background:#fffbeb;border-left:4px solid #d97706;padding:12px 16px;border-radius:0 6px 6px 0;margin-bottom:12px;">
-    <p style="font-size:10pt;color:#444;margin-bottom:8px;">La entidad <strong>${d.entity}</strong> cuenta con <strong>${tscInformes.length} informe${tscInformes.length>1?'s':''} de auditoría</strong> publicados por el Tribunal Superior de Cuentas (tsc.gob.hn). Estos antecedentes refuerzan la pertinencia de la presente referencia:</p>
-    <ul style="list-style:none;padding:0;margin:0;">
-      ${tscInformes.slice(0,5).map(inf => `<li style="padding:5px 0;border-bottom:1px solid #f0e6c8;font-size:9.5pt;color:#1a1a2e;display:flex;gap:10px;"><span style="color:#d97706;font-weight:bold;min-width:34px;">${(inf.fecha_publicacion||'').substring(0,4)}</span><span>${inf.titulo}</span></li>`).join('')}
-      ${tscInformes.length > 5 ? `<li style="padding:5px 0;font-size:9pt;color:#888;font-style:italic;">… y ${tscInformes.length-5} informes adicionales disponibles en tsc.gob.hn</li>` : ''}
-    </ul>
-  </div>
-</div>` : '';
+  let tscSection = '';
+  if (tscInformes.length > 0) {
+    const _tRows = tscInformes.slice(0,5).map(function(inf){
+      const _yr = (inf.fecha_publicacion||'').substring(0,4);
+      return '<li style="padding:5px 0;border-bottom:1px solid #f0e6c8;font-size:9.5pt;display:flex;gap:10px;">'
+        +'<span style="color:#d97706;font-weight:bold;min-width:34px;">'+_yr+'</span>'
+        +'<span>'+(inf.titulo||'')+'</span></li>';
+    }).join('');
+    const _tExtra = tscInformes.length > 5
+      ? '<li style="padding:5px 0;font-size:9pt;color:#888;font-style:italic;">&hellip; y '+(tscInformes.length-5)+' informes adicionales en tsc.gob.hn</li>' : '';
+    tscSection = '<div class="sec">'
+      +'<div class="sec-t" style="color:#856404;border-color:#856404;">III. Antecedentes &mdash; Tribunal Superior de Cuentas (TSC)</div>'
+      +'<div style="background:#fffbeb;border-left:4px solid #d97706;padding:12px 16px;border-radius:0 6px 6px 0;">'
+      +'<p style="font-size:10pt;color:#444;margin-bottom:8px;">La entidad <strong>'+d.entity+'</strong> cuenta con <strong>'
+      +tscInformes.length+' informe'+(tscInformes.length>1?'s':'')+'</strong> de auditoría publicados por el TSC que refuerzan esta referencia:</p>'
+      +'<ul style="list-style:none;padding:0;margin:0;">'+_tRows+_tExtra+'</ul>'
+      +'</div></div>';
+  }
 
   const patronTags = d.patrones !== '—'
     ? d.patrones.split(',').map(p => `<span style="display:inline-block;background:${ent.color}18;border:1px solid ${ent.color}40;color:${ent.color};padding:2px 9px;border-radius:3px;font-size:8.5pt;margin:2px;">${p.trim()}</span>`).join('')

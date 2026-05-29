@@ -6241,7 +6241,7 @@ async function fetchAndRender(page) {
     if (embargoNames.length > 0) {
       query = query.or(embargoNames.slice(0,8).map(n => `entity_name.ilike.%${n.slice(0,20)}%`).join(','));
     }
-
+  } else if (activeSource !== 'all') {
     query = query.eq('data_source', activeSource); // IAIP-COVID, IAIP-ETA, IAIP-2021/2/3
   }
 

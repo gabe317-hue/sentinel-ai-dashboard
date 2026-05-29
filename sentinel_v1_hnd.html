@@ -2467,6 +2467,18 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
   <div class="ip-body" style="max-width:880px;">
 
+    <!-- S138: Búsqueda por folio -->
+    <div class="cc-section" style="margin-bottom:12px;padding:12px 16px;background:rgba(0,200,255,0.05);border:1px solid rgba(0,200,255,0.2);border-radius:10px;">
+      <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;">Cargar borrador por folio</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="ip-search" type="text" id="ccFolioInput" placeholder="Ej. AUTO-2026-351" style="flex:1;margin:0;"
+          onkeydown="if(event.key==='Enter')ccCargarPorFolio()"
+          oninput="this.value=this.value.toUpperCase()">
+        <button onclick="ccCargarPorFolio()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:10px;padding:10px 18px;font-size:12px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">🔍 CARGAR</button>
+      </div>
+      <div id="ccFolioMsg" style="font-size:11px;margin-top:6px;display:none;"></div>
+    </div>
+
     <!-- PASO 1: Inputs -->
     <div class="cc-section">
       <div class="cc-section-title">Paso 1 — Define el caso</div>
@@ -15173,6 +15185,44 @@ function abrirConstructorCaso() {
   document.getElementById('ccBtnBack').onclick = volverAPanelEjecutivo;
   ccPopulateEntityList();
 }
+// S138 — Cargar borrador por folio
+async function ccCargarPorFolio() {
+  const folio = (document.getElementById('ccFolioInput').value || '').trim().toUpperCase();
+  const msg = document.getElementById('ccFolioMsg');
+  if (!folio) return;
+  msg.style.display = 'block';
+  msg.style.color = 'rgba(160,180,210,0.6)';
+  msg.textContent = '⏳ Buscando folio...';
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/investigaciones?folio=eq.${encodeURIComponent(folio)}&select=*&limit=1`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    const data = await res.json();
+    if (!data || data.length === 0) {
+      msg.style.color = '#f87171';
+      msg.textContent = `❌ Folio "${folio}" no encontrado.`;
+      return;
+    }
+    const row = data[0];
+    // Rellenar campos del Constructor de Caso
+    document.getElementById('ccEntidad').value = row.entidad || '';
+    document.getElementById('ccProveedor').value = row.proveedor || '';
+    // Mapear patrón a esquema si es posible
+    const patronMap = { 'FRACCIONAMIENTO_REPETIDO': 'FRACCIONAMIENTO', 'COMPRA_MENOR_ANOMALA': 'GENERAL', 'CLUSTER_CRITICOS': 'GENERAL', 'PICO_CRITICOS_RECIENTE': 'GENERAL' };
+    const esquema = patronMap[row.patrones] || 'GENERAL';
+    document.getElementById('ccEsquema').value = esquema;
+    // Limpiar mensaje y confirmar
+    msg.style.color = '#4ade80';
+    msg.textContent = `✅ Folio ${folio} cargado — ajusta los campos si es necesario y presiona ⚡ ANALIZAR CASO.`;
+    document.getElementById('ccFolioInput').value = '';
+    ccPopulateEntityList();
+  } catch(e) {
+    msg.style.color = '#f87171';
+    msg.textContent = `❌ Error al buscar folio: ${e.message}`;
+  }
+}
+
 function ccPopulateEntityList() {
   const dl = document.getElementById('ccEntityList');
   if (!dl || dl.children.length > 0 || !allAlerts || !allAlerts.length) return;

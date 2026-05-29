@@ -6151,6 +6151,7 @@ async function loadAlerts() {
       window._bdFinalCount  = stats.total;
       updateBDCountDisplay(stats.total, stats.total);
       console.log('✅ get_alert_stats RPC OK — total:', stats.total);
+      updateConsultasMetrics(); // S138: poblar KPIs del card Consultas inmediatamente
     } else {
       // Fallback: RPC not available — 5 parallel HEAD queries (count only, no data transfer)
       console.warn('⚠️ get_alert_stats RPC failed:', statsErr?.message, '— falling back to parallel counts');
@@ -6334,7 +6335,6 @@ async function _loadCrossReferenceData() {
     window.allAlerts = allAlerts;
     _allAlertsReady = true;
 
-    updateConsultasMetrics(allAlerts);
     buildNewsMatchIndex();
     buildHighRiskIndex();
     buildEngelIndex();
@@ -13541,23 +13541,8 @@ function showPhase4Detection() {
   document.getElementById('phase4Panel').classList.add('open');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // Defer heavy computation so panel renders first
-  setTimeout(() => {
-    if (!allAlerts || allAlerts.length === 0) {
-      // S138: auto-retry cada 1.5s hasta que allAlerts esté listo
-      if (!window._phase4RetryInterval) {
-        window._phase4RetryInterval = setInterval(() => {
-          if (window.allAlerts && window.allAlerts.length > 0) {
-            clearInterval(window._phase4RetryInterval);
-            window._phase4RetryInterval = null;
-            populatePhase4Detection();
-          }
-        }, 1500);
-      }
-      return;
-    }
-    populatePhase4Detection();
-  }, 80);
+  // S138: RPCs server-side — no depende de allAlerts, llamar directo
+  populatePhase4Detection();
 }
 
 function hidePhase4Detection() {
@@ -16785,25 +16770,26 @@ function updateBDCountDisplay(signalN, totalN) {
 }
 
 // S67 — métricas del card ejecutivo Consultas
-function updateConsultasMetrics(all) {
-  // S137 QA: usar _cachedStats para críticos y monto (mv_alert_stats = fuente única de verdad)
+async function updateConsultasMetrics() {
+  // S138: todo server-side — no depende de allAlerts
   const cs = _cachedStats || {};
   const critCount = cs.critica || 0;
   const montoC    = Number(cs.monto_critica || 0);
   const fmtM = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(1) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(0) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
-  // Sobrecosto sigue de allAlerts — requiere comparar budget_amount (no disponible en mv)
-  const sobre = all.filter(a => {
-    const mc = Number(a.monto_contrato||0);
-    const budget = Number(a.budget_amount||0);
-    return mc > 0 && budget > mc * 1.15;
-  });
-  const sobreInst = new Set(sobre.map(a => a.entity_name||a.entidad).filter(Boolean)).size;
   const elC = document.getElementById('exec-m-criticos');
   const elM = document.getElementById('exec-m-monto');
   const elS = document.getElementById('exec-m-sobre');
-  if (elC) elC.textContent = critCount > 0 ? critCount.toLocaleString('es-HN') : (all.filter(a=>(a.severity||'').toUpperCase().includes('CRIT')).length.toLocaleString('es-HN'));
+  if (elC) elC.textContent = critCount > 0 ? critCount.toLocaleString('es-HN') : '—';
   if (elM) elM.textContent = montoC > 0 ? fmtM(montoC) : '—';
-  if (elS) elS.textContent = sobreInst > 0 ? sobreInst + ' inst.' : '—';
+  // Ejec. Acelerada: COUNT desde sefin_presupuesto (no iterar allAlerts)
+  try {
+    const { data: periodos } = await db.from('sefin_presupuesto').select('periodo').order('periodo',{ascending:false}).limit(1);
+    const periodo = periodos?.[0]?.periodo;
+    if (periodo) {
+      const { count } = await db.from('sefin_presupuesto').select('*',{count:'exact',head:true}).eq('periodo',periodo).eq('sobrecosto_flag',true);
+      if (elS) elS.textContent = count > 0 ? count + ' inst.' : '—';
+    }
+  } catch(e) { if (elS && elS.textContent === '—') elS.textContent = '—'; }
 }
 
 function poUpdateIndicators() {

@@ -3626,6 +3626,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn"        data-s="IAIP-2022"  onclick="setSourceFilter('IAIP-2022')">IAIP 2022</button>
     <button class="filter-btn"        data-s="IAIP-2023"  onclick="setSourceFilter('IAIP-2023')">IAIP 2023</button>
     <button class="filter-btn"        data-s="EMBARGO-CUT" onclick="setSourceFilter('EMBARGO-CUT')" title="Entidades con embargos activos a la CUT (TSC 2026)">⚖️ Embargo CUT</button>
+    <button class="filter-btn"        data-s="TSC-AUDITADO" onclick="setSourceFilter('TSC-AUDITADO')" title="Entidades con informes de auditoría TSC">🔍 TSC Auditado</button>
   </div>
 
   <!-- Risk scoring legend -->
@@ -6299,6 +6300,16 @@ async function fetchAndRender(page) {
     const embargoNames = [..._embargoEntidades];
     if (embargoNames.length > 0) {
       query = query.or(embargoNames.slice(0,8).map(n => `entity_name.ilike.%${n.slice(0,20)}%`).join(','));
+    }
+  } else if (activeSource === 'TSC-AUDITADO') {
+    // S140: filtrar por entidades con informes TSC — usar keywords del mapa
+    const tscKeywords = Object.entries(_TSC_KEYWORD_MAP)
+      .filter(([k]) => _tscMap[k] && _tscMap[k].length > 0)
+      .flatMap(([, patterns]) => patterns)
+      .filter(p => p.length >= 4);
+    const uniqueKw = [...new Set(tscKeywords)].slice(0, 10);
+    if (uniqueKw.length > 0) {
+      query = query.or(uniqueKw.map(p => `entity_name.ilike.%${p.trim()}%`).join(','));
     }
   } else if (activeSource !== 'all') {
     query = query.eq('data_source', activeSource); // IAIP-COVID, IAIP-ETA, IAIP-2021/2/3

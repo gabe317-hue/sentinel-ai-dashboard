@@ -3799,6 +3799,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <button class="ep-drill-tab" data-tab="sobrecosto" onclick="switchEntityDrillTab('sobrecosto',this)">💰 Sobrecosto</button>
       <button class="ep-drill-tab" data-tab="vendors" onclick="switchEntityDrillTab('vendors',this)">🏢 Proveedores</button>
       <button class="ep-drill-tab" data-tab="patterns" onclick="switchEntityDrillTab('patterns',this)">🎯 Patrones</button>
+      <button class="ep-drill-tab" id="ep-tsc-tab" data-tab="tsc" onclick="switchEntityDrillTab('tsc',this)" style="display:none;">🔍 TSC</button>
     </div>
 
     <!-- Recent alerts (default view) -->
@@ -3869,6 +3870,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="fuente-chart-card">
         <div class="fuente-recent-title">🎯 Distribución de Patrones Detectados</div>
         <div id="ep-pattern-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+
+    <!-- S140: TSC Tab -->
+    <div class="ep-drill-content" id="ep-drill-tsc">
+      <div class="fuente-chart-card" style="border:1px solid rgba(255,200,0,0.25);background:rgba(255,200,0,0.03);">
+        <div class="fuente-recent-title" style="color:#e6a800;">🔍 Informes de Auditoría — Tribunal Superior de Cuentas</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;" id="ep-tsc-subtitle"></div>
+        <div id="ep-tsc-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
   </div>
@@ -14839,6 +14849,33 @@ function ipVerDetalle(entityName, contratosPreFiltrados) {
         <td style="color:#e2e8f0;font-weight:700;">${fmtM(v.monto)}</td>
       </tr>`).join('')}${otrosRow}</tbody>
     </table>`;
+
+  // S140 — TSC tab: mostrar si hay informes para esta entidad
+  const tscTab = document.getElementById('ep-tsc-tab');
+  const tscList = document.getElementById('ep-tsc-list');
+  const tscSubtitle = document.getElementById('ep-tsc-subtitle');
+  if (tscTab && tscList) {
+    const tscKey = _getTSCKey(entityName);
+    const informes = tscKey ? (_tscMap[tscKey] || []) : [];
+    if (informes.length > 0) {
+      tscTab.style.display = 'inline-flex';
+      tscTab.textContent = `🔍 TSC (${informes.length})`;
+      if (tscSubtitle) tscSubtitle.textContent = `${informes.length} informe${informes.length>1?'s':''} de auditoría TSC para "${tscKey}" — fuente: tsc.gob.hn`;
+      tscList.innerHTML = informes.map(inf => {
+        const yr = (inf.fecha_publicacion||'').substring(0,4);
+        const pdfLink = inf.pdf_url
+          ? `<a href="${inf.pdf_url}" target="_blank" style="color:var(--electric);font-size:10px;text-decoration:none;padding:2px 8px;border:1px solid rgba(0,168,214,0.4);border-radius:3px;white-space:nowrap;flex-shrink:0;">📄 PDF</a>`
+          : '';
+        return `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,200,0,0.1);">
+          <span style="font-size:11px;color:#e6a800;font-weight:700;min-width:34px;padding-top:1px;">${yr}</span>
+          <span style="font-size:11px;color:var(--text);flex:1;line-height:1.5;">${inf.titulo}</span>
+          ${pdfLink}
+        </div>`;
+      }).join('');
+    } else {
+      tscTab.style.display = 'none';
+    }
+  }
 
   ipTab('contratos');
 }

@@ -3640,6 +3640,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn"        data-s="IAIP-2021"  onclick="setSourceFilter('IAIP-2021')">IAIP 2021</button>
     <button class="filter-btn"        data-s="IAIP-2022"  onclick="setSourceFilter('IAIP-2022')">IAIP 2022</button>
     <button class="filter-btn"        data-s="IAIP-2023"  onclick="setSourceFilter('IAIP-2023')">IAIP 2023</button>
+    <button class="filter-btn"        data-s="EMBARGO-CUT" onclick="setSourceFilter('EMBARGO-CUT')" title="Entidades con embargos activos a la CUT (TSC 2026)">⚖️ Embargo CUT</button>
   </div>
 
   <!-- Risk scoring legend -->
@@ -5976,6 +5977,7 @@ let allAlerts      = [];    // Background cross-reference dataset (Engel/RedFlag
 let activeFilter   = 'all'; // S132: server-side pagination — 'all' loads instantly
 let activePattern  = 'all'; // Active pattern filter
 let activeSource   = 'all'; // S134: data_source filter (SEFIN/ONCAE/IAIP-*)
+let _embargoEntidades = new Set(); // S139: entidades con embargo CUT activo (TSC 2026)
 let searchQuery    = '';    // Global search — proveedor, entidad, ID
 let selectedSev    = null;  // Severity selected in modal form
 let currentPage    = 0;     // Current pagination page (0-indexed)
@@ -6133,12 +6135,30 @@ async function _loadRemainingAlertsBackground() {
 //           Cross-reference indexes (Engel/RedFlag/News) load in background.
 // ════════════════════════════════════════════════════════════
 
+// S139 — Cargar entidades con embargo CUT activo
+async function _loadEmbargoEntidades() {
+  try {
+    const { data } = await _supabase().from('entidades_embargo').select('entity_name').eq('activo', true);
+    _embargoEntidades = new Set((data || []).map(r => (r.entity_name||'').toLowerCase().trim()));
+  } catch(e) { console.warn('embargo load:', e); }
+}
+
+function _hasEmbargo(entityName) {
+  if (!entityName || _embargoEntidades.size === 0) return false;
+  const n = entityName.toLowerCase().trim();
+  for (const e of _embargoEntidades) {
+    if (e.length >= 6 && (n.includes(e.slice(0,20)) || e.includes(n.slice(0,20)))) return true;
+  }
+  return false;
+}
+
 async function loadAlerts() {
   const progressBar  = document.getElementById('load-progress-bar');
   const progressWrap = document.getElementById('load-progress-wrap');
   const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct,98)+'%'; };
   if (progressWrap) progressWrap.style.display = 'block';
   setProgress(10);
+  _loadEmbargoEntidades(); // S139: carga en paralelo, sin bloquear
 
   try {
     // ── 1. Stats from RPC — one DB query, returns all counts+montos instantly ──
@@ -6225,11 +6245,17 @@ async function fetchAndRender(page) {
     .order('id', { ascending: false })
     .range(offset, offset + ALERTS_PER_PAGE - 1);
 
-  // Source filter — server-side (S134)
+  // Source filter — server-side (S134) / client-side for EMBARGO-CUT (S139)
   if (activeSource === 'SEFIN') {
     query = query.ilike('data_source', '%SEFIN%');
   } else if (activeSource === 'ONCAE') {
     query = query.ilike('data_source', '%ONCAE%');
+  } else if (activeSource === 'EMBARGO-CUT') {
+    // S139: filtrar por entidades en tabla entidades_embargo — usar OR de nombres conocidos
+    const embargoNames = [..._embargoEntidades];
+    if (embargoNames.length > 0) {
+      query = query.or(embargoNames.slice(0,8).map(n => `entity_name.ilike.%${n.slice(0,20)}%`).join(','));
+    }
   } else if (activeSource !== 'all') {
     query = query.eq('data_source', activeSource); // IAIP-COVID, IAIP-ETA, IAIP-2021/2/3
   }
@@ -17695,7 +17721,7 @@ function renderAnalytics() {
       .map(p => PATTERN_LABELS[p] || p).join(' + ');
     return `<tr>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.proveedor_nombre}">${a.proveedor_nombre || '—'}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.entity_name}">${a.entity_name || '—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.entity_name}">${_hasEmbargo(a.entity_name)?'<span title="Entidad con embargo activo a la CUT (TSC 2026)" style="cursor:help;">⚖️</span> ':''}</span>${a.entity_name || '—'}</td>
       <td style="font-size:11px;color:var(--electric);">${patternList}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(Number(a.monto_contrato))}</td>
     </tr>`;

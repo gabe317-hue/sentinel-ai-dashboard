@@ -3626,7 +3626,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn"        data-s="IAIP-2022"  onclick="setSourceFilter('IAIP-2022')">IAIP 2022</button>
     <button class="filter-btn"        data-s="IAIP-2023"  onclick="setSourceFilter('IAIP-2023')">IAIP 2023</button>
     <button class="filter-btn"        data-s="EMBARGO-CUT" onclick="setSourceFilter('EMBARGO-CUT')" title="Entidades con embargos activos a la CUT (TSC 2026)">⚖️ Embargo CUT</button>
-    <button class="filter-btn"        data-s="TSC-AUDITADO" onclick="setSourceFilter('TSC-AUDITADO')" title="Entidades con informes de auditoría TSC">🔍 TSC Auditado</button>
   </div>
 
   <!-- Risk scoring legend -->
@@ -3800,7 +3799,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <button class="ep-drill-tab" data-tab="sobrecosto" onclick="switchEntityDrillTab('sobrecosto',this)">💰 Sobrecosto</button>
       <button class="ep-drill-tab" data-tab="vendors" onclick="switchEntityDrillTab('vendors',this)">🏢 Proveedores</button>
       <button class="ep-drill-tab" data-tab="patterns" onclick="switchEntityDrillTab('patterns',this)">🎯 Patrones</button>
-      <button class="ep-drill-tab" id="ep-tsc-tab" data-tab="tsc" onclick="switchEntityDrillTab('tsc',this)" style="display:none;">🔍 TSC</button>
     </div>
 
     <!-- Recent alerts (default view) -->
@@ -3874,15 +3872,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
 
-    <!-- S140: TSC Tab -->
-    <div class="ep-drill-content" id="ep-drill-tsc">
-      <div class="fuente-chart-card" style="border:1px solid rgba(255,200,0,0.25);background:rgba(255,200,0,0.03);">
-        <div class="fuente-recent-title" style="color:#e6a800;">🔍 Informes de Auditoría — Tribunal Superior de Cuentas</div>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;" id="ep-tsc-subtitle"></div>
-        <div id="ep-tsc-list" style="display:flex;flex-direction:column;gap:8px;"></div>
-      </div>
-    </div>
-  </div>
 
   <!-- ══ AUDIT LOG PANEL ══ -->
   <!-- ═══════════════════ AUDITORÍA DEL SISTEMA (S74) ═══════════════════ -->
@@ -4304,14 +4293,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div style="font-size:12px;line-height:1.6;color:var(--text-dim);" id="adp-emergencia-desc"></div>
     </div>
 
-    <!-- S140: TSC Informes de Auditoría -->
-    <div id="adp-tsc-section" style="display:none;margin:14px 0;padding:14px 18px;border-radius:8px;border:1px solid rgba(255,200,0,0.4);background:rgba(255,200,0,0.05);">
-      <div style="font-weight:700;font-size:12px;letter-spacing:.05em;margin-bottom:10px;color:#e6a800;">🔍 INFORMES TSC — TRIBUNAL SUPERIOR DE CUENTAS</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;" id="adp-tsc-subtitle"></div>
-      <div id="adp-tsc-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-    </div>
-
-    <!-- Vendor history & entity history row -->
     <div class="adp-grid">
       <div class="adp-card">
         <div class="adp-card-title">Historial del Proveedor <span id="adp-vendor-count" style="color:var(--electric)"></span></div>
@@ -5981,7 +5962,6 @@ let activeFilter   = 'all'; // S132: server-side pagination — 'all' loads inst
 let activePattern  = 'all'; // Active pattern filter
 let activeSource   = 'all'; // S134: data_source filter (SEFIN/ONCAE/IAIP-*)
 let _embargoEntidades = new Set(); // S139: entidades con embargo CUT activo (TSC 2026)
-let _tscMap = {};  // S140: keyword → [{titulo,fecha_publicacion,pdf_url}] (informes TSC)
 let searchQuery    = '';    // Global search — proveedor, entidad, ID
 let selectedSev    = null;  // Severity selected in modal form
 let currentPage    = 0;     // Current pagination page (0-indexed)
@@ -6156,47 +6136,6 @@ function _hasEmbargo(entityName) {
   return false;
 }
 
-// S140 — TSC informes de auditoría cross-reference
-const _TSC_KEYWORD_MAP = {
-  'IHSS':['seguridad social','ihss'],'SESAL':['secretaría de salud','secretaria de salud','sesal'],
-  'ENEE':['energía eléctrica','energia electrica','enee'],'SEFIN':['finanzas','sefin'],
-  'SAG':['agricultura',' sag,','sag '],'INSEP':['insep'],'COPECO':['riesgos','copeco'],
-  'SOPTRAVI':['soptravi'],'HONDUTEL':['telecomunicaciones','hondutel'],
-  'INVEST-H':['invest-h','invest h'],'SIT':['infraestructura y transporte','sit '],
-  'FHIS':['inversión social','inversion social','fhis'],'CNE':['consejo nacional electoral','cne'],
-  'AMDC':['amdc','distrito central'],'Poder Judicial':['poder judicial'],
-  'SEDUC':['educación','educacion','seduc'],'SEDIS':['desarrollo e inclusión','sedis'],
-  'SANAA':['sanaa'],'BANASUPRO':['banasupro'],'BANADESA':['banadesa'],
-  'INJUPEMP':['injupemp'],'SERNA':['recursos naturales','serna'],
-};
-
-async function _loadTSCEntidades() {
-  try {
-    const { data } = await _supabase().from('tsc_informes')
-      .select('titulo,busqueda_termino,fecha_publicacion,pdf_url')
-      .order('fecha_publicacion', { ascending: false });
-    if (!data) return;
-    _tscMap = {};
-    data.forEach(r => {
-      const k = r.busqueda_termino;
-      if (!_tscMap[k]) _tscMap[k] = [];
-      _tscMap[k].push(r);
-    });
-  } catch(e) { console.warn('TSC load:', e); }
-}
-
-function _getTSCKey(entityName) {
-  try {
-    if (!entityName || !_tscMap || Object.keys(_tscMap).length === 0) return null;
-    const n = entityName.toLowerCase();
-    for (const k in _TSC_KEYWORD_MAP) {
-      if (_tscMap[k] && _TSC_KEYWORD_MAP[k].some(function(p){ return n.indexOf(p) >= 0; })) return k;
-    }
-  } catch(e) {}
-  return null;
-}
-
-function _hasTSC(entityName) { try { return _getTSCKey(entityName) !== null; } catch(e){ return false; } }
 
 async function loadAlerts() {
   const progressBar  = document.getElementById('load-progress-bar');
@@ -6205,7 +6144,6 @@ async function loadAlerts() {
   if (progressWrap) progressWrap.style.display = 'block';
   setProgress(10);
   _loadEmbargoEntidades(); // S139: carga en paralelo, sin bloquear
-  _loadTSCEntidades();     // S140: informes TSC por entidad, carga en paralelo
 
   try {
     // ── 1. Stats from RPC — one DB query, returns all counts+montos instantly ──
@@ -6303,17 +6241,7 @@ async function fetchAndRender(page) {
     if (embargoNames.length > 0) {
       query = query.or(embargoNames.slice(0,8).map(n => `entity_name.ilike.%${n.slice(0,20)}%`).join(','));
     }
-  } else if (activeSource === 'TSC-AUDITADO') {
-    // S140: filtrar por entidades con informes TSC — usar keywords del mapa
-    const tscKeywords = Object.entries(_TSC_KEYWORD_MAP)
-      .filter(([k]) => _tscMap[k] && _tscMap[k].length > 0)
-      .flatMap(([, patterns]) => patterns)
-      .filter(p => p.length >= 4);
-    const uniqueKw = [...new Set(tscKeywords)].slice(0, 10);
-    if (uniqueKw.length > 0) {
-      query = query.or(uniqueKw.map(p => `entity_name.ilike.%${p.trim()}%`).join(','));
-    }
-  } else if (activeSource !== 'all') {
+
     query = query.eq('data_source', activeSource); // IAIP-COVID, IAIP-ETA, IAIP-2021/2/3
   }
 
@@ -8419,35 +8347,7 @@ function openAlertDetail(alertId, event, source = 'tabla') {
     }
   }
 
-  // S140 -- TSC Informes de Auditoría section --
-  const tscSec = document.getElementById('adp-tsc-section');
-  const tscList = document.getElementById('adp-tsc-list');
-  const tscSubtitle = document.getElementById('adp-tsc-subtitle');
-  if (tscSec && tscList) {
-    const tscKey = _getTSCKey(entidadDisplay);
-    const informes = tscKey ? (_tscMap[tscKey] || []) : [];
-    if (informes.length > 0) {
-      tscSec.style.display = 'block';
-      const recent = informes.slice(0, 8);
-      if (tscSubtitle) tscSubtitle.textContent = `${informes.length} informe${informes.length>1?'s':''} encontrado${informes.length>1?'s':''} para "${tscKey}" — fuente: tsc.gob.hn`;
-      tscList.innerHTML = recent.map(inf => {
-        const yr = inf.fecha_publicacion ? inf.fecha_publicacion.substring(0,4) : '—';
-        const pdfLink = inf.pdf_url ? `<a href="${inf.pdf_url}" target="_blank" onclick="event.stopPropagation()" style="color:var(--electric);font-size:10px;text-decoration:none;padding:2px 7px;border:1px solid rgba(0,168,214,0.4);border-radius:3px;white-space:nowrap;">📄 PDF</a>` : '';
-        return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,200,0,0.1);">
-          <span style="font-size:10px;color:#e6a800;font-weight:700;min-width:32px;">${yr}</span>
-          <span style="font-size:11px;color:var(--text);flex:1;line-height:1.4;">${inf.titulo}</span>
-          ${pdfLink}
-        </div>`;
-      }).join('');
-      if (informes.length > 8) {
-        tscList.innerHTML += `<div style="font-size:10px;color:var(--text-dim);padding-top:6px;">… y ${informes.length-8} informes adicionales en <a href="https://www.tsc.gob.hn" target="_blank" style="color:var(--electric);">tsc.gob.hn</a></div>`;
-      }
-    } else {
-      tscSec.style.display = 'none';
-    }
-  }
 
-  // -- Show panel, hide main view --
   document.getElementById('alertDetailPanel').classList.add('open');
   // If from busqueda, hide that panel before showing detail
   if (source === 'busqueda') {

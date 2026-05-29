@@ -13568,67 +13568,80 @@ function hidePhase4Detection() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function populatePhase4Detection() {
-  // Get detection results
-  const velocityThreats = detectVelocityThreats(allAlerts);
-  const anomalies = detectAnomalies(allAlerts);
-  const riskScores = calculateSupplierRiskScores(allAlerts);
+async function populatePhase4Detection() {
+  // S138: Server-side RPCs en vez de loops JS sobre allAlerts (Opción A)
+  const loading = '<div style="padding:12px;color:var(--text-dim);font-family:\'JetBrains Mono\',monospace;font-size:11px;">⏳ Consultando base de datos...</div>';
+  document.getElementById('p4-velocity-list').innerHTML = loading;
+  document.getElementById('p4-risk-list').innerHTML = loading;
+  document.getElementById('p4-anomaly-list').innerHTML = loading;
 
-  // Update summary stats
+  const [velRes, anomRes, riskRes] = await Promise.allSettled([
+    db.rpc('get_velocity_threats'),
+    db.rpc('get_anomalies_stats'),
+    db.rpc('get_supplier_risk_scores')
+  ]);
+
+  const velocityThreats = velRes.status === 'fulfilled' ? (velRes.value.data || []) : [];
+  const anomalies       = anomRes.status === 'fulfilled' ? (anomRes.value.data || []) : [];
+  const riskScores      = riskRes.status === 'fulfilled' ? (riskRes.value.data || []) : [];
+
   const criticalCount = riskScores.filter(r => r.severity === 'critical').length;
   document.getElementById('p4-velocity-count').textContent = velocityThreats.length;
   document.getElementById('p4-anomaly-count').textContent = anomalies.length;
   document.getElementById('p4-risk-critical').textContent = criticalCount;
 
-  // Populate Velocity Threats (top 10)
-  const velocityHTML = velocityThreats.slice(0, 10).map(threat => `
-    <div class="fuente-list-item" style="border-left: 4px solid ${threat.severity === 'critical' ? '#e63946' : threat.severity === 'high' ? '#f77f00' : '#fcbf49'};">
-      <div style="font-weight:600;color:#00c8ff;">${threat.vendor}</div>
+  const sevColor = s => s === 'critical' ? '#e63946' : s === 'high' ? '#f77f00' : '#fcbf49';
+  const sevLabel = s => s === 'critical' ? 'CRÍTICA' : s === 'high' ? 'ALTA' : (s||'').toUpperCase();
+  const fmtLhn  = n => Number(n||0).toLocaleString('es-HN', {maximumFractionDigits:0});
+
+  // Velocity Threats
+  const velocityHTML = velocityThreats.slice(0, 10).map(t => `
+    <div class="fuente-list-item" style="border-left:4px solid ${sevColor(t.severity)};">
+      <div style="font-weight:600;color:#00c8ff;">${t.vendor}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        🔴 Incidentes: ${threat.count} | Puntaje de Riesgo: ${threat.risk_score.toFixed(0)}/100 | Severidad: <strong>${threat.severity === 'critical' ? 'CRÍTICA' : threat.severity === 'high' ? 'ALTA' : threat.severity.toUpperCase()}</strong>
+        🔴 Incidentes: ${t.count} | Puntaje: <strong>${Number(t.risk_score).toFixed(0)}/100</strong> | Severidad: <strong>${sevLabel(t.severity)}</strong>
       </div>
-      <div style="font-size:12px;color:var(--red);margin-top:4px;">
-        Exceso Total: L ${(threat.totalExcess || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})}
-      </div>
-    </div>
-  `).join('');
+      <div style="font-size:12px;color:var(--red);margin-top:4px;">Exceso Total: L ${fmtLhn(t.total_excess)}</div>
+    </div>`).join('');
   document.getElementById('p4-velocity-list').innerHTML = velocityHTML || '<div style="padding:12px;color:var(--text-dim);">Sin amenazas de velocidad detectadas</div>';
 
-  // Populate Risk Scores (top 10)
-  const riskHTML = riskScores.slice(0, 10).map(supplier => `
-    <div class="fuente-list-item" style="border-left: 4px solid ${supplier.severity === 'critical' ? '#e63946' : supplier.severity === 'high' ? '#f77f00' : '#fcbf49'};">
-      <div style="font-weight:600;color:#00c8ff;">${supplier.vendor}</div>
+  // Risk Scores
+  const riskHTML = riskScores.slice(0, 10).map(s => `
+    <div class="fuente-list-item" style="border-left:4px solid ${sevColor(s.severity)};">
+      <div style="font-weight:600;color:#00c8ff;">${s.vendor}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        📊 Puntaje de Riesgo: <strong>${supplier.risk_score.toFixed(0)}/100</strong> | Severidad: ${supplier.severity === 'critical' ? 'CRÍTICA' : supplier.severity === 'high' ? 'ALTA' : supplier.severity.toUpperCase()} | Contratos: ${supplier.total_contracts}
+        📊 Puntaje: <strong>${Number(s.risk_score).toFixed(0)}/100</strong> | ${sevLabel(s.severity)} | Contratos: ${s.total_contracts}
       </div>
       <div style="font-size:11px;color:#aaa;margin-top:4px;">
-        Sobrepagos: ${supplier.overpay_count} | Exceso: L ${(supplier.overpay_total || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})} | Entidades: ${supplier.entities_count}
+        Sobrepagos: ${s.overpay_count} | Exceso: L ${fmtLhn(s.overpay_total)} | Entidades: ${s.entities_count}
       </div>
-      ${supplier.risk_factors.length > 0 ? `<div style="font-size:11px;color:#fcbf49;margin-top:4px;">⚠️ Factores de Riesgo: ${supplier.risk_factors.join(', ')}</div>` : ''}
-    </div>
-  `).join('');
+    </div>`).join('');
   document.getElementById('p4-risk-list').innerHTML = riskHTML || '<div style="padding:12px;color:var(--text-dim);">Sin proveedores con factores de riesgo</div>';
 
-  // Populate Anomalies (top 5)
-  const anomalyHTML = anomalies.slice(0, 5).map(anom => `
-    <div class="fuente-list-item" style="border-left: 4px solid #e63946;">
-      <div style="font-weight:600;color:#00c8ff;">Alert ID: ${anom.alert_id} | ${anom.vendor}</div>
+  // Anomalies
+  const anomalyHTML = anomalies.slice(0, 5).map(a => `
+    <div class="fuente-list-item" style="border-left:4px solid #e63946;">
+      <div style="font-weight:600;color:#00c8ff;">${a.alert_id} | ${a.vendor}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        📍 Entidad: ${anom.entity} | Desviación: <strong>${anom.deviation_score.toFixed(1)}σ</strong> | Severidad: ${anom.severity === 'critical' ? 'CRÍTICA' : anom.severity === 'high' ? 'ALTA' : anom.severity.toUpperCase()}
+        📍 Entidad: ${a.entity} | Desviación: <strong>${Number(a.deviation_score).toFixed(1)}σ</strong> | ${sevLabel(a.severity)}
       </div>
       <div style="font-size:12px;color:var(--red);margin-top:4px;">
-        Sobrepago: ${anom.actual_overpay.toFixed(1)}% (Promedio entidad: ${anom.entity_avg.toFixed(1)}%)
+        Sobrepago: ${Number(a.actual_overpay).toFixed(1)}% (Promedio entidad: ${Number(a.entity_avg).toFixed(1)}%)
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
   document.getElementById('p4-anomaly-list').innerHTML = anomalyHTML || '<div style="padding:12px;color:var(--text-dim);">Sin anomalías estadísticas detectadas</div>';
+
+  // Cache results for PDF export
+  window._p4Cache = { velocityThreats, anomalies, riskScores };
 }
 
 function exportPhase4PDF() {
   const ts = new Date().toLocaleDateString('es-HN');
-  const velocityThreats = detectVelocityThreats(allAlerts);
-  const anomalies = detectAnomalies(allAlerts);
-  const riskScores = calculateSupplierRiskScores(allAlerts);
+  // S138: usar cache de RPCs en vez de recalcular en JS
+  const cache = window._p4Cache || {};
+  const velocityThreats = cache.velocityThreats || [];
+  const anomalies = cache.anomalies || [];
+  const riskScores = cache.riskScores || [];
   const criticalCount = riskScores.filter(r => r.severity === 'critical').length;
   const fmtL = n => n > 0 ? 'L. ' + Number(n).toLocaleString('es-HN', {maximumFractionDigits:0}) : 'L. —';
 

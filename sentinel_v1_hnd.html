@@ -6121,7 +6121,7 @@ async function _loadRemainingAlertsBackground() {
 // S139 — Cargar entidades con embargo CUT activo
 async function _loadEmbargoEntidades() {
   try {
-    const { data } = await _supabase().from('entidades_embargo').select('entity_name').eq('activo', true);
+    const { data } = await db.from('entidades_embargo').select('entity_name').eq('activo', true);
     _embargoEntidades = new Set((data || []).map(r => (r.entity_name||'').toLowerCase().trim()));
   } catch(e) { console.warn('embargo load:', e); }
 }

@@ -729,10 +729,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 }
 .cell-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; }
 .cell-amount { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); white-space: nowrap; text-align: right; }
-/* IAIP emergency badges */
-.iaip-badge { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:10px; font-size:10px; font-weight:700; white-space:nowrap; vertical-align:middle; margin-left:4px; }
-.iaip-covid { background:rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35); }
-.iaip-eta   { background:rgba(249,115,22,0.18); color:#fb923c; border:1px solid rgba(249,115,22,0.35); }
 
 /* Severity badges — normSev() maps 'Crítica' → 'critica' for CSS class */
 .sev-badge {
@@ -877,7 +873,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   padding: 6px 10px; background: var(--navy); border-radius: 6px;
   font-size: 12px;
 }
-.adp-hi-id   { color: var(--electric); font-family: 'JetBrains Mono', monospace; width: 90px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adp-hi-id   { color: var(--electric); font-family: 'JetBrains Mono', monospace; width: 60px; flex-shrink: 0; }
 .adp-hi-sev  { font-size: 10px; font-weight: 600; letter-spacing: .04em; flex-shrink: 0; width: 54px; }
 .adp-hi-desc { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 
@@ -2317,6 +2313,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <span id="loginClock">—</span>
   </div>
   <div class="login-box">
+    <div class="login-shield">🛡️</div>
     <div class="login-country">República de Honduras</div>
     <div class="login-logo">SENTINEL<span>-AI</span></div>
     <div class="login-sub">Sistema Anticorrupción · PGR Honduras</div>
@@ -2466,18 +2463,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
   <div class="ip-body" style="max-width:880px;">
 
-    <!-- S138: Búsqueda por folio -->
-    <div class="cc-section" style="margin-bottom:12px;padding:12px 16px;background:rgba(0,200,255,0.05);border:1px solid rgba(0,200,255,0.2);border-radius:10px;">
-      <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;">Cargar borrador por folio</div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input class="ip-search" type="text" id="ccFolioInput" placeholder="Ej. AUTO-2026-351" style="flex:1;margin:0;"
-          onkeydown="if(event.key==='Enter')ccCargarPorFolio()"
-          oninput="this.value=this.value.toUpperCase()">
-        <button onclick="ccCargarPorFolio()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:10px;padding:10px 18px;font-size:12px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">🔍 CARGAR</button>
-      </div>
-      <div id="ccFolioMsg" style="font-size:11px;margin-top:6px;display:none;"></div>
-    </div>
-
     <!-- PASO 1: Inputs -->
     <div class="cc-section">
       <div class="cc-section-title">Paso 1 — Define el caso</div>
@@ -2496,6 +2481,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </select>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
           <button onclick="ccAnalizar()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:10px;padding:10px 24px;font-size:12px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;">⚡ ANALIZAR CASO</button>
+          <button onclick="ccMisExpedientes()" style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 18px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">📂 MIS EXPEDIENTES</button>
         </div>
       </div>
     </div>
@@ -2521,66 +2507,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 </div>
 
 <!-- ═══ MODAL: GUARDAR EXPEDIENTE ═══ -->
-<!-- ── MODAL GESTIONAR CONTACTOS ─────────────────────────────── -->
-<div id="niContactosModal" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
-  <div style="background:#0d1117;border:1px solid rgba(13,148,136,0.4);border-radius:14px;padding:28px;width:640px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,0.6);max-height:85vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-      <div>
-        <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#0d9488;margin-bottom:4px;">Notificaciones · Mejora #3</div>
-        <div style="font-size:16px;font-weight:800;color:#e2e8f0;">📋 Gestionar Contactos de Instituciones</div>
-      </div>
-      <button onclick="niContactosCerrar()" style="background:transparent;border:none;color:#64748b;font-size:20px;cursor:pointer;padding:4px 8px;">✕</button>
-    </div>
-
-    <!-- Formulario agregar -->
-    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:16px;margin-bottom:20px;">
-      <div style="font-size:11px;font-weight:700;color:#0d9488;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">➕ Agregar Contacto</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-        <div>
-          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Institución *</div>
-          <input id="niCInst" placeholder="Ej: Secretaria de Salud" style="width:100%;background:#1e293b;border:1px solid #334155;color:#e2e8f0;border-radius:6px;padding:7px 10px;font-size:12px;box-sizing:border-box;">
-        </div>
-        <div>
-          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Email *</div>
-          <input id="niCEmail" placeholder="contacto@institución.gob.hn" type="email" style="width:100%;background:#1e293b;border:1px solid #334155;color:#e2e8f0;border-radius:6px;padding:7px 10px;font-size:12px;box-sizing:border-box;">
-        </div>
-        <div>
-          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Nombre del Contacto</div>
-          <input id="niCNombre" placeholder="Ej: Juan Pérez" style="width:100%;background:#1e293b;border:1px solid #334155;color:#e2e8f0;border-radius:6px;padding:7px 10px;font-size:12px;box-sizing:border-box;">
-        </div>
-        <div>
-          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Cargo</div>
-          <input id="niCCargo" placeholder="Ej: Director Administrativo" style="width:100%;background:#1e293b;border:1px solid #334155;color:#e2e8f0;border-radius:6px;padding:7px 10px;font-size:12px;box-sizing:border-box;">
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <button onclick="niContactosAgregar()" style="padding:8px 20px;background:#0d9488;border:none;color:#fff;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">Agregar</button>
-        <div id="niCMsg" style="font-size:12px;color:#64748b;"></div>
-      </div>
-    </div>
-
-    <!-- Lista de contactos -->
-    <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Contactos Registrados</div>
-    <div id="niContactosLista" style="font-size:13px;color:#94a3b8;">Cargando...</div>
-  </div>
-</div>
-<!-- ──────────────────────────────────────────────────────────── -->
-
-<!-- ── MODAL NOTIFICAR INSTITUCIONES ─────────────────────────── -->
-<div id="niModal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
-  <div style="background:#0d1117;border:1px solid rgba(124,58,237,0.4);border-radius:14px;padding:32px;width:560px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.6);max-height:80vh;overflow-y:auto;">
-    <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7c3aed;margin-bottom:6px;">Mejora #3 · Notificaciones</div>
-    <div style="font-size:16px;font-weight:800;color:#e2e8f0;margin-bottom:4px;">🏛️ Notificar Instituciones</div>
-    <div style="font-size:12px;color:#64748b;margin-bottom:20px;">Envía alerta formal a las instituciones con contratos CRÍTICOS/ALTOS activos.</div>
-    <div id="niContenido" style="margin-bottom:20px;font-size:13px;color:#94a3b8;">Cargando vista previa...</div>
-    <div style="display:flex;gap:12px;justify-content:flex-end;">
-      <button onclick="niCerrar()" style="padding:8px 20px;background:transparent;border:1px solid #334155;color:#94a3b8;border-radius:8px;cursor:pointer;font-size:13px;">Cancelar</button>
-      <button id="niBtnEnviar" onclick="niEnviar()" style="padding:8px 20px;background:#7c3aed;border:none;color:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;display:none;">📤 Enviar Notificaciones</button>
-    </div>
-  </div>
-</div>
-<!-- ──────────────────────────────────────────────────────────── -->
-
 <div id="ccGuardarModal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
   <div style="background:#0d1117;border:1px solid rgba(160,180,210,0.2);border-radius:14px;padding:32px;width:480px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
     <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#64748b;margin-bottom:6px;">Constructor de Caso</div>
@@ -2626,25 +2552,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </button>
 </div>
 
-<!-- ═══════════════════ TOP 10 CASOS CRÍTICOS — S93A / S127 ═══════════════════ -->
+<!-- ═══════════════════ TOP 10 CASOS CRÍTICOS — S93A ═══════════════════ -->
 <div id="top5Panel" class="hidden">
   <div class="t5-header">
     <div class="t5-header-left">
-      <h2 id="top10Title">🚨 Top 10 Casos Críticos</h2>
-      <p id="top10Subtitle">ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · DATOS EN TIEMPO REAL</p>
-      <!-- Toggle Por Proveedor / Por Entidad — S127 -->
-      <div style="display:flex;gap:6px;margin-top:10px;">
-        <button id="btnModeProveedor" onclick="switchTop10Mode('proveedor')"
-          style="padding:5px 12px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.08em;
-          background:rgba(96,165,250,0.2);color:#60a5fa;border:1px solid rgba(96,165,250,0.5);border-radius:6px;cursor:pointer;">
-          📦 Por Proveedor
-        </button>
-        <button id="btnModeEntidad" onclick="switchTop10Mode('entidad')"
-          style="padding:5px 12px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.08em;
-          background:rgba(160,180,210,0.08);color:rgba(160,180,210,0.5);border:1px solid rgba(160,180,210,0.2);border-radius:6px;cursor:pointer;">
-          🏛️ Por Entidad
-        </button>
-      </div>
+      <h2>🚨 Top 10 Casos Críticos</h2>
+      <p>ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · DATOS EN TIEMPO REAL</p>
     </div>
     <div style="display:flex;gap:10px;">
       <button onclick="exportarTop10PDF()"
@@ -2744,15 +2657,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag pe-tag-active">PDF</span>
     </div>
 
-    <!-- Card 9 — Mis Expedientes -->
-    <div class="pe-card" onclick="ccMisExpedientes()">
-      <div class="pe-card-num">09</div>
-      <div class="pe-card-icon">💾</div>
-      <div class="pe-card-title">Mis Expedientes</div>
-      <div class="pe-card-desc">Casos guardados · Constructor de Caso · Historial de investigaciones</div>
-      <span class="pe-card-tag pe-tag-active">ACTIVO</span>
-    </div>
-
   </div>
 </div>
 
@@ -2790,7 +2694,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span class="nav-icon">🔴</span> Concentración
       </button>
       <button class="nav-item" id="nav-sobrecostos" onclick="showGlobalSobrecostos()">
-        <span class="nav-icon">💰</span> Sobrepago
+        <span class="nav-icon">💰</span> Sobrepresupuesto
       </button>
       <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()">
         <span class="nav-icon">⚡</span> Anomalías
@@ -2853,7 +2757,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span class="nav-icon">🏢</span> Mi Org
         <span class="nav-chip" style="background:rgba(16,185,129,0.15);color:#10b981;border-color:rgba(16,185,129,0.3);">ORG</span>
       </button>
-      <a class="nav-item" href="https://sentinelai-hn.com">
+      <a class="nav-item" href="index.html">
         <span class="nav-icon">🏠</span> Inicio
       </a>
       <button class="nav-item nav-logout" onclick="doLogout()">
@@ -2911,7 +2815,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-metrics" style="grid-template-columns:repeat(2,1fr);gap:6px;margin:8px 0 0;">
           <div class="exec-metric"><div class="exec-metric-val v-red" id="exec-m-criticos">—</div><div class="exec-metric-label">Críticos</div></div>
           <div class="exec-metric"><div class="exec-metric-val v-amber" id="exec-m-monto">—</div><div class="exec-metric-label">Monto expuesto</div></div>
-          <div class="exec-metric"><div class="exec-metric-val v-amber" id="exec-m-sobre">—</div><div class="exec-metric-label">Ejec. Acelerada</div></div>
+          <div class="exec-metric"><div class="exec-metric-val v-amber" id="exec-m-sobre">—</div><div class="exec-metric-label">Sobrepresupuesto</div></div>
           <div class="exec-metric"><div class="exec-metric-val v-text" id="exec-m-inv">—</div><div class="exec-metric-label">Investigaciones</div></div>
         </div>
         <div class="po-submenu">
@@ -2964,7 +2868,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <span class="po-item-icon">🔵</span><span class="po-item-label">Instituciones con más alertas</span><span class="po-item-tag tag-n">ranking</span><span class="po-arrow">›</span>
         </button>
         <button class="po-item" onclick="executePlaybookQuery('sobre-presupuesto')">
-          <span class="po-item-icon">🟠</span><span class="po-item-label">Instituciones Ejec. Acelerada</span><span class="po-item-tag tag-c" style="background:rgba(255,171,0,.15);color:var(--amber);">SEFIN PIEP</span><span class="po-arrow">›</span>
+          <span class="po-item-icon">🟠</span><span class="po-item-label">Instituciones Sobrepresupuesto</span><span class="po-item-tag tag-c" style="background:rgba(255,171,0,.15);color:var(--amber);">SEFIN PIEP</span><span class="po-arrow">›</span>
         </button>
         <button class="po-item" onclick="executePlaybookQuery('red-flags')">
           <span class="po-item-icon">🚩</span><span class="po-item-label">Entidades y Personas — Lista de Riesgo</span><span class="po-item-tag tag-r">Red Flags</span><span class="po-arrow">›</span>
@@ -2982,10 +2886,25 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
         <div style="padding:8px 12px 4px;display:flex;flex-direction:column;gap:2px;">
           <button class="po-item" onclick="event.stopPropagation();poGo(showAnalyticsPanel)"><span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span></button>
-          <button class="po-item" onclick="event.stopPropagation();poGo(showVendorConcentrationPanel)"><span class="po-item-icon">🎯</span><span class="po-item-label">Concentración</span><span class="po-arrow">›</span></button>
-          <button class="po-item" onclick="event.stopPropagation();poGo(showGlobalSobrecostos)"><span class="po-item-icon">💰</span><span class="po-item-label">Sobrepago</span><span class="po-item-tag tag-n">43 casos</span><span class="po-arrow">›</span></button>
+          <button class="po-item" onclick="event.stopPropagation();poGo(showGlobalSobrecostos)"><span class="po-item-icon">💰</span><span class="po-item-label">Sobrepresupuestos</span><span class="po-arrow">›</span></button>
           <button class="po-item" onclick="event.stopPropagation();poGo(showPhase4Detection)"><span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span></button>
-          <button class="po-item" onclick="event.stopPropagation();poGo(showSectorPanel)"><span class="po-item-icon">🏛️</span><span class="po-item-label">Sectores Institucionales</span><span class="po-arrow">›</span></button>
+        </div>
+        <div class="po-submenu">
+          <button class="po-item" onclick="poGo(showAnalyticsPanel)">
+            <span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showVendorConcentrationPanel)">
+            <span class="po-item-icon">🎯</span><span class="po-item-label">Concentración</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showGlobalSobrecostos)">
+            <span class="po-item-icon">💰</span><span class="po-item-label">Sobrepresupuestos</span><span class="po-item-tag tag-n">43 casos</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showPhase4Detection)">
+            <span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showSectorPanel)">
+            <span class="po-item-icon">🏛️</span><span class="po-item-label">Sectores Institucionales</span><span class="po-arrow">›</span>
+          </button>
         </div>
       </div>
 
@@ -3003,6 +2922,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <button class="po-item" onclick="event.stopPropagation();poGo(showScannerPanel)"><span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-arrow">›</span></button>
         </div>
         <div class="po-submenu">
+          <button class="po-item" onclick="abrirConstructorCaso()" style="border-bottom:1px solid rgba(0,200,255,0.15);margin-bottom:4px;">
+            <span class="po-item-icon">⚖️</span><span class="po-item-label">Constructor de Caso</span><span class="po-item-tag" style="background:rgba(0,200,255,0.1);color:var(--cyan);border:1px solid rgba(0,200,255,0.25);">NUEVO</span><span class="po-arrow">›</span>
+          </button>
           <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()">
             <span class="po-item-icon">📄</span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span>
           </button>
@@ -3137,14 +3059,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <button onclick="dispararNotificacion('resumen-investigaciones','Resumen Investigaciones')" class="notif-trigger-btn">
           📊 Resumen Investigaciones
         </button>
-        <button onclick="dispararNotificacion('alerta-sobrepresupuesto','Alerta Ejec. Acelerada')" class="notif-trigger-btn">
-          ⚠️ Ejec. Acelerada SEFIN
-        </button>
-        <button onclick="niAbrir()" class="notif-trigger-btn" style="border-color:#7c3aed;color:#7c3aed;" title="Notificación directa a instituciones con alertas activas">
-          🏛️ Notificar Instituciones
-        </button>
-        <button onclick="niContactosAbrir()" class="notif-trigger-btn" style="border-color:#0d9488;color:#0d9488;" title="Gestionar contactos de instituciones">
-          📋 Gestionar Contactos
+        <button onclick="dispararNotificacion('alerta-sobrepresupuesto','Alerta Sobrepresupuesto')" class="notif-trigger-btn">
+          ⚠️ Sobrepresupuesto SEFIN
         </button>
       </div>
       <div id="notif-status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);display:none;"></div>
@@ -3171,7 +3087,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="po-ind"><span class="po-ind-lbl">Riesgo Alto</span><span class="po-ind-val amber" id="po-ind-alto">—</span></div>
       <div class="po-ind"><span class="po-ind-lbl">Listas Internacionales</span><span class="po-ind-val purple" id="po-ind-intl">—</span></div>
       <div class="po-ind"><span class="po-ind-lbl">Total Monitoreado</span><span class="po-ind-val blue" id="po-ind-total">—</span></div>
-      <div class="po-ind"><span class="po-ind-lbl">Ejec. Acelerada</span><span class="po-ind-val amber" id="po-ind-sob">—</span></div>
+      <div class="po-ind"><span class="po-ind-lbl">Sobrepresupuesto</span><span class="po-ind-val amber" id="po-ind-sob">—</span></div>
       <div class="po-ind"><span class="po-ind-dot green"></span><span class="po-ind-lbl">Estado</span><span class="po-ind-val green">Operativo</span></div>
     </div>
   </div>
@@ -3333,7 +3249,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
       <!-- Sobrecosto box -->
       <div class="exec-card exec-card-amber">
-        <div class="exec-card-label">Riesgo Sobrepago</div>
+        <div class="exec-card-label">Riesgo Sobrepresupuesto</div>
         <div class="exec-card-value" id="exec-sobrecosto">—</div>
         <div class="exec-card-sub" id="exec-sobrecosto-monto">L —</div>
         <div class="exec-card-note">▸ Análisis SIAFI2</div>
@@ -3386,6 +3302,17 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-value" id="exec-borradores-activos">—</div>
         <div class="exec-card-sub">borradores pendientes revisión</div>
         <div class="exec-card-note">▸ Generados por auto-investigador</div>
+      </div>
+
+      <!-- KPI: TSC — Informes de Auditoría -->
+      <div class="exec-card exec-card-electric" style="cursor:pointer;" onclick="showTSCModal()" title="Ver informes TSC" onmouseover="this.style.borderColor='var(--electric)'" onmouseout="this.style.borderColor=''">
+        <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Informes TSC</span>
+          <span style="background:var(--electric);color:#000;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">⚖️</span>
+        </div>
+        <div class="exec-card-value" id="exec-tsc-count">—</div>
+        <div class="exec-card-sub" id="exec-tsc-sub">entidades auditadas</div>
+        <div class="exec-card-note">▸ Clic para ver informes →</div>
       </div>
 
     </div>
@@ -3593,7 +3520,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <!-- Severity filter bar -->
   <div class="controls-bar">
     <button class="filter-btn active" data-f="all"     onclick="setFilter('all')">TODAS</button>
-    <button class="filter-btn"        data-f="signal"  onclick="setFilter('signal')">⚡ SEÑAL</button>
     <button class="filter-btn"        data-f="critica" onclick="setFilter('critica')">CRÍTICAS</button>
     <button class="filter-btn"        data-f="alta"    onclick="setFilter('alta')">ALTAS</button>
     <button class="filter-btn"        data-f="media"   onclick="setFilter('media')">MEDIAS</button>
@@ -3611,20 +3537,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
     <button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" onclick="setPatternFilter('PROVEEDOR_SANCIONADO')">🚨 SANCIONADO OFAC</button>
     <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')">🇺🇸 LISTA ENGEL</button>
-  </div>
-
-  <!-- Source filter bar — S134 -->
-  <div class="controls-bar" style="margin-top:6px; gap:6px; flex-wrap:wrap;">
-    <span style="color:var(--muted);font-size:11px;letter-spacing:.06em;align-self:center;margin-right:4px;">FUENTE:</span>
-    <button class="filter-btn active" data-s="all"        onclick="setSourceFilter('all')">TODAS</button>
-    <button class="filter-btn"        data-s="SEFIN"      onclick="setSourceFilter('SEFIN')">SEFIN</button>
-    <button class="filter-btn"        data-s="ONCAE"      onclick="setSourceFilter('ONCAE')">ONCAE</button>
-    <button class="filter-btn"        data-s="IAIP-COVID" onclick="setSourceFilter('IAIP-COVID')">🦠 COVID-19</button>
-    <button class="filter-btn"        data-s="IAIP-ETA"   onclick="setSourceFilter('IAIP-ETA')">🌀 Eta</button>
-    <button class="filter-btn"        data-s="IAIP-2021"  onclick="setSourceFilter('IAIP-2021')">IAIP 2021</button>
-    <button class="filter-btn"        data-s="IAIP-2022"  onclick="setSourceFilter('IAIP-2022')">IAIP 2022</button>
-    <button class="filter-btn"        data-s="IAIP-2023"  onclick="setSourceFilter('IAIP-2023')">IAIP 2023</button>
-    <button class="filter-btn"        data-s="EMBARGO-CUT" onclick="setSourceFilter('EMBARGO-CUT')" title="Entidades con embargos activos a la CUT (TSC 2026)">⚖️ Embargo CUT</button>
   </div>
 
   <!-- Risk scoring legend -->
@@ -3795,7 +3707,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- Drill-down tabs -->
     <div style="display:flex;gap:8px;margin-bottom:16px;padding:12px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;">
       <button class="ep-drill-tab active" data-tab="recent" onclick="switchEntityDrillTab('recent',this)">📋 Recientes</button>
-      <button class="ep-drill-tab" data-tab="sobrecosto" onclick="switchEntityDrillTab('sobrecosto',this)">💰 Sobrecosto</button>
+      <button class="ep-drill-tab" data-tab="sobrecosto" onclick="switchEntityDrillTab('sobrecosto',this)">💰 Sobrepresupuesto</button>
       <button class="ep-drill-tab" data-tab="vendors" onclick="switchEntityDrillTab('vendors',this)">🏢 Proveedores</button>
       <button class="ep-drill-tab" data-tab="patterns" onclick="switchEntityDrillTab('patterns',this)">🎯 Patrones</button>
     </div>
@@ -3812,7 +3724,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="ep-drill-content" id="ep-drill-sobrecosto">
       <div class="fuente-chart-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <div class="fuente-recent-title">💰 Contratos con SOBREPAGO (Pagado > Contratado)</div>
+          <div class="fuente-recent-title">💰 Contratos con SOBREPRESUPUESTO (Pagado > Contratado)</div>
           <div style="margin-top:4px;margin-bottom:2px;font-size:10px;color:var(--amber,#f59e0b);display:flex;align-items:center;gap:5px;">
             <span>⚠️</span>
             <span>Datos parciales — cobertura completa pendiente integración SIAFI</span>
@@ -3870,7 +3782,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div id="ep-pattern-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
-
+  </div>
 
   <!-- ══ AUDIT LOG PANEL ══ -->
   <!-- ═══════════════════ AUDITORÍA DEL SISTEMA (S74) ═══════════════════ -->
@@ -4257,7 +4169,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
         <!-- Derived SOBRECOSTO alert — shown when monto_pagado > monto_contrato * 1.15 -->
         <div id="adp-sobrecosto-pagado-section" style="display:none;margin:8px 0;padding:8px 12px;background:rgba(255,61,87,0.1);border:1px solid var(--red);border-radius:6px;">
-          <span style="color:var(--red);font-weight:700;font-size:12px;">⚠ SOBREPAGO DETECTADO</span>
+          <span style="color:var(--red);font-weight:700;font-size:12px;">⚠ SOBREPRESUPUESTO DETECTADO</span>
           <span id="adp-sobrecosto-pagado-pct" style="color:var(--red);font-size:11px;margin-left:8px;"></span>
           <div style="color:var(--text-dim);font-size:10px;margin-top:2px;">Monto pagado supera el monto contratado en más del 15%</div>
         </div>
@@ -4286,12 +4198,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
 
-    <!-- IAIP Emergency Context — shown only for IAIP records -->
-    <div id="adp-emergencia-section" style="display:none;margin:14px 0;padding:14px 18px;border-radius:8px;border:1px solid;gap:10px;">
-      <div style="font-weight:700;font-size:12px;letter-spacing:.05em;margin-bottom:8px;" id="adp-emergencia-title">🦠 CONTEXTO DE EMERGENCIA</div>
-      <div style="font-size:12px;line-height:1.6;color:var(--text-dim);" id="adp-emergencia-desc"></div>
-    </div>
-
+    <!-- Vendor history & entity history row -->
     <div class="adp-grid">
       <div class="adp-card">
         <div class="adp-card-title">Historial del Proveedor <span id="adp-vendor-count" style="color:var(--electric)"></span></div>
@@ -4313,7 +4220,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="fuente-back" onclick="hideGlobalSobrecostos()">← Contratos</button>
 
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div class="fuente-title">📊 Resumen de <span>Ejecución Acelerada</span></div>
+      <div class="fuente-title">📊 Resumen de <span>Sobrepresupuestos</span></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button onclick="document.getElementById('sp-riesgo-section').scrollIntoView({behavior:'smooth',block:'start'})" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(255,165,0,0.5);background:rgba(255,165,0,0.08);color:var(--amber);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(255,165,0,0.16)'" onmouseout="this.style.background='rgba(255,165,0,0.08)'">⚠️ Ver Riesgo</button>
         <button onclick="exportSobrecostoRealPDF()" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.10);color:var(--electric);font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(0,168,214,0.2)'" onmouseout="this.style.background='rgba(0,168,214,0.10)'">📄 PDF</button>
@@ -4324,7 +4231,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="fuente-stats-row" style="margin-bottom:16px;">
       <div class="fuente-stat">
         <div class="fuente-stat-val" id="sp-total-count">0</div>
-        <div class="fuente-stat-lbl">Total Ejec. Acelerada</div>
+        <div class="fuente-stat-lbl">Total Sobrepresupuestos</div>
       </div>
       <div class="fuente-stat">
         <div class="fuente-stat-val" style="color:var(--red);" id="sp-total-amount">L —</div>
@@ -4353,7 +4260,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- All sobrecostos list -->
     <div class="fuente-chart-card">
       <div style="margin-bottom:6px;">
-        <div class="fuente-recent-title" id="sp-sobrecosto-list-title">Detalle de Ejec. Acelerada</div>
+        <div class="fuente-recent-title" id="sp-sobrecosto-list-title">Detalle de Sobrepresupuestos</div>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;" id="sp-sobrecosto-list-sub">Ordenados por monto de exceso — mayor primero</div>
       <div class="fuente-recent-list" id="sp-sobrecosto-list"></div>
@@ -4361,19 +4268,19 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
     <!-- RIESGO SOBRECOSTO — contratos sin competencia de datos reales SEFIN -->
     <div id="sp-riesgo-section" class="fuente-chart-card" style="margin-top:20px;border:1px solid rgba(255,165,0,0.35);">
-      <div class="fuente-recent-title" style="color:var(--amber);">⚠️ RIESGO EJEC. ACELERADA — Contratos Reales SEFIN</div>
+      <div class="fuente-recent-title" style="color:var(--amber);">⚠️ RIESGO SOBREPRESUPUESTO — Contratos Reales SEFIN</div>
       <div style="font-size:10px;color:var(--amber,#f59e0b);margin-bottom:8px;">Datos parciales — cobertura completa pendiente integración SIAFI</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.5;">
         Los datos EDCA/SEFIN no incluyen montos pagados (etapa PAGADO). Se identifican contratos de
         <strong style="color:var(--red);">ALTO RIESGO</strong> por ausencia de competencia o uso de emergencia —
-        categorías históricamente asociadas a ejecución acelerada en Honduras.
+        categorías históricamente asociadas a sobrepresupuestos en Honduras.
         <br/><br/>
         La lógica de detección funciona así: en contratación pública, el precio justo se establece mediante competencia abierta entre proveedores.
         Cuando un contrato se adjudica directamente (<strong style="color:var(--red);">ADJUDICACION_DIRECTA</strong>) o bajo figura de emergencia
         (<strong style="color:var(--amber);">COMPRA_EMERGENCIA</strong>), ese mecanismo de control desaparece — el Estado acepta el precio que
         propone un solo proveedor sin compararlo. Estudios del Banco Mundial y OCDE documentan que estos contratos tienen
         entre 20% y 40% más probabilidad de resultar en pagos finales superiores al monto contratado.
-        Sentinel marca estos contratos como riesgo potencial de ejec. acelerada <em>preventivamente</em>, antes de que ocurra el pago.
+        Sentinel marca estos contratos como riesgo potencial de sobrepresupuesto <em>preventivamente</em>, antes de que ocurra el pago.
       </div>
       <div class="fuente-stats-row" style="margin-bottom:16px;">
         <div class="fuente-stat">
@@ -4449,7 +4356,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
     <!-- Amenazas de Velocidad -->
     <div class="fuente-chart-card" style="margin-bottom:20px;">
-      <div class="fuente-recent-title">⚡ Amenazas de Velocidad — Proveedores con Múltiples Sobrepagos</div>
+      <div class="fuente-recent-title">⚡ Amenazas de Velocidad — Proveedores con Múltiples Sobrecostos</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Proveedores con 3 o más incidentes de sobrepago registrados</div>
       <div class="fuente-recent-list" id="p4-velocity-list"></div>
     </div>
@@ -4466,6 +4373,53 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="fuente-recent-title">🚨 Anomalías Estadísticas — Desviación del Promedio por Entidad</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;opacity:0.7;">Contratos con pagos que se desvían más de 2σ del promedio de su entidad</div>
       <div class="fuente-recent-list" id="p4-anomaly-list"></div>
+    </div>
+  </div>
+
+  <!-- ══ TSC PANEL ══ -->
+  <div class="fuente-panel" id="tscPanel">
+    <button class="fuente-back" onclick="hideTSCPanel()">← Portal</button>
+    <div class="fuente-header">
+      <div class="fuente-title">⚖️ <span>Informes de Auditoría — TSC</span></div>
+      <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
+        Tribunal Superior de Cuentas · 137 informes · 22 entidades auditadas
+      </div>
+    </div>
+    <!-- Filtro por entidad -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <input id="tscFilterInput" type="text" placeholder="Filtrar por entidad o informe..." style="flex:1;min-width:200px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text);padding:7px 12px;border-radius:6px;font-size:12px;" oninput="renderTSCTable()" />
+    </div>
+    <!-- Stats resumen -->
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Informes</div>
+        <div id="tsc-stat-informes" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Entidades</div>
+        <div id="tsc-stat-entidades" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+      <div style="background:rgba(255,150,0,0.08);border:1px solid rgba(255,150,0,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Con PDF</div>
+        <div id="tsc-stat-hallazgos" style="font-size:22px;font-weight:700;color:var(--amber);">—</div>
+      </div>
+    </div>
+    <!-- Tabla informes -->
+    <div class="table-container">
+      <table class="alert-table" id="tscTable">
+        <thead>
+          <tr>
+            <th style="width:90px;">Fecha</th>
+            <th style="width:140px;">Entidad</th>
+            <th>Informe</th>
+            <th style="width:110px;text-align:center;">Categoría</th>
+            <th style="width:60px;text-align:center;">PDF</th>
+          </tr>
+        </thead>
+        <tbody id="tscTableBody">
+          <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-dim);">Cargando informes TSC...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -4961,16 +4915,13 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- Tabla triage -->
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Denuncias Ciudadanas</span>
+          <span class="card-title">Denuncias Entrantes — Triage IA</span>
           <span class="card-badge" style="color:var(--purple);border-color:rgba(168,85,247,0.3);background:var(--purple-dim);" id="mf-canal-status">● Canal Activo</span>
-        </div>
-        <div style="padding:10px 16px 0;display:flex;gap:6px;flex-wrap:wrap;" id="mf-filtros-bar">
-          <!-- chips inyectados por JS -->
         </div>
         <div class="card-body" style="padding:0;">
           <table class="alert-table">
             <thead>
-              <tr><th>ID</th><th>Canal</th><th>Resumen</th><th>Score IA</th><th>Estado</th><th>Acc.</th></tr>
+              <tr><th>ID</th><th>Canal</th><th>Resumen</th><th>Score IA</th><th>Corrobora BD</th><th>Acción</th></tr>
             </thead>
             <tbody id="mf-triage-tbody">
               <tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Cargando denuncias...</td></tr>
@@ -5288,7 +5239,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span>🔄</span><span>Actualizar Datos — Ingesta ONCAE + SEFIN</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        ONCAE: contratos HC1 · SEFIN PIEP: ejecución presupuestaria para detección EJEC. ACELERADA
+        ONCAE: contratos HC1 · SEFIN PIEP: ejecución presupuestaria para detección SOBREPRESUPUESTO
       </div>
     </div>
 
@@ -5329,7 +5280,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <span style="font-size:18px;">🏦</span>
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;">SEFIN PIEP — Ejecución Presupuestaria</div>
-            <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">piep.sefin.gob.hn · Detección EJEC. ACELERADA por ritmo de gasto institucional</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">piep.sefin.gob.hn · Detección SOBREPRESUPUESTO por ritmo de gasto institucional</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
@@ -5346,10 +5297,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           </div>
         </div>
         <div style="font-size:11px;color:var(--text-dim);line-height:1.6;padding:10px;border-radius:8px;background:rgba(255,171,0,0.04);border:1px solid rgba(255,171,0,0.08);margin-bottom:14px;">
-          ⚠️ Detecta instituciones que gastan más del 115% de su ritmo esperado. Los contratos EDCA de esas instituciones reciben <code style="color:var(--amber);">budget_amount</code> proporcional, activando EJEC. ACELERADA en el dashboard.
+          ⚠️ Detecta instituciones que gastan más del 115% de su ritmo esperado. Los contratos EDCA de esas instituciones reciben <code style="color:var(--amber);">budget_amount</code> proporcional, activando SOBREPRESUPUESTO en el dashboard.
         </div>
         <button id="sefinRunBtn" onclick="runSEFINIngest()" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--amber),#cc8800);color:#1a0d00;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.04em;transition:opacity .2s;">
-          🏦 Actualizar SEFIN EJEC. ACELERADA
+          🏦 Actualizar SEFIN SOBREPRESUPUESTO
         </button>
         <!-- SEFIN result inline -->
         <div id="sefinResult" style="display:none;margin-top:12px;padding:12px;border-radius:8px;border:1px solid rgba(0,230,118,0.2);background:rgba(0,230,118,0.04);font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;line-height:1.8;"></div>
@@ -5397,7 +5348,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="fuente-header">
       <div class="fuente-title">🔎 <span>Búsqueda en Base de Datos</span></div>
       <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
-        Consulta los <span id="bd-total-registros">166,006</span> registros de SEFIN y ONCAE con filtros combinados.
+        Consulta los <span id="bd-total-registros">127,832</span> registros de SEFIN y ONCAE con filtros combinados.
       </div>
     </div>
 
@@ -5469,7 +5420,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <option value="PROVEEDOR_FUERA_DE_GIRO">Fuera de Giro</option>
           <option value="CD_ALTO_MONTO">CD Alto Monto</option>
           <option value="SIN_HISTORIAL_PROVEEDOR">Sin Historial</option>
-          <option value="SOBRECOSTO">Sobrecosto</option>
+          <option value="SOBRECOSTO">Sobrepresupuesto</option>
           <option value="CLUSTER_CD">Cluster CD</option>
         </select>
       </div>
@@ -5620,7 +5571,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:14%;height:100%;background:var(--electric);border-radius:3px;"></div></div>
           </div>
           <div>
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Ejec. Acelerada institucional</span><span style="font-family:'JetBrains Mono',monospace;color:var(--text-dim)">12%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Sobrepresupuesto institucional</span><span style="font-family:'JetBrains Mono',monospace;color:var(--text-dim)">12%</span></div>
             <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:12%;height:100%;background:var(--text-dim);border-radius:3px;"></div></div>
           </div>
         </div>
@@ -5956,22 +5907,13 @@ try {
 // ════════════════════════════════════════════════════════════
 // APP STATE
 // ════════════════════════════════════════════════════════════
-let allAlerts      = [];    // Background cross-reference dataset (Engel/RedFlag/News)
-let activeFilter   = 'all'; // S132: server-side pagination — 'all' loads instantly
+let allAlerts      = [];    // Full dataset from Supabase
+let activeFilter   = 'all'; // Active severity filter
 let activePattern  = 'all'; // Active pattern filter
-let activeSource   = 'all'; // S134: data_source filter (SEFIN/ONCAE/IAIP-*)
-let _embargoEntidades = new Set(); // S139: entidades con embargo CUT activo (TSC 2026)
 let searchQuery    = '';    // Global search — proveedor, entidad, ID
 let selectedSev    = null;  // Severity selected in modal form
 let currentPage    = 0;     // Current pagination page (0-indexed)
 const ALERTS_PER_PAGE = 50; // Rows per page
-
-// S132 — Server-side pagination globals
-let _cachedStats      = null; // Aggregate stats from get_alert_stats() RPC
-let _currentPageData  = [];   // Current 50-row page fetched from Supabase
-let _currentPageTotal = 0;    // Total records matching current filter
-let _allAlertsReady   = false; // True when background cross-reference load is done
-let _searchDebounce   = null;  // Debounce timer for search input
 
 // ════════════════════════════════════════════════════════════
 // normSev() — CRITICAL FIX FOR STAT CARD BUG
@@ -6101,8 +6043,7 @@ async function _loadRemainingAlertsBackground() {
     );
     allAlerts = combined;
     window.allAlerts = allAlerts;
-    window._bdTotalCount = allAlerts.length;
-    window._bdFinalCount = allAlerts.length; // señal: filtrado completo
+    window._bdTotalCount = allAlerts.length; // update to exact count now that full data is ready
     updateBDCountDisplay(allAlerts.length);
     console.log(`✅ Background load complete: ${allAlerts.length} total alerts`);
   } catch (err) {
@@ -6110,249 +6051,114 @@ async function _loadRemainingAlertsBackground() {
   }
 }
 
-// ════════════════════════════════════════════════════════════
-// S132 — SERVER-SIDE PAGINATION ARCHITECTURE
-// Problem: 525K records × ~500ms/batch = 65s load. Unacceptable.
-// Solution: Stats from DB aggregate RPC (instant). Table pages
-//           fetched on demand from Supabase (50 rows, ~200ms each).
-//           Cross-reference indexes (Engel/RedFlag/News) load in background.
-// ════════════════════════════════════════════════════════════
-
-// S139 — Cargar entidades con embargo CUT activo
-async function _loadEmbargoEntidades() {
-  try {
-    const { data } = await db.from('entidades_embargo').select('entity_name').eq('activo', true);
-    _embargoEntidades = new Set((data || []).map(r => (r.entity_name||'').toLowerCase().trim()));
-  } catch(e) { console.warn('embargo load:', e); }
-}
-
-function _hasEmbargo(entityName) {
-  if (!entityName || _embargoEntidades.size === 0) return false;
-  const n = entityName.toLowerCase().trim();
-  for (const e of _embargoEntidades) {
-    if (e.length >= 6 && (n.includes(e.slice(0,20)) || e.includes(n.slice(0,20)))) return true;
-  }
-  return false;
-}
-
-
 async function loadAlerts() {
-  const progressBar  = document.getElementById('load-progress-bar');
-  const progressWrap = document.getElementById('load-progress-wrap');
-  const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct,98)+'%'; };
-  if (progressWrap) progressWrap.style.display = 'block';
-  setProgress(10);
-  _loadEmbargoEntidades(); // S139: carga en paralelo, sin bloquear
-
+  // S126 — Full load, all records, with per-page timeout + retry.
+  // Root cause of freeze: Promise.all with 8 concurrent requests → one slow/hung request blocked everything.
+  // Fix: Promise.allSettled (never hangs) + 12s timeout per page + automatic retry of failed pages.
+  // Scales naturally as records grow — paginator handles any size.
   try {
-    // ── 1. Stats from RPC — one DB query, returns all counts+montos instantly ──
-    const { data: stats, error: statsErr } = await db.rpc('get_alert_stats');
-    if (!statsErr && stats) {
-      _cachedStats = stats;
-      window._cachedStats   = stats;
-      window._bdTotalCount  = stats.total;
-      window._bdFullDBCount = stats.total;
-      window._bdFinalCount  = stats.total;
-      updateBDCountDisplay(stats.total, stats.total);
-      console.log('✅ get_alert_stats RPC OK — total:', stats.total);
-      updateConsultasMetrics(); // S138: poblar KPIs del card Consultas inmediatamente
-    } else {
-      // Fallback: RPC not available — 5 parallel HEAD queries (count only, no data transfer)
-      console.warn('⚠️ get_alert_stats RPC failed:', statsErr?.message, '— falling back to parallel counts');
-      const [totalR, critR, altaR, mediaR, bajaR] = await Promise.all([
-        db.from('alerts').select('*', { count: 'exact', head: true }),
-        db.from('alerts').select('*', { count: 'exact', head: true }).in('severity', ['Crítica','crítica','CRÍTICA','Critica','critica']),
-        db.from('alerts').select('*', { count: 'exact', head: true }).in('severity', ['Alta','alta','ALTA']),
-        db.from('alerts').select('*', { count: 'exact', head: true }).in('severity', ['Media','media','MEDIA']),
-        db.from('alerts').select('*', { count: 'exact', head: true }).in('severity', ['Baja','baja','BAJA']),
-      ]);
-      const tc = totalR.count || 0;
-      _cachedStats = {
-        total:   tc,
-        critica: critR.count  || 0,
-        alta:    altaR.count  || 0,
-        media:   mediaR.count || 0,
-        baja:    bajaR.count  || 0,
-        monto_total: 0, monto_critica: 0, monto_alta: 0, monto_media: 0, monto_baja: 0
-      };
-      window._cachedStats   = _cachedStats;
-      window._bdTotalCount  = tc;
-      window._bdFullDBCount = tc;
-      updateBDCountDisplay(tc, tc);
-      console.log('✅ Fallback counts OK — total:', tc, 'critica:', _cachedStats.critica, 'alta:', _cachedStats.alta);
-    }
-    setProgress(40);
+    const PAGE_SIZE    = 1000;
+    const BATCH_SIZE   = 4;    // conservative — avoids Supabase connection pool exhaustion
+    const PAGE_TIMEOUT = 12000; // 12s max per page — if hung, skip and retry
 
-    // ── 2. Fetch first table page — 50 rows, ~200ms ──
-    await fetchAndRender(0);
-    setProgress(90);
+    const progressBar  = document.getElementById('load-progress-bar');
+    const progressWrap = document.getElementById('load-progress-wrap');
+    const setProgress  = (pct) => { if (progressBar) progressBar.style.width = Math.min(pct, 98) + '%'; };
+    if (progressWrap) { progressWrap.style.display = 'block'; }
+    setProgress(2);
+
+    // Fetch real total count first (HEAD request — no data, near-instant)
+    let approxPages = 139;
+    try {
+      const { count } = await db.from('alerts').select('*', { count: 'exact', head: true });
+      if (count) {
+        window._bdTotalCount = count;
+        updateBDCountDisplay(count);
+        approxPages = Math.ceil(count / PAGE_SIZE);
+      }
+    } catch(_) {}
+    setProgress(5);
+
+    // Fetch one page with a hard timeout — never blocks forever
+    const fetchPage = (p) => {
+      const req = db.from('alerts').select('*').order('id', { ascending: false })
+        .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1);
+      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), PAGE_TIMEOUT));
+      return Promise.race([req, timeout]).catch(e => ({ data: null, error: e }));
+    };
+
+    let all = [];
+    let batchStart = 0;
+    let done = false;
+    let pagesLoaded = 0;
+    const failedPages = [];
+
+    while (!done) {
+      const pageNums = [];
+      for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) pageNums.push(p);
+
+      // allSettled: even if one page times out, others succeed — never freezes
+      const results = await Promise.allSettled(pageNums.map(p => fetchPage(p)));
+
+      for (let i = 0; i < results.length; i++) {
+        const r = results[i];
+        const val = r.status === 'fulfilled' ? r.value : { data: null, error: r.reason };
+        if (!val.error && val.data) {
+          all = all.concat(val.data);
+          pagesLoaded++;
+          if (val.data.length < PAGE_SIZE) done = true;
+        } else {
+          failedPages.push(pageNums[i]);
+          console.warn(`⚠️ Page ${pageNums[i]} failed (${val.error?.message}) — will retry`);
+        }
+      }
+
+      setProgress(5 + Math.round((pagesLoaded / approxPages) * 90));
+      batchStart += BATCH_SIZE;
+      if (batchStart > approxPages + BATCH_SIZE) done = true; // safety stop
+    }
+
+    // Retry failed pages one at a time
+    if (failedPages.length) {
+      console.log(`Retrying ${failedPages.length} failed pages...`);
+      for (const p of failedPages) {
+        const { data, error } = await fetchPage(p);
+        if (!error && data) { all = all.concat(data); pagesLoaded++; }
+        else console.warn(`⚠️ Page ${p} failed on retry — skipped`);
+      }
+    }
 
     setProgress(100);
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
-    // ── 3. Initialize all other features ──
-    setStatus('connected');
-    hideError();
-    poUpdateIndicators();
+    allAlerts = _applyFraccionamientoScrub(_applyAlertsFilters(all));
+    window.allAlerts = allAlerts;
+    window._bdTotalCount = window._bdTotalCount || allAlerts.length;
+    updateBDCountDisplay(window._bdTotalCount);
+    console.log(`✅ All alerts loaded: ${allAlerts.length} records (${failedPages.length} retried)`);
+
+    updateConsultasMetrics(allAlerts);
+    buildNewsMatchIndex();
+    buildHighRiskIndex();
+    buildEngelIndex();
+    buildRedFlagIndex();
     loadRedFlagsFromSupabase();
     renderCandidatosDetectados();
     loadInvestigacionesDB();
     loadBorradoresAuto();
-    if (window.location.hash === '#ejecutiva') showVistaEjecutiva();
-
-    // ── 4. Background load for Engel/RedFlag/News cross-references ──
-    setTimeout(() => _loadCrossReferenceData(), 3000); // S133: 500→3000ms, let table render first
-
-    console.log('✅ loadAlerts complete — stats from RPC, table from server-side pagination');
+    loadTSCCard();
+    setStatus('connected');
+    hideError();
+    render();
+    poUpdateIndicators();
+    if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
 
   } catch (err) {
     console.error('❌ loadAlerts failed:', err.message);
     showError('Error al cargar contratos: ' + err.message);
     setStatus('error');
-    if (progressWrap) progressWrap.style.display = 'none';
-  }
-}
-
-// ── Server-side table fetch — called by render triggers ──
-async function fetchAndRender(page) {
-  currentPage = page;
-  const offset = page * ALERTS_PER_PAGE;
-
-  // Show spinner in table while fetching
-  const tbody = document.getElementById('alertTbody');
-  if (tbody && page === 0) {
-    tbody.innerHTML = '<tr class="state-row"><td colspan="10"><span class="spinner"></span>Cargando contratos...</td></tr>';
-  }
-
-  let query = db.from('alerts')
-    .select('*', activeSource !== 'all' ? { count: 'exact' } : undefined)
-    .order('id', { ascending: false })
-    .range(offset, offset + ALERTS_PER_PAGE - 1);
-
-  // Source filter — server-side (S134) / client-side for EMBARGO-CUT (S139)
-  if (activeSource === 'SEFIN') {
-    query = query.ilike('data_source', '%SEFIN%');
-  } else if (activeSource === 'ONCAE') {
-    query = query.ilike('data_source', '%ONCAE%');
-  } else if (activeSource === 'EMBARGO-CUT') {
-    // S139: filtrar por entidades en tabla entidades_embargo — usar OR de nombres conocidos
-    const embargoNames = [..._embargoEntidades];
-    if (embargoNames.length > 0) {
-      query = query.or(embargoNames.slice(0,8).map(n => `entity_name.ilike.%${n.slice(0,20)}%`).join(','));
-    }
-  } else if (activeSource !== 'all') {
-    query = query.eq('data_source', activeSource); // IAIP-COVID, IAIP-ETA, IAIP-2021/2/3
-  }
-
-  // Severity filter — server-side
-  if (activeFilter === 'signal') {
-    query = query.in('severity', ['Crítica','crítica','CRÍTICA','Critica','critica','Alta','alta','ALTA','Media','media','MEDIA']);
-  } else if (activeFilter === 'critica') {
-    query = query.in('severity', ['Crítica','crítica','CRÍTICA','Critica','critica']);
-  } else if (activeFilter !== 'all') {
-    query = query.ilike('severity', activeFilter);
-  }
-
-  // Search — server-side
-  if (searchQuery.length >= 2) {
-    const q = searchQuery.replace(/'/g, "''"); // basic escape
-    query = query.or(
-      `proveedor_nombre.ilike.%${q}%,entity_name.ilike.%${q}%,entidad.ilike.%${q}%,description.ilike.%${q}%,contract_id.ilike.%${q}%`
-    );
-  }
-
-  // Pattern filter — server-side (except ENGEL which needs cross-reference index)
-  if (activePattern !== 'all' && activePattern !== 'ENGEL') {
-    query = query.ilike('patterns', `%${activePattern}%`);
-  }
-
-  const { data, count, error } = await query;
-
-  if (error) {
-    console.error('fetchAndRender error:', error.message);
-    if (tbody) tbody.innerHTML = `<tr class="state-row"><td colspan="10">Error: ${error.message}</td></tr>`;
-    return;
-  }
-
-  // Client-side sort: severity first, then monto_contrato desc
-  const _SEV_RANK = { 'CRÍTICA':1,'Crítica':1,'critica':1,'CRITICA':1,'ALTA':2,'Alta':2,'alta':2,'MEDIA':3,'Media':3,'media':3 };
-  _currentPageData = (data || []).sort((a, b) => {
-    const ra = _SEV_RANK[a.severity] ?? 4, rb = _SEV_RANK[b.severity] ?? 4;
-    if (ra !== rb) return ra - rb;
-    return (Number(b.monto_contrato) || 0) - (Number(a.monto_contrato) || 0);
-  });
-  // Use cached stats for total — avoids expensive COUNT(*) on every page fetch
-  // Exception: when source filter active, use exact count returned by query (S134)
-  const cs = _cachedStats || {};
-  if (activeSource !== 'all' && count != null) {
-    _currentPageTotal = count; // Exact count from Supabase when source filtered
-  } else if (activeFilter === 'all')     _currentPageTotal = cs.total  || 0;
-  else if (activeFilter === 'signal') _currentPageTotal = (cs.critica||0) + (cs.alta||0) + (cs.media||0);
-  else if (activeFilter === 'critica') _currentPageTotal = cs.critica || 0;
-  else if (activeFilter === 'alta')    _currentPageTotal = cs.alta    || 0;
-  else if (activeFilter === 'media')   _currentPageTotal = cs.media   || 0;
-  else if (activeFilter === 'baja')    _currentPageTotal = cs.baja    || 0;
-  else _currentPageTotal = data ? data.length : 0;
-
-  // ENGEL cross-reference filter (client-side, needs background data)
-  if (activePattern === 'ENGEL') {
-    if (_allAlertsReady) {
-      _currentPageData  = allAlerts.filter(a => _engelMatchedIds.has(a.alert_id || a.id));
-      _currentPageTotal = _currentPageData.length;
-      // Paginate client-side for ENGEL
-      _currentPageData = _currentPageData.slice(offset, offset + ALERTS_PER_PAGE);
-    } else {
-      if (tbody) tbody.innerHTML = '<tr class="state-row"><td colspan="10">⏳ Índice Engel cargando en segundo plano... intenta en unos segundos.</td></tr>';
-      return;
-    }
-  }
-
-  render();
-}
-
-// ── Background cross-reference loader (Engel/RedFlag/News) ──
-// Loads non-BAJA records asynchronously. UI remains fully interactive.
-async function _loadCrossReferenceData() {
-  try {
-    const PAGE_SIZE  = 1000;
-    const BATCH_SIZE = 2; // S133: reduced from 6 → 2 to avoid DB overload on 166K records
-    const { count }  = await db.from('alerts')
-      .select('*', { count: 'exact', head: true })
-      .in('severity', ['Crítica','crítica','CRÍTICA','Critica','critica','Alta','alta','ALTA','Media','media','MEDIA']);
-    if (!count) return;
-
-    const totalPages = Math.ceil(count / PAGE_SIZE);
-    let all = [];
-    let batchStart = 0;
-
-    while (batchStart < totalPages) {
-      const end = Math.min(batchStart + BATCH_SIZE, totalPages);
-      const results = await Promise.allSettled(
-        Array.from({ length: end - batchStart }, (_, i) => batchStart + i).map(p =>
-          db.from('alerts').select('*').order('id', { ascending: false })
-            .not('severity', 'ilike', 'baja')
-            .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
-        )
-      );
-      for (const r of results) {
-        if (r.status === 'fulfilled' && r.value.data) all = all.concat(r.value.data);
-      }
-      batchStart += BATCH_SIZE;
-      await new Promise(r => setTimeout(r, 50)); // S133: 50ms between batches — safe but fast
-    }
-
-    allAlerts = _applyFraccionamientoScrub(_applyAlertsFilters(all));
-    window.allAlerts = allAlerts;
-    _allAlertsReady = true;
-
-    buildNewsMatchIndex();
-    buildHighRiskIndex();
-    buildEngelIndex();
-    buildRedFlagIndex();
-    poUpdateIndicators();
-    console.log(`✅ Background cross-reference load: ${allAlerts.length} records`);
-  } catch(e) {
-    console.warn('Background cross-reference load failed:', e.message);
+    allAlerts = [];
+    render();
   }
 }
 
@@ -6362,31 +6168,26 @@ async function _loadCrossReferenceData() {
 // Called after every data change (load, insert, update, delete).
 // ════════════════════════════════════════════════════════════
 function render() {
-  // ── Stat cards — S132: use _cachedStats from RPC (instant, no client-side iteration) ──
-  const cs = _cachedStats || {};
-  const c = {
-    critica: cs.critica || 0,
-    alta:    cs.alta    || 0,
-    media:   cs.media   || 0,
-    baja:    cs.baja    || 0
-  };
-  const m = {
-    critica: Number(cs.monto_critica || 0),
-    alta:    Number(cs.monto_alta    || 0),
-    media:   Number(cs.monto_media   || 0),
-    baja:    Number(cs.monto_baja    || 0)
-  };
-  const totalMonto = Number(cs.monto_total || 0) || Object.values(m).reduce((s, v) => s + v, 0);
+  // ── Stat cards ──
+  // normSev() converts 'Crítica' → 'critica', 'Alta' → 'alta', etc.
+  // Without this, 'crítica'.includes('critica') = false → count stays 0
+  const c = { critica: 0, alta: 0, media: 0, baja: 0 };
+  const m = { critica: 0, alta: 0, media: 0, baja: 0 };
+  allAlerts.forEach(a => {
+    const k = normSev(a.severity);
+    if (k in c) { c[k]++; m[k] += Number(a.monto_contrato || 0); }
+  });
+  const totalMonto = Object.values(m).reduce((s, v) => s + v, 0);
   const fmtL = n => n > 0
     ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
     : 'L —';
   const fmtPct = (n, total) => total > 0 ? (n / total * 100).toFixed(1) + '% del total' : '— %';
 
-  document.getElementById('cnt-total').textContent         = (cs.total || 0).toLocaleString('es-HN');
-  document.getElementById('cnt-critica').textContent       = c.critica.toLocaleString('es-HN');
-  document.getElementById('cnt-alta').textContent          = c.alta.toLocaleString('es-HN');
-  document.getElementById('cnt-media').textContent         = c.media.toLocaleString('es-HN');
-  document.getElementById('cnt-baja').textContent          = c.baja.toLocaleString('es-HN');
+  document.getElementById('cnt-total').textContent         = allAlerts.length;
+  document.getElementById('cnt-critica').textContent       = c.critica;
+  document.getElementById('cnt-alta').textContent          = c.alta;
+  document.getElementById('cnt-media').textContent         = c.media;
+  document.getElementById('cnt-baja').textContent          = c.baja;
   document.getElementById('cnt-monto-total').textContent   = fmtL(totalMonto);
   document.getElementById('cnt-monto-critica').textContent = fmtL(m.critica);
   document.getElementById('cnt-pct-critica').textContent   = fmtPct(m.critica, totalMonto);
@@ -6411,9 +6212,9 @@ function render() {
     _rb('risk-band-budget').textContent = `≈ ${riskPct}% del Presupuesto General de la República (L 309B aprobado 2024)`;
   }
 
-  // ── Freshness indicator — use first record of current page ──
-  if (_currentPageData.length > 0) {
-    const maxFecha = _currentPageData.reduce((max, a) => {
+  // ── Freshness indicator ──
+  if (allAlerts.length > 0) {
+    const maxFecha = allAlerts.reduce((max, a) => {
       const d = a.fecha_contrato || a.created_at || '';
       return d > max ? d : max;
     }, '');
@@ -6421,17 +6222,43 @@ function render() {
     if (freshnessEl) freshnessEl.textContent = maxFecha ? maxFecha.substring(0, 10) : '—';
   }
 
-  // ── S132: filter/sort removed — server-side pagination, data pre-filtered by fetchAndRender() ──
-  const filtered = _currentPageData;
+  // ── Filter for table display ──
+  let filtered = activeFilter === 'all'
+    ? allAlerts
+    : allAlerts.filter(a => normSev(a.severity) === activeFilter);
+  if (activePattern !== 'all') {
+    if (activePattern === 'ENGEL') {
+      filtered = filtered.filter(a => _engelMatchedIds.has(a.alert_id || a.id));
+    } else {
+      filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
+    }
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(a =>
+      (a.proveedor_nombre || a.proveedor || '').toLowerCase().includes(q) ||
+      (a.entity_name || a.entidad || '').toLowerCase().includes(q) ||
+      (a.description || '').toLowerCase().includes(q) ||
+      (a.alert_id || a.id || '').toString().toLowerCase().includes(q)
+    );
+  }
+
+  // ── Sort by most recent first ──
+  filtered = filtered.sort((a, b) => {
+    const dateA = new Date(a.created_at || a.fecha_contrato || 0);
+    const dateB = new Date(b.created_at || b.fecha_contrato || 0);
+    return dateB - dateA; // Descending (newest first)
+  });
 
   document.getElementById('tableCount').textContent =
-    `${_currentPageTotal.toLocaleString('es-HN')} de ${(cs.total || 0).toLocaleString('es-HN')} contratos`;
+    `${filtered.length} de ${allAlerts.length} contratos`;
 
-  // ── Pagination — server-side totals ──
-  const totalPages = Math.max(1, Math.ceil(_currentPageTotal / ALERTS_PER_PAGE));
+  // ── Pagination ──
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ALERTS_PER_PAGE));
+  if (currentPage >= totalPages) currentPage = totalPages - 1;
   const pageStart  = currentPage * ALERTS_PER_PAGE;
-  const pageEnd    = Math.min(pageStart + ALERTS_PER_PAGE, pageStart + filtered.length);
-  const paged      = filtered; // already the correct page from Supabase
+  const pageEnd    = Math.min(pageStart + ALERTS_PER_PAGE, filtered.length);
+  const paged      = filtered.slice(pageStart, pageEnd);
 
   const paginationBar  = document.getElementById('paginationBar');
   const paginationInfo = document.getElementById('paginationInfo');
@@ -6439,9 +6266,9 @@ function render() {
   const btnPrev        = document.getElementById('btnPrevPage');
   const btnNext        = document.getElementById('btnNextPage');
 
-  if (_currentPageTotal > ALERTS_PER_PAGE) {
+  if (filtered.length > ALERTS_PER_PAGE) {
     paginationBar.style.display = '';
-    paginationInfo.textContent  = `Mostrando ${pageStart + 1}–${pageEnd} de ${_currentPageTotal.toLocaleString('es-HN')} contratos`;
+    paginationInfo.textContent  = `Mostrando ${pageStart + 1}–${pageEnd} de ${filtered.length} contratos`;
     paginationPage.textContent  = `Página ${currentPage + 1} de ${totalPages}`;
     btnPrev.disabled = currentPage === 0;
     btnNext.disabled = currentPage >= totalPages - 1;
@@ -6454,7 +6281,7 @@ function render() {
 
   if (paged.length === 0) {
     tbody.innerHTML = `<tr class="state-row"><td colspan="10">
-      ${(cs.total || 0) === 0
+      ${allAlerts.length === 0
         ? 'No hay contratos. Usa el botón ➕ Nueva Alerta para crear el primero.'
         : 'No hay contratos con este filtro.'}
     </td></tr>`;
@@ -6484,7 +6311,7 @@ function render() {
       <td>${proveedorDisplay !== '—' ? `<button class="cell-entity-link" onclick="event.stopPropagation();showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button>` : `<span style="color:var(--text-dim);">—</span>`}</td>
       <td><button class="cell-entity-link" onclick="event.stopPropagation();showEntityPanel('${entidadDisplay.replace(/'/g,"\\'")}')">${entidadDisplay}</button></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
-      <td><span class="cell-source">${a.data_source || '—'}</span>${(a.data_source === 'IAIP-COVID') ? ' <span class="iaip-badge iaip-covid" title="Contratación directa de emergencia COVID-19">🦠 COVID-19</span>' : (a.data_source === 'IAIP-ETA') ? ' <span class="iaip-badge iaip-eta" title="Contratación directa de emergencia Huracán Eta">🌀 Eta</span>' : ''}</td>
+      <td><span class="cell-source">${a.data_source || '—'}</span></td>
       <td><span class="cell-date">${fmtDate(a.fecha_contrato)}</span></td>
       <td>${(function(){
         const mc = a.monto_contrato != null ? Number(a.monto_contrato) : null;
@@ -6529,12 +6356,8 @@ function render() {
 // ════════════════════════════════════════════════════════════
 function setSearch(val) {
   searchQuery = (val || '').trim();
-  // S132: debounced server-side fetch (min 2 chars or empty)
-  if (_searchDebounce) clearTimeout(_searchDebounce);
-  _searchDebounce = setTimeout(() => {
-    currentPage = 0;
-    fetchAndRender(0);
-  }, 350);
+  currentPage = 0;
+  render();
 }
 
 function clearSearch() {
@@ -6542,7 +6365,7 @@ function clearSearch() {
   currentPage = 0;
   const el = document.getElementById('global-search');
   if (el) el.value = '';
-  fetchAndRender(0);
+  render();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -6550,34 +6373,26 @@ function clearSearch() {
 // ════════════════════════════════════════════════════════════
 function setFilter(f) {
   activeFilter = f;
-  currentPage = 0;
+  currentPage = 0; // reset to first page on filter change
   document.querySelectorAll('.filter-btn[data-f]').forEach(b =>
     b.classList.toggle('active', b.dataset.f === f)
   );
-  fetchAndRender(0); // S132: server-side filter
+  render();
 }
 
 function setPatternFilter(p) {
   activePattern = p;
-  currentPage = 0;
+  currentPage = 0; // reset to first page on filter change
   document.querySelectorAll('.filter-btn[data-p]').forEach(b =>
     b.classList.toggle('active', b.dataset.p === p)
   );
-  fetchAndRender(0); // S132: server-side filter (ENGEL handled inside fetchAndRender)
-}
-
-function setSourceFilter(s) {
-  activeSource = s;
-  currentPage = 0;
-  document.querySelectorAll('.filter-btn[data-s]').forEach(b =>
-    b.classList.toggle('active', b.dataset.s === s)
-  );
-  fetchAndRender(0); // S134: server-side source filter
+  render();
 }
 
 function setPage(n) {
   currentPage = n;
-  fetchAndRender(n); // S132: server-side pagination
+  render();
+  // Scroll table into view smoothly
   document.getElementById('mainTableContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -6601,9 +6416,7 @@ async function generateReport(mode = 'todo') {
 
     // ── 1. Collect alerts from window.allAlerts (always fresh) ──
     let filtered = (window.allAlerts || []);
-    if (activeFilter === 'signal') {
-      filtered = filtered.filter(a => ['crítica','alta','media'].includes(normSev(a.severity)));
-    } else if (activeFilter !== 'all') {
+    if (activeFilter !== 'all') {
       filtered = filtered.filter(a => normSev(a.severity) === activeFilter);
     }
     if (activePattern !== 'all') {
@@ -6620,7 +6433,7 @@ async function generateReport(mode = 'todo') {
     const fechaStr = now.toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
     const horaStr  = now.toLocaleTimeString('es-HN', { hour:'2-digit', minute:'2-digit' });
     const filterLabel = (() => {
-      const sev = activeFilter === 'all' ? 'Todas las severidades' : activeFilter === 'signal' ? 'Señal (CRÍTICA+ALTA+MEDIA)' : activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
+      const sev = activeFilter === 'all' ? 'Todas las severidades' : activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
       const pat = activePattern === 'all' ? 'Todos los patrones' : (PATTERN_LABELS[activePattern] || activePattern);
       return `${sev} · ${pat}`;
     })();
@@ -7076,12 +6889,11 @@ function startRealtime() {
       event:  'INSERT',
       schema: 'public',
       table:  'alerts'
-    }, async payload => {
+    }, payload => {
       console.log('🔴 Realtime INSERT received:', payload.new.alert_id);
-      // S132: refresh stats + first page from server (server-side pagination)
-      const { data: stats } = await db.rpc('get_alert_stats').catch(() => ({ data: null }));
-      if (stats) { _cachedStats = stats; window._cachedStats = stats; window._bdFullDBCount = stats.total; }
-      fetchAndRender(0);
+      // Prepend to local state and re-render instantly
+      allAlerts.unshift(payload.new);
+      render();
       showToast('🔴 Nueva alerta recibida en tiempo real');
     })
     .subscribe(status => {
@@ -7313,7 +7125,7 @@ function showEntityPanel(entityName) {
     const sign = dif >= 0 ? '+' : '';
     difEl.textContent = sign + fmtL(Math.abs(dif)).replace('L ', 'L ') + ` (${sign}${pct}%)`;
     difEl.className   = 'ep-fin-val ' + (dif > 0 ? 'over' : dif < 0 ? 'under' : 'exact');
-    lblEl.textContent = dif > 0 ? 'Sobrepago' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia';
+    lblEl.textContent = dif > 0 ? 'Sobrepresupuesto' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia';
   } else {
     difEl.textContent = '—';
     difEl.className   = 'ep-fin-val';
@@ -7438,7 +7250,7 @@ function showVendorPanel(vendorName) {
     'FRACCIONAMIENTO':'Fraccionamiento','COMPRA_MENOR_RECURRENTE':'Compra Menor',
     'CONCENTRACION_PROVEEDOR':'Concentración','PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro',
     'CD_ALTO_MONTO':'CD Alto Monto','SIN_HISTORIAL_PROVEEDOR':'Sin Historial',
-    'SOBRECOSTO':'Sobrecosto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
+    'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
   };
   const fmtLv = n => { n = Number(n||0); if(!n) return '—'; if(n>=1e9) return 'L '+(n/1e9).toFixed(1)+'B'; if(n>=1e6) return 'L '+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'L '+(n/1e3).toFixed(0)+'K'; return 'L '+n.toLocaleString('es-HN'); };
   document.getElementById('ep-recent').innerHTML = allSorted.length
@@ -7554,7 +7366,7 @@ function populateEntitySobrecosto(entityName) {
             <span class="ep-drill-item-highlight">+${s.pct}% (${fmtL(s.diff)})</span>
           </div>
         </div>`).join('')
-    : '<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos con sobrecosto detectado.</div>';
+    : '<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin contratos con sobrepresupuesto detectado.</div>';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -7711,7 +7523,7 @@ function showVendorContractDetail(vendorName, entityName) {
                 <span style="color:var(--text-dim);font-size:10px;">Pagado:</span>
                 <div style="color:var(--text);font-weight:600;">${fmtL(mp)}</div>
               </div>
-              ${sobrecosto ? `<div><span style="color:var(--text-dim);font-size:10px;">Sobrepago:</span><div style="color:var(--amber);font-weight:600;">${sobrecosto}</div></div>` : ''}
+              ${sobrecosto ? `<div><span style="color:var(--text-dim);font-size:10px;">Sobrepresupuesto:</span><div style="color:var(--amber);font-weight:600;">${sobrecosto}</div></div>` : ''}
             </div>
             ${pats ? `<div style="margin-top:6px;"><span style="color:var(--text-dim);font-size:10px;">Patrones:</span> ${pats}</div>` : ''}
           </div>
@@ -7867,7 +7679,7 @@ function exportSobrecostoData(format, entityName, timestamp) {
     .sort((a, b) => b.diff - a.diff);
 
   if (format === 'csv') {
-    let csv = 'Entidad,Alert ID,Proveedor,Monto Contrato,Monto Pagado,Sobrepago (L),Sobrepago (%),Severity,Fecha Contrato,Tipo Contratación\n';
+    let csv = 'Entidad,Alert ID,Proveedor,Monto Contrato,Monto Pagado,Sobrecosto (L),Sobrecosto (%),Severity,Fecha Contrato,Tipo Contratación\n';
     sobrecostos.forEach(s => {
       const row = [
         entityName,
@@ -7883,7 +7695,7 @@ function exportSobrecostoData(format, entityName, timestamp) {
       ];
       csv += row.map(v => `"${v}"`).join(',') + '\n';
     });
-    downloadFile(csv, `Sobrepago_${entityName}_${timestamp}.csv`, 'text/csv');
+    downloadFile(csv, `Sobrecosto_${entityName}_${timestamp}.csv`, 'text/csv');
   } else if (format === 'pdf') {
     generateSobrecostoPDF(sobrecostos, entityName, timestamp);
   }
@@ -7937,7 +7749,7 @@ function exportVendorDetailData(format, entityName, timestamp) {
   });
 
   if (format === 'csv') {
-    let csv = 'Entidad,Proveedor,Alert ID,Monto Contrato (L),Monto Pagado (L),Sobrepago (L),Sobrepago (%),Severity,Patrones,Tipo Contratación,Fecha Contrato\n';
+    let csv = 'Entidad,Proveedor,Alert ID,Monto Contrato (L),Monto Pagado (L),Sobrecosto (L),Sobrecosto (%),Severity,Patrones,Tipo Contratación,Fecha Contrato\n';
     contracts.forEach(c => {
       const mc = Number(c.monto_contrato || 0);
       const mp = Number(c.monto_pagado || 0);
@@ -7986,7 +7798,7 @@ function generateSobrecostoPDF(sobrecostos, entityName, timestamp) {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sobrecosto - ${entityName}</title>
+<title>Sobrepresupuesto - ${entityName}</title>
 <style>
   body { font-family: Arial, sans-serif; font-size: 10pt; color: #333; }
   h1 { color: #0A1628; margin-bottom: 4px; }
@@ -7999,7 +7811,7 @@ function generateSobrecostoPDF(sobrecostos, entityName, timestamp) {
 </style>
 </head>
 <body>
-<h1>Reporte de SOBRECOSTO</h1>
+<h1>Reporte de SOBREPRESUPUESTO</h1>
 <h2>${entityName}</h2>
 <p class="meta">Generado: ${timestamp} | Total registros: ${sobrecostos.length}</p>
 
@@ -8010,8 +7822,8 @@ function generateSobrecostoPDF(sobrecostos, entityName, timestamp) {
       <th>Proveedor</th>
       <th>Monto Contrato</th>
       <th>Monto Pagado</th>
-      <th>Sobrecosto (L)</th>
-      <th>% Sobrecosto</th>
+      <th>Sobrepresupuesto (L)</th>
+      <th>% Sobrepresupuesto</th>
     </tr>
   </thead>
   <tbody>
@@ -8120,7 +7932,7 @@ function generateVendorDetailPDF(contracts, vendorName, entityName, timestamp) {
       <th>ID</th>
       <th>Contrato (L)</th>
       <th>Pagado (L)</th>
-      <th>Sobrecosto (L)</th>
+      <th>Sobrepresupuesto (L)</th>
       <th>Severidad</th>
       <th>Patrones</th>
       <th>Fecha</th>
@@ -8289,7 +8101,7 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   document.getElementById('adp-vendor-history').innerHTML = vendorAlerts.length
     ? vendorAlerts.map(x => `
         <div class="adp-history-item">
-          <span class="adp-hi-id" title="${(x.alert_id || '#' + x.id)}">${_shortId(x.alert_id || '#' + x.id)}</span>
+          <span class="adp-hi-id">${x.alert_id || '#' + x.id}</span>
           <span class="adp-hi-sev" style="color:${_sevColor(x.severity)}">${x.severity || '—'}</span>
           <span class="adp-hi-desc" title="${(x.description||'').replace(/"/g,'&quot;')}">${(x.description||'—').substring(0,80)}</span>
         </div>`)
@@ -8311,42 +8123,14 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   document.getElementById('adp-entity-history').innerHTML = entityAlerts.length
     ? entityAlerts.map(x => `
         <div class="adp-history-item">
-          <span class="adp-hi-id" title="${(x.alert_id || '#' + x.id)}">${_shortId(x.alert_id || '#' + x.id)}</span>
+          <span class="adp-hi-id">${x.alert_id || '#' + x.id}</span>
           <span class="adp-hi-sev" style="color:${_sevColor(x.severity)}">${x.severity || '—'}</span>
           <span class="adp-hi-desc" title="${(x.description||'').replace(/"/g,'&quot;')}">${(x.description||'—').substring(0,80)}</span>
         </div>`)
       .join('')
     : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin otros contratos de esta entidad.</div>';
 
-  // -- IAIP Emergency Context section --
-  const emergSec   = document.getElementById('adp-emergencia-section');
-  const emergTitle = document.getElementById('adp-emergencia-title');
-  const emergDesc  = document.getElementById('adp-emergencia-desc');
-  if (emergSec && emergTitle && emergDesc) {
-    if (a.data_source === 'IAIP-COVID') {
-      emergSec.style.display     = 'block';
-      emergSec.style.background  = 'rgba(59,130,246,0.08)';
-      emergSec.style.borderColor = 'rgba(59,130,246,0.35)';
-      emergTitle.style.color     = '#60a5fa';
-      emergTitle.textContent     = '🦠 CONTEXTO DE EMERGENCIA — COVID-19';
-      emergDesc.innerHTML        = 'Este contrato fue adjudicado bajo el régimen de <strong>Contratación Directa de Emergencia</strong> en respuesta a la pandemia COVID-19 (2020–2023). '
-        + 'Los contratos de emergencia están exentos de licitación pública, lo que incrementa el riesgo de irregularidades. '
-        + 'Fuente: <em>Portal IAIP — Registro OCDS de Transparencia.</em>';
-    } else if (a.data_source === 'IAIP-ETA') {
-      emergSec.style.display     = 'block';
-      emergSec.style.background  = 'rgba(249,115,22,0.08)';
-      emergSec.style.borderColor = 'rgba(249,115,22,0.35)';
-      emergTitle.style.color     = '#fb923c';
-      emergTitle.textContent     = '🌀 CONTEXTO DE EMERGENCIA — Huracán Eta';
-      emergDesc.innerHTML        = 'Este contrato fue adjudicado bajo el régimen de <strong>Contratación Directa de Emergencia</strong> en respuesta al Huracán Eta (noviembre 2020). '
-        + 'Los contratos de emergencia están exentos de licitación pública, lo que incrementa el riesgo de irregularidades. '
-        + 'Fuente: <em>Portal IAIP — Registro OCDS de Transparencia.</em>';
-    } else {
-      emergSec.style.display = 'none';
-    }
-  }
-
-
+  // -- Show panel, hide main view --
   document.getElementById('alertDetailPanel').classList.add('open');
   // If from busqueda, hide that panel before showing detail
   if (source === 'busqueda') {
@@ -8413,7 +8197,7 @@ function exportAlertDetailPDF() {
   const sobrecostoSection = document.getElementById('adp-sobrecosto-pagado-section');
   const sobrecostoHtml    = sobrecostoSection && sobrecostoSection.style.display !== 'none'
     ? `<div style="margin:12px 0;padding:8px 14px;background:#FDECEA;border:1.5pt solid #C0392B;border-radius:5px;color:#C0392B;font-weight:bold;font-size:9pt;">
-         ⚠ SOBREPAGO DETECTADO — ${esc(document.getElementById('adp-sobrecosto-pagado-pct')?.textContent || '')}
+         ⚠ SOBREPRESUPUESTO DETECTADO — ${esc(document.getElementById('adp-sobrecosto-pagado-pct')?.textContent || '')}
          <div style="font-weight:normal;font-size:8pt;margin-top:4px;">Monto pagado supera el monto contratado en más del 15%</div>
        </div>` : '';
 
@@ -8512,12 +8296,6 @@ ${sobrecostoHtml}
   w.document.close();
 }
 
-function _shortId(id) {
-  if (!id) return '—';
-  // IAIP records have long hash IDs — show prefix + short hash
-  if (id.startsWith('IAIP-') && id.length > 12) return 'IAIP-' + id.substring(5, 11) + '…';
-  return id.length > 14 ? id.substring(0, 13) + '…' : id;
-}
 function _sevColor(s) {
   const n = normSev(s);
   if (n.includes('critica')) return 'var(--red)';
@@ -8562,7 +8340,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -8575,6 +8353,81 @@ function _closeAllFuentePanels() {
 }
 
 // ════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════
+// ── TSC Panel ─────────────────────────────────────────────────────────────────
+let _tscData = null;
+
+async function loadTSCCard() {
+  try {
+    const { data, error } = await db.from('tsc_informes').select('*').order('fecha_publicacion', { ascending: false }).limit(500);
+    if (error || !data) return;
+    _tscData = data;
+    const entidades = new Set(data.map(r => r.busqueda_termino).filter(Boolean));
+    const countEl = document.getElementById('exec-tsc-count');
+    const subEl   = document.getElementById('exec-tsc-sub');
+    if (countEl) countEl.textContent = data.length.toLocaleString();
+    if (subEl)   subEl.textContent   = `${entidades.size} entidades auditadas`;
+  } catch(e) { console.warn('TSC load error', e); }
+}
+
+function showTSCModal() {
+  _closeAllFuentePanels();
+  const panel = document.getElementById('tscPanel');
+  if (!panel) return;
+  panel.classList.add('open');
+  if (_tscData) {
+    renderTSCTable();
+    _updateTSCStats();
+  } else {
+    loadTSCCard().then(() => { renderTSCTable(); _updateTSCStats(); });
+  }
+}
+
+function hideTSCPanel() {
+  document.getElementById('tscPanel')?.classList.remove('open');
+}
+
+function _updateTSCStats() {
+  if (!_tscData) return;
+  const entidades = new Set(_tscData.map(r => r.busqueda_termino).filter(Boolean));
+  const conHallazgos = _tscData.filter(r => r.pdf_url && r.pdf_url.length > 0).length;
+  const si = document.getElementById('tsc-stat-informes');
+  const se = document.getElementById('tsc-stat-entidades');
+  const sh = document.getElementById('tsc-stat-hallazgos');
+  if (si) si.textContent = _tscData.length.toLocaleString();
+  if (se) se.textContent = entidades.size.toLocaleString();
+  if (sh) sh.textContent = conHallazgos.toLocaleString();
+}
+
+function renderTSCTable() {
+  if (!_tscData) return;
+  const q = (document.getElementById('tscFilterInput')?.value || '').toLowerCase();
+  const filtered = _tscData.filter(r => {
+    if (!q) return true;
+    return [(r.titulo||''),(r.busqueda_termino||''),(r.categoria||''),(r.descripcion||'')].join(' ').toLowerCase().includes(q);
+  });
+  const tbody = document.getElementById('tscTableBody');
+  if (!tbody) return;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(r => {
+    const fecha    = r.fecha_publicacion ? r.fecha_publicacion.substring(0,7) : '—';
+    const entidad  = r.busqueda_termino || '—';
+    const titulo   = r.titulo || '—';
+    const catHtml  = r.categoria ? `<span style="background:rgba(0,200,255,0.1);color:var(--electric);padding:2px 6px;border-radius:4px;font-size:10px;">${r.categoria}</span>` : '—';
+    const pdfHtml  = r.pdf_url ? `<a href="${r.pdf_url}" target="_blank" style="color:var(--electric);font-size:11px;" title="Abrir PDF">📄</a>` : `<span style="color:var(--text-dim);">—</span>`;
+    return `<tr>
+      <td style="color:var(--text-dim);font-size:11px;">${fecha}</td>
+      <td style="font-weight:600;font-size:11px;">${entidad}</td>
+      <td style="font-size:11px;color:var(--text-dim);" title="${titulo}">${titulo.length > 80 ? titulo.substring(0,80)+'…' : titulo}</td>
+      <td style="text-align:center;">${catHtml}</td>
+      <td style="text-align:center;">${pdfHtml}</td>
+    </tr>`;
+  }).join('');
+}
 
 // ════════════════════════════════════════════════════════════
 // ── Candidatos Detectados Panel ───────────────────────────────────────────────
@@ -8666,7 +8519,7 @@ function renderCandidatosDetectados() {
     'FRACCIONAMIENTO':'Fraccionamiento','COMPRA_MENOR_RECURRENTE':'Compra Menor Recurrente',
     'CONCENTRACION_PROVEEDOR':'Concentración','PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro',
     'CD_ALTO_MONTO':'CD Alto Monto','SIN_HISTORIAL_PROVEEDOR':'Sin Historial',
-    'SOBRECOSTO':'Sobrecosto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
+    'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
   };
 
   // ── S72: Score de Prosecutabilidad CNA ──────────────────────────────────────
@@ -8913,7 +8766,7 @@ async function ejecutarBusquedaBD() {
       'FRACCIONAMIENTO':'Fraccionamiento','FRACCIONAMIENTO_ONCAE':'Fracc. ONCAE',
       'COMPRA_MENOR_RECURRENTE':'Compra Menor','CONCENTRACION_PROVEEDOR':'Concentración',
       'PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro','CD_ALTO_MONTO':'CD Alto Monto',
-      'SIN_HISTORIAL_PROVEEDOR':'Sin Historial','SOBRECOSTO':'Sobrecosto','CLUSTER_CD':'Cluster CD'
+      'SIN_HISTORIAL_PROVEEDOR':'Sin Historial','SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD'
     };
 
     inner.innerHTML = results.map(a => {
@@ -9600,7 +9453,7 @@ function generarMemorandum() {
   const sevLow = (d.severity || '').toLowerCase();
   const sevColor = sevLow.includes('cr') ? '#c0392b' : sevLow.includes('alt') ? '#d35400' : '#e67e22';
 
-    const patronTags = d.patrones !== '—'
+  const patronTags = d.patrones !== '—'
     ? d.patrones.split(',').map(p => `<span style="display:inline-block;background:${ent.color}18;border:1px solid ${ent.color}40;color:${ent.color};padding:2px 9px;border-radius:3px;font-size:8.5pt;margin:2px;">${p.trim()}</span>`).join('')
     : '<span style="color:#888;font-size:10pt;">Sin patrones específicos registrados</span>';
 
@@ -12513,7 +12366,7 @@ function exportEntityPDF(mode = 'pareto') {
   const difStr = dif !== null
     ? (dif >= 0 ? '+' : '') + fmtL(Math.abs(dif)) + ` (${dif >= 0 ? '+' : ''}${mc > 0 ? ((dif/mc)*100).toFixed(1) : '0'}%)`
     : '—';
-  const difLabel = dif !== null ? (dif > 0 ? 'Sobrepago' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia') : 'Diferencia';
+  const difLabel = dif !== null ? (dif > 0 ? 'Sobrepresupuesto' : dif < 0 ? 'Falta por Pagar' : 'Sin diferencia') : 'Diferencia';
   const difColor = dif !== null ? (dif > 0 ? '#C0392B' : dif < 0 ? '#1A3A6B' : '#555') : '#555';
 
   // Pattern counts (from subset)
@@ -12773,19 +12626,19 @@ function populateGlobalSobrecostos() {
           <div style="flex:1;">
             <div class="fri-desc" style="color:var(--electric);font-weight:600;">${e.name}</div>
             <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">
-              ${e.count} sobrepagos · Exceso promedio: +${e.avgPct}%
+              ${e.count} sobrepresupuestos · Exceso promedio: +${e.avgPct}%
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
             <div style="color:var(--red);font-weight:600;font-size:12px;">${fmtL(e.totalAmount)}</div>
           </div>
         </div>`).join('')
-    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin sobrepagos detectados en ninguna entidad.</div>';
+    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin sobrepresupuestos detectados en ninguna entidad.</div>';
 
   // Update list title with real count
   const listTitle = document.getElementById('sp-sobrecosto-list-title');
   const listSub   = document.getElementById('sp-sobrecosto-list-sub');
-  if (listTitle) listTitle.textContent = `Detalle de Sobrepago (${totalCount} contratos)`;
+  if (listTitle) listTitle.textContent = `Detalle de Sobrepresupuestos (${totalCount} contratos)`;
   if (listSub) listSub.textContent = totalCount > 50
     ? `Mostrando los 50 mayores de ${totalCount} contratos — ordenados por monto de exceso. El PDF incluye todos.`
     : `Ordenados por monto de exceso — mayor primero`;
@@ -12926,7 +12779,7 @@ function populateGlobalSobrecostos() {
   }
 }
 
-// ══ DRILL-DOWN POR ENTIDAD (Sobrecosto) ══════════════════
+// ══ DRILL-DOWN POR ENTIDAD (Riesgo Sobrepresupuesto) ══════════════════
 function showRiesgoEntityDrilldown(entityName, riesgoAll) {
   const fmtL = n => n > 0 ? 'L ' + Number(n).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'L —';
   const getPatterns = a => Array.isArray(a.patterns)
@@ -12984,7 +12837,7 @@ function hideRiesgoEntityDrilldown() {
   if (panelEl) panelEl.style.display = 'none';
 }
 
-// ══ EXPORTAR REPORTE PDF (Sobrecosto Global) ══════════════
+// ══ EXPORTAR REPORTE PDF (Riesgo Sobrepresupuesto Global) ══════════════
 function exportRiesgoGlobalPDF() {
   const fmtL = n => n > 0 ? 'L ' + Number(n).toLocaleString('es-HN', {minimumFractionDigits:0, maximumFractionDigits:0}) : '—';
   const getPatterns = a => Array.isArray(a.patterns)
@@ -13032,7 +12885,7 @@ function exportRiesgoGlobalPDF() {
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
   pw.document.write(addPrintBtn(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-  <title>Reporte Riesgo Ejec. Acelerada — SENTINEL-AI</title>
+  <title>Reporte Riesgo Sobrepresupuesto — SENTINEL-AI</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family: Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 12px; }
@@ -13058,7 +12911,7 @@ function exportRiesgoGlobalPDF() {
   </style></head><body>
   <div class="header">
     <div><div style="font-size:10px;color:#00A8D6;letter-spacing:.1em;margin-bottom:4px;">SENTINEL-AI | Honduras Procurement Intelligence</div>
-    <h1>⚠️ Reporte: Riesgo Ejec. Acelerada — Contratos SEFIN</h1></div>
+    <h1>⚠️ Reporte: Riesgo Sobrepresupuesto — Contratos SEFIN</h1></div>
     <div class="meta">Generado: ${timestamp}<br/>Total registros analizados: ${allAlerts.length.toLocaleString()}</div>
   </div>
 
@@ -13072,7 +12925,7 @@ function exportRiesgoGlobalPDF() {
     </div>
     <p style="margin-top:14px;line-height:1.6;color:#444;">
       Los datos EDCA/SEFIN (etapa COMPROMISO) no incluyen montos pagados. Se identifican <strong>${riesgoAll.length}</strong> contratos
-      adjudicados sin competencia abierta, categorías históricamente asociadas a ejecución acelerada en Honduras.
+      adjudicados sin competencia abierta, categorías históricamente asociadas a sobrepresupuestos en Honduras.
       El análisis Pareto indica que <strong class="pareto-highlight">${pareto80idx} contratos (${((pareto80idx/riesgoAll.length)*100).toFixed(1)}%)</strong>
       concentran el 80% del riesgo financiero total.
     </p>
@@ -13081,7 +12934,7 @@ function exportRiesgoGlobalPDF() {
       Cuando un contrato se adjudica directamente (<strong>ADJUDICACION_DIRECTA</strong>) o bajo figura de emergencia (<strong>COMPRA_EMERGENCIA</strong>),
       ese mecanismo de control desaparece — el Estado acepta el precio que propone un solo proveedor sin compararlo con el mercado.
       Estudios del Banco Mundial y la OCDE documentan que estos contratos tienen entre 20% y 40% más probabilidad de resultar en pagos finales
-      superiores al monto contratado. Sentinel marca estos contratos como riesgo potencial de ejec. acelerada <em>preventivamente</em>,
+      superiores al monto contratado. Sentinel marca estos contratos como riesgo potencial de sobrepresupuesto <em>preventivamente</em>,
       antes de que ocurra el pago, permitiendo intervención oportuna por parte de los organismos fiscalizadores.
     </p>
   </div>
@@ -13231,7 +13084,7 @@ function exportSobrecostoRealPDF() {
   const pw = window.open('', '_blank', 'width=1100,height=800');
   if (!pw) { alert('Por favor permita ventanas emergentes para generar el reporte PDF.'); return; }
   pw.document.write(addPrintBtn(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-  <title>Reporte Sobrecosto Real — SENTINEL-AI</title>
+  <title>Reporte Sobrepresupuesto Real — SENTINEL-AI</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family: Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 12px; }
@@ -13259,7 +13112,7 @@ function exportSobrecostoRealPDF() {
   <div class="header">
     <div>
       <div style="font-size:10px;color:#00A8D6;letter-spacing:.1em;margin-bottom:4px;">SENTINEL-AI | Honduras Procurement Intelligence</div>
-      <h1>💰 Reporte: Sobrecosto Real — Contratos SEFIN/SIAFI2</h1>
+      <h1>💰 Reporte: Sobrepresupuesto Real — Contratos SEFIN/SIAFI2</h1>
     </div>
     <div class="meta">Generado: ${timestamp}<br/>Base: ${allAlerts.length.toLocaleString()} contratos analizados</div>
   </div>
@@ -13551,8 +13404,17 @@ function showPhase4Detection() {
   document.getElementById('phase4Panel').classList.add('open');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // S138: RPCs server-side — no depende de allAlerts, llamar directo
-  populatePhase4Detection();
+  // Defer heavy computation so panel renders first
+  setTimeout(() => {
+    if (!allAlerts || allAlerts.length === 0) {
+      const emptyHTML = '<div style="padding:12px;color:var(--text-dim);">Sin datos cargados. Espere a que termine la carga.</div>';
+      document.getElementById('p4-velocity-list').innerHTML = emptyHTML;
+      document.getElementById('p4-risk-list').innerHTML = emptyHTML;
+      document.getElementById('p4-anomaly-list').innerHTML = emptyHTML;
+      return;
+    }
+    populatePhase4Detection();
+  }, 80);
 }
 
 function hidePhase4Detection() {
@@ -13563,80 +13425,67 @@ function hidePhase4Detection() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-async function populatePhase4Detection() {
-  // S138: Server-side RPCs en vez de loops JS sobre allAlerts (Opción A)
-  const loading = '<div style="padding:12px;color:var(--text-dim);font-family:\'JetBrains Mono\',monospace;font-size:11px;">⏳ Consultando base de datos...</div>';
-  document.getElementById('p4-velocity-list').innerHTML = loading;
-  document.getElementById('p4-risk-list').innerHTML = loading;
-  document.getElementById('p4-anomaly-list').innerHTML = loading;
+function populatePhase4Detection() {
+  // Get detection results
+  const velocityThreats = detectVelocityThreats(allAlerts);
+  const anomalies = detectAnomalies(allAlerts);
+  const riskScores = calculateSupplierRiskScores(allAlerts);
 
-  const [velRes, anomRes, riskRes] = await Promise.allSettled([
-    db.rpc('get_velocity_threats'),
-    db.rpc('get_anomalies_stats'),
-    db.rpc('get_supplier_risk_scores')
-  ]);
-
-  const velocityThreats = velRes.status === 'fulfilled' ? (velRes.value.data || []) : [];
-  const anomalies       = anomRes.status === 'fulfilled' ? (anomRes.value.data || []) : [];
-  const riskScores      = riskRes.status === 'fulfilled' ? (riskRes.value.data || []) : [];
-
+  // Update summary stats
   const criticalCount = riskScores.filter(r => r.severity === 'critical').length;
   document.getElementById('p4-velocity-count').textContent = velocityThreats.length;
   document.getElementById('p4-anomaly-count').textContent = anomalies.length;
   document.getElementById('p4-risk-critical').textContent = criticalCount;
 
-  const sevColor = s => s === 'critical' ? '#e63946' : s === 'high' ? '#f77f00' : '#fcbf49';
-  const sevLabel = s => s === 'critical' ? 'CRÍTICA' : s === 'high' ? 'ALTA' : (s||'').toUpperCase();
-  const fmtLhn  = n => Number(n||0).toLocaleString('es-HN', {maximumFractionDigits:0});
-
-  // Velocity Threats
-  const velocityHTML = velocityThreats.slice(0, 10).map(t => `
-    <div class="fuente-list-item" style="border-left:4px solid ${sevColor(t.severity)};">
-      <div style="font-weight:600;color:#00c8ff;">${t.vendor}</div>
+  // Populate Velocity Threats (top 10)
+  const velocityHTML = velocityThreats.slice(0, 10).map(threat => `
+    <div class="fuente-list-item" style="border-left: 4px solid ${threat.severity === 'critical' ? '#e63946' : threat.severity === 'high' ? '#f77f00' : '#fcbf49'};">
+      <div style="font-weight:600;color:#00c8ff;">${threat.vendor}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        🔴 Incidentes: ${t.count} | Puntaje: <strong>${Number(t.risk_score).toFixed(0)}/100</strong> | Severidad: <strong>${sevLabel(t.severity)}</strong>
-      </div>
-      <div style="font-size:12px;color:var(--red);margin-top:4px;">Exceso Total: L ${fmtLhn(t.total_excess)}</div>
-    </div>`).join('');
-  document.getElementById('p4-velocity-list').innerHTML = velocityHTML || '<div style="padding:12px;color:var(--text-dim);">Sin amenazas de velocidad detectadas</div>';
-
-  // Risk Scores
-  const riskHTML = riskScores.slice(0, 10).map(s => `
-    <div class="fuente-list-item" style="border-left:4px solid ${sevColor(s.severity)};">
-      <div style="font-weight:600;color:#00c8ff;">${s.vendor}</div>
-      <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        📊 Puntaje: <strong>${Number(s.risk_score).toFixed(0)}/100</strong> | ${sevLabel(s.severity)} | Contratos: ${s.total_contracts}
-      </div>
-      <div style="font-size:11px;color:#aaa;margin-top:4px;">
-        Sobrepagos: ${s.overpay_count} | Exceso: L ${fmtLhn(s.overpay_total)} | Entidades: ${s.entities_count}
-      </div>
-    </div>`).join('');
-  document.getElementById('p4-risk-list').innerHTML = riskHTML || '<div style="padding:12px;color:var(--text-dim);">Sin proveedores con factores de riesgo</div>';
-
-  // Anomalies
-  const anomalyHTML = anomalies.slice(0, 5).map(a => `
-    <div class="fuente-list-item" style="border-left:4px solid #e63946;">
-      <div style="font-weight:600;color:#00c8ff;">${a.alert_id} | ${a.vendor}</div>
-      <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
-        📍 Entidad: ${a.entity} | Desviación: <strong>${Number(a.deviation_score).toFixed(1)}σ</strong> | ${sevLabel(a.severity)}
+        🔴 Incidentes: ${threat.count} | Puntaje de Riesgo: ${threat.risk_score.toFixed(0)}/100 | Severidad: <strong>${threat.severity === 'critical' ? 'CRÍTICA' : threat.severity === 'high' ? 'ALTA' : threat.severity.toUpperCase()}</strong>
       </div>
       <div style="font-size:12px;color:var(--red);margin-top:4px;">
-        Sobrepago: ${Number(a.actual_overpay).toFixed(1)}% (Promedio entidad: ${Number(a.entity_avg).toFixed(1)}%)
+        Exceso Total: L ${(threat.totalExcess || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})}
       </div>
-    </div>`).join('');
-  document.getElementById('p4-anomaly-list').innerHTML = anomalyHTML || '<div style="padding:12px;color:var(--text-dim);">Sin anomalías estadísticas detectadas</div>';
+    </div>
+  `).join('');
+  document.getElementById('p4-velocity-list').innerHTML = velocityHTML || '<div style="padding:12px;color:var(--text-dim);">Sin amenazas de velocidad detectadas</div>';
 
-  // Cache results for PDF export
-  window._p4Cache = { velocityThreats, anomalies, riskScores };
+  // Populate Risk Scores (top 10)
+  const riskHTML = riskScores.slice(0, 10).map(supplier => `
+    <div class="fuente-list-item" style="border-left: 4px solid ${supplier.severity === 'critical' ? '#e63946' : supplier.severity === 'high' ? '#f77f00' : '#fcbf49'};">
+      <div style="font-weight:600;color:#00c8ff;">${supplier.vendor}</div>
+      <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
+        📊 Puntaje de Riesgo: <strong>${supplier.risk_score.toFixed(0)}/100</strong> | Severidad: ${supplier.severity === 'critical' ? 'CRÍTICA' : supplier.severity === 'high' ? 'ALTA' : supplier.severity.toUpperCase()} | Contratos: ${supplier.total_contracts}
+      </div>
+      <div style="font-size:11px;color:#aaa;margin-top:4px;">
+        Sobrepagos: ${supplier.overpay_count} | Exceso: L ${(supplier.overpay_total || 0).toLocaleString('es-HN', {maximumFractionDigits: 0})} | Entidades: ${supplier.entities_count}
+      </div>
+      ${supplier.risk_factors.length > 0 ? `<div style="font-size:11px;color:#fcbf49;margin-top:4px;">⚠️ Factores de Riesgo: ${supplier.risk_factors.join(', ')}</div>` : ''}
+    </div>
+  `).join('');
+  document.getElementById('p4-risk-list').innerHTML = riskHTML || '<div style="padding:12px;color:var(--text-dim);">Sin proveedores con factores de riesgo</div>';
+
+  // Populate Anomalies (top 5)
+  const anomalyHTML = anomalies.slice(0, 5).map(anom => `
+    <div class="fuente-list-item" style="border-left: 4px solid #e63946;">
+      <div style="font-weight:600;color:#00c8ff;">Alert ID: ${anom.alert_id} | ${anom.vendor}</div>
+      <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
+        📍 Entidad: ${anom.entity} | Desviación: <strong>${anom.deviation_score.toFixed(1)}σ</strong> | Severidad: ${anom.severity === 'critical' ? 'CRÍTICA' : anom.severity === 'high' ? 'ALTA' : anom.severity.toUpperCase()}
+      </div>
+      <div style="font-size:12px;color:var(--red);margin-top:4px;">
+        Sobrepago: ${anom.actual_overpay.toFixed(1)}% (Promedio entidad: ${anom.entity_avg.toFixed(1)}%)
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('p4-anomaly-list').innerHTML = anomalyHTML || '<div style="padding:12px;color:var(--text-dim);">Sin anomalías estadísticas detectadas</div>';
 }
 
 function exportPhase4PDF() {
   const ts = new Date().toLocaleDateString('es-HN');
-  // S138: usar cache de RPCs en vez de recalcular en JS
-  const cache = window._p4Cache || {};
-  const velocityThreats = cache.velocityThreats || [];
-  const anomalies = cache.anomalies || [];
-  const riskScores = cache.riskScores || [];
+  const velocityThreats = detectVelocityThreats(allAlerts);
+  const anomalies = detectAnomalies(allAlerts);
+  const riskScores = calculateSupplierRiskScores(allAlerts);
   const criticalCount = riskScores.filter(r => r.severity === 'critical').length;
   const fmtL = n => n > 0 ? 'L. ' + Number(n).toLocaleString('es-HN', {maximumFractionDigits:0}) : 'L. —';
 
@@ -13698,7 +13547,7 @@ function exportPhase4PDF() {
     <div class="stat-box"><div class="stat-val">${anomalies.length}</div><div class="stat-lbl">Anomalías Detectadas</div></div>
     <div class="stat-box"><div class="stat-val" style="color:#e67e22;">${criticalCount}</div><div class="stat-lbl">Proveedores Críticos</div></div>
   </div>
-  <h2>⚡ Amenazas de Velocidad — Proveedores con Múltiples Sobrepagos</h2>
+  <h2>⚡ Amenazas de Velocidad — Proveedores con Múltiples Sobrepresupuestos</h2>
   <table><thead><tr><th>#</th><th>Proveedor</th><th style="text-align:center;">Incidentes</th><th style="text-align:center;">Puntaje/100</th><th>Severidad</th><th style="text-align:right;">Exceso Total</th></tr></thead>
   <tbody>${velocityRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin amenazas detectadas</td></tr>'}</tbody></table>
   <h2>📊 Score de Riesgo por Proveedor — Top 15</h2>
@@ -15044,7 +14893,7 @@ function ipMemoEjecutivo() {
   const PLABELS = {
     'COMPRA_MENOR_ONCAE':'Compra Menor','CONTRATACION_DIRECTA_ONCAE':'Contratación Directa',
     'PERIODO_MINIMO_ONCAE':'Período Mínimo','FRACCIONAMIENTO_ONCAE':'Fraccionamiento',
-    'SOBRECOSTO':'Sobrecosto','CLUSTER_CD':'Cluster CD',
+    'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD',
     'PROVEEDOR_ENGEL':'Lista Engel EE.UU.','PROVEEDOR_SANCIONADO':'Proveedor Sancionado',
   };
 
@@ -15196,44 +15045,6 @@ function abrirConstructorCaso() {
   document.getElementById('ccBtnBack').onclick = volverAPanelEjecutivo;
   ccPopulateEntityList();
 }
-// S138 — Cargar borrador por folio
-async function ccCargarPorFolio() {
-  const folio = (document.getElementById('ccFolioInput').value || '').trim().toUpperCase();
-  const msg = document.getElementById('ccFolioMsg');
-  if (!folio) return;
-  msg.style.display = 'block';
-  msg.style.color = 'rgba(160,180,210,0.6)';
-  msg.textContent = '⏳ Buscando folio...';
-
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/investigaciones?folio=eq.${encodeURIComponent(folio)}&select=*&limit=1`, {
-      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-    });
-    const data = await res.json();
-    if (!data || data.length === 0) {
-      msg.style.color = '#f87171';
-      msg.textContent = `❌ Folio "${folio}" no encontrado.`;
-      return;
-    }
-    const row = data[0];
-    // Rellenar campos del Constructor de Caso
-    document.getElementById('ccEntidad').value = row.entidad || '';
-    document.getElementById('ccProveedor').value = row.proveedor || '';
-    // Mapear patrón a esquema si es posible
-    const patronMap = { 'FRACCIONAMIENTO_REPETIDO': 'FRACCIONAMIENTO', 'COMPRA_MENOR_ANOMALA': 'GENERAL', 'CLUSTER_CRITICOS': 'GENERAL', 'PICO_CRITICOS_RECIENTE': 'GENERAL' };
-    const esquema = patronMap[row.patrones] || 'GENERAL';
-    document.getElementById('ccEsquema').value = esquema;
-    // Limpiar mensaje y confirmar
-    msg.style.color = '#4ade80';
-    msg.textContent = `✅ Folio ${folio} cargado — ajusta los campos si es necesario y presiona ⚡ ANALIZAR CASO.`;
-    document.getElementById('ccFolioInput').value = '';
-    ccPopulateEntityList();
-  } catch(e) {
-    msg.style.color = '#f87171';
-    msg.textContent = `❌ Error al buscar folio: ${e.message}`;
-  }
-}
-
 function ccPopulateEntityList() {
   const dl = document.getElementById('ccEntityList');
   if (!dl || dl.children.length > 0 || !allAlerts || !allAlerts.length) return;
@@ -15951,75 +15762,19 @@ async function ccGenerarExpediente() {
   btn.style.opacity = '0.6';
 
   try {
+    // Build clean payload — strip large contract arrays, normalize patrones to array
     const d = _ccData;
     const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
-    const fmtM = n => n >= 1e9 ? `L ${(n/1e9).toFixed(2)}B` : `L ${(n/1e6).toFixed(1)}M`;
-
-    // ── Top 10 proveedores de la entidad por monto ───────────────────────
-    const provMap = {};
-    (d.entityContratos || []).forEach(a => {
-      const k = (a.proveedor_nombre||'SIN NOMBRE').toUpperCase().trim();
-      if (!provMap[k]) provMap[k] = { nombre: a.proveedor_nombre||'SIN NOMBRE', monto: 0, n: 0 };
-      provMap[k].monto += Number(a.monto_contrato)||0;
-      provMap[k].n++;
-    });
-    const top_proveedores = Object.values(provMap)
-      .sort((a,b) => b.monto - a.monto)
-      .slice(0, 10)
-      .map(p => ({ nombre: p.nombre, monto: p.monto, contratos: p.n }));
-
-    // ── Montos por patrón detectado ───────────────────────────────────────
-    const patMontoMap = {};
-    (d.vendorContratos || []).forEach(a => {
-      (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(pat => {
-        if (!patMontoMap[pat]) patMontoMap[pat] = 0;
-        patMontoMap[pat] += Number(a.monto_contrato)||0;
-      });
-    });
-    const patron_montos = Object.entries(patMontoMap)
-      .sort((a,b) => b[1]-a[1])
-      .map(([pat, monto]) => ({ patron: pat, monto }));
-
-    // ── Severidad breakdown ───────────────────────────────────────────────
-    const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    const sevCount = { critica: 0, alta: 0, media: 0, baja: 0 };
-    (d.vendorContratos || []).forEach(a => {
-      const sv = normSev(a.severity);
-      if (sv.includes('CRITICA')) sevCount.critica++;
-      else if (sv.includes('ALTA')) sevCount.alta++;
-      else if (sv.includes('MEDIA')) sevCount.media++;
-      else sevCount.baja++;
-    });
-
-    // ── Denuncias activas contra esta entidad / proveedor ─────────────────
-    let denuncias = [];
-    try {
-      const entLower = d.entidad.toLowerCase();
-      const provLower = d.proveedor.toLowerCase();
-      const { data: denData } = await db.from('denuncias')
-        .select('folio, descripcion, estado, created_at, resumen')
-        .neq('estado', 'Descartada')
-        .limit(20);
-      denuncias = (denData || []).filter(dn => {
-        const txt = ((dn.descripcion||'') + ' ' + (dn.resumen||'')).toLowerCase();
-        return txt.includes(entLower) || txt.includes(provLower);
-      }).map(dn => ({ folio: dn.folio, descripcion: (dn.descripcion||'').substring(0,200), estado: dn.estado }));
-    } catch(e) { console.warn('ccGenerarExpediente: denuncias fetch failed', e); }
-
     const payload = {
-      entidad:         d.entidad,
-      proveedor:       d.proveedor,
-      esquema:         d.esquema,
-      fecha:           ts,
-      concentracion:   { pct: d.concentracion.mntPct, contratos: d.concentracion.vendorCount, total_entidad: d.concentracion.entityCount, monto: d.concentracion.vendorMonto },
-      timeline:        (d.timeline || []).map(t => ({ periodo: t.nombre, contratos: t.count, monto: t.monto })),
-      patrones:        (d.score.criteria || []).map(c => ({ nombre: c.label, detectado: c.val, detalle: c.detail })),
-      score:           { total: d.score.total, max: d.score.max },
-      gaps:            d.gaps,
-      top_proveedores,
-      patron_montos,
-      severidad:       sevCount,
-      denuncias,
+      entidad:        d.entidad,
+      proveedor:      d.proveedor,
+      esquema:        d.esquema,
+      fecha:          ts,
+      concentracion:  { pct: d.concentracion.mntPct, contratos: d.concentracion.vendorCount, total_entidad: d.concentracion.entityCount, monto: d.concentracion.vendorMonto },
+      timeline:       (d.timeline || []).map(t => ({ periodo: t.nombre, contratos: t.count, monto: t.monto })),
+      patrones:       (d.score.criteria || []).map(c => ({ nombre: c.label, detectado: c.val, detalle: c.detail })),
+      score:          { total: d.score.total, max: d.score.max },
+      gaps:           d.gaps
     };
     const res = await fetch(`${SUPABASE_URL}/functions/v1/generar-expediente`, {
       method: 'POST',
@@ -16030,18 +15785,6 @@ async function ccGenerarExpediente() {
     if (!res.ok || json.error) throw new Error((json.error || 'Error del servidor') + (json.detail ? '\n\nDetalle: ' + json.detail.substring(0,300) : '') + (json.key_hint ? '\n\nKey leído: ' + json.key_hint : ''));
 
     const narrativa = json.narrativa || '';
-
-    // ── Capturar gráficas del Constructor de Caso como base64 ────────────
-    const chartImgs = {};
-    ['ccChartAdmin', 'ccChartSev', 'ccChartConc'].forEach(id => {
-      try {
-        const canvas = document.getElementById(id);
-        if (canvas && canvas.tagName === 'CANVAS') {
-          chartImgs[id] = canvas.toDataURL('image/png');
-        }
-      } catch(e) { console.warn('chart capture:', id, e); }
-    });
-
     // Parse sections separated by ###
     const sections = narrativa.split(/###\s+/).filter(Boolean);
     const secMap = {};
@@ -16070,7 +15813,7 @@ async function ccGenerarExpediente() {
     };
 
     const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-    <title>SENTINEL AI — Expediente Narrativo · ${_ccData.proveedor} × ${_ccData.entidad}</title>
+    <title>Expediente Narrativo — ${_ccData.proveedor} × ${_ccData.entidad}</title>
     <style>
       body { background:#fff; color:#111; font-family:'Segoe UI',Arial,sans-serif; margin:0; padding:0; font-size:12px; }
       .page { padding:44px 54px; max-width:900px; margin:0 auto; }
@@ -16085,30 +15828,10 @@ async function ccGenerarExpediente() {
       .sec { margin-bottom:22px; }
       .sec-title { font-size:10px; letter-spacing:.15em; text-transform:uppercase; font-weight:800; color:#374151; border-bottom:1px solid #e5e7eb; padding-bottom:6px; margin-bottom:12px; }
       .sec-body { font-size:12px; line-height:1.7; color:#374151; }
-      .sec-legal { border-left:3px solid #dc2626; padding-left:12px; }
-      .data-table { width:100%; border-collapse:collapse; font-size:11px; margin-top:8px; }
-      .data-table th { background:#f9fafb; font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#6b7280; font-weight:700; padding:6px 10px; text-align:left; border-bottom:1px solid #e5e7eb; }
-      .data-table td { padding:6px 10px; border-bottom:1px solid #f3f4f6; color:#374151; }
-      .data-table tr:last-child td { border-bottom:none; }
-      .sev-bar { display:flex; gap:12px; margin-top:8px; font-size:11px; }
-      .sev-badge { padding:3px 10px; border-radius:12px; font-size:9px; font-weight:800; }
-      .sev-c { background:#fee2e2; color:#dc2626; }
-      .sev-a { background:#ffedd5; color:#ea580c; }
-      .sev-m { background:#fef9c3; color:#ca8a04; }
-      .sev-b { background:#f0fdf4; color:#16a34a; }
-      .denuncia-box { background:#fff7ed; border:1px solid #fed7aa; border-radius:6px; padding:10px 14px; margin-top:8px; font-size:11px; }
-      .denuncia-folio { font-weight:800; color:#ea580c; font-size:10px; }
       .disclaimer { margin-top:28px; padding:10px 14px; background:#f3e8ff; border:1px solid #e9d5ff; border-radius:6px; font-size:10px; color:#5b21b6; font-style:italic; }
-      .sentinel-top-bar { background:#7c3aed; color:#fff; font-size:9px; font-weight:800; letter-spacing:.15em; text-transform:uppercase; padding:8px 54px; display:flex; justify-content:space-between; align-items:center; }
       .footer { margin-top:20px; padding-top:10px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; }
-      @page { margin-bottom:36px; @bottom-left { content: "SENTINEL AI — Sistema de Detección de Riesgo · Honduras"; font-size:8px; color:#9ca3af; font-family:Arial,sans-serif; } @bottom-right { content: "Pág. " counter(page) " de " counter(pages) " · Folio: ${folio}"; font-size:8px; color:#9ca3af; font-family:Arial,sans-serif; } }
-      @media print { .no-print { display:none; } .sentinel-top-bar { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
-    </style></head><body>
-    <div class="sentinel-top-bar">
-      <span>✦ SENTINEL AI — Sistema de Detección de Riesgo</span>
-      <span>CONFIDENCIAL · ${ts}</span>
-    </div>
-    <div class="page">
+      @media print { .no-print { display:none; } }
+    </style></head><body><div class="page">
     <div class="hdr">
       <div class="hdr-eyebrow">República de Honduras · ONCAE / SEFIN · ${ts}</div>
       <div class="hdr-title">Expediente Narrativo de Investigación <span class="ai-badge">✦ IA</span></div>
@@ -16116,72 +15839,20 @@ async function ccGenerarExpediente() {
     </div>
     <div class="meta">
       <div><label>Entidad</label><span>${_ccData.entidad}</span></div>
-      <div><label>Proveedor investigado</label><span>${_ccData.proveedor}</span></div>
+      <div><label>Proveedor</label><span>${_ccData.proveedor}</span></div>
       <div><label>Esquema</label><span>${_ccData.esquema || 'Por determinar'}</span></div>
-      <div><label>Score de riesgo</label><span>${_ccData.score.total}/${_ccData.score.max}</span></div>
-      <div><label>Total contratos (proveedor)</label><span>${_ccData.vendorContratos.length} · ${fmtM(_ccData.vendorContratos.reduce((s,c)=>s+(c.monto||0),0))}</span></div>
-      <div><label>Contratos CRÍTICA + ALTA</label><span>${sevCount.critica} CRÍTICA · ${sevCount.alta} ALTA</span></div>
     </div>
-
-    <!-- Severidades badge bar -->
-    <div class="sev-bar">
-      <span class="sev-badge sev-c">● CRÍTICA: ${sevCount.critica}</span>
-      <span class="sev-badge sev-a">● ALTA: ${sevCount.alta}</span>
-      <span class="sev-badge sev-m">● MEDIA: ${sevCount.media}</span>
-      <span class="sev-badge sev-b">● BAJA: ${sevCount.baja}</span>
-    </div>
-
-    <!-- Patrones con montos -->
-    ${patron_montos.length ? `<div class="sec">
-      <div class="sec-title">⚠️ Exposición por Patrón de Riesgo</div>
-      <table class="data-table">
-        <thead><tr><th>Patrón</th><th>Monto expuesto</th></tr></thead>
-        <tbody>${patron_montos.map(p => `<tr><td>${p.patron}</td><td>${fmtM(p.monto)}</td></tr>`).join('')}</tbody>
-      </table>
-    </div>` : ''}
-
-    <!-- Denuncias ciudadanas -->
-    ${denuncias.length ? `<div class="sec">
-      <div class="sec-title">🚨 Denuncias Ciudadanas Relacionadas (${denuncias.length})</div>
-      ${denuncias.map(dn => `<div class="denuncia-box">
-        <span class="denuncia-folio">${dn.folio}</span> · <strong>${dn.estado}</strong><br>
-        <span style="color:#374151;">${dn.descripcion}${dn.descripcion.length >= 200 ? '…' : ''}</span>
-      </div>`).join('')}
-    </div>` : ''}
-
-    <!-- Gráficas del análisis -->
-    ${(chartImgs.ccChartAdmin || chartImgs.ccChartSev || chartImgs.ccChartConc) ? `<div class="sec">
-      <div class="sec-title">📊 Gráficas del Análisis</div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;">
-        ${chartImgs.ccChartAdmin ? `<div style="flex:1;min-width:200px;text-align:center;">
-          <img src="${chartImgs.ccChartAdmin}" style="width:100%;border-radius:6px;border:1px solid #e5e7eb;">
-          <div style="font-size:9px;color:#6b7280;margin-top:4px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Actividad por Administración</div>
-        </div>` : ''}
-        ${chartImgs.ccChartSev ? `<div style="flex:1;min-width:160px;text-align:center;">
-          <img src="${chartImgs.ccChartSev}" style="width:100%;border-radius:6px;border:1px solid #e5e7eb;">
-          <div style="font-size:9px;color:#6b7280;margin-top:4px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Distribución por Severidad</div>
-        </div>` : ''}
-        ${chartImgs.ccChartConc ? `<div style="flex:1;min-width:200px;text-align:center;">
-          <img src="${chartImgs.ccChartConc}" style="width:100%;border-radius:6px;border:1px solid #e5e7eb;">
-          <div style="font-size:9px;color:#6b7280;margin-top:4px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Concentración Financiera</div>
-        </div>` : ''}
-      </div>
-    </div>` : ''}
-
-    <!-- Secciones narrativas IA -->
     ${sections.filter(s => !s.trim().toUpperCase().startsWith('DISCLAIMER')).map(s => {
       const nl = s.indexOf('\n');
       const title = s.substring(0, nl).trim();
       const body  = s.substring(nl + 1).trim();
       if (!body || body === '#') return '';
-      const icons = { 'RESUMEN':'📋', 'HALLAZGOS':'🔍', 'ANÁLISIS':'⚠️', 'AN':'⚠️', 'PRÓXIMOS':'📌', 'PROX':'📌', 'RECOMENDACIONES':'⚖️', 'RECOM':'⚖️' };
+      const icons = { 'RESUMEN':'📋', 'HALLAZGOS':'🔍', 'ANÁLISIS':'⚠️', 'AN':'⚠️', 'PRÓXIMOS':'📌', 'PROX':'📌' };
       const icon = Object.entries(icons).find(([k]) => title.toUpperCase().startsWith(k))?.[1] || '▸';
-      const extraClass = title.toUpperCase().startsWith('RECOM') ? ' sec-legal' : '';
-      return `<div class="sec${extraClass}"><div class="sec-title">${icon} ${title}</div><div class="sec-body">${mdToHtml(body)}</div></div>`;
+      return `<div class="sec"><div class="sec-title">${icon} ${title}</div><div class="sec-body">${mdToHtml(body)}</div></div>`;
     }).join('')}
-
-    <div class="disclaimer">${secMap['DISCLAIMER'] || 'Este reporte fue generado por Sentinel AI con datos de ONCAE/SEFIN y es de carácter preliminar; no constituye prueba judicial ni opinión legal.'}</div>
-    <div class="footer"><span>Sentinel AI — Sistema de Detección de Riesgo · Honduras</span><span>Generado: ${ts} · Folio: ${folio}</span></div>
+    <div class="disclaimer">${secMap['DISCLAIMER'] || (sections.find(s=>s.trim().toUpperCase().startsWith('DISCLAIMER'))?.split('\n').slice(1).join(' ').trim()) || 'Este reporte fue generado por Sentinel AI con datos de ONCAE/SEFIN y es de carácter preliminar; no constituye prueba judicial ni opinión legal.'}</div>
+    <div class="footer"><span>Sentinel AI — Sistema de Detección de Riesgo</span><span>Generado: ${ts} · Folio: ${folio}</span></div>
     </div></body></html>`;
 
     const pw = window.open('', '_blank', 'width=1100,height=800');
@@ -16227,22 +15898,10 @@ async function ccConfirmarGuardar() {
       contratos_count: d.vendorContratos?.length ?? null,
       monto_total:     d.vendorContratos?.reduce((s,c)=>s+(c.monto||0),0) ?? null,
     };
-    // Verificar si ya existe un expediente para este proveedor × entidad
-    const { data: existe } = await db.from('expedientes')
-      .select('id').eq('proveedor', d.proveedor).eq('entidad', d.entidad).limit(1);
-    if (existe && existe.length > 0) {
-      const sobreescribir = confirm(`Ya existe un expediente para "${d.proveedor} × ${d.entidad}".\n¿Deseas actualizarlo con el análisis actual?`);
-      if (!sobreescribir) { btn.disabled = false; btn.innerHTML = '💾 GUARDAR'; return; }
-      const { error: errUpd } = await db.from('expedientes').update(payload).eq('id', existe[0].id);
-      if (errUpd) throw new Error(errUpd.message);
-      document.getElementById('ccGuardarModal').style.display = 'none';
-      alert(`✅ Expediente actualizado correctamente.`);
-    } else {
-      const { error } = await db.from('expedientes').insert([payload]);
-      if (error) throw new Error(error.message);
-      document.getElementById('ccGuardarModal').style.display = 'none';
-      alert(`✅ Expediente "${nombre}" guardado correctamente.`);
-    }
+    const { error } = await db.from('expedientes').insert([payload]);
+    if (error) throw new Error(error.message);
+    document.getElementById('ccGuardarModal').style.display = 'none';
+    alert(`✅ Expediente "${nombre}" guardado correctamente.`);
   } catch(e) {
     alert('Error al guardar: ' + e.message);
   } finally {
@@ -16287,27 +15946,14 @@ async function ccMisExpedientes() {
 
 function ccCargarExpediente(exp) {
   document.getElementById('ccExpedientesModal').style.display = 'none';
-
-  const doCargar = () => {
-    if (exp.entidad)   { const el = document.getElementById('ccEntidad');   if (el) el.value = exp.entidad; }
-    if (exp.proveedor) { const el = document.getElementById('ccProveedor'); if (el) el.value = exp.proveedor; }
-    const esqSel = document.getElementById('ccEsquema');
-    if (esqSel && exp.esquema) {
-      const opt = Array.from(esqSel.options).find(o => o.value === exp.esquema);
-      if (opt) esqSel.value = exp.esquema;
-    }
-    ccAnalizar();
-  };
-
-  // Si el Constructor de Caso ya está visible, cargar directo
-  const panel = document.getElementById('constructorCasoPanel');
-  if (panel && panel.style.display !== 'none' && panel.style.display !== '') {
-    doCargar();
-  } else {
-    // Abrirlo primero, luego cargar
-    abrirConstructorCaso();
-    setTimeout(doCargar, 400);
+  if (exp.entidad) document.getElementById('ccEntidad').value = exp.entidad;
+  if (exp.proveedor) document.getElementById('ccProveedor').value = exp.proveedor;
+  const esqSel = document.getElementById('ccEsquema');
+  if (esqSel && exp.esquema) {
+    const opt = Array.from(esqSel.options).find(o => o.value === exp.esquema);
+    if (opt) esqSel.value = exp.esquema;
   }
+  ccAnalizar();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -16386,49 +16032,10 @@ function exportarTop10PDF() {
   pw.addEventListener('load', () => pw.focus());
 }
 
-// ── Top 10 mode toggle — S127 ─────────────────────────────────────────────
-let _top10Mode = 'proveedor'; // 'proveedor' | 'entidad'
-
-function switchTop10Mode(mode) {
-  _top10Mode = mode;
-  // Update toggle button styles
-  const btnProv = document.getElementById('btnModeProveedor');
-  const btnEnt  = document.getElementById('btnModeEntidad');
-  if (btnProv && btnEnt) {
-    if (mode === 'proveedor') {
-      btnProv.style.background = 'rgba(96,165,250,0.2)';
-      btnProv.style.color      = '#60a5fa';
-      btnProv.style.border     = '1px solid rgba(96,165,250,0.5)';
-      btnEnt.style.background  = 'rgba(160,180,210,0.08)';
-      btnEnt.style.color       = 'rgba(160,180,210,0.5)';
-      btnEnt.style.border      = '1px solid rgba(160,180,210,0.2)';
-    } else {
-      btnEnt.style.background  = 'rgba(52,211,153,0.2)';
-      btnEnt.style.color       = '#34d399';
-      btnEnt.style.border      = '1px solid rgba(52,211,153,0.5)';
-      btnProv.style.background = 'rgba(160,180,210,0.08)';
-      btnProv.style.color      = 'rgba(160,180,210,0.5)';
-      btnProv.style.border     = '1px solid rgba(160,180,210,0.2)';
-    }
-  }
-  // Update title/subtitle
-  const title    = document.getElementById('top10Title');
-  const subtitle = document.getElementById('top10Subtitle');
-  if (title)    title.textContent    = mode === 'entidad' ? '🏛️ Top 10 Entidades Críticas' : '🚨 Top 10 Casos Críticos';
-  if (subtitle) subtitle.textContent = mode === 'entidad'
-    ? 'ANÁLISIS MULTI-DIMENSIONAL · MONTO × CONCENTRACIÓN DE PROVEEDORES · DATOS EN TIEMPO REAL'
-    : 'ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · DATOS EN TIEMPO REAL';
-  renderTop5();
-}
-
 async function renderTop5() {
   const body = document.getElementById('top5Body');
   if (!allAlerts || !allAlerts.length) {
-    body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">⏳ Cargando datos en segundo plano… espera unos segundos.</div>';
-    // S133: auto-retry every 2s until data is ready
-    const retry = setInterval(() => {
-      if (allAlerts && allAlerts.length) { clearInterval(retry); renderTop5(); }
-    }, 2000);
+    body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Datos aún cargando — intenta en unos segundos.</div>';
     return;
   }
   body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Calculando análisis multi-dimensional…</div>';
@@ -16437,12 +16044,6 @@ async function renderTop5() {
 
   // ── Excluidos por error de datos conocido
   const EXCLUIR = ['RILMAC IMPRESORES'];
-
-  // ── Branch: modo entidad ─────────────────────────────────────────────────
-  if (_top10Mode === 'entidad') {
-    await renderTop5PorEntidad(body, EXCLUIR);
-    return;
-  }
 
   // ── Investigaciones confirmadas (timeout 5s)
   let investigados = new Map();
@@ -16617,143 +16218,6 @@ async function renderTop5() {
   }
 }
 
-// ── Top 10 Por Entidad — S127 ─────────────────────────────────────────────
-async function renderTop5PorEntidad(body, EXCLUIR) {
-  const esc  = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-  const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
-  const ahora  = new Date();
-  const hace18m = new Date(ahora.getFullYear(), ahora.getMonth() - 18, 1).toISOString().slice(0,7);
-
-  function detectarSectorEntidad(entityName) {
-    const txt = (entityName||'').toLowerCase();
-    if (/salud|hospital|sesal|farma|medic/.test(txt)) return 'SALUD';
-    if (/constru|obras|infraestruc|ingenie/.test(txt)) return 'CONSTRUCCIÓN';
-    if (/educac|unah|universidad/.test(txt)) return 'EDUCACIÓN';
-    if (/energia|enee|combustib/.test(txt)) return 'ENERGÍA';
-    if (/seguro|asegurad/.test(txt)) return 'SEGUROS';
-    if (/planific|seplan|presidenc/.test(txt)) return 'GOBIERNO CENTRAL';
-    return 'INSTITUCIONAL';
-  }
-
-  // Agrupar CRÍTICOS por entidad
-  const map = {};
-  allAlerts
-    .filter(a => normSev(a.severity).includes('CRITICA'))
-    .filter(a => Number(a.monto_contrato) > 0 && a.entity_name)
-    .filter(a => !EXCLUIR.some(ex => (a.proveedor_nombre||'').toUpperCase().includes(ex)))
-    .forEach(a => {
-      const key = (a.entity_name||'').toUpperCase().trim();
-      if (!map[key]) map[key] = { entidad: a.entity_name, proveedores: new Set(), provMontos: {}, monto: 0, n: 0, patrones: new Set(), nReciente: 0, fuentes: new Set() };
-      const c = map[key];
-      c.monto += Number(a.monto_contrato);
-      c.n++;
-      if (a.proveedor_nombre) {
-        c.proveedores.add(a.proveedor_nombre);
-        c.provMontos[a.proveedor_nombre] = (c.provMontos[a.proveedor_nombre]||0) + Number(a.monto_contrato);
-      }
-      (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(p => c.patrones.add(p));
-      if (a.source) c.fuentes.add(a.source);
-      const mes = (a.fecha_contrato||'').slice(0,7);
-      if (mes && mes >= hace18m) c.nReciente++;
-    });
-
-  const todos = Object.values(map).filter(c => c.monto >= 100000000);
-  if (!todos.length) {
-    body.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Sin entidades con contratos CRÍTICA ≥ L 100M.</div>';
-    return;
-  }
-
-  const maxMonto     = Math.max(...todos.map(c => c.monto));
-  const maxPatrones  = Math.max(...todos.map(c => c.patrones.size)) || 1;
-  const maxProv      = Math.max(...todos.map(c => c.proveedores.size)) || 1;
-  const maxReciente  = Math.max(...todos.map(c => c.nReciente)) || 1;
-  const norm = (val, mx) => mx > 0 ? Math.min(100, Math.round((val / mx) * 100)) : 0;
-
-  const candidatos = todos.map(c => {
-    const dMonto    = norm(c.monto, maxMonto);
-    const dPatron   = norm(c.patrones.size, maxPatrones);
-    const dConc     = norm(c.proveedores.size, maxProv);  // concentración de proveedores
-    const dRecente  = norm(c.nReciente, maxReciente);
-    const dMulti    = c.proveedores.size >= 10 ? 100 : Math.round((c.proveedores.size / 10) * 100);
-    const comportamiento = Math.round(dPatron*0.35 + dConc*0.30 + dRecente*0.20 + dMulti*0.15);
-    const score = Math.round(Math.sqrt(dMonto * comportamiento));
-    const dims = [
-      { label: 'MONTO',      val: dMonto,   color: '#ff3d57' },
-      { label: 'PATRONES',   val: dPatron,  color: '#a78bfa' },
-      { label: 'PROVEEDORES',val: dConc,    color: '#60a5fa' },
-      { label: 'RECENCIA',   val: dRecente, color: '#34d399' },
-      { label: 'MULTI-PROV', val: dMulti,   color: '#fbbf24' },
-    ];
-    const dominante = dims.reduce((a, b) => b.val > a.val ? b : a);
-    const sector = detectarSectorEntidad(c.entidad);
-    const topProveedor = Object.entries(c.provMontos).sort((a,b) => b[1]-a[1])[0]?.[0] || '';
-    return { ...c, dMonto, comportamiento, score, dims, dominante, sector, topProveedor };
-  });
-
-  const top10 = candidatos.sort((a, b) => b.score - a.score).slice(0, 10);
-
-  const sectorCount = {};
-  top10.forEach(c => { sectorCount[c.sector] = (sectorCount[c.sector]||0) + 1; });
-  const sectorTop  = Object.entries(sectorCount).sort((a,b) => b[1]-a[1]);
-  const montoTotal = top10.reduce((s, c) => s + c.monto, 0);
-  const insightHtml = `<div class="t5-insight">
-    <strong>PATRÓN DETECTADO:</strong> ${sectorTop.map(([s,n]) => `${n} de 10 entidades — ${s}`).join(' · ')}
-    &nbsp;·&nbsp; Exposición total Top 10: <strong>${fmtM(montoTotal)}</strong>
-  </div>`;
-
-  const nivelBadge = rank =>
-    rank <= 3  ? '<span class="t5-nivel t5-nivel-max">● RIESGO MÁXIMO</span>' :
-    rank <= 7  ? '<span class="t5-nivel t5-nivel-alto">● RIESGO ALTO</span>' :
-                 '<span class="t5-nivel t5-nivel-elev">● RIESGO ELEVADO</span>';
-
-  body.innerHTML = insightHtml + top10.map((c, i) => {
-    const rank = i + 1;
-    const rankClass = rank <= 3 ? ' rank-'+rank : '';
-    const provLista = [...c.proveedores].slice(0, 3).join(' · ') + (c.proveedores.size > 3 ? ` +${c.proveedores.size-3}` : '');
-    const patArr = [...c.patrones].slice(0, 4);
-    const dimRows = c.dims.map(d => `
-      <div class="t5-dim-row">
-        <span class="t5-dim-label">${d.label}</span>
-        <div class="t5-dim-track"><div class="t5-dim-fill" style="width:${d.val}%;background:${d.color};opacity:0.8;"></div></div>
-        <span class="t5-dim-val" style="color:${d.color};">${d.val}</span>
-      </div>`).join('');
-
-    return `<div class="t5-case">
-      <div class="t5-rank${rankClass}">${rank < 10 ? '0'+rank : rank}</div>
-      <div class="t5-info">
-        ${nivelBadge(rank)}
-        <div class="t5-proveedor">${esc(c.entidad)}</div>
-        <div class="t5-entidades">Proveedores: ${esc(provLista) || '—'}</div>
-        <div class="t5-meta">
-          ${patArr.map(p=>`<span class="t5-tag t5-tag-patron">${esc(p)}</span>`).join('')}
-          <span class="t5-tag t5-tag-n">${c.n} contrato${c.n!==1?'s':''}</span>
-          <span class="t5-sector">${esc(c.sector)}</span>
-          <span class="t5-tag t5-tag-n">${c.proveedores.size} proveedor${c.proveedores.size!==1?'es':''}</span>
-        </div>
-        <div class="t5-badge-dominante">▲ ${esc(c.dominante.label)}: ${c.dominante.val}</div>
-        <div class="t5-dims">${dimRows}</div>
-      </div>
-      <div class="t5-right">
-        <div class="t5-monto-val">${fmtM(c.monto)}</div>
-        <div class="t5-monto-label">monto en riesgo</div>
-        <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">
-          <button onclick="investigarDesdeTop10('${esc(c.entidad).replace(/'/g,"\\'")}');event.stopPropagation();"
-            style="padding:6px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
-            background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left;">
-            🏛️ Por Entidad →
-          </button>
-          ${c.topProveedor ? `<button onclick="investigarDesdeTop10PorProveedor('${esc(c.topProveedor).replace(/'/g,"\\'")}');event.stopPropagation();"
-            style="padding:6px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
-            background:rgba(52,211,153,0.1);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left;">
-            📦 Por Proveedor →
-          </button>` : ''}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
 function poGo(fn) {
   hidePortal();
   setTimeout(() => { try { fn(); } catch(e) { console.warn('poGo:', e); } }, 220);
@@ -16766,53 +16230,41 @@ function poToggle(id) {
   if (!wasOpen) card.classList.add('po-expanded');
 }
 
-// S67 / S132 — número de registros dinámico en UI
-// signalN = registros cargados (no-BAJA); totalN = total en BD (incluye BAJA)
-function updateBDCountDisplay(signalN, totalN) {
-  const n = signalN || totalN || 0;
+// S67 — número de registros dinámico en UI
+function updateBDCountDisplay(n) {
   const fmt = n ? n.toLocaleString('es-HN') : '—';
   ['bd-total-registros','scanner-total-registros','busqueda-card-count'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = fmt;
   });
-  // Guardar total real en DB para delta badge y badge principal
-  if (totalN) window._bdFullDBCount = totalN;
 }
 
 // S67 — métricas del card ejecutivo Consultas
-async function updateConsultasMetrics() {
-  // S138: todo server-side — no depende de allAlerts
-  const cs = _cachedStats || {};
-  const critCount = cs.critica || 0;
-  const montoC    = Number(cs.monto_critica || 0);
+function updateConsultasMetrics(all) {
+  const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const criticos = all.filter(a => normSev(a.severity||a.severidad) === 'critica');
+  const monto = criticos.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
   const fmtM = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(1) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(0) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+  const sobre = all.filter(a => {
+    const mc = Number(a.monto_contrato||0);
+    const budget = Number(a.budget_amount||0);
+    return mc > 0 && budget > mc * 1.15;
+  });
+  const sobreInst = new Set(sobre.map(a => a.entity_name||a.entidad).filter(Boolean)).size;
   const elC = document.getElementById('exec-m-criticos');
   const elM = document.getElementById('exec-m-monto');
   const elS = document.getElementById('exec-m-sobre');
-  if (elC) elC.textContent = critCount > 0 ? critCount.toLocaleString('es-HN') : '—';
-  if (elM) elM.textContent = montoC > 0 ? fmtM(montoC) : '—';
-  // Ejec. Acelerada: COUNT desde sefin_presupuesto (no iterar allAlerts)
-  try {
-    const { data: periodos } = await db.from('sefin_presupuesto').select('periodo').order('periodo',{ascending:false}).limit(1);
-    const periodo = periodos?.[0]?.periodo;
-    if (periodo) {
-      const { count } = await db.from('sefin_presupuesto').select('*',{count:'exact',head:true}).eq('periodo',periodo).eq('sobrecosto_flag',true);
-      if (elS) elS.textContent = count > 0 ? count + ' inst.' : '—';
-    }
-  } catch(e) { if (elS && elS.textContent === '—') elS.textContent = '—'; }
+  if (elC) elC.textContent = criticos.length.toLocaleString('es-HN');
+  if (elM) elM.textContent = fmtM(monto);
+  if (elS) elS.textContent = sobreInst > 0 ? sobreInst + ' inst.' : '—';
 }
 
 function poUpdateIndicators() {
   try {
-    // S132: use _cachedStats for DB-accurate counts (no client-side array scan needed)
-    const cs = _cachedStats || {};
-    const dbTotal = cs.total || window._bdFullDBCount || window._bdTotalCount || _currentPageTotal || 0;
-    if (!dbTotal) return;
-    const crit = cs.critica || 0;
-    const alto = cs.alta    || 0;
-
-    // Sobrecosto/Engel/OFAC — still from background-loaded allAlerts (pattern matching)
-    const data  = (typeof allAlerts !== 'undefined') ? allAlerts : [];
+    const data = (typeof allAlerts !== 'undefined') ? allAlerts : [];
+    if (!data.length) return;
+    const crit  = data.filter(a => a.severity === 'CRÍTICA').length;
+    const alto  = data.filter(a => a.severity === 'ALTA').length;
     const sob   = data.filter(a => {
       const mc = Number(a.monto_contrato||0);
       const budget = Number(a.budget_amount||0);
@@ -16826,10 +16278,9 @@ function poUpdateIndicators() {
     document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
     document.getElementById('po-ind-intl').textContent  = (engel + ofac).toLocaleString('es-HN');
     document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
-    const signalTotal = (crit + alto + (cs.media || 0)) || window._bdSignalCount || dbTotal;
-    document.getElementById('po-ind-total').textContent = signalTotal.toLocaleString('es-HN');
-    document.getElementById('po-db-badge').textContent  = dbTotal.toLocaleString('es-HN') + ' contratos monitoreados';
-    const displayTotal = dbTotal;
+    const displayTotal = window._bdTotalCount || data.length;
+    document.getElementById('po-ind-total').textContent = displayTotal.toLocaleString('es-HN');
+    document.getElementById('po-db-badge').textContent  = displayTotal.toLocaleString('es-HN') + ' contratos monitoreados';
 
     // Delta counter — compara contra último conteo guardado
     try {
@@ -16868,8 +16319,8 @@ function poUpdateIndicators() {
         }
         deltaBadge.style.display = 'inline-block';
       }
-      // Actualizar localStorage solo con el conteo filtrado final (no HEAD pre-filtro)
-      if (window._bdFinalCount && curCount !== prevCount) {
+      // Actualizar localStorage solo si el conteo cambió (o es primera vez)
+      if (curCount !== prevCount) {
         localStorage.setItem(LS_COUNT, curCount);
         localStorage.setItem(LS_DATE, new Date().toISOString());
       }
@@ -17075,162 +16526,6 @@ async function doLogin() {
 }
 
 // ── Disparar notificación manual (S91) ──────────────────────────────────────
-// ── GESTIONAR CONTACTOS INSTITUCIONES ────────────────────────────
-async function niContactosAbrir() {
-  document.getElementById('niContactosModal').style.display = 'flex';
-  await niContactosCargar();
-}
-function niContactosCerrar() {
-  document.getElementById('niContactosModal').style.display = 'none';
-}
-async function niContactosCargar() {
-  const lista = document.getElementById('niContactosLista');
-  lista.innerHTML = '<div style="color:#64748b;">⏳ Cargando...</div>';
-  const { data, error } = await db.from('instituciones_contactos').select('*').order('institucion');
-  if (error || !data) { lista.innerHTML = '<div style="color:#f87171;">Error al cargar contactos.</div>'; return; }
-  if (data.length === 0) {
-    lista.innerHTML = '<div style="color:#475569;font-size:12px;padding:12px 0;">No hay contactos registrados. Agrega el primero arriba.</div>';
-    return;
-  }
-  lista.innerHTML = `<table style="width:100%;border-collapse:collapse;">
-    <thead><tr style="background:#1e293b;">
-      <th style="padding:7px 10px;text-align:left;font-size:11px;color:#64748b;">Institución</th>
-      <th style="padding:7px 10px;text-align:left;font-size:11px;color:#64748b;">Nombre</th>
-      <th style="padding:7px 10px;text-align:left;font-size:11px;color:#64748b;">Email</th>
-      <th style="padding:7px 10px;text-align:left;font-size:11px;color:#64748b;">Cargo</th>
-      <th style="padding:7px 10px;text-align:center;font-size:11px;color:#64748b;">Activo</th>
-      <th style="padding:7px 10px;font-size:11px;color:#64748b;"></th>
-    </tr></thead>
-    <tbody>${data.map(c => `
-      <tr id="niRow_${c.id}" style="border-bottom:1px solid #1e293b;">
-        <td style="padding:7px 10px;font-size:12px;color:#e2e8f0;">${c.institucion}</td>
-        <td style="padding:7px 10px;font-size:12px;color:#94a3b8;">${c.contacto_nombre || '—'}</td>
-        <td style="padding:7px 10px;font-size:12px;color:#94a3b8;">${c.email}</td>
-        <td style="padding:7px 10px;font-size:12px;color:#94a3b8;">${c.cargo || '—'}</td>
-        <td style="padding:7px 10px;text-align:center;">
-          <button onclick="niContactosToggle(${c.id},${c.activo})" style="background:${c.activo ? '#14532d' : '#1e293b'};border:1px solid ${c.activo ? '#16a34a' : '#334155'};color:${c.activo ? '#4ade80' : '#64748b'};border-radius:20px;padding:2px 10px;font-size:11px;cursor:pointer;font-weight:700;">
-            ${c.activo ? 'SÍ' : 'NO'}
-          </button>
-        </td>
-        <td style="padding:7px 10px;text-align:right;">
-          <button onclick="niContactosEliminar(${c.id})" style="background:transparent;border:none;color:#64748b;cursor:pointer;font-size:14px;padding:2px 6px;" title="Eliminar">🗑</button>
-        </td>
-      </tr>`).join('')}
-    </tbody>
-  </table>`;
-}
-async function niContactosAgregar() {
-  const inst   = document.getElementById('niCInst').value.trim();
-  const email  = document.getElementById('niCEmail').value.trim();
-  const nombre = document.getElementById('niCNombre').value.trim();
-  const cargo  = document.getElementById('niCCargo').value.trim();
-  const msg    = document.getElementById('niCMsg');
-  if (!inst || !email) { msg.style.color = '#f87171'; msg.textContent = 'Institución y email son obligatorios.'; return; }
-  msg.style.color = '#64748b'; msg.textContent = 'Guardando...';
-  const { error } = await db.from('instituciones_contactos').insert([{ institucion: inst, email, contacto_nombre: nombre || null, cargo: cargo || null, activo: true }]);
-  if (error) { msg.style.color = '#f87171'; msg.textContent = 'Error: ' + error.message; return; }
-  msg.style.color = '#4ade80'; msg.textContent = '✅ Contacto agregado.';
-  ['niCInst','niCEmail','niCNombre','niCCargo'].forEach(id => document.getElementById(id).value = '');
-  setTimeout(() => { msg.textContent = ''; }, 3000);
-  await niContactosCargar();
-}
-async function niContactosToggle(id, activo) {
-  await db.from('instituciones_contactos').update({ activo: !activo }).eq('id', id);
-  await niContactosCargar();
-}
-async function niContactosEliminar(id) {
-  if (!confirm('¿Eliminar este contacto?')) return;
-  await db.from('instituciones_contactos').delete().eq('id', id);
-  await niContactosCargar();
-}
-// ─────────────────────────────────────────────────────────────────
-
-// ── NOTIFICAR INSTITUCIONES (Mejora #3) ──────────────────────────
-async function niAbrir() {
-  const modal = document.getElementById('niModal');
-  const contenido = document.getElementById('niContenido');
-  const btnEnviar = document.getElementById('niBtnEnviar');
-  modal.style.display = 'flex';
-  contenido.innerHTML = '<div style="color:#64748b;">⏳ Cargando vista previa...</div>';
-  if (btnEnviar) btnEnviar.style.display = 'none';
-  try {
-    const SUPABASE_URL = 'https://yxvfpeigwthtokqsarvs.supabase.co';
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/notificacion-instituciones`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ preview: true }),
-    });
-    const data = await res.json();
-    if (data.sin_destinatarios) {
-      const filas = (data.instituciones_con_alertas || []).slice(0, 10).map(i =>
-        `<tr><td style="padding:6px 10px;font-size:12px;border-bottom:1px solid #1e293b;">${i.institucion}</td>
-         <td style="padding:6px 10px;font-size:12px;text-align:right;border-bottom:1px solid #1e293b;color:#f87171;">${i.alertas}</td>
-         <td style="padding:6px 10px;font-size:12px;text-align:right;border-bottom:1px solid #1e293b;">${i.monto_expuesto >= 1e9 ? 'L '+(i.monto_expuesto/1e9).toFixed(2)+'B' : 'L '+(i.monto_expuesto/1e6).toFixed(1)+'M'}</td></tr>`
-      ).join('');
-      contenido.innerHTML = `
-        <div style="background:#1e293b;border:1px solid #7c3aed44;border-radius:8px;padding:12px 16px;margin-bottom:16px;">
-          <div style="font-size:12px;font-weight:700;color:#a78bfa;margin-bottom:4px;">⚠️ Sin destinatarios configurados</div>
-          <div style="font-size:12px;color:#94a3b8;">${data.mensaje}</div>
-        </div>
-        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Instituciones que serían notificadas:</div>
-        <table style="width:100%;border-collapse:collapse;">
-          <thead><tr style="background:#1e293b;">
-            <th style="padding:6px 10px;text-align:left;font-size:11px;color:#64748b;">Institución</th>
-            <th style="padding:6px 10px;text-align:right;font-size:11px;color:#64748b;">Alertas</th>
-            <th style="padding:6px 10px;text-align:right;font-size:11px;color:#64748b;">Monto</th>
-          </tr></thead>
-          <tbody>${filas}</tbody>
-        </table>
-        <div style="margin-top:12px;font-size:11px;color:#475569;">Para activar: agregar contactos en la tabla <code style="color:#a78bfa;">instituciones_contactos</code> en Supabase.</div>`;
-    } else {
-      const filas = (data.preview || []).map(p =>
-        `<tr><td style="padding:6px 10px;font-size:12px;border-bottom:1px solid #1e293b;">${p.institucion}</td>
-         <td style="padding:6px 10px;font-size:12px;border-bottom:1px solid #1e293b;color:#94a3b8;">${p.email}</td>
-         <td style="padding:6px 10px;font-size:12px;text-align:right;border-bottom:1px solid #1e293b;color:#f87171;">${p.alertas}</td></tr>`
-      ).join('');
-      contenido.innerHTML = `
-        <div style="background:#14532d22;border:1px solid #16a34a44;border-radius:8px;padding:10px 14px;margin-bottom:14px;">
-          <div style="font-size:12px;color:#4ade80;">${data.total_contactos} destinatario${data.total_contactos!==1?'s':''} configurado${data.total_contactos!==1?'s':''}.</div>
-        </div>
-        <table style="width:100%;border-collapse:collapse;">
-          <thead><tr style="background:#1e293b;">
-            <th style="padding:6px 10px;text-align:left;font-size:11px;color:#64748b;">Institución</th>
-            <th style="padding:6px 10px;text-align:left;font-size:11px;color:#64748b;">Email</th>
-            <th style="padding:6px 10px;text-align:right;font-size:11px;color:#64748b;">Alertas</th>
-          </tr></thead>
-          <tbody>${filas}</tbody>
-        </table>`;
-      if (btnEnviar) btnEnviar.style.display = 'inline-block';
-    }
-  } catch(e) {
-    contenido.innerHTML = `<div style="color:#f87171;">Error al cargar vista previa: ${e.message}</div>`;
-  }
-}
-function niCerrar() {
-  document.getElementById('niModal').style.display = 'none';
-}
-async function niEnviar() {
-  const btnEnviar = document.getElementById('niBtnEnviar');
-  const contenido = document.getElementById('niContenido');
-  if (btnEnviar) { btnEnviar.disabled = true; btnEnviar.textContent = '⏳ Enviando...'; }
-  try {
-    const SUPABASE_URL = 'https://yxvfpeigwthtokqsarvs.supabase.co';
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/notificacion-instituciones`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ preview: false }),
-    });
-    const data = await res.json();
-    contenido.innerHTML = `<div style="color:#4ade80;font-size:13px;">✅ ${data.enviados} notificación${data.enviados!==1?'es':''} enviada${data.enviados!==1?'s':''} correctamente.</div>`;
-    if (btnEnviar) btnEnviar.style.display = 'none';
-    setTimeout(niCerrar, 2500);
-  } catch(e) {
-    contenido.innerHTML = `<div style="color:#f87171;">Error: ${e.message}</div>`;
-    if (btnEnviar) { btnEnviar.disabled = false; btnEnviar.textContent = '📤 Enviar Notificaciones'; }
-  }
-}
-// ─────────────────────────────────────────────────────────────────
-
 async function dispararNotificacion(fnName, label) {
   const statusEl = document.getElementById('notif-status');
   const btns = document.querySelectorAll('.notif-trigger-btn');
@@ -17409,7 +16704,7 @@ function renderAuditLog() {
 // ════════════════════════════════════════════════════════════
 // ANALYTICS PANEL
 // ════════════════════════════════════════════════════════════
-const USD_RATE = 26.7; // HNL per USD — BCH tasa vigente May 2026
+const USD_RATE = 24.5; // HNL per USD (approx 2025)
 
 // ── RED FLAGS CNA/UFERCO Honduras (Entidades de Alto Riesgo) ──
 // Fuente: CNA, UFERCO, Ministerio Público — incorporado S59 (2026-05-04)
@@ -17503,7 +16798,7 @@ const PATTERN_LABELS = {
   ADJUDICACION_DIRECTA:        'Adjudicación Directa',
   PROVEEDOR_SIN_HISTORIAL:     'Proveedor Sin Historial',
   MONTO_FRACCIONADO:           'Monto Fraccionado',
-  SOBRECOSTO:                  '📈 Sobrecosto Presupuestario',
+  SOBRECOSTO:                  '📈 Sobrepresupuesto Presupuestario',
   URGENCIA_INJUSTIFICADA:      'Urgencia Injustificada',
   ENGEL:                       '🇺🇸 Lista Engel EE.UU.',
   // ONCAE patterns
@@ -17611,14 +16906,13 @@ function fmtUSD(n) {
 function renderAnalytics() {
   const alerts = getAnalyticsAlerts();
   const totalAlerts = alerts.length;
-  const totalMonto  = alerts.reduce((s, a) => s + Number(a.monto_contrato || a.monto || 0), 0);
-  const dbTotal = window._bdTotalCount || window._cachedStats?.total || totalAlerts;
+  const totalMonto  = alerts.reduce((s, a) => s + Number(a.monto_contrato || 0), 0);
 
   // ── Headline cards ──
   document.getElementById('analyticsHeadline').innerHTML = [
-    { label: 'Contratos Monitoreados', value: dbTotal.toLocaleString('es-HN'), sub: 'Total en base de datos · todas las fuentes' },
-    { label: 'Contratos Flaggeados',   value: totalAlerts.toLocaleString('es-HN'), sub: (totalAlerts/dbTotal*100).toFixed(1) + '% del total monitoreado' },
-    { label: 'Exposición Total',       value: fmtLarge(totalMonto), sub: fmtUSD(totalMonto) + ' USD estimado' },
+    { label: 'Contratos Analizados', value: '147,122', sub: 'Año 2025 · SEFIN OCDS' },
+    { label: 'Total Contratos',        value: totalAlerts.toLocaleString(), sub: (totalAlerts/147122*100).toFixed(1) + '% de contratos flaggeados' },
+    { label: 'Exposición Total',     value: fmtLarge(totalMonto), sub: fmtUSD(totalMonto) + ' USD estimado' },
   ].map(c => `
     <div style="background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:20px;">
       <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:8px;">${c.label}</div>
@@ -17705,7 +16999,7 @@ function renderAnalytics() {
       .map(p => PATTERN_LABELS[p] || p).join(' + ');
     return `<tr>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.proveedor_nombre}">${a.proveedor_nombre || '—'}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.entity_name}">${_hasEmbargo(a.entity_name)?'<span title="Entidad con embargo activo a la CUT (TSC 2026)" style="cursor:help;">⚖️</span> ':''}</span>${a.entity_name || '—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.entity_name}">${a.entity_name || '—'}</td>
       <td style="font-size:11px;color:var(--electric);">${patternList}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(Number(a.monto_contrato))}</td>
     </tr>`;
@@ -20166,20 +19460,8 @@ function renderEjecutiva() {
   // Uses the global `allAlerts` array already loaded by loadAlerts()
   if (!window.allAlerts || window.allAlerts.length === 0) {
     document.getElementById('execSubtitle').textContent = 'Cargando datos desde Supabase...';
-    // Auto-retry cada 1.5s hasta que allAlerts esté listo (S137)
-    if (!window._execRetryInterval) {
-      window._execRetryInterval = setInterval(() => {
-        if (window.allAlerts && window.allAlerts.length > 0) {
-          clearInterval(window._execRetryInterval);
-          window._execRetryInterval = null;
-          renderEjecutiva();
-        }
-      }, 1500);
-    }
     return;
   }
-  // Limpiar retry si ya cargó
-  if (window._execRetryInterval) { clearInterval(window._execRetryInterval); window._execRetryInterval = null; }
   const alerts = window.allAlerts;
   const normSevLocal = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'');
 
@@ -20199,28 +19481,24 @@ function renderEjecutiva() {
   const fmtL = n => n > 0 ? 'L ' + (n >= 1e6 ? (n/1e6).toFixed(1)+'M' : (n/1e3).toFixed(0)+'K') : 'L —';
   const sumMonto = arr => arr.reduce((s,a) => s + (parseFloat(a.monto_contrato)||0), 0);
 
-  // ── P1 inside Vista Ejecutiva — usar _cachedStats para montos exactos (mv_alert_stats) ──
-  const _csE = _cachedStats || {};
-  const montoC      = Number(_csE.monto_critica || 0) || sumMonto(criticos);
-  const montoA      = Number(_csE.monto_alta    || 0) || sumMonto(altos);
-  const riskMontoE  = montoC + montoA;
+  // ── P1 inside Vista Ejecutiva ──
+  const riskMontoE  = sumMonto(criticos) + sumMonto(altos);
   const riskPctE    = riskMontoE > 0 ? (riskMontoE / 309_000_000_000 * 100).toFixed(2) : null;
   const fmtLfull = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : 'L —';
   const _re = id => document.getElementById(id);
   if (_re('exec-risk-total'))       _re('exec-risk-total').textContent       = fmtLfull(riskMontoE);
-  if (_re('exec-risk-critica'))     _re('exec-risk-critica').textContent     = fmtLfull(montoC);
-  if (_re('exec-risk-alta'))        _re('exec-risk-alta').textContent        = fmtLfull(montoA);
+  if (_re('exec-risk-critica'))     _re('exec-risk-critica').textContent     = fmtLfull(sumMonto(criticos));
+  if (_re('exec-risk-alta'))        _re('exec-risk-alta').textContent        = fmtLfull(sumMonto(altos));
   if (_re('exec-risk-critica-cnt')) _re('exec-risk-critica-cnt').textContent = criticos.length.toLocaleString() + ' contratos';
   if (_re('exec-risk-alta-cnt'))    _re('exec-risk-alta-cnt').textContent    = altos.length.toLocaleString() + ' contratos';
   if (_re('exec-risk-budget') && riskPctE) {
     _re('exec-risk-budget').textContent = `≈ ${riskPctE}% del Presupuesto General de la República (L 309B aprobado 2024)`;
   }
 
-  // S137 QA: conteos de allAlerts, montos de _cachedStats (fuente única)
-  document.getElementById('exec-criticos').textContent       = (_csE.critica || criticos.length).toLocaleString();
-  document.getElementById('exec-criticos-monto').textContent = fmtLfull(montoC);
-  document.getElementById('exec-altos').textContent          = (_csE.alta || altos.length).toLocaleString();
-  document.getElementById('exec-altos-monto').textContent    = fmtLfull(montoA);
+  document.getElementById('exec-criticos').textContent       = criticos.length.toLocaleString();
+  document.getElementById('exec-criticos-monto').textContent = fmtL(sumMonto(criticos));
+  document.getElementById('exec-altos').textContent          = altos.length.toLocaleString();
+  document.getElementById('exec-altos-monto').textContent    = fmtL(sumMonto(altos));
   document.getElementById('exec-ofac').textContent           = ofac.length.toLocaleString();
   document.getElementById('exec-engel').textContent          = _engelMatchedIds.size.toLocaleString();
   const listaNegra = new Set([...ofac.map(a=>a.id), ..._engelMatchedIds]);
@@ -22313,7 +21591,7 @@ const PLAYBOOK_QUERIES = [
   },
   {
     id: 'sobre-presupuesto',
-    nombre: 'Instituciones Ejec. Acelerada',
+    nombre: 'Instituciones Sobrepresupuesto',
     desc: 'Instituciones con ejecución >115% del ritmo esperado (SEFIN PIEP)',
     severidad: 'amber',
     run: function(all) {
@@ -22339,7 +21617,7 @@ const PLAYBOOK_QUERIES = [
           monto: 'L ' + (d.monto/1e6).toFixed(1) + 'M',
           ratio: (d.maxRatio * 100).toFixed(0) + '%'
         }));
-      return { titulo: 'Instituciones Ejec. Acelerada — SEFIN PIEP', filas, cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'] };
+      return { titulo: 'Instituciones Sobrepresupuesto — SEFIN PIEP', filas, cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'] };
     }
   },
   {
@@ -23797,53 +23075,10 @@ function mfScoreBadge(score) {
 }
 
 function mfAccionBtn(d) {
-  // Botón cross-reference alerts por entidad
-  const xref = d.entidad ? `<button onclick="mfVerEnBD('${d.entidad.replace(/'/g,"\\'")}')" title="Ver contratos de esta entidad" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.2);border-radius:6px;padding:3px 8px;font-size:10px;cursor:pointer;margin-bottom:4px;">🔍 BD</button>` : '';
-  return `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">${xref}<select onchange="mfCambiarEstado(${d.id},this.value)" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:3px 6px;font-size:10px;color:var(--text);outline:none;cursor:pointer;" title="Cambiar estado">
-    <option value="nuevo" ${d.estado==='nuevo'?'selected':''}>Nuevo</option>
-    <option value="en_revision" ${d.estado==='en_revision'?'selected':''}>En revisión</option>
-    <option value="investigando" ${d.estado==='investigando'?'selected':''}>Investigando</option>
-    <option value="cerrado" ${d.estado==='cerrado'?'selected':''}>Cerrado</option>
-    <option value="descartado" ${d.estado==='descartado'?'selected':''}>Descartado</option>
-  </select></div>`;
+  if (d.accion === 'escalar')    return `<button class="btn-mp" style="background:rgba(168,85,247,0.15);color:var(--purple);border-color:rgba(168,85,247,0.35);">📤 PGR</button>`;
+  if (d.accion === 'investigar') return `<span class="severity alta" style="cursor:default;">Investigar</span>`;
+  return `<span class="severity baja" style="cursor:default;">Archivar</span>`;
 }
-
-function mfEstadoBadge(estado) {
-  const map = {
-    'nuevo':        { color:'var(--electric)',  bg:'rgba(0,200,255,0.1)',   label:'🆕 Nuevo' },
-    'en_revision':  { color:'var(--amber)',      bg:'rgba(255,171,0,0.1)',   label:'🔍 En revisión' },
-    'investigando': { color:'var(--purple)',     bg:'rgba(168,85,247,0.1)',  label:'◈ Investigando' },
-    'cerrado':      { color:'var(--green)',      bg:'rgba(0,230,118,0.1)',   label:'✓ Cerrado' },
-    'descartado':   { color:'var(--text-dim)',   bg:'rgba(120,139,168,0.1)', label:'✕ Descartado' },
-  };
-  const s = map[estado] || map['nuevo'];
-  return `<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:${s.bg};color:${s.color};">${s.label}</span>`;
-}
-
-async function mfCambiarEstado(id, nuevoEstado) {
-  try {
-    const { error } = await db.from('denuncias').update({ estado: nuevoEstado, actualizado_en: new Date().toISOString() }).eq('id', id);
-    if (error) throw error;
-    // Refrescar silenciosamente
-    renderModuloF();
-  } catch(e) {
-    console.error('Error cambiando estado:', e.message);
-  }
-}
-
-function mfVerEnBD(entidad) {
-  // Filtrar contratos por entidad en el panel principal
-  hideModuloFPanel();
-  setTimeout(() => {
-    const searchInput = document.getElementById('searchInput') || document.getElementById('globalSearch');
-    if (searchInput) {
-      searchInput.value = entidad;
-      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-  }, 300);
-}
-
-let _mfEstadoFiltro = '';
 
 function mfRenderTabla(denuncias) {
   const total = denuncias.length || 1;
@@ -23862,31 +23097,14 @@ function mfRenderTabla(denuncias) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Sin denuncias registradas</td></tr>';
     return;
   }
-  // Inyectar filtros chips
-  const filtrosBar = document.getElementById('mf-filtros-bar');
-  if (filtrosBar) {
-    const estados = [
-      { val:'', label:'Todas' },
-      { val:'nuevo', label:'🆕 Nuevo' },
-      { val:'en_revision', label:'🔍 En revisión' },
-      { val:'investigando', label:'◈ Investigando' },
-      { val:'cerrado', label:'✓ Cerrado' },
-      { val:'descartado', label:'✕ Descartado' },
-    ];
-    filtrosBar.innerHTML = estados.map(e =>
-      `<button onclick="_mfEstadoFiltro='${e.val}';renderModuloF();" style="padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:1px solid ${_mfEstadoFiltro===e.val?'rgba(168,85,247,0.5)':'rgba(255,255,255,0.1)'};background:${_mfEstadoFiltro===e.val?'rgba(168,85,247,0.15)':'rgba(255,255,255,0.04)'};color:${_mfEstadoFiltro===e.val?'var(--purple)':'var(--text-dim)'};">${e.label}</button>`
-    ).join('');
-  }
-
   tbody.innerHTML = denuncias.map(d => {
     const c = MF_CANAL_COLORS[d.canal] || MF_CANAL_COLORS['WEB'];
-    const emailIcon = d.email_ciudadano ? `<span title="${d.email_ciudadano}" style="font-size:10px;margin-left:4px;cursor:help;">📧</span>` : '';
     return `<tr>
-      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${d.folio}${emailIcon}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${d.folio}</td>
       <td><span style="font-size:10px;background:${c.bg};color:${c.color};border:1px solid ${c.border};padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${d.canal}</span></td>
-      <td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${d.resumen}">${d.resumen}</td>
+      <td style="font-size:12px;">${d.resumen}</td>
       <td>${mfScoreBadge(d.score_ia)}</td>
-      <td>${mfEstadoBadge(d.estado)}</td>
+      <td style="font-size:11px;font-weight:600;color:${d.score_ia>=75?'var(--green)':'var(--amber)'};">${d.corrobora_bd}</td>
       <td>${mfAccionBtn(d)}</td>
     </tr>`;
   }).join('');
@@ -23912,9 +23130,11 @@ async function renderModuloF() {
   const tbody = document.getElementById('mf-triage-tbody');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Cargando...</td></tr>';
   try {
-    let q = db.from('denuncias').select('*').order('creado_en', { ascending: false }).limit(100);
-    if (_mfEstadoFiltro) q = q.eq('estado', _mfEstadoFiltro);
-    const { data, error } = await q;
+    const { data, error } = await db
+      .from('denuncias')
+      .select('*')
+      .order('creado_en', { ascending: false })
+      .limit(50);
     if (error) throw error;
     mfRenderTabla(data || []);
   } catch(e) {
@@ -24420,7 +23640,7 @@ function exportReporteS36PDF() {
 
   <div style="margin-top:28px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:10px;color:#9ca3af;">
     Sistema Sentinel — Honduras · ${folio} · ${ds} · Fuente: ONCAE HC1-2025 JSON verificado<br>
-    Base de datos: 166,006 registros | SEFIN + ONCAE + IAIP 2019–2026 | Clasificación: RESERVADO
+    Base de datos: 127,832 registros | SEFIN + ONCAE 2019–2025 | Clasificación: RESERVADO
   </div>
   </body></html>`;
 
@@ -24719,14 +23939,14 @@ async function runSEFINIngest() {
       `✅ <strong style="color:var(--green);">SEFIN ${periodo} ingresado</strong><br>` +
       `📊 ${data.instituciones_procesadas} instituciones · ${data.lineas_csv?.toLocaleString()} líneas CSV (${(data.bytes_csv/1e6).toFixed(1)} MB)<br>` +
       `🔗 ${data.edca_matches} matches EDCA · ${data.contratos_actualizados} contratos actualizados<br>` +
-      `⚠️ <strong style="color:var(--amber);">${data.instituciones_sobrepresupuesto} instituciones EJEC. ACELERADA detectadas</strong>` +
+      `⚠️ <strong style="color:var(--amber);">${data.instituciones_sobrepresupuesto} instituciones SOBREPRESUPUESTO detectadas</strong>` +
       (sobreList ? `<pre style="margin-top:8px;font-size:10px;color:var(--amber);white-space:pre-wrap;">${sobreList}</pre>` : '') +
       `<br><em style="font-size:10px;color:var(--text-dim);">Recarga la página para ver los cambios en el dashboard.</em>`;
     btn.textContent = '✅ SEFIN actualizado';
   } catch(e) {
     document.getElementById('sefinError').style.display = 'block';
     document.getElementById('sefinError').textContent = '❌ ' + e.message;
-    btn.textContent = '🏦 Actualizar SEFIN EJEC. ACELERADA';
+    btn.textContent = '🏦 Actualizar SEFIN SOBREPRESUPUESTO';
   }
   btn.disabled = false; btn.style.opacity = '1';
 }
@@ -24874,7 +24094,7 @@ function exportScannerPDF(patternId) {
     <div style="font-size:11px;opacity:.65;margin-bottom:12px;">SENTINEL-AI · ESCÁNER AUTOMÁTICO · ${ds}</div>
     <div class="cover-title">${pattern.icon} ${pattern.title}</div>
     <div class="cover-sub">${pattern.desc}</div>
-    <div class="cover-folio">Folio: ${folio} | Base: 166,006 contratos SEFIN/ONCAE/IAIP 2019–2026</div>
+    <div class="cover-folio">Folio: ${folio} | Base: 127,832 contratos SEFIN/ONCAE 2019–2025</div>
   </div>
   <div class="stats">
     <div class="stat"><div class="stat-num">${results.length}</div><div class="stat-label">Registros Detectados</div></div>
@@ -24951,7 +24171,7 @@ function exportReporteFueraGiroPDF() {
   <div class="cover">
     <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
     <div class="cover-title">🏪 INVESTIGACIÓN ESPECIAL — EMPRESAS FUERA DE GIRO</div>
-    <div class="cover-sub">Patrón DICOMARCA Generalizado · Búsqueda Sistemática en 166,006 Contratos</div>
+    <div class="cover-sub">Patrón DICOMARCA Generalizado · Búsqueda Sistemática en 127,832 Contratos</div>
     <div class="cover-sub">5 Casos CRÍTICA · L 42M+ · Cluster SEDESOL 2022 · INFOP · UNAH · Hospital Sur</div>
     <div class="cover-folio">Folio: ${folio} | Fecha: ${ds} | Base de datos: SEFIN/ONCAE 2019–2025</div>
     <div class="cover-reservado">🔒 RESERVADO — USO INVESTIGATIVO</div>
@@ -25173,7 +24393,7 @@ function exportReportePJPDF() {
   </div>
   <div class="content">
     <h1>I. HALLAZGO PRINCIPAL — OPACIDAD TOTAL</h1>
-    <p>La base de datos Sentinel (166,006 contratos SEFIN/ONCAE/IAIP 2019–2026) registra <strong>22 contratos del Poder Judicial</strong> por L 30.2M. Sin embargo, ICN Digital documentó que el Poder Judicial ejecutó contratos de arrendamiento vehicular por <strong style="color:#dc2626">L 182 millones</strong> en el mismo período — una brecha de <strong style="color:#dc2626">L 151.8M completamente ausente de SEFIN y ONCAE</strong>.</p>
+    <p>La base de datos Sentinel (127,832 contratos SEFIN/ONCAE 2019–2025) registra <strong>22 contratos del Poder Judicial</strong> por L 30.2M. Sin embargo, ICN Digital documentó que el Poder Judicial ejecutó contratos de arrendamiento vehicular por <strong style="color:#dc2626">L 182 millones</strong> en el mismo período — una brecha de <strong style="color:#dc2626">L 151.8M completamente ausente de SEFIN y ONCAE</strong>.</p>
     <p>Esta brecha indica uso sistemático de <strong>contratación directa sin publicación</strong> o pagos fuera del sistema oficial — mecanismo que viola la Ley de Contratación del Estado y permite opacidad total sobre el proveedor, precio y justificación.</p>
     <h1>II. CONTRATOS PJ EN BASE DE DATOS SENTINEL</h1>
     <table>

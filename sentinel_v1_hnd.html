@@ -3625,6 +3625,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn"        data-s="IAIP-2022"  onclick="setSourceFilter('IAIP-2022')">IAIP 2022</button>
     <button class="filter-btn"        data-s="IAIP-2023"  onclick="setSourceFilter('IAIP-2023')">IAIP 2023</button>
     <button class="filter-btn"        data-s="EMBARGO-CUT" onclick="setSourceFilter('EMBARGO-CUT')" title="Entidades con embargos activos a la CUT (TSC 2026)">⚖️ Embargo CUT</button>
+    <button class="filter-btn"        data-s="TSC-AUDIT"   onclick="setSourceFilter('TSC-AUDIT')"   title="Contratos de entidades con informes de auditoría TSC">🏛️ TSC Auditorías</button>
   </div>
 
   <!-- Risk scoring legend -->
@@ -5961,6 +5962,7 @@ let activeFilter   = 'all'; // S132: server-side pagination — 'all' loads inst
 let activePattern  = 'all'; // Active pattern filter
 let activeSource   = 'all'; // S134: data_source filter (SEFIN/ONCAE/IAIP-*)
 let _embargoEntidades = new Set(); // S139: entidades con embargo CUT activo (TSC 2026)
+let _tscEntidades    = new Set(); // S141: entidades con informes TSC (busqueda_termino)
 let searchQuery    = '';    // Global search — proveedor, entidad, ID
 let selectedSev    = null;  // Severity selected in modal form
 let currentPage    = 0;     // Current pagination page (0-indexed)
@@ -6126,6 +6128,13 @@ async function _loadEmbargoEntidades() {
   } catch(e) { console.warn('embargo load:', e); }
 }
 
+async function _loadTscEntidades() { // S141
+  try {
+    const { data } = await _supabase().from('tsc_informes').select('busqueda_termino');
+    if (data) data.forEach(r => { if (r.busqueda_termino) _tscEntidades.add(r.busqueda_termino.trim()); });
+  } catch(e) { console.warn('tsc load:', e); }
+}
+
 function _hasEmbargo(entityName) {
   if (!entityName || _embargoEntidades.size === 0) return false;
   const n = entityName.toLowerCase().trim();
@@ -6143,6 +6152,7 @@ async function loadAlerts() {
   if (progressWrap) progressWrap.style.display = 'block';
   setProgress(10);
   _loadEmbargoEntidades(); // S139: carga en paralelo, sin bloquear
+  _loadTscEntidades();    // S141: carga en paralelo, sin bloquear
 
   try {
     // ── 1. Stats from RPC — one DB query, returns all counts+montos instantly ──
@@ -6239,6 +6249,12 @@ async function fetchAndRender(page) {
     const embargoNames = [..._embargoEntidades];
     if (embargoNames.length > 0) {
       query = query.or(embargoNames.slice(0,8).map(n => `entity_name.ilike.%${n.slice(0,20)}%`).join(','));
+    }
+  } else if (activeSource === 'TSC-AUDIT') {
+    // S141: filtrar por entidades con informes TSC — misma lógica que EMBARGO-CUT
+    const tscNames = [..._tscEntidades];
+    if (tscNames.length > 0) {
+      query = query.or(tscNames.map(n => `entity_name.ilike.%${n}%`).join(','));
     }
   } else if (activeSource !== 'all') {
     query = query.eq('data_source', activeSource); // IAIP-COVID, IAIP-ETA, IAIP-2021/2/3

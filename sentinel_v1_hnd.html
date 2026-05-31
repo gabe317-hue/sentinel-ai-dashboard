@@ -16322,15 +16322,14 @@ function poUpdateIndicators() {
   try {
     // Usa _cachedStats (server-side) — no depende de allAlerts en memoria
     const stats = window._cachedStats || {};
-    const crit  = stats.critica  || 0;
-    const alto  = stats.alta     || 0;
+    const crit  = stats.critica    || 0;
+    const alto  = stats.alta       || 0;
     const sob   = stats.sobrecosto || 0;
-    if (!crit && !alto && !sob) return; // stats aún no cargados
     document.getElementById('po-ind-crit').textContent  = crit.toLocaleString('es-HN');
     document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
-    document.getElementById('po-ind-intl').textContent  = '0'; // tags no implementado aún
+    document.getElementById('po-ind-intl').textContent  = '0';
     document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
-    const displayTotal = window._bdTotalCount || stats.total || 0;
+    const displayTotal = window._bdTotalCount || stats.total || (typeof allAlerts !== 'undefined' ? allAlerts.length : 0);
     document.getElementById('po-ind-total').textContent = displayTotal.toLocaleString('es-HN');
     document.getElementById('po-db-badge').textContent  = displayTotal.toLocaleString('es-HN') + ' contratos monitoreados';
 

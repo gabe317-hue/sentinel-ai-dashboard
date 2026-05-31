@@ -15398,11 +15398,13 @@ function abrirConstructorCaso(backFn) {
   document.getElementById('constructorCasoPanel').classList.remove('hidden');
   document.getElementById('ccResultados').classList.add('hidden');
   if (backFn) {
+    document.getElementById('ccBtnBack').textContent = '← Regresar a Lista';
     document.getElementById('ccBtnBack').onclick = () => {
       document.getElementById('constructorCasoPanel').classList.add('hidden');
       backFn();
     };
   } else {
+    document.getElementById('ccBtnBack').textContent = '← Panel Ejecutivo';
     document.getElementById('ccBtnBack').onclick = volverAPanelEjecutivo;
   }
   ccPopulateEntityList();

@@ -8710,7 +8710,7 @@ function _renderEntityRankTable() {
       <td style="padding:8px 10px;text-align:right;color:var(--amber);font-family:'JetBrains Mono',monospace;">${Number(r.alta).toLocaleString('es-HN')}</td>
       <td style="padding:8px 10px;text-align:right;font-weight:600;color:${pctC};font-family:'JetBrains Mono',monospace;">${r.pct_alto_riesgo}%</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_riesgo)}</td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="showEntityPanelFromSector(_erkEntityList[${i}])" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🔍 Ver</button></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="showEntityPanelFromSector(_erkEntityList[${i}], showEntityRankingPanel)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🔍 Ver</button></td>
     </tr>`;
   }).join('');
 }
@@ -11453,10 +11453,21 @@ function hideSectorPanel() {
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
 }
 
-function showEntityPanelFromSector(entityName) {
+function showEntityPanelFromSector(entityName, backFn) {
   entityPanelSource = 'sector';
   showEntityPanel(entityName);
-  document.querySelector('#entityPanel .fuente-back').textContent = '← Volver a Sector';
+  const backBtn = document.querySelector('#entityPanel .fuente-back');
+  if (backBtn) {
+    if (backFn) {
+      backBtn.textContent = '← Ranking';
+      backBtn.onclick = () => {
+        document.getElementById('entityPanel').classList.remove('open');
+        backFn();
+      };
+    } else {
+      backBtn.textContent = '← Volver a Sector';
+    }
+  }
 }
 
 
@@ -14555,26 +14566,8 @@ function selectPanel(tipo) {
 
 function irDesdeEjecutivo(fn) {
   document.getElementById('panelEjecutivo').classList.add('hidden');
-  document.getElementById('btnVolverEjecutivoFloat').style.display = 'none'; // hidden — back btn is inside the panel
-  setTimeout(() => {
-    try {
-      fn();
-      // Override the panel's own back button to return to Panel Ejecutivo
-      const backBtn = document.querySelector('.fuente-panel.open .fuente-back');
-      if (backBtn) {
-        backBtn._origText    = backBtn._origText    || backBtn.textContent;
-        backBtn._origOnclick = backBtn._origOnclick || backBtn.onclick;
-        backBtn.textContent  = '← Panel Ejecutivo';
-        backBtn.onclick      = () => { _restoreFuenteBack(backBtn); volverAPanelEjecutivo(); };
-      }
-    } catch(e) { console.warn('irDesdeEjecutivo:', e); }
-  }, 180);
-}
-
-function _restoreFuenteBack(btn) {
-  if (!btn) return;
-  if (btn._origText)    btn.textContent = btn._origText;
-  if (btn._origOnclick) btn.onclick     = btn._origOnclick;
+  document.getElementById('btnVolverEjecutivoFloat').style.display = 'block';
+  setTimeout(() => { try { fn(); } catch(e) { console.warn('irDesdeEjecutivo:', e); } }, 180);
 }
 
 function generarBriefingEjecutivo() {
@@ -15389,7 +15382,15 @@ function abrirConstructorCaso(backFn) {
   _closeAllFuentePanels();
   document.getElementById('constructorCasoPanel').classList.remove('hidden');
   document.getElementById('ccResultados').classList.add('hidden');
-  document.getElementById('ccBtnBack').onclick = backFn || volverAPanelEjecutivo;
+  if (backFn) {
+    // Back goes to the list that launched Constructor de Caso
+    document.getElementById('ccBtnBack').onclick = () => {
+      document.getElementById('constructorCasoPanel').classList.add('hidden');
+      backFn();
+    };
+  } else {
+    document.getElementById('ccBtnBack').onclick = volverAPanelEjecutivo;
+  }
   ccPopulateEntityList();
 }
 function ccPopulateEntityList() {

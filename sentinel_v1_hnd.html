@@ -324,6 +324,7 @@ body::after {
 /* ─── FUENTE PANEL ─── */
 .fuente-panel { display: none; }
 .fuente-panel.open { display: block; }
+#tscPanel.open { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; overflow-y: auto; background: var(--navy); padding: 32px; box-sizing: border-box; }
 .fuente-back {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: 'JetBrains Mono', monospace; font-size: 11px;
@@ -2463,6 +2464,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
   <div class="ip-body" style="max-width:880px;">
 
+    <!-- FOLIO SEARCH -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <input type="text" id="ccFolioInput" placeholder="Cargar por folio… (ej. SEN-INV-2026-009)" style="flex:1;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.3);color:var(--text);padding:8px 14px;border-radius:8px;font-size:11px;font-family:'JetBrains Mono',monospace;outline:none;" onkeydown="if(event.key==='Enter')ccCargarPorFolio(this.value.trim())" />
+      <button onclick="ccCargarPorFolio(document.getElementById('ccFolioInput').value.trim())" style="background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.35);border-radius:8px;padding:8px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;white-space:nowrap;">↩ Cargar</button>
+    </div>
+
     <!-- PASO 1: Inputs -->
     <div class="cc-section">
       <div class="cc-section-title">Paso 1 — Define el caso</div>
@@ -3280,7 +3287,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <span style="background:var(--amber);color:#000;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">🎯</span>
         </div>
         <div class="exec-card-value" id="exec-candidatos-val">—</div>
-        <div class="exec-card-sub">≥2 patrones · ≥L 10M acumulado</div>
+        <div class="exec-card-sub">≥3 patrones · ≥L 10M acumulado</div>
         <div class="exec-card-note">▸ Clic para ver ranking →</div>
       </div>
 
@@ -4443,7 +4450,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div>
         <div class="fuente-title">🎯 <span>Candidatos Detectados</span></div>
         <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
-          Proveedores con ≥2 patrones de riesgo y ≥L 10M acumulado. Ordenado por mayor monto.
+          Proveedores con ≥3 patrones de riesgo y ≥L 10M acumulado. Ordenado por mayor monto.
         </div>
       </div>
     </div>
@@ -4453,7 +4460,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="display:flex;align-items:center;gap:8px;">
           <span id="candidatos-count-badge" style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);padding:1px 6px;border-radius:3px;">—</span>
         </div>
-        <span style="font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">≥2 patrones · ≥L 10M</span>
+        <span style="font-size:9px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">≥3 patrones · ≥L 10M</span>
       </div>
       <div id="candidatos-list" style="display:flex;flex-direction:column;gap:6px;">
         <div style="color:var(--muted);font-size:11px;padding:20px;text-align:center;">Cargando datos...</div>
@@ -8503,7 +8510,7 @@ function renderCandidatosDetectados() {
     else pm.severidades.media++;
   });
 
-  // Filtrar: ≥2 patrones únicos Y monto ≥ L10M
+  // Filtrar: ≥3 patrones únicos Y monto ≥ L10M
   // Excluir proveedores cuyos contratos provienen SOLO de SEFIN EDCA/PIEP:
   // esos son pagos bajo PPA o contrato marco (energía, combustible) — no procurement ONCAE.
   const isSEFINOnly = (sources) => [...sources].every(s =>
@@ -8511,7 +8518,7 @@ function renderCandidatosDetectados() {
   );
   const MONTO_MIN = 10_000_000;
   const candidatos = Object.entries(provMap)
-    .filter(([, d]) => d.patrones.size >= 2 && d.monto >= MONTO_MIN && !isSEFINOnly(d.sources))
+    .filter(([, d]) => d.patrones.size >= 3 && d.monto >= MONTO_MIN && !isSEFINOnly(d.sources))
     .sort((a, b) => b[1].monto - a[1].monto);
 
   if (badge) badge.textContent = candidatos.length;
@@ -8523,7 +8530,7 @@ function renderCandidatosDetectados() {
   if (execCandidatos) execCandidatos.textContent = candidatos.length || '—';
 
   if (!candidatos.length) {
-    container.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:20px;text-align:center;">Sin candidatos con ≥2 patrones y ≥L 10M.</div>';
+    container.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:20px;text-align:center;">Sin candidatos con ≥3 patrones y ≥L 10M.</div>';
     return;
   }
 
@@ -8540,7 +8547,7 @@ function renderCandidatosDetectados() {
   function calcCNAScore(pd, critCount) {
     const items = [
       { label: 'Recursos públicos',    ok: true },
-      { label: 'Patrones detectados',  ok: pd.patrones.size >= 2 },
+      { label: 'Patrones detectados',  ok: pd.patrones.size >= 3 },
       { label: 'Red de actores',       ok: pd.entidades.size >= 2 },
       { label: 'Impacto económico',    ok: pd.monto >= 10_000_000 },
       { label: 'Viabilidad probatoria',ok: pd.contratos >= 1 },
@@ -15087,6 +15094,20 @@ function ccUpdateVendorList() {
     hint.style.display = 'block';
     hint.style.color = vendors.length ? 'rgba(0,200,255,0.5)' : 'rgba(255,100,100,0.5)';
   }
+}
+
+async function ccCargarPorFolio(folio) {
+  if (!folio) return;
+  const { data, error } = await db.from('investigaciones')
+    .select('entidad,proveedor,folio')
+    .eq('folio', folio)
+    .single();
+  if (error || !data) { showToast('No se encontró el folio: ' + folio, 'error'); return; }
+  if (data.entidad) { document.getElementById('ccEntidad').value = data.entidad; }
+  if (data.proveedor) { document.getElementById('ccProveedor').value = data.proveedor; }
+  document.getElementById('ccFolioInput').value = '';
+  showToast('✅ Folio ' + folio + ' cargado', 'ok');
+  ccAnalizar();
 }
 
 function ccAnalizar() {

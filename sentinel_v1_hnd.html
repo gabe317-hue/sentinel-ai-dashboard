@@ -8557,6 +8557,7 @@ function showTSCModal() {
   const panel = document.getElementById('tscPanel');
   if (!panel) return;
   panel.classList.add('open');
+  const _bb = document.querySelector('#tscPanel .fuente-back'); if (_bb) { _bb.textContent = '← Portal'; _bb.onclick = hideTSCPanel; }
   if (_tscData) {
     renderTSCTable();
     _updateTSCStats();
@@ -11428,6 +11429,7 @@ function showSectorPanel() {
   _closeAllFuentePanels();
   document.getElementById('nav-sector').classList.add('active');
   document.getElementById('sectorPanel').classList.add('open');
+  const _bb = document.querySelector('#sectorPanel .fuente-back'); if (_bb) { _bb.textContent = '← Contratos'; _bb.onclick = hideSectorPanel; }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   if (allAlerts && allAlerts.length > 0) {
@@ -11456,19 +11458,14 @@ function hideSectorPanel() {
 
 function showEntityPanelFromSector(entityName, backFn) {
   entityPanelSource = 'sector';
-  // Close sector panel first — same z-index panels overlap by DOM order
   document.getElementById('sectorPanel')?.classList.remove('open');
   showEntityPanel(entityName);
-  const floatBtn = document.getElementById('btnVolverEjecutivoFloat');
-  const backBtn  = document.querySelector('#entityPanel .fuente-back');
+  const backBtn = document.querySelector('#entityPanel .fuente-back');
   if (backBtn) {
     if (backFn) {
-      // Came from a list (Ranking) — hide float button at second level
-      if (floatBtn) floatBtn.style.display = 'none';
       backBtn.textContent = '← Ranking';
       backBtn.onclick = () => {
         document.getElementById('entityPanel').classList.remove('open');
-        if (floatBtn) floatBtn.style.display = 'block'; // restore when back at list
         backFn();
       };
     } else {
@@ -14577,8 +14574,15 @@ function selectPanel(tipo) {
 
 function irDesdeEjecutivo(fn) {
   document.getElementById('panelEjecutivo').classList.add('hidden');
-  document.getElementById('btnVolverEjecutivoFloat').style.display = 'block';
-  setTimeout(() => { try { fn(); } catch(e) { console.warn('irDesdeEjecutivo:', e); } }, 180);
+  document.getElementById('btnVolverEjecutivoFloat').style.display = 'none';
+  setTimeout(() => {
+    try {
+      fn();
+      // Set the opened panel's back button to return to Panel Ejecutivo
+      const bb = document.querySelector('.fuente-panel.open .fuente-back');
+      if (bb) { bb.textContent = '← Panel Ejecutivo'; bb.onclick = volverAPanelEjecutivo; }
+    } catch(e) { console.warn('irDesdeEjecutivo:', e); }
+  }, 180);
 }
 
 function generarBriefingEjecutivo() {
@@ -15393,14 +15397,9 @@ function abrirConstructorCaso(backFn) {
   _closeAllFuentePanels();
   document.getElementById('constructorCasoPanel').classList.remove('hidden');
   document.getElementById('ccResultados').classList.add('hidden');
-  const floatBtn = document.getElementById('btnVolverEjecutivoFloat');
   if (backFn) {
-    // Came from a list — hide float "← Panel Ejecutivo" so it doesn't confuse
-    if (floatBtn) floatBtn.style.display = 'none';
     document.getElementById('ccBtnBack').onclick = () => {
       document.getElementById('constructorCasoPanel').classList.add('hidden');
-      // Restore float button when returning to list (user can then go back to PE from list)
-      if (floatBtn) floatBtn.style.display = 'block';
       backFn();
     };
   } else {
@@ -17653,6 +17652,7 @@ function hidePatternDetail() {
 function showAnalyticsPanel() {
   _closeAllFuentePanels();
   document.getElementById('nav-analytics').classList.add('active');
+  const _bb = document.querySelector('#analyticsPanel .fuente-back'); if (_bb) { _bb.textContent = '← Contratos'; _bb.onclick = hideAnalyticsPanel; }
 
   // Reset detail panel, ensure main content visible
   document.getElementById('patternDetailPanel').style.display   = 'none';
@@ -21402,6 +21402,7 @@ function showCruceSefinPanel() {
   document.getElementById('cruceSefinPanel').classList.add('open');
   document.getElementById('nav-cruce-sefin').classList.add('active');
   document.getElementById('nav-cruce-sefin-chip').textContent = '⚖️';
+  const _bb = document.querySelector('#cruceSefinPanel .fuente-back'); if (_bb) { _bb.textContent = '← Contratos'; _bb.onclick = hideCruceSefinPanel; }
   if (!_cruceSefinLoaded) {
     _cruceSefinLoaded = true;
     _loadCruceTabA();

@@ -2696,6 +2696,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.35);">NUEVO</span>
     </div>
 
+    <!-- Card 12 — Cross-Reference ONCAE (B2) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showOncaePanel)">
+      <div class="pe-card-num">12</div>
+      <div class="pe-card-icon">⚠️</div>
+      <div class="pe-card-title">Proveedores Lista ONCAE</div>
+      <div class="pe-card-desc">Empresas con anotaciones preventivas ONCAE que tienen contratos activos en Sentinel</div>
+      <span class="pe-card-tag" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.35);">NUEVO</span>
+    </div>
+
   </div>
 </div>
 
@@ -2777,6 +2786,50 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </thead>
         <tbody id="entity-ranking-tbody">
           <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ ONCAE CROSS-REFERENCE PANEL (B2) ══ -->
+  <div class="fuente-panel" id="oncaePanel">
+    <button class="fuente-back" onclick="hideOncaePanel()">← Portal</button>
+    <div class="fuente-header">
+      <div class="fuente-title">⚠️ <span>Proveedores Lista ONCAE</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Empresas con anotaciones preventivas ONCAE (incumplimiento contractual) que tienen contratos activos monitoreados por Sentinel</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Empresas ONCAE en DB</div>
+        <div id="oncae-stat-total" style="font-size:22px;font-weight:700;color:#fbbf24;">—</div>
+      </div>
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Contratos críticos</div>
+        <div id="oncae-stat-critica" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto total</div>
+        <div id="oncae-stat-monto" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#fbbf24;">
+      ⚠️ <strong>Nota:</strong> "Anotaciones preventivas" = incumplimiento contractual reportado a ONCAE. No implica inhabilitación permanente, pero indica historial de riesgo. Fuente: <a href="https://oncae.gob.hn/anotaciones-preventivas/" target="_blank" style="color:var(--electric);">oncae.gob.hn/anotaciones-preventivas</a>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Empresa (ONCAE)</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Institución reportante</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Contratos</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Críticos</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto L</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Año ONCAE</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="oncae-tbody">
+          <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
         </tbody>
       </table>
     </div>
@@ -8465,7 +8518,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -8574,6 +8627,53 @@ async function showEntityRankingPanel() {
 }
 
 function hideEntityRankingPanel() { document.getElementById('entityRankingPanel')?.classList.remove('open'); }
+
+// ════════════════════════════════════════════════════════════
+// B2 — CROSS-REFERENCE ONCAE ANOTACIONES
+// ════════════════════════════════════════════════════════════
+let _oncaeData = null;
+
+async function showOncaePanel() {
+  _closeAllFuentePanels();
+  document.getElementById('oncaePanel').classList.add('open');
+  if (_oncaeData) { _renderOncaeTable(); return; }
+  document.getElementById('oncae-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
+  const { data, error } = await db.rpc('get_oncae_matches');
+  if (error) { document.getElementById('oncae-tbody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:12px;">Error: ${error.message}</td></tr>`; return; }
+  _oncaeData = data || [];
+  _renderOncaeTable();
+}
+
+function hideOncaePanel() { document.getElementById('oncaePanel')?.classList.remove('open'); }
+
+function _renderOncaeTable() {
+  const d = _oncaeData;
+  if (!d || !d.length) { document.getElementById('oncae-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Sin matches.</td></tr>'; return; }
+  const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
+  const totalCrit = d.reduce((s,r) => s + Number(r.critica||0), 0);
+  const totalMonto = d.reduce((s,r) => s + Number(r.monto_total||0), 0);
+  document.getElementById('oncae-stat-total').textContent   = d.length;
+  document.getElementById('oncae-stat-critica').textContent = totalCrit;
+  document.getElementById('oncae-stat-monto').textContent   = fmtL(totalMonto);
+  const tbody = document.getElementById('oncae-tbody');
+  tbody.innerHTML = d.map((r,i) => {
+    const critTag = r.critica > 0 ? `<span style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">${r.critica} 🔴</span>` : `<span style="color:var(--text-dim);">${r.alta > 0 ? r.alta+'🟠' : '—'}</span>`;
+    const vVen = (r.oncae_keyword||'').replace(/'/g,"\\'");
+    const anioTag = r.oncae_anio ? `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${r.oncae_anio}</span>` : '<span style="color:var(--text-dim);font-size:10px;">—</span>';
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2===0?'':'background:rgba(255,255,255,0.02)'}">
+      <td style="padding:8px 10px;">
+        <div style="font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.oncae_nombre}">${r.oncae_nombre}</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.oncae_desc||''}</div>
+      </td>
+      <td style="padding:8px 10px;font-size:11px;color:var(--text-dim);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.oncae_inst||''}">${r.oncae_inst||'—'}</td>
+      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${Number(r.total_contratos).toLocaleString('es-HN')}</td>
+      <td style="padding:8px 10px;text-align:center;">${critTag}</td>
+      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_total)}</td>
+      <td style="padding:8px 10px;text-align:center;">${anioTag}</td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso();setTimeout(()=>{document.getElementById('ccProveedor').value='${vVen}';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
+    </tr>`;
+  }).join('');
+}
 
 function _renderEntityRankTable() {
   const d = _entityRankData;

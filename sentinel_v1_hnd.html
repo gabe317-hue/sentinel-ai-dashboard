@@ -11459,12 +11459,16 @@ function showEntityPanelFromSector(entityName, backFn) {
   // Close sector panel first — same z-index panels overlap by DOM order
   document.getElementById('sectorPanel')?.classList.remove('open');
   showEntityPanel(entityName);
-  const backBtn = document.querySelector('#entityPanel .fuente-back');
+  const floatBtn = document.getElementById('btnVolverEjecutivoFloat');
+  const backBtn  = document.querySelector('#entityPanel .fuente-back');
   if (backBtn) {
     if (backFn) {
+      // Came from a list (Ranking) — hide float button at second level
+      if (floatBtn) floatBtn.style.display = 'none';
       backBtn.textContent = '← Ranking';
       backBtn.onclick = () => {
         document.getElementById('entityPanel').classList.remove('open');
+        if (floatBtn) floatBtn.style.display = 'block'; // restore when back at list
         backFn();
       };
     } else {
@@ -15389,10 +15393,14 @@ function abrirConstructorCaso(backFn) {
   _closeAllFuentePanels();
   document.getElementById('constructorCasoPanel').classList.remove('hidden');
   document.getElementById('ccResultados').classList.add('hidden');
+  const floatBtn = document.getElementById('btnVolverEjecutivoFloat');
   if (backFn) {
-    // Back goes to the list that launched Constructor de Caso
+    // Came from a list — hide float "← Panel Ejecutivo" so it doesn't confuse
+    if (floatBtn) floatBtn.style.display = 'none';
     document.getElementById('ccBtnBack').onclick = () => {
       document.getElementById('constructorCasoPanel').classList.add('hidden');
+      // Restore float button when returning to list (user can then go back to PE from list)
+      if (floatBtn) floatBtn.style.display = 'block';
       backFn();
     };
   } else {

@@ -19580,6 +19580,11 @@ async function syncSEFINHistoricalData() {
     console.log(`\n✅ DESCARGA HISTÓRICA COMPLETADA`);
     console.log(`📊 Total insertado: ${totalInserted} registros`);
     console.log(`🔄 Recargando dashboard...`);
+    // S149: Dispara auto-investigador post-ingesta histórica SEFIN (fire & forget)
+    if (totalInserted > 0) {
+      fetch(`${SUPABASE_URL}/functions/v1/auto-investigador`, { method: 'GET' }).catch(() => {})
+      console.log('🤖 Auto-Investigador disparado post-ingesta histórica SEFIN');
+    }
     await loadAlerts();
 
   } catch (err) {
@@ -19653,6 +19658,9 @@ async function syncSEFINDaily() {
       } else {
         console.log(`✅ ${newRecords.length} registros nuevos sincronizados`);
         localStorage.setItem('sefin_last_sync', new Date().toISOString());
+        // S149: Dispara auto-investigador post-ingesta SEFIN (fire & forget)
+        fetch(`${SUPABASE_URL}/functions/v1/auto-investigador`, { method: 'GET' }).catch(() => {})
+        console.log('🤖 Auto-Investigador disparado post-ingesta SEFIN');
         await loadAlerts();
       }
     } else {

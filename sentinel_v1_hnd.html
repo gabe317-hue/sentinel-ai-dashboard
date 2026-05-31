@@ -2592,6 +2592,11 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
   <div class="pe-body">
 
+    <!-- Título sección -->
+    <div style="grid-column:1/-1;text-align:center;margin-bottom:8px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);display:inline-block;padding:6px 22px;border-radius:20px;">Panel Ejecutivo</div>
+    </div>
+
     <!-- Card 1 — Top 10 Casos Críticos (S93-A) -->
     <div class="pe-card" onclick="abrirTop5()">
       <div class="pe-card-num">01</div>
@@ -2669,12 +2674,113 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="pe-card-num">09</div>
       <div class="pe-card-icon">⚖️</div>
       <div class="pe-card-title">Informes TSC</div>
-      <div class="pe-card-desc">Tribunal Superior de Cuentas · 137 informes · 22 entidades auditadas · Links a PDFs</div>
+      <div class="pe-card-desc">Tribunal Superior de Cuentas · 149 informes · 23 entidades auditadas · Links a PDFs</div>
       <span class="pe-card-tag pe-tag-active">ACTIVO</span>
+    </div>
+
+    <!-- Card 10 — Monopolio de Proveedor (B1) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showMonopolioPanel)">
+      <div class="pe-card-num">10</div>
+      <div class="pe-card-icon">🔒</div>
+      <div class="pe-card-title">Monopolio de Proveedor</div>
+      <div class="pe-card-desc">Proveedores con ≥40% de contratos de una entidad · señal de captura institucional</div>
+      <span class="pe-card-tag" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.35);">NUEVO</span>
+    </div>
+
+    <!-- Card 11 — Ranking Riesgo Institucional (B3) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showEntityRankingPanel)">
+      <div class="pe-card-num">11</div>
+      <div class="pe-card-icon">🏛️</div>
+      <div class="pe-card-title">Ranking Riesgo Institucional</div>
+      <div class="pe-card-desc">Score compuesto por entidad · críticas, altas, monto en riesgo · Top 50 instituciones</div>
+      <span class="pe-card-tag" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.35);">NUEVO</span>
     </div>
 
   </div>
 </div>
+
+  <!-- ══ MONOPOLIO DE PROVEEDOR PANEL (B1) ══ -->
+  <div class="fuente-panel" id="monopolioPanel">
+    <button class="fuente-back" onclick="hideMonopolioPanel()">← Portal</button>
+    <div class="fuente-header">
+      <div class="fuente-title">🔒 <span>Monopolio de Proveedor</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con ≥40% de contratos adjudicados en una misma entidad · señal de captura institucional</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Casos detectados</div>
+        <div id="mon-stat-total" style="font-size:22px;font-weight:700;color:#fbbf24;">—</div>
+      </div>
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Con contratos críticos</div>
+        <div id="mon-stat-critica" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Dominancia máx.</div>
+        <div id="mon-stat-maxpct" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Entidad</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Proveedor</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">% Dom.</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Contratos</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto L</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Críticos</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="monopolio-tbody">
+          <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ RANKING RIESGO INSTITUCIONAL PANEL (B3) ══ -->
+  <div class="fuente-panel" id="entityRankingPanel">
+    <button class="fuente-back" onclick="hideEntityRankingPanel()">← Portal</button>
+    <div class="fuente-header">
+      <div class="fuente-title">🏛️ <span>Ranking Riesgo Institucional</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Score compuesto: críticas×5 + altas×2 + medias×0.5 / total contratos · Top 50 entidades</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Entidades analizadas</div>
+        <div id="erk-stat-total" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
+      </div>
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Score máx.</div>
+        <div id="erk-stat-maxscore" style="font-size:22px;font-weight:700;color:#fbbf24;">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto en riesgo</div>
+        <div id="erk-stat-monto" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:center;padding:8px 6px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">#</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Entidad</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Score</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Crítica</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Alta</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">% Riesgo</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto Riesgo L</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Ver</th>
+          </tr>
+        </thead>
+        <tbody id="entity-ranking-tbody">
+          <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
 <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
 <nav class="sidebar">
@@ -8359,7 +8465,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -8405,6 +8511,101 @@ function showTSCModal() {
 
 function hideTSCPanel() {
   document.getElementById('tscPanel')?.classList.remove('open');
+}
+
+// ════════════════════════════════════════════════════════════
+// B1 — MONOPOLIO DE PROVEEDOR
+// ════════════════════════════════════════════════════════════
+let _monopolioData = null;
+const _MON_BLOCKLIST = ['ninguno','sin nombre','sin proveedor',''];
+
+async function showMonopolioPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('monopolioPanel').classList.add('open');
+  if (_monopolioData) { _renderMonopolioTable(); return; }
+  document.getElementById('monopolio-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
+  const { data, error } = await db.rpc('get_vendor_dominance', { p_min_contracts: 5, p_min_pct: 40 });
+  if (error) { document.getElementById('monopolio-tbody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:12px;">Error: ${error.message}</td></tr>`; return; }
+  _monopolioData = (data || []).filter(r => !_MON_BLOCKLIST.includes((r.vendor_name||'').toLowerCase()));
+  _renderMonopolioTable();
+}
+
+function hideMonopolioPanel() { document.getElementById('monopolioPanel')?.classList.remove('open'); }
+
+function _renderMonopolioTable() {
+  const d = _monopolioData;
+  if (!d || !d.length) { document.getElementById('monopolio-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Sin datos.</td></tr>'; return; }
+  const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
+  document.getElementById('mon-stat-total').textContent   = d.length;
+  document.getElementById('mon-stat-critica').textContent = d.filter(r => r.severity_critica > 0).length;
+  document.getElementById('mon-stat-maxpct').textContent  = d[0].pct_dominance + '%';
+  const tbody = document.getElementById('monopolio-tbody');
+  tbody.innerHTML = d.map((r,i) => {
+    const pctColor = r.pct_dominance >= 80 ? 'var(--red)' : r.pct_dominance >= 60 ? 'var(--amber)' : '#fbbf24';
+    const criTag = r.severity_critica > 0 ? `<span style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:4px;padding:2px 6px;font-size:10px;">${r.severity_critica} 🔴</span>` : '<span style="color:var(--text-dim);">—</span>';
+    const vEnt = (r.entity_name||'').replace(/'/g,"\\'");
+    const vVen = (r.vendor_name||'').replace(/'/g,"\\'");
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2===0?'':'background:rgba(255,255,255,0.02)'}">
+      <td style="padding:8px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entity_name}">${r.entity_name}</td>
+      <td style="padding:8px 10px;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.vendor_name}">${r.vendor_name}</td>
+      <td style="padding:8px 10px;text-align:right;font-weight:800;color:${pctColor};font-family:'JetBrains Mono',monospace;">${r.pct_dominance}%</td>
+      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${r.contracts_vendor}/${r.contracts_total}</td>
+      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_total)}</td>
+      <td style="padding:8px 10px;text-align:center;">${criTag}</td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso();setTimeout(()=>{document.getElementById('ccEntidad').value='${vEnt}';document.getElementById('ccProveedor').value='${vVen}';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// B3 — RANKING RIESGO INSTITUCIONAL
+// ════════════════════════════════════════════════════════════
+let _entityRankData = null;
+
+async function showEntityRankingPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('entityRankingPanel').classList.add('open');
+  if (_entityRankData) { _renderEntityRankTable(); return; }
+  document.getElementById('entity-ranking-tbody').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
+  const { data, error } = await db.rpc('get_entity_risk_scores', { p_limit: 50 });
+  if (error) { document.getElementById('entity-ranking-tbody').innerHTML = `<tr><td colspan="8" style="color:var(--red);padding:12px;">Error: ${error.message}</td></tr>`; return; }
+  _entityRankData = data || [];
+  _renderEntityRankTable();
+}
+
+function hideEntityRankingPanel() { document.getElementById('entityRankingPanel')?.classList.remove('open'); }
+
+function _renderEntityRankTable() {
+  const d = _entityRankData;
+  if (!d || !d.length) { document.getElementById('entity-ranking-tbody').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">Sin datos.</td></tr>'; return; }
+  const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
+  const maxScore = Number(d[0].risk_score);
+  const totalMonto = d.reduce((s,r) => s + Number(r.monto_riesgo||0), 0);
+  document.getElementById('erk-stat-total').textContent    = d.length;
+  document.getElementById('erk-stat-maxscore').textContent = d[0].risk_score;
+  document.getElementById('erk-stat-monto').textContent    = fmtL(totalMonto);
+  const tbody = document.getElementById('entity-ranking-tbody');
+  tbody.innerHTML = d.map((r,i) => {
+    const score = Number(r.risk_score);
+    const barW  = Math.min(100, Math.round(score / maxScore * 100));
+    const barC  = score >= maxScore * 0.7 ? 'var(--red)' : score >= maxScore * 0.4 ? 'var(--amber)' : '#fbbf24';
+    const pct   = Number(r.pct_alto_riesgo);
+    const pctC  = pct >= 80 ? 'var(--red)' : pct >= 50 ? 'var(--amber)' : 'var(--electric)';
+    const vEnt  = (r.entity_name||'').replace(/'/g,"\\'");
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2===0?'':'background:rgba(255,255,255,0.02)'}">
+      <td style="padding:8px 6px;text-align:center;font-family:'JetBrains Mono',monospace;color:var(--text-dim);font-size:11px;">${i+1}</td>
+      <td style="padding:8px 10px;max-width:220px;">
+        <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;" title="${r.entity_name}">${r.entity_name}</div>
+        <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:4px;"><div style="height:3px;width:${barW}%;background:${barC};border-radius:2px;"></div></div>
+      </td>
+      <td style="padding:8px 10px;text-align:right;font-weight:800;color:${barC};font-family:'JetBrains Mono',monospace;">${r.risk_score}</td>
+      <td style="padding:8px 10px;text-align:right;color:var(--red);font-family:'JetBrains Mono',monospace;">${Number(r.critica).toLocaleString('es-HN')}</td>
+      <td style="padding:8px 10px;text-align:right;color:var(--amber);font-family:'JetBrains Mono',monospace;">${Number(r.alta).toLocaleString('es-HN')}</td>
+      <td style="padding:8px 10px;text-align:right;font-weight:600;color:${pctC};font-family:'JetBrains Mono',monospace;">${r.pct_alto_riesgo}%</td>
+      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_riesgo)}</td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="showEntityPanelFromSector('${vEnt}')" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🔍 Ver</button></td>
+    </tr>`;
+  }).join('');
 }
 
 function _updateTSCStats() {

@@ -14555,8 +14555,26 @@ function selectPanel(tipo) {
 
 function irDesdeEjecutivo(fn) {
   document.getElementById('panelEjecutivo').classList.add('hidden');
-  document.getElementById('btnVolverEjecutivoFloat').style.display = 'block';
-  setTimeout(() => { try { fn(); } catch(e) { console.warn('irDesdeEjecutivo:', e); } }, 180);
+  document.getElementById('btnVolverEjecutivoFloat').style.display = 'none'; // hidden — back btn is inside the panel
+  setTimeout(() => {
+    try {
+      fn();
+      // Override the panel's own back button to return to Panel Ejecutivo
+      const backBtn = document.querySelector('.fuente-panel.open .fuente-back');
+      if (backBtn) {
+        backBtn._origText    = backBtn._origText    || backBtn.textContent;
+        backBtn._origOnclick = backBtn._origOnclick || backBtn.onclick;
+        backBtn.textContent  = '← Panel Ejecutivo';
+        backBtn.onclick      = () => { _restoreFuenteBack(backBtn); volverAPanelEjecutivo(); };
+      }
+    } catch(e) { console.warn('irDesdeEjecutivo:', e); }
+  }, 180);
+}
+
+function _restoreFuenteBack(btn) {
+  if (!btn) return;
+  if (btn._origText)    btn.textContent = btn._origText;
+  if (btn._origOnclick) btn.onclick     = btn._origOnclick;
 }
 
 function generarBriefingEjecutivo() {

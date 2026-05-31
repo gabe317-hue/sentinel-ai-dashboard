@@ -2843,6 +2843,75 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
   </div>
 
+  <!-- ══ SEGUIMIENTO DE CASOS PANEL ══ -->
+  <div class="fuente-panel" id="seguimientoPanel">
+    <button class="fuente-back" onclick="hideSeguimientoPanel()">← Portal</button>
+    <div class="fuente-header">
+      <div class="fuente-title">📋 <span>Seguimiento de Casos</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Gestión de expedientes activos — estados, responsables y fechas límite</div>
+    </div>
+    <!-- Stats -->
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:100px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Total</div>
+        <div id="seg-stat-total" style="font-size:22px;font-weight:700;color:#f87171;">—</div>
+      </div>
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:100px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Abiertos</div>
+        <div id="seg-stat-abiertos" style="font-size:22px;font-weight:700;color:#fbbf24;">—</div>
+      </div>
+      <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:100px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Alta Prioridad</div>
+        <div id="seg-stat-alta" style="font-size:22px;font-weight:700;color:#f87171;">—</div>
+      </div>
+      <div style="background:rgba(255,100,0,0.08);border:1px solid rgba(255,100,0,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:100px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Próx. a vencer</div>
+        <div id="seg-stat-vencen" style="font-size:22px;font-weight:700;color:#ff6400;">—</div>
+      </div>
+    </div>
+    <!-- Filtros -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <select id="seg-filter-estado" onchange="segRender()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;color:var(--text);font-size:11px;font-family:'JetBrains Mono',monospace;">
+        <option value="">Todos los estados</option>
+        <option value="Abierto">Abierto</option>
+        <option value="En Revisión">En Revisión</option>
+        <option value="Referido">Referido</option>
+        <option value="Cerrado">Cerrado</option>
+      </select>
+      <select id="seg-filter-prioridad" onchange="segRender()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;color:var(--text);font-size:11px;font-family:'JetBrains Mono',monospace;">
+        <option value="">Toda prioridad</option>
+        <option value="Alta">Alta</option>
+        <option value="Media">Media</option>
+        <option value="Baja">Baja</option>
+      </select>
+      <button onclick="loadSeguimiento()" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;">↻ Actualizar</button>
+    </div>
+    <!-- Tabla -->
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Caso</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Entidad</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Estado</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Prioridad</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Responsable</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Fecha Límite</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Días</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Guardar</th>
+          </tr>
+        </thead>
+        <tbody id="seg-tbody">
+          <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Botón nuevo -->
+    <div style="margin-top:14px;">
+      <button onclick="abrirConstructorCaso(showSeguimientoPanel)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:8px;padding:8px 18px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;">⊕ Nuevo Expediente</button>
+    </div>
+  </div>
+
   <!-- ══ REDES CORPORATIVAS PANEL (B4) ══ -->
   <div class="fuente-panel" id="redesCorporativasPanel">
     <button class="fuente-back" onclick="hideRedesCorporativasPanel()">← Panel Ejecutivo</button>
@@ -3155,6 +3224,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
         <div style="padding:8px 12px 4px;display:flex;flex-direction:column;gap:2px;">
           <button class="po-item" onclick="event.stopPropagation();abrirConstructorCaso()"><span class="po-item-icon">⚖️</span><span class="po-item-label">Constructor de Caso</span><span class="po-item-tag" style="background:rgba(0,200,255,0.1);color:var(--cyan);border:1px solid rgba(0,200,255,0.25);">NUEVO</span><span class="po-arrow">›</span></button>
+          <button class="po-item" onclick="event.stopPropagation();poGo(showSeguimientoPanel)"><span class="po-item-icon">📋</span><span class="po-item-label">Seguimiento de Casos</span><span class="po-item-tag" style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.25);">NUEVO</span><span class="po-arrow">›</span></button>
           <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()"><span class="po-item-icon">📄</span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span></button>
           <button class="po-item" onclick="event.stopPropagation();poGo(()=>showTimelinePanel('portal'))"><span class="po-item-icon">🕐</span><span class="po-item-label">Cronología</span><span class="po-arrow">›</span></button>
           <button class="po-item" onclick="event.stopPropagation();poGo(showScannerPanel)"><span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-arrow">›</span></button>
@@ -8581,7 +8651,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','seguimientoPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -8721,6 +8791,120 @@ async function showRedesCorporativasPanel() {
   if (_rcData.length === 0) await loadRedesCorporativas();
 }
 function hideRedesCorporativasPanel() { document.getElementById('redesCorporativasPanel')?.classList.remove('open'); }
+
+// ══ SEGUIMIENTO DE CASOS ══════════════════════════════════════════════════════
+let _segData = [];
+
+async function showSeguimientoPanel() {
+  document.getElementById('seguimientoPanel').classList.add('open');
+  await loadSeguimiento();
+}
+function hideSeguimientoPanel() { document.getElementById('seguimientoPanel')?.classList.remove('open'); }
+
+async function loadSeguimiento() {
+  const tbody = document.getElementById('seg-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
+  try {
+    const { data, error } = await db.from('expedientes')
+      .select('id,nombre,entidad,proveedor,estado,prioridad,responsable,fecha_limite,monto_total,score_total,created_at')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    _segData = data || [];
+    // Stats
+    const abiertos  = _segData.filter(r => r.estado !== 'Cerrado').length;
+    const alta      = _segData.filter(r => r.prioridad === 'Alta').length;
+    const hoy       = new Date(); hoy.setHours(0,0,0,0);
+    const en7d      = new Date(hoy); en7d.setDate(en7d.getDate() + 7);
+    const proxVence = _segData.filter(r => r.fecha_limite && new Date(r.fecha_limite) <= en7d && r.estado !== 'Cerrado').length;
+    document.getElementById('seg-stat-total').textContent    = _segData.length;
+    document.getElementById('seg-stat-abiertos').textContent = abiertos;
+    document.getElementById('seg-stat-alta').textContent     = alta;
+    document.getElementById('seg-stat-vencen').textContent   = proxVence;
+    segRender();
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function segRender() {
+  const tbody    = document.getElementById('seg-tbody');
+  const filtEst  = document.getElementById('seg-filter-estado')?.value  || '';
+  const filtPri  = document.getElementById('seg-filter-prioridad')?.value || '';
+  const data = _segData.filter(r =>
+    (!filtEst || r.estado === filtEst) &&
+    (!filtPri || r.prioridad === filtPri)
+  );
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">Sin expedientes. Usa el Constructor de Caso para crear uno.</td></tr>';
+    return;
+  }
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const estadoColor = e => e === 'Cerrado' ? '#4caf50' : e === 'Referido' ? '#818cf8' : e === 'En Revisión' ? '#fbbf24' : 'var(--electric)';
+  const priColor    = p => p === 'Alta' ? '#f87171' : p === 'Media' ? '#fbbf24' : '#6b7280';
+  const diasColor   = d => d === null ? '#6b7280' : d < 0 ? '#f87171' : d <= 7 ? '#ff6400' : d <= 14 ? '#fbbf24' : '#4caf50';
+
+  tbody.innerHTML = data.map(r => {
+    const dias = r.fecha_limite
+      ? Math.round((new Date(r.fecha_limite) - hoy) / 86400000)
+      : null;
+    const diasTxt = dias === null ? '—' : dias < 0 ? `${Math.abs(dias)}d VENCIDO` : dias === 0 ? 'HOY' : `${dias}d`;
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);" id="seg-row-${r.id}">
+      <td style="padding:8px 10px;font-size:11px;font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.nombre}">${r.nombre || r.entidad}</td>
+      <td style="padding:8px 10px;font-size:11px;color:var(--text-dim);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entidad}">${r.entidad}</td>
+      <td style="padding:8px 10px;text-align:center;">
+        <select onchange="segMarkDirty(${r.id})" id="seg-estado-${r.id}" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:3px 6px;color:${estadoColor(r.estado)};font-size:10px;font-family:'JetBrains Mono',monospace;">
+          ${['Abierto','En Revisión','Referido','Cerrado'].map(o => `<option value="${o}" ${r.estado===o?'selected':''}>${o}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:8px 10px;text-align:center;">
+        <select onchange="segMarkDirty(${r.id})" id="seg-prio-${r.id}" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:3px 6px;color:${priColor(r.prioridad)};font-size:10px;font-family:'JetBrains Mono',monospace;">
+          ${['Alta','Media','Baja'].map(o => `<option value="${o}" ${r.prioridad===o?'selected':''}>${o}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:8px 10px;">
+        <input type="text" id="seg-resp-${r.id}" value="${r.responsable||''}" placeholder="—" oninput="segMarkDirty(${r.id})"
+          style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:3px 8px;color:var(--text);font-size:11px;width:100%;box-sizing:border-box;">
+      </td>
+      <td style="padding:8px 10px;text-align:center;">
+        <input type="date" id="seg-fecha-${r.id}" value="${r.fecha_limite||''}" onchange="segMarkDirty(${r.id})"
+          style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:3px 6px;color:var(--text);font-size:10px;font-family:'JetBrains Mono',monospace;">
+      </td>
+      <td style="padding:8px 10px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${diasColor(dias)};">${diasTxt}</td>
+      <td style="padding:8px 10px;text-align:center;">
+        <button id="seg-save-${r.id}" onclick="segGuardar(${r.id})" style="display:none;background:rgba(0,200,255,0.15);color:var(--electric);border:1px solid rgba(0,200,255,0.4);border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">💾 Guardar</button>
+        <span id="seg-ok-${r.id}" style="color:#4caf50;font-size:10px;display:none;">✓</span>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function segMarkDirty(id) {
+  const btn = document.getElementById(`seg-save-${id}`);
+  if (btn) btn.style.display = 'inline-block';
+}
+
+async function segGuardar(id) {
+  const estado      = document.getElementById(`seg-estado-${id}`)?.value;
+  const prioridad   = document.getElementById(`seg-prio-${id}`)?.value;
+  const responsable = document.getElementById(`seg-resp-${id}`)?.value;
+  const fecha_limite = document.getElementById(`seg-fecha-${id}`)?.value || null;
+  const btn = document.getElementById(`seg-save-${id}`);
+  const ok  = document.getElementById(`seg-ok-${id}`);
+  if (btn) btn.textContent = '…';
+  try {
+    const { error } = await db.from('expedientes').update({ estado, prioridad, responsable, fecha_limite }).eq('id', id);
+    if (error) throw error;
+    // Actualizar local cache
+    const rec = _segData.find(r => r.id === id);
+    if (rec) { rec.estado = estado; rec.prioridad = prioridad; rec.responsable = responsable; rec.fecha_limite = fecha_limite; }
+    if (btn) btn.style.display = 'none';
+    if (ok)  { ok.style.display = 'inline'; setTimeout(() => { ok.style.display = 'none'; }, 2000); }
+  } catch(e) {
+    if (btn) { btn.textContent = '💾 Guardar'; btn.style.color = '#f87171'; }
+    alert('Error al guardar: ' + e.message);
+  }
+}
 
 async function loadRedesCorporativas() {
   const tbody = document.getElementById('rc-tbody');

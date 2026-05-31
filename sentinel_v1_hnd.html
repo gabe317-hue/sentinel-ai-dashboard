@@ -2705,6 +2705,14 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.35);">NUEVO</span>
     </div>
 
+    <div class="pe-card" onclick="irDesdeEjecutivo(showRedesCorporativasPanel)">
+      <div class="pe-card-num">13</div>
+      <div class="pe-card-icon">🕸️</div>
+      <div class="pe-card-title">Redes Corporativas</div>
+      <div class="pe-card-desc">Clusters de empresas distintas que comparten nombre, propietario o patrón — evasión de umbrales de licitación</div>
+      <span class="pe-card-tag" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.35);">NUEVO</span>
+    </div>
+
   </div>
 </div>
 
@@ -2832,6 +2840,58 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ══ REDES CORPORATIVAS PANEL (B4) ══ -->
+  <div class="fuente-panel" id="redesCorporativasPanel">
+    <button class="fuente-back" onclick="hideRedesCorporativasPanel()">← Panel Ejecutivo</button>
+    <div class="fuente-header">
+      <div class="fuente-title">🕸️ <span>Redes Corporativas</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Clusters de empresas que comparten token de nombre en la misma entidad — señal de fraccionamiento coordinado o evasión de umbrales</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Clusters detectados</div>
+        <div id="rc-stat-total" style="font-size:22px;font-weight:700;color:#f87171;">—</div>
+      </div>
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Empresas involucradas</div>
+        <div id="rc-stat-empresas" style="font-size:22px;font-weight:700;color:#fbbf24;">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto combinado</div>
+        <div id="rc-stat-monto" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#f87171;">
+      🕸️ <strong>Metodología:</strong> Se detectan grupos de 2–6 empresas que comparten un token de nombre distintivo y contratan con la misma entidad pública. Puede indicar misma red corporativa usada para dividir contratos y evitar licitación.
+    </div>
+    <div style="margin-bottom:10px;">
+      <input type="text" id="rc-search" placeholder="Filtrar por entidad, empresa o token..." oninput="rcFiltrar()"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;">
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Token</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Entidad</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Empresas</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Contratos</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto L</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">% Entidad</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Detalle</th>
+          </tr>
+        </thead>
+        <tbody id="rc-tbody">
+          <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="rc-detalle" style="display:none;margin-top:16px;padding:14px 16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;">
+      <div style="font-size:11px;font-weight:700;color:#f87171;margin-bottom:8px;">🔍 Empresas en este cluster:</div>
+      <div id="rc-detalle-lista" style="font-size:11px;color:var(--text-dim);line-height:1.8;"></div>
     </div>
   </div>
 
@@ -8521,7 +8581,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -8653,6 +8713,76 @@ async function showOncaePanel() {
 }
 
 function hideOncaePanel() { document.getElementById('oncaePanel')?.classList.remove('open'); }
+
+// ══ REDES CORPORATIVAS (B4) ══════════════════════════════════════════════════
+let _rcData = [];
+async function showRedesCorporativasPanel() {
+  document.getElementById('redesCorporativasPanel').classList.add('open');
+  if (_rcData.length === 0) await loadRedesCorporativas();
+}
+function hideRedesCorporativasPanel() { document.getElementById('redesCorporativasPanel')?.classList.remove('open'); }
+
+async function loadRedesCorporativas() {
+  const tbody = document.getElementById('rc-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
+  try {
+    const { data, error } = await db.rpc('get_corporate_networks');
+    if (error) throw error;
+    _rcData = data || [];
+    rcRender(_rcData);
+    // Stats
+    const totalEmpresas = _rcData.reduce((s, r) => s + (r.empresas?.length || r.n_empresas || 0), 0);
+    const totalMonto    = _rcData.reduce((s, r) => s + Number(r.monto_total || 0), 0);
+    document.getElementById('rc-stat-total').textContent    = _rcData.length;
+    document.getElementById('rc-stat-empresas').textContent = totalEmpresas;
+    document.getElementById('rc-stat-monto').textContent    = fmtLempiras(totalMonto);
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function rcRender(data) {
+  const tbody = document.getElementById('rc-tbody');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Sin clusters detectados.</td></tr>'; return; }
+  const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+  tbody.innerHTML = data.map((r, i) => {
+    const pct     = Number(r.pct_entidad || 0);
+    const pctColor = pct >= 50 ? '#f87171' : pct >= 25 ? '#fbbf24' : 'var(--electric)';
+    const nEmp    = r.n_empresas || (r.empresas?.length || 0);
+    const empColor = nEmp >= 4 ? '#f87171' : nEmp >= 3 ? '#fbbf24' : 'var(--electric)';
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;" onclick="rcVerDetalle(${i})" title="Clic para ver empresas">
+      <td style="padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--electric);">${r.token_comun?.toUpperCase()}</td>
+      <td style="padding:8px 10px;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entidad}">${r.entidad}</td>
+      <td style="padding:8px 10px;text-align:center;"><span style="background:rgba(239,68,68,0.12);color:${empColor};border:1px solid ${empColor}33;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;">${nEmp}</span></td>
+      <td style="padding:8px 10px;text-align:right;font-size:11px;">${r.n_contratos}</td>
+      <td style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--text);">${fmtL(Number(r.monto_total))}</td>
+      <td style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:${pctColor};">${pct}%</td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="event.stopPropagation();rcVerDetalle(${i})" style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer;">🔍 Ver</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function rcVerDetalle(idx) {
+  const r = _rcData[idx];
+  if (!r) return;
+  const det = document.getElementById('rc-detalle');
+  const lista = document.getElementById('rc-detalle-lista');
+  const empresas = r.empresas || [];
+  lista.innerHTML = `<strong style="color:var(--text);font-size:12px;">Token: ${r.token_comun?.toUpperCase()} · ${r.entidad}</strong><br><br>`
+    + empresas.map((e, i) => `<span style="color:var(--electric);">${i+1}.</span> ${e}`).join('<br>');
+  det.style.display = 'block';
+  det.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function rcFiltrar() {
+  const q = (document.getElementById('rc-search')?.value || '').toLowerCase();
+  if (!q) { rcRender(_rcData); return; }
+  rcRender(_rcData.filter(r =>
+    (r.entidad || '').toLowerCase().includes(q) ||
+    (r.token_comun || '').toLowerCase().includes(q) ||
+    (r.empresas || []).some(e => e.toLowerCase().includes(q))
+  ));
+}
 
 function _renderOncaeTable() {
   const d = _oncaeData;

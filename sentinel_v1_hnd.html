@@ -15089,96 +15089,50 @@ function ccUpdateVendorList() {
   }
 }
 
-async function ccAnalizar() {
+function ccAnalizar() {
   const entidad   = (document.getElementById('ccEntidad').value || '').trim();
   const proveedor = (document.getElementById('ccProveedor').value || '').trim();
   const esquema   = document.getElementById('ccEsquema').value || 'GENERAL';
   if (!entidad || !proveedor) { alert('Ingresa entidad y proveedor para continuar.'); return; }
+  if (!allAlerts || !allAlerts.length) { alert('Datos aún cargando. Espera un momento.'); return; }
 
-  // Mostrar loading
-  const btnAnalizar = document.getElementById('cc-btn-analizar');
-  if (btnAnalizar) { btnAnalizar.disabled = true; btnAnalizar.textContent = 'Analizando…'; }
-
-  try {
-    const { data: rpc, error } = await db.rpc('analyze_vendor_entity', {
-      p_entidad: entidad,
-      p_proveedor: proveedor
-    });
-    if (error) throw error;
-
-    if (!rpc || rpc.entity_count === 0) {
-      alert(`No se encontró la entidad "${entidad}" en la base de datos.\nPrueba con el nombre completo (ej. "Empresa Nacional de Energía Eléctrica" en lugar de "ENEE").`);
-      return;
-    }
-    if (!rpc.vendor_count) {
-      const entidadesDelVendor = (rpc.entity_names || []).slice(0, 5);
-      const sugerencia = entidadesDelVendor.length
-        ? `\n\nEste proveedor aparece en:\n${entidadesDelVendor.map(e => '• ' + e).join('\n')}`
-        : '\n\nEste proveedor no aparece en la base de datos.';
-      alert(`"${proveedor}" no tiene contratos con "${entidad}".${sugerencia}`);
-      return;
-    }
-
-    // Construir estructuras compatibles con ccRenderResultados
-    const concentracion = {
-      vendorMonto:   rpc.vendor_monto,
-      entityMonto:   rpc.entity_monto,
-      vendorCount:   rpc.vendor_count,
-      entityCount:   rpc.entity_count,
-      cntPct:        rpc.entity_count ? (rpc.vendor_count / rpc.entity_count * 100) : 0,
-      mntPct:        rpc.entity_monto ? (rpc.vendor_monto / rpc.entity_monto * 100) : 0,
-      uniqueVendors: rpc.global_entities || 1
-    };
-
-    // Timeline: mapear desde RPC al formato esperado por ccRenderResultados
-    const ADMIN_META = {
-      'Lobo Sosa':  { nombre: 'Lobo Sosa (2010–2014)',  color: '#f59e0b' },
-      'Hernández':  { nombre: 'Hernández (2014–2022)',   color: '#818cf8' },
-      'Castro':     { nombre: 'Xiomara Castro (2022–)',  color: '#22d3ee' }
-    };
-    const timeline = (rpc.timeline || []).map(t => ({
-      ...t,
-      nombre:    (ADMIN_META[t.admin] || { nombre: t.admin }).nombre,
-      color:     (ADMIN_META[t.admin] || { color: '#94a3b8' }).color,
-      contratos: []
-    }));
-
-    // Patrones
-    const patMap = rpc.patterns || {};
-    const patrones = {
-      patMap,
-      criticos: rpc.critica_count || 0,
-      altos:    rpc.alta_count    || 0
-    };
-
-    // Score — misma lógica, ahora sobre datos del servidor
-    const vendorGlobalEntities = rpc.global_entities || 0;
-    const criteria = [
-      { label: 'Contratos con señal CRÍTICA',       val: patrones.criticos > 0,                        detail: patrones.criticos > 0 ? `${patrones.criticos} contrato(s) CRÍTICA detectados` : 'Ningún contrato alcanza severidad CRÍTICA' },
-      { label: 'Concentración alta en entidad',      val: concentracion.mntPct > 30,                    detail: `${concentracion.mntPct.toFixed(1)}% del presupuesto va a este proveedor` },
-      { label: 'Persistencia multi-administración',  val: timeline.filter(t=>t.count>0).length >= 2,    detail: `Activo en ${timeline.filter(t=>t.count>0).length} período(s) presidencial(es)` },
-      { label: 'Volumen significativo (>L 50M)',      val: concentracion.vendorMonto > 50_000_000,       detail: `L ${(concentracion.vendorMonto/1e6).toFixed(1)}M contratados con esta entidad` },
-      { label: 'Patrones de riesgo detectados',      val: Object.keys(patMap).length > 0,               detail: Object.keys(patMap).length > 0 ? Object.keys(patMap).slice(0,3).join(', ') : 'Sin patrones' },
-      { label: 'Presencia en múltiples entidades',   val: vendorGlobalEntities >= 3,                    detail: `Proveedor aparece en ${vendorGlobalEntities} entidades distintas` }
-    ];
-    const score = { criteria, total: criteria.filter(c=>c.val).length, max: 6 };
-
-    const gaps = ccCalcGaps(esquema);
-
-    _ccData = {
-      entidad, proveedor, esquema,
-      concentracion, timeline, patrones, score, gaps,
-      vendorFromDesc: false,
-      topContratos: rpc.top_contracts || []
-    };
-    ccRenderResultados();
-
-  } catch(e) {
-    console.error('ccAnalizar RPC error:', e);
-    alert('Error al analizar. Intenta de nuevo.');
-  } finally {
-    if (btnAnalizar) { btnAnalizar.disabled = false; btnAnalizar.textContent = 'Analizar'; }
+  const ent  = entidad.toLowerCase().trim();
+  const prov = proveedor.toLowerCase().trim();
+  const entityContratos = allAlerts.filter(a => ccMatchEntity(ent, a.entity_name));
+  // Buscar en proveedor_nombre primero; si no hay resultados, buscar en description también
+  let vendorContratos = entityContratos.filter(a => (a.proveedor_nombre||'').toLowerCase().includes(prov));
+  let _ccVendorFromDesc = false;
+  if (!vendorContratos.length) {
+    vendorContratos = entityContratos.filter(a =>
+      (a.proveedor_nombre||'').toLowerCase().includes(prov) ||
+      (a.description||'').toLowerCase().includes(prov)
+    );
+    if (vendorContratos.length) _ccVendorFromDesc = true;
   }
+  const vendorGlobal = allAlerts.filter(a =>
+    (a.proveedor_nombre||'').toLowerCase().includes(prov) ||
+    (a.description||'').toLowerCase().includes(prov)
+  );
+
+  if (!entityContratos.length) {
+    alert(`No se encontró la entidad "${entidad}" en la base de datos.\nPrueba con el nombre completo (ej. "Empresa Nacional de Energía Eléctrica" en lugar de "ENEE").`); return;
+  }
+  if (!vendorContratos.length) {
+    // Show which entities this vendor DOES appear in
+    const entidadesDelVendor = [...new Set(vendorGlobal.map(a=>a.entity_name))].slice(0,5);
+    const sugerencia = entidadesDelVendor.length
+      ? `\n\nEste proveedor aparece en:\n${entidadesDelVendor.map(e=>'• '+e).join('\n')}`
+      : '\n\nEste proveedor no aparece en la base de datos.';
+    alert(`"${proveedor}" no tiene contratos con "${entidad}".${sugerencia}`); return;
+  }
+
+  const concentracion = ccCalcConcentracion(entityContratos, vendorContratos);
+  const timeline      = ccCalcTimeline(vendorContratos);
+  const patrones      = ccCalcPatrones(vendorContratos);
+  const score         = ccCalcScore(vendorContratos, vendorGlobal, concentracion, timeline, patrones);
+  const gaps          = ccCalcGaps(esquema);
+  _ccData = { entidad, proveedor, esquema, entityContratos, vendorContratos, vendorGlobal, concentracion, timeline, patrones, score, gaps, vendorFromDesc: _ccVendorFromDesc };
+  ccRenderResultados();
 }
 
 function ccCalcConcentracion(entityContratos, vendorContratos) {
@@ -15589,8 +15543,7 @@ function ccExportExcel() {
 
 async function ccExportExcelCore() {
   if (!_ccData) return;
-  const { entidad, proveedor, esquema, concentracion, timeline, score, gaps, topContratos } = _ccData;
-  const vendorContratos = topContratos || []; // top 10 del servidor
+  const { entidad, proveedor, esquema, concentracion, timeline, score, gaps, vendorContratos } = _ccData;
   const wb   = new ExcelJS.Workbook();
   wb.creator = 'Sentinel AI'; wb.created = new Date();
   const ts   = new Date().toLocaleDateString('es-HN');
@@ -15699,7 +15652,7 @@ async function ccExportExcelCore() {
   const ws2 = wb.addWorksheet('Contratos');
   ws2.columns = [{width:4},{width:22},{width:28},{width:38},{width:14},{width:12},{width:46},{width:12},{width:8}];
   addTitleRow(ws2, `SENTINEL AI — Contratos: ${proveedor} × ${entidad}`,
-    `${concentracion?.vendorCount ?? vendorContratos.length} contratos (top 10 mostrados) · ${ts} · ${folio}`, 9);
+    `${vendorContratos.length} contratos · ${ts} · ${folio}`, 9);
   addHdrRow(ws2, ['#','Entidad','Proveedor','Descripción','Monto','Severidad','Patrones de Riesgo','Fecha','Fuente']);
 
   vendorContratos.forEach((a,i) => {
@@ -15954,8 +15907,8 @@ async function ccConfirmarGuardar() {
       esquema:         d.esquema || null,
       notas:           notas || null,
       score_total:     d.score?.total ?? null,
-      contratos_count: d.concentracion?.vendorCount ?? null,
-      monto_total:     d.concentracion?.vendorMonto ?? null,
+      contratos_count: d.vendorContratos?.length ?? null,
+      monto_total:     d.vendorContratos?.reduce((s,c)=>s+(c.monto||0),0) ?? null,
     };
     const { error } = await db.from('expedientes').insert([payload]);
     if (error) throw new Error(error.message);
@@ -16320,16 +16273,24 @@ function updateConsultasMetrics(all) {
 
 function poUpdateIndicators() {
   try {
-    // Usa _cachedStats (server-side) — no depende de allAlerts en memoria
-    const stats = window._cachedStats || {};
-    const crit  = stats.critica    || 0;
-    const alto  = stats.alta       || 0;
-    const sob   = stats.sobrecosto || 0;
+    const data = (typeof allAlerts !== 'undefined') ? allAlerts : [];
+    if (!data.length) return;
+    const crit  = data.filter(a => a.severity === 'CRÍTICA').length;
+    const alto  = data.filter(a => a.severity === 'ALTA').length;
+    const sob   = data.filter(a => {
+      const mc = Number(a.monto_contrato||0);
+      const budget = Number(a.budget_amount||0);
+      const hasSEFIN = mc > 0 && budget > mc * 1.15;
+      const hasPattern = a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SOBRECOSTO'));
+      return hasSEFIN || hasPattern;
+    }).length;
+    const engel = data.filter(a => a.tags && a.tags.includes('LISTA_ENGEL')).length;
+    const ofac  = data.filter(a => a.tags && a.tags.includes('PROVEEDOR_SANCIONADO')).length;
     document.getElementById('po-ind-crit').textContent  = crit.toLocaleString('es-HN');
     document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
-    document.getElementById('po-ind-intl').textContent  = '0';
+    document.getElementById('po-ind-intl').textContent  = (engel + ofac).toLocaleString('es-HN');
     document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
-    const displayTotal = window._bdTotalCount || stats.total || (typeof allAlerts !== 'undefined' ? allAlerts.length : 0);
+    const displayTotal = window._bdTotalCount || data.length;
     document.getElementById('po-ind-total').textContent = displayTotal.toLocaleString('es-HN');
     document.getElementById('po-db-badge').textContent  = displayTotal.toLocaleString('es-HN') + ' contratos monitoreados';
 
@@ -17354,17 +17315,10 @@ function showVendorConcentrationPanel() {
   renderVendorConcentration();
 }
 
-async function renderVendorConcentration() {
-  const container = document.getElementById('vc-vendor-list');
-  if (container) container.innerHTML = '<div style="color:var(--text-dim);font-size:12px;padding:16px 0;">Cargando concentración de proveedores…</div>';
-  try {
-    const { data, error } = await db.rpc('get_vendor_concentration', { p_limit: 50 });
-    if (error) throw error;
-    calculateAndDisplayVendorConcentration(data || []);
-  } catch(e) {
-    if (container) container.innerHTML = '<div style="color:var(--red);font-size:12px;">Error cargando datos de proveedores.</div>';
-    console.error('renderVendorConcentration:', e);
-  }
+function renderVendorConcentration() {
+  const alerts = (typeof allAlerts !== 'undefined' && allAlerts.length) ? allAlerts : [];
+  window.globalAlerts = alerts;
+  calculateAndDisplayVendorConcentration(alerts);
 }
 
 function hideVendorConcentrationPanel() {
@@ -18169,20 +18123,33 @@ window.vcPaginationState = {
   allEntities: []
 };
 
-function calculateAndDisplayVendorConcentration(rpcData) {
-  if (!rpcData || rpcData.length === 0) {
+function calculateAndDisplayVendorConcentration(alerts) {
+  if (!alerts || alerts.length === 0) {
     document.getElementById('vc-vendor-list').innerHTML = '<div style="color:var(--text-dim);font-size:12px;">Sin datos disponibles</div>';
     return;
   }
 
-  // rpcData ya viene agregado del servidor: { name, alerts, monto, entity_count }
-  const vendorArray = rpcData.map(v => ({
-    name:         v.name,
-    alerts:       Number(v.alerts),
-    monto:        Number(v.monto),
-    entities:     { size: Number(v.entity_count) }  // compatibilidad con código existente
-  }));
-  let totalMonto = vendorArray.reduce((s, v) => s + v.monto, 0);
+  // Aggregate by vendor
+  const vendors = {};
+  let totalMonto = 0;
+
+  alerts.forEach(alert => {
+    const vendor = alert.proveedor_nombre || alert.proveedor || 'Desconocido';
+    const monto = Number(alert.monto_contrato || alert.monto_contratado || 0);
+    const entity = alert.entity_name || alert.entidad || 'Desconocida';
+
+    if (vendor === 'Desconocido') return;
+
+    if (!vendors[vendor]) {
+      vendors[vendor] = { name: vendor, alerts: 0, monto: 0, entities: new Set() };
+    }
+    vendors[vendor].alerts += 1;
+    vendors[vendor].monto += monto;
+    vendors[vendor].entities.add(entity);
+    totalMonto += monto;
+  });
+
+  const vendorArray = Object.values(vendors).sort((a, b) => b.monto - a.monto);
 
   // Calculate HHI
   const hhi = calculateHHI(vendorArray, totalMonto);

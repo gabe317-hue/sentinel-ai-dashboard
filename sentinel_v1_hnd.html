@@ -323,8 +323,7 @@ body::after {
 
 /* ─── FUENTE PANEL ─── */
 .fuente-panel { display: none; }
-.fuente-panel.open { display: block; }
-#tscPanel.open, #monopolioPanel.open, #entityRankingPanel.open, #oncaePanel.open { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; overflow-y: auto; background: var(--navy); padding: 32px; box-sizing: border-box; }
+.fuente-panel.open { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; overflow-y: auto; background: var(--navy); padding: 32px; box-sizing: border-box; }
 .fuente-back {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: 'JetBrains Mono', monospace; font-size: 11px;
@@ -8573,6 +8572,8 @@ function hideTSCPanel() {
 // B1 — MONOPOLIO DE PROVEEDOR
 // ════════════════════════════════════════════════════════════
 let _monopolioData = null;
+let _monEntityList = []; // safe lookup
+let _monVendorList = []; // safe lookup
 const _MON_BLOCKLIST = ['ninguno','sin nombre','sin proveedor',''];
 
 async function showMonopolioPanel() {
@@ -8591,6 +8592,8 @@ function hideMonopolioPanel() { document.getElementById('monopolioPanel')?.class
 function _renderMonopolioTable() {
   const d = _monopolioData;
   if (!d || !d.length) { document.getElementById('monopolio-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Sin datos.</td></tr>'; return; }
+  _monEntityList = d.map(r => r.entity_name || ''); // safe lookup
+  _monVendorList = d.map(r => r.vendor_name  || ''); // safe lookup
   const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
   document.getElementById('mon-stat-total').textContent   = d.length;
   document.getElementById('mon-stat-critica').textContent = d.filter(r => r.severity_critica > 0).length;
@@ -8599,8 +8602,6 @@ function _renderMonopolioTable() {
   tbody.innerHTML = d.map((r,i) => {
     const pctColor = r.pct_dominance >= 80 ? 'var(--red)' : r.pct_dominance >= 60 ? 'var(--amber)' : '#fbbf24';
     const criTag = r.severity_critica > 0 ? `<span style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:4px;padding:2px 6px;font-size:10px;">${r.severity_critica} 🔴</span>` : '<span style="color:var(--text-dim);">—</span>';
-    const vEnt = (r.entity_name||'').replace(/'/g,"\\'");
-    const vVen = (r.vendor_name||'').replace(/'/g,"\\'");
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2===0?'':'background:rgba(255,255,255,0.02)'}">
       <td style="padding:8px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entity_name}">${r.entity_name}</td>
       <td style="padding:8px 10px;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.vendor_name}">${r.vendor_name}</td>
@@ -8608,7 +8609,7 @@ function _renderMonopolioTable() {
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${r.contracts_vendor}/${r.contracts_total}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_total)}</td>
       <td style="padding:8px 10px;text-align:center;">${criTag}</td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso();setTimeout(()=>{document.getElementById('ccEntidad').value='${vEnt}';document.getElementById('ccProveedor').value='${vVen}';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showMonopolioPanel);setTimeout(()=>{document.getElementById('ccEntidad').value=_monEntityList[${i}];document.getElementById('ccProveedor').value=_monVendorList[${i}];},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
     </tr>`;
   }).join('');
 }
@@ -8617,6 +8618,7 @@ function _renderMonopolioTable() {
 // B3 — RANKING RIESGO INSTITUCIONAL
 // ════════════════════════════════════════════════════════════
 let _entityRankData = null;
+let _erkEntityList = []; // safe lookup to avoid inline string escaping issues
 
 async function showEntityRankingPanel() {
   _closeAllFuentePanels();
@@ -8635,6 +8637,7 @@ function hideEntityRankingPanel() { document.getElementById('entityRankingPanel'
 // B2 — CROSS-REFERENCE ONCAE ANOTACIONES
 // ════════════════════════════════════════════════════════════
 let _oncaeData = null;
+let _oncaeKeywordList = []; // safe lookup for inline onclick
 
 async function showOncaePanel() {
   _closeAllFuentePanels();
@@ -8652,6 +8655,7 @@ function hideOncaePanel() { document.getElementById('oncaePanel')?.classList.rem
 function _renderOncaeTable() {
   const d = _oncaeData;
   if (!d || !d.length) { document.getElementById('oncae-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Sin matches.</td></tr>'; return; }
+  _oncaeKeywordList = d.map(r => r.oncae_keyword || ''); // safe lookup
   const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
   const totalCrit = d.reduce((s,r) => s + Number(r.critica||0), 0);
   const totalMonto = d.reduce((s,r) => s + Number(r.monto_total||0), 0);
@@ -8661,7 +8665,6 @@ function _renderOncaeTable() {
   const tbody = document.getElementById('oncae-tbody');
   tbody.innerHTML = d.map((r,i) => {
     const critTag = r.critica > 0 ? `<span style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">${r.critica} 🔴</span>` : `<span style="color:var(--text-dim);">${r.alta > 0 ? r.alta+'🟠' : '—'}</span>`;
-    const vVen = (r.oncae_keyword||'').replace(/'/g,"\\'");
     const anioTag = r.oncae_anio ? `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${r.oncae_anio}</span>` : '<span style="color:var(--text-dim);font-size:10px;">—</span>';
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2===0?'':'background:rgba(255,255,255,0.02)'}">
       <td style="padding:8px 10px;">
@@ -8673,7 +8676,7 @@ function _renderOncaeTable() {
       <td style="padding:8px 10px;text-align:center;">${critTag}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_total)}</td>
       <td style="padding:8px 10px;text-align:center;">${anioTag}</td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso();setTimeout(()=>{document.getElementById('ccProveedor').value='${vVen}';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showOncaePanel);setTimeout(()=>{document.getElementById('ccProveedor').value=_oncaeKeywordList[${i}];},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
     </tr>`;
   }).join('');
 }
@@ -8681,6 +8684,7 @@ function _renderOncaeTable() {
 function _renderEntityRankTable() {
   const d = _entityRankData;
   if (!d || !d.length) { document.getElementById('entity-ranking-tbody').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">Sin datos.</td></tr>'; return; }
+  _erkEntityList = d.map(r => r.entity_name || ''); // populate safe lookup array
   const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
   const maxScore = Number(d[0].risk_score);
   const totalMonto = d.reduce((s,r) => s + Number(r.monto_riesgo||0), 0);
@@ -8694,7 +8698,6 @@ function _renderEntityRankTable() {
     const barC  = score >= maxScore * 0.7 ? 'var(--red)' : score >= maxScore * 0.4 ? 'var(--amber)' : '#fbbf24';
     const pct   = Number(r.pct_alto_riesgo);
     const pctC  = pct >= 80 ? 'var(--red)' : pct >= 50 ? 'var(--amber)' : 'var(--electric)';
-    const vEnt  = (r.entity_name||'').replace(/'/g,"\\'");
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2===0?'':'background:rgba(255,255,255,0.02)'}">
       <td style="padding:8px 6px;text-align:center;font-family:'JetBrains Mono',monospace;color:var(--text-dim);font-size:11px;">${i+1}</td>
       <td style="padding:8px 10px;max-width:220px;">
@@ -8706,7 +8709,7 @@ function _renderEntityRankTable() {
       <td style="padding:8px 10px;text-align:right;color:var(--amber);font-family:'JetBrains Mono',monospace;">${Number(r.alta).toLocaleString('es-HN')}</td>
       <td style="padding:8px 10px;text-align:right;font-weight:600;color:${pctC};font-family:'JetBrains Mono',monospace;">${r.pct_alto_riesgo}%</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_riesgo)}</td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="showEntityPanelFromSector('${vEnt}')" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🔍 Ver</button></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="showEntityPanelFromSector(_erkEntityList[${i}])" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🔍 Ver</button></td>
     </tr>`;
   }).join('');
 }
@@ -15358,14 +15361,16 @@ const CC_ADMINS = [
 ];
 let _ccData = null;
 
-function abrirConstructorCaso() {
+function abrirConstructorCaso(backFn) {
   hidePortal(); // asegura que el portal no tape el panel (z-index 10000)
   ['panelEjecutivo','investigacionProyectoPanel','top5Panel'].forEach(id => {
     const el = document.getElementById(id); if (el) el.classList.add('hidden');
   });
+  // Also close any open fuente-panels so they don't show behind constructor
+  _closeAllFuentePanels();
   document.getElementById('constructorCasoPanel').classList.remove('hidden');
   document.getElementById('ccResultados').classList.add('hidden');
-  document.getElementById('ccBtnBack').onclick = volverAPanelEjecutivo;
+  document.getElementById('ccBtnBack').onclick = backFn || volverAPanelEjecutivo;
   ccPopulateEntityList();
 }
 function ccPopulateEntityList() {

@@ -8731,11 +8731,12 @@ async function loadRedesCorporativas() {
     _rcData = data || [];
     rcRender(_rcData);
     // Stats
+    const _rcFmt = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
     const totalEmpresas = _rcData.reduce((s, r) => s + (r.empresas?.length || r.n_empresas || 0), 0);
     const totalMonto    = _rcData.reduce((s, r) => s + Number(r.monto_total || 0), 0);
     document.getElementById('rc-stat-total').textContent    = _rcData.length;
     document.getElementById('rc-stat-empresas').textContent = totalEmpresas;
-    document.getElementById('rc-stat-monto').textContent    = fmtLempiras(totalMonto);
+    document.getElementById('rc-stat-monto').textContent    = _rcFmt(totalMonto);
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
   }

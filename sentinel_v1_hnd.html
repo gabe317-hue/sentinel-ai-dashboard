@@ -2552,8 +2552,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 <div id="btnVolverEjecutivoFloat" style="display:none;position:fixed;top:16px;right:20px;z-index:99999;">
   <button onclick="volverAPanelEjecutivo()"
     style="padding:8px 16px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.08em;
-    background:rgba(5,10,20,0.85);color:rgba(160,180,210,0.8);border:1px solid rgba(160,180,210,0.2);
-    border-radius:8px;cursor:pointer;backdrop-filter:blur(8px);">
+    background:rgba(0,200,255,0.12);color:var(--electric);border:1px solid rgba(0,200,255,0.4);
+    border-radius:8px;cursor:pointer;backdrop-filter:blur(8px);"
+    onmouseover="this.style.background='rgba(0,200,255,0.22)'" onmouseout="this.style.background='rgba(0,200,255,0.12)'">
     ← Panel Ejecutivo
   </button>
 </div>

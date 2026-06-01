@@ -2737,6 +2737,14 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-3</span>
     </div>
 
+    <div class="pe-card" onclick="irDesdeEjecutivo(showTwinContractsPanel)">
+      <div class="pe-card-num">17</div>
+      <div class="pe-card-icon">👯</div>
+      <div class="pe-card-title">Contratos Gemelos</div>
+      <div class="pe-card-desc">Mismo proveedor + misma institución + montos casi idénticos (±5%) en menos de 90 días — fraccionamiento quirúrgico para evadir umbrales de licitación</div>
+      <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-7</span>
+    </div>
+
   </div>
 </div>
 
@@ -3121,6 +3129,53 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           </tr>
         </thead>
         <tbody id="da-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ NS-7: CONTRATOS GEMELOS PANEL ══ -->
+  <div class="fuente-panel" id="twinContractsPanel">
+    <button class="fuente-back" onclick="hideTwinContractsPanel()">← Panel Ejecutivo</button>
+    <div class="fuente-header">
+      <div class="fuente-title">👯 <span>Contratos Gemelos</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Pares de contratos del mismo proveedor + misma institución con montos casi idénticos (±5%) adjudicados en menos de 90 días — fraccionamiento quirúrgico para evadir umbrales de licitación formal</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Pares detectados</div>
+        <div id="tw-stat-pares" style="font-size:22px;font-weight:700;color:#818cf8;">—</div>
+      </div>
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto total</div>
+        <div id="tw-stat-monto" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Días mín. entre gemelos</div>
+        <div id="tw-stat-dias" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#818cf8;">
+      👯 <strong>Señal NS-7:</strong> Dos contratos del mismo proveedor con la misma institución, montos casi iguales, en menos de 90 días es prácticamente imposible que sea coincidencia. Indica que se dividió un contrato mayor en dos para evitar el umbral de licitación pública.
+    </div>
+    <div style="margin-bottom:10px;">
+      <input type="text" id="tw-search" placeholder="Filtrar por proveedor o institución..." oninput="twFiltrar()"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;">
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Proveedor</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Institución</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Pares</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Días mín.</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto mayor</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Score</th>
+          </tr>
+        </thead>
+        <tbody id="tw-tbody">
           <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
         </tbody>
       </table>
@@ -8877,7 +8932,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','seguimientoPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','seguimientoPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -9129,6 +9184,65 @@ function ptsRender() {
       <td style="padding:8px 10px;text-align:right;font-weight:600;color:${pctColor(r.pct_contratos_ventana)};font-size:12px;">${r.pct_contratos_ventana}%</td>
       <td style="padding:8px 10px;text-align:right;font-weight:700;color:${pctColor(r.pct_monto_ventana)};font-size:12px;">${r.pct_monto_ventana}%</td>
       <td style="padding:8px 10px;text-align:right;color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;">${fmtLps(Number(r.monto_ventana))}</td>
+    </tr>`).join('');
+}
+
+// ══ NS-7: CONTRATOS GEMELOS ═══════════════════════════════════════════════════
+let _twData = [], _twFiltered = [];
+
+async function showTwinContractsPanel() {
+  document.getElementById('twinContractsPanel').classList.add('open');
+  if (_twData.length === 0) await loadTwinContracts();
+}
+function hideTwinContractsPanel() { document.getElementById('twinContractsPanel')?.classList.remove('open'); }
+
+async function loadTwinContracts() {
+  const tbody = document.getElementById('tw-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
+  try {
+    const { data, error } = await db.rpc('get_twin_contracts', { max_diff_pct: 0.05, max_dias: 90, min_monto: 1000000 });
+    if (error) throw error;
+    _twData = data || [];
+    _twFiltered = [..._twData];
+    const totalPares = _twData.reduce((s,r) => s + Number(r.pares_detectados||0), 0);
+    const montoTotal = _twData.reduce((s,r) => s + Number(r.monto_total_pares||0), 0);
+    const minDias    = _twData.length ? Math.min(..._twData.map(r => Number(r.min_dias_entre||999))) : 0;
+    document.getElementById('tw-stat-pares').textContent = totalPares;
+    document.getElementById('tw-stat-monto').textContent = fmtLpsCompact(montoTotal);
+    document.getElementById('tw-stat-dias').textContent  = minDias + 'd';
+    twRender();
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function twFiltrar() {
+  const q = (document.getElementById('tw-search')?.value || '').toLowerCase();
+  _twFiltered = q ? _twData.filter(r =>
+    (r.proveedor_nombre||'').toLowerCase().includes(q) ||
+    (r.institucion||'').toLowerCase().includes(q)
+  ) : [..._twData];
+  twRender();
+}
+
+function twRender() {
+  const tbody = document.getElementById('tw-tbody');
+  if (!_twFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados.</td></tr>';
+    return;
+  }
+  const scoreColor = s => Number(s) >= 25 ? '#f87171' : Number(s) >= 12 ? '#ff6400' : '#fbbf24';
+  const diasColor  = d => Number(d) <= 3 ? '#f87171' : Number(d) <= 14 ? '#ff6400' : '#fbbf24';
+  tbody.innerHTML = _twFiltered.map(r => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:8px 10px;color:var(--text);font-size:11px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.proveedor_nombre}">${r.proveedor_nombre}</td>
+      <td style="padding:8px 10px;color:var(--text-dim);font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.institucion}">${r.institucion}</td>
+      <td style="padding:8px 10px;text-align:center;font-weight:700;font-size:13px;color:${r.pares_detectados >= 5 ? '#f87171' : '#fbbf24'};">${r.pares_detectados}</td>
+      <td style="padding:8px 10px;text-align:center;font-weight:600;font-size:12px;color:${diasColor(r.min_dias_entre)};">${r.min_dias_entre}d</td>
+      <td style="padding:8px 10px;text-align:right;color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;">${fmtLps(Number(r.monto_mayor))}</td>
+      <td style="padding:8px 10px;text-align:center;">
+        <span style="font-weight:700;font-size:12px;color:${scoreColor(r.twin_score)};">${Number(r.twin_score).toFixed(1)}</span>
+      </td>
     </tr>`).join('');
 }
 

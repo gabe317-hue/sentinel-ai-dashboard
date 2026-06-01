@@ -2713,6 +2713,22 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.35);">NUEVO</span>
     </div>
 
+    <div class="pe-card" onclick="irDesdeEjecutivo(showMonogamiaPanel)">
+      <div class="pe-card-num">14</div>
+      <div class="pe-card-icon">🔗</div>
+      <div class="pe-card-title">Monogamia de Proveedor</div>
+      <div class="pe-card-desc">Proveedores con ≥85% de contratos concentrados en una sola institución — señal de relación exclusiva sospechosa</div>
+      <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-1</span>
+    </div>
+
+    <div class="pe-card" onclick="irDesdeEjecutivo(showVentanaFiscalPanel)">
+      <div class="pe-card-num">15</div>
+      <div class="pe-card-icon">⏱️</div>
+      <div class="pe-card-title">Ventana de Presión Fiscal</div>
+      <div class="pe-card-desc">Instituciones que concentran el mayor monto de contratos en períodos de presión fiscal — fin de año, nueva administración</div>
+      <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-2</span>
+    </div>
+
   </div>
 </div>
 
@@ -2961,6 +2977,98 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div id="rc-detalle" style="display:none;margin-top:16px;padding:14px 16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;">
       <div style="font-size:11px;font-weight:700;color:#f87171;margin-bottom:8px;">🔍 Empresas en este cluster:</div>
       <div id="rc-detalle-lista" style="font-size:11px;color:var(--text-dim);line-height:1.8;"></div>
+    </div>
+  </div>
+
+  <!-- ══ NS-1: MONOGAMIA DE PROVEEDOR PANEL ══ -->
+  <div class="fuente-panel" id="monogamiaPanel">
+    <button class="fuente-back" onclick="hideMonogamiaPanel()">← Panel Ejecutivo</button>
+    <div class="fuente-header">
+      <div class="fuente-title">🔗 <span>Monogamia de Proveedor</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con ≥85% de contratos concentrados en una sola institución — en un mercado competitivo normal, un proveedor de alta capacidad debería contratar con múltiples entidades</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Proveedores monógamos</div>
+        <div id="vms-stat-total" style="font-size:22px;font-weight:700;color:#818cf8;">—</div>
+      </div>
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Con 100% concentración</div>
+        <div id="vms-stat-100" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto total expuesto</div>
+        <div id="vms-stat-monto" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#818cf8;">
+      🔗 <strong>Señal NS-1:</strong> Un proveedor con capacidad real compite en el mercado. Uno que solo contrata con una institución durante años sugiere una relación protegida, no competitiva.
+    </div>
+    <div style="margin-bottom:10px;">
+      <input type="text" id="vms-search" placeholder="Filtrar por proveedor o institución..." oninput="vmsFiltrar()"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;">
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Proveedor</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Institución exclusiva</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Contratos</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Concentración</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto Total</th>
+          </tr>
+        </thead>
+        <tbody id="vms-tbody">
+          <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ NS-2: VENTANA DE PRESIÓN FISCAL PANEL ══ -->
+  <div class="fuente-panel" id="ventanaFiscalPanel">
+    <button class="fuente-back" onclick="hideVentanaFiscalPanel()">← Panel Ejecutivo</button>
+    <div class="fuente-header">
+      <div class="fuente-title">⏱️ <span>Ventana de Presión Fiscal</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Instituciones que concentran su contratación de alto riesgo en períodos de presión fiscal — fin de año (Oct–Dic), nueva administración (Ene–Abr 2026)</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Instituciones detectadas</div>
+        <div id="pts-stat-total" style="font-size:22px;font-weight:700;color:#818cf8;">—</div>
+      </div>
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Con &gt;80% en ventana</div>
+        <div id="pts-stat-alta" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto en ventana</div>
+        <div id="pts-stat-monto" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#818cf8;">
+      ⏱️ <strong>Señal NS-2:</strong> Ventanas de presión: <strong>Fin de año</strong> Oct 15–Dic 31 (absorción de presupuesto) · <strong>Nueva admin</strong> Ene 27–Abr 30, 2026 (Asfura) · <strong>Inicio año</strong> Ene 1–26. Concentración alta en estas fechas indica contratación acelerada fuera del ciclo normal.
+    </div>
+    <div style="margin-bottom:10px;">
+      <input type="text" id="pts-search" placeholder="Filtrar por institución..." oninput="ptsFiltrar()"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;">
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Institución</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Ventana</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">% Contratos</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">% Monto</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto en Ventana</th>
+          </tr>
+        </thead>
+        <tbody id="pts-tbody">
+          <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -8714,7 +8822,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','seguimientoPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','seguimientoPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -8854,6 +8962,120 @@ async function showRedesCorporativasPanel() {
   if (_rcData.length === 0) await loadRedesCorporativas();
 }
 function hideRedesCorporativasPanel() { document.getElementById('redesCorporativasPanel')?.classList.remove('open'); }
+
+// ══ NS-1: MONOGAMIA DE PROVEEDOR ══════════════════════════════════════════════
+let _vmsData = [], _vmsFiltered = [];
+
+async function showMonogamiaPanel() {
+  document.getElementById('monogamiaPanel').classList.add('open');
+  if (_vmsData.length === 0) await loadMonogamia();
+}
+function hideMonogamiaPanel() { document.getElementById('monogamiaPanel')?.classList.remove('open'); }
+
+async function loadMonogamia() {
+  const tbody = document.getElementById('vms-tbody');
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
+  try {
+    const { data, error } = await db.rpc('get_vendor_monogamy', { min_contratos: 5, min_monto: 1000000 });
+    if (error) throw error;
+    // Excluir proveedores de error de datos
+    const EXCLUIR = ['RILMAC IMPRESORES'];
+    _vmsData = (data || []).filter(r => !EXCLUIR.some(ex => (r.proveedor_nombre||'').toUpperCase().includes(ex)));
+    _vmsFiltered = [..._vmsData];
+    // Stats
+    const total100 = _vmsData.filter(r => Number(r.concentracion_pct) === 100).length;
+    const montoTotal = _vmsData.reduce((s, r) => s + Number(r.monto_total||0), 0);
+    document.getElementById('vms-stat-total').textContent = _vmsData.length;
+    document.getElementById('vms-stat-100').textContent   = total100;
+    document.getElementById('vms-stat-monto').textContent = fmtLpsCompact(montoTotal);
+    vmsRender();
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function vmsFiltrar() {
+  const q = (document.getElementById('vms-search')?.value || '').toLowerCase();
+  _vmsFiltered = q ? _vmsData.filter(r =>
+    (r.proveedor_nombre||'').toLowerCase().includes(q) ||
+    (r.institucion_principal||'').toLowerCase().includes(q)
+  ) : [..._vmsData];
+  vmsRender();
+}
+
+function vmsRender() {
+  const tbody = document.getElementById('vms-tbody');
+  if (!_vmsFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados.</td></tr>';
+    return;
+  }
+  const concColor = p => Number(p) === 100 ? '#f87171' : Number(p) >= 95 ? '#ff6400' : '#fbbf24';
+  tbody.innerHTML = _vmsFiltered.map(r => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:8px 10px;color:var(--text);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.proveedor_nombre}">${r.proveedor_nombre}</td>
+      <td style="padding:8px 10px;color:var(--text-dim);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.institucion_principal}">${r.institucion_principal}</td>
+      <td style="padding:8px 10px;text-align:center;color:var(--text-dim);font-size:11px;">${r.contratos_inst_principal}/${r.contratos_total}</td>
+      <td style="padding:8px 10px;text-align:right;">
+        <span style="font-weight:700;font-size:12px;color:${concColor(r.concentracion_pct)};">${r.concentracion_pct}%</span>
+      </td>
+      <td style="padding:8px 10px;text-align:right;color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;">${fmtLps(Number(r.monto_total))}</td>
+    </tr>`).join('');
+}
+
+// ══ NS-2: VENTANA DE PRESIÓN FISCAL ═══════════════════════════════════════════
+let _ptsData = [], _ptsFiltered = [];
+
+async function showVentanaFiscalPanel() {
+  document.getElementById('ventanaFiscalPanel').classList.add('open');
+  if (_ptsData.length === 0) await loadVentanaFiscal();
+}
+function hideVentanaFiscalPanel() { document.getElementById('ventanaFiscalPanel')?.classList.remove('open'); }
+
+async function loadVentanaFiscal() {
+  const tbody = document.getElementById('pts-tbody');
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
+  try {
+    const { data, error } = await db.rpc('get_pressure_window_contracts', { top_n: 50 });
+    if (error) throw error;
+    _ptsData = data || [];
+    _ptsFiltered = [..._ptsData];
+    // Stats
+    const altaConc = _ptsData.filter(r => Number(r.pct_monto_ventana) >= 80).length;
+    const montoVentana = _ptsData.reduce((s, r) => s + Number(r.monto_ventana||0), 0);
+    document.getElementById('pts-stat-total').textContent = _ptsData.length;
+    document.getElementById('pts-stat-alta').textContent  = altaConc;
+    document.getElementById('pts-stat-monto').textContent = fmtLpsCompact(montoVentana);
+    ptsRender();
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function ptsFiltrar() {
+  const q = (document.getElementById('pts-search')?.value || '').toLowerCase();
+  _ptsFiltered = q ? _ptsData.filter(r => (r.institucion||'').toLowerCase().includes(q)) : [..._ptsData];
+  ptsRender();
+}
+
+function ptsRender() {
+  const tbody = document.getElementById('pts-tbody');
+  if (!_ptsFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados.</td></tr>';
+    return;
+  }
+  const pctColor = p => Number(p) >= 80 ? '#f87171' : Number(p) >= 60 ? '#ff6400' : Number(p) >= 40 ? '#fbbf24' : 'var(--text-dim)';
+  const ventanaLabel = v => v === 'fin_año' ? '🗓️ Fin año' : v === 'nueva_admin' ? '🏛️ Nueva admin' : v === 'inicio_año' ? '📅 Inicio año' : '🔀 Mixta';
+  tbody.innerHTML = _ptsFiltered.map(r => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:8px 10px;color:var(--text);font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.institucion}">${r.institucion}</td>
+      <td style="padding:8px 10px;text-align:center;">
+        <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(129,140,248,0.15);color:#818cf8;white-space:nowrap;">${ventanaLabel(r.ventana_dominante)}</span>
+      </td>
+      <td style="padding:8px 10px;text-align:right;font-weight:600;color:${pctColor(r.pct_contratos_ventana)};font-size:12px;">${r.pct_contratos_ventana}%</td>
+      <td style="padding:8px 10px;text-align:right;font-weight:700;color:${pctColor(r.pct_monto_ventana)};font-size:12px;">${r.pct_monto_ventana}%</td>
+      <td style="padding:8px 10px;text-align:right;color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;">${fmtLps(Number(r.monto_ventana))}</td>
+    </tr>`).join('');
+}
 
 // ══ SEGUIMIENTO DE CASOS ══════════════════════════════════════════════════════
 let _segData = [];

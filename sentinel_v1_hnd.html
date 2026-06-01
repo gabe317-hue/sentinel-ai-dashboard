@@ -3406,6 +3406,47 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
   </div>
 
+  <!-- ── SALUD DEL SISTEMA (S152) ────────────────────────────────────── -->
+  <div style="margin:0 0 32px;padding:0 4px;">
+    <div class="po-section-label">Salud del Sistema</div>
+    <div id="sys-health-card" style="background:var(--navy-light);border:1px solid var(--border);border-radius:14px;padding:20px 24px;">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px;">
+        <!-- Total registros -->
+        <div style="text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;">Total Registros</div>
+          <div id="sh-total" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--electric);">—</div>
+        </div>
+        <!-- Nuevos esta semana -->
+        <div style="text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;">Nuevos 7 días</div>
+          <div id="sh-week" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--green);">—</div>
+        </div>
+        <!-- Última ingesta -->
+        <div style="text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;">Última Ingesta</div>
+          <div id="sh-last" style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--text);">—</div>
+        </div>
+        <!-- Expedientes abiertos -->
+        <div style="text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;">Expedientes Abiertos</div>
+          <div id="sh-exp" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--amber);">—</div>
+        </div>
+      </div>
+      <!-- Edge Functions -->
+      <div style="border-top:1px solid var(--border);padding-top:14px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:10px;">Edge Functions</div>
+        <div id="sh-fns" style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span style="font-size:10px;color:var(--text-dim);">Cargando…</span>
+        </div>
+      </div>
+      <!-- Última actualización -->
+      <div style="margin-top:12px;text-align:right;">
+        <span id="sh-updated" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);">—</span>
+        <button onclick="loadSysHealth()" style="margin-left:10px;background:none;border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);cursor:pointer;transition:color .15s;" onmouseover="this.style.color='var(--electric)'" onmouseout="this.style.color='var(--text-dim)'">↺</span>
+      </div>
+    </div>
+  </div>
+
   <div class="po-footer">
     <div class="po-footer-brand"><span>Sentinel-AI</span> · 2026 ©</div>
     <div class="po-footer-class">Clasificación: Reservado · Uso Institucional</div>
@@ -14861,6 +14902,7 @@ function showPortal() {
   document.getElementById('portalOverlay').classList.add('visible');
   poUpdateIndicators();
   loadActivityFeed();
+  loadSysHealth();
   if (_activityFeedInterval) clearInterval(_activityFeedInterval);
   _activityFeedInterval = setInterval(loadActivityFeed, 30000);
 }
@@ -25254,6 +25296,55 @@ function exportReporteSESEGUPDF() {
   pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
+}
+
+// ─── PANEL SALUD DEL SISTEMA (S152) ──────────────────────────────────────────
+const EDGE_FNS = [
+  'alerta-critica','auto-investigador','alerta-vencimiento-expedientes',
+  'reporte-semanal','reporte-mensual','digest-borradores',
+  'resumen-investigaciones','alerta-sobrepresupuesto','alerta-denuncia',
+  'post-ingesta-detector','monitor-red-flags','generar-expediente',
+  'notificacion-instituciones'
+];
+
+async function loadSysHealth() {
+  if (typeof db === 'undefined') return;
+  try {
+    // Total registros en alerts
+    const { count: total } = await db.from('alerts').select('*', { count: 'exact', head: true });
+    document.getElementById('sh-total').textContent = (total || 0).toLocaleString('es-HN');
+
+    // Nuevos últimos 7 días
+    const since7d = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+    const { count: week } = await db.from('alerts').select('*', { count: 'exact', head: true }).gte('created_at', since7d);
+    const shWeek = document.getElementById('sh-week');
+    shWeek.textContent = (week || 0).toLocaleString('es-HN');
+    shWeek.style.color = week > 0 ? 'var(--green)' : 'var(--text-dim)';
+
+    // Última ingesta (registro más reciente)
+    const { data: lastRow } = await db.from('alerts').select('created_at').order('created_at', { ascending: false }).limit(1);
+    if (lastRow && lastRow[0]) {
+      const d = new Date(lastRow[0].created_at);
+      const diffH = Math.round((Date.now() - d) / 3600000);
+      const label = diffH < 1 ? 'hace <1h' : diffH < 24 ? `hace ${diffH}h` : `hace ${Math.round(diffH/24)}d`;
+      document.getElementById('sh-last').textContent = d.toLocaleDateString('es-HN', { day:'2-digit', month:'short' }) + ' · ' + label;
+    }
+
+    // Expedientes abiertos
+    const { count: expAbiertos } = await db.from('expedientes').select('*', { count: 'exact', head: true }).neq('estado', 'Cerrado');
+    document.getElementById('sh-exp').textContent = (expAbiertos || 0);
+
+    // Edge functions — mostrar como badges (siempre "activas" — no hay endpoint de estado, las listamos)
+    const fnDiv = document.getElementById('sh-fns');
+    fnDiv.innerHTML = EDGE_FNS.map(fn =>
+      `<span style="background:rgba(0,200,100,0.08);border:1px solid rgba(0,200,100,0.25);border-radius:6px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#00c864;letter-spacing:.04em;">● ${fn}</span>`
+    ).join('');
+
+    document.getElementById('sh-updated').textContent = '↻ actualizado ' + new Date().toLocaleTimeString('es-HN', { hour:'2-digit', minute:'2-digit' });
+  } catch(e) {
+    document.getElementById('sh-total').textContent = 'Error';
+    console.warn('loadSysHealth:', e);
+  }
 }
 
 // ─── HISTORY API — Browser Back Button Support (S151) ────────────────────────

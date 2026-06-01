@@ -25347,6 +25347,38 @@ async function loadSysHealth() {
   }
 }
 
+// ─── URL COMPARTIBLE POR PANEL (S152) ────────────────────────────────────────
+// Permite compartir links directos: ?panel=seguimiento, ?panel=portal, etc.
+// También actualiza la URL en el browser al navegar entre paneles.
+const _PANEL_MAP = {
+  'portal':      () => showPortal(),
+  'ejecutiva':   () => showVistaEjecutiva(),
+  'seguimiento': () => showSeguimientoPanel(),
+  'monopolio':   () => showMonopolioPanel(),
+  'ranking':     () => showEntityRankingPanel(),
+  'oncae':       () => showOncaePanel(),
+  'candidatos':  () => showCandidatosPanel(),
+  'busqueda':    () => showBusquedaBDPanel(),
+  'redes':       () => showRedesCorporativasPanel(),
+};
+
+// Leer ?panel= al cargar (después de auth/loadAlerts)
+function applyUrlPanel() {
+  const params = new URLSearchParams(location.search);
+  const panel = (params.get('panel') || '').toLowerCase();
+  if (panel && _PANEL_MAP[panel]) {
+    setTimeout(() => { try { _PANEL_MAP[panel](); } catch(e) {} }, 300);
+  }
+}
+
+// Actualizar URL cuando se abre un panel (sin romper el historial)
+function _setUrlPanel(panelKey) {
+  const url = new URL(location.href);
+  if (panelKey) { url.searchParams.set('panel', panelKey); }
+  else          { url.searchParams.delete('panel'); }
+  history.replaceState(history.state, '', url.toString());
+}
+
 // ─── HISTORY API — Browser Back Button Support (S151) ────────────────────────
 // Pushes a state whenever a panel opens so the browser back button closes the
 // current panel instead of navigating away to the landing page.
@@ -25404,13 +25436,15 @@ async function loadSysHealth() {
     // Watch vistaEjecutiva (style.display changes)
     const ve = document.getElementById('vistaEjecutiva');
     if (ve) new MutationObserver(function () {
-      if (!_poppingState && ve.style.display && ve.style.display !== 'none') _pushNav();
+      if (!_poppingState && ve.style.display && ve.style.display !== 'none') { _pushNav(); _setUrlPanel('ejecutiva'); }
+      else if (!_poppingState) _setUrlPanel(null);
     }).observe(ve, { attributes: true, attributeFilter: ['style'] });
 
     // Watch portalOverlay (class changes)
     const portal = document.getElementById('portalOverlay');
     if (portal) new MutationObserver(function () {
-      if (!_poppingState && portal.classList.contains('visible')) _pushNav();
+      if (!_poppingState && portal.classList.contains('visible')) { _pushNav(); _setUrlPanel('portal'); }
+      else if (!_poppingState) _setUrlPanel(null);
     }).observe(portal, { attributes: true, attributeFilter: ['class'] });
 
     // Watch body for modo-demo class
@@ -25418,11 +25452,22 @@ async function loadSysHealth() {
       if (!_poppingState && document.body.classList.contains('modo-demo')) _pushNav();
     }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
-    // Watch all .fuente-panel elements for .open class
-    document.querySelectorAll('.fuente-panel').forEach(function (panel) {
+    // Watch all .fuente-panel elements for .open class — map id to panel key
+    const _panelIdMap = {
+      seguimientoPanel:'seguimiento', monopolioPanel:'monopolio',
+      entityRankingPanel:'ranking', oncaePanel:'oncae',
+      candidatosPanel:'candidatos', busquedaBDPanel:'busqueda',
+      redesCorporativasPanel:'redes'
+    };
+    document.querySelectorAll('.fuente-panel').forEach(function (p) {
       new MutationObserver(function () {
-        if (!_poppingState && panel.classList.contains('open')) _pushNav();
-      }).observe(panel, { attributes: true, attributeFilter: ['class'] });
+        if (!_poppingState && p.classList.contains('open')) {
+          _pushNav();
+          _setUrlPanel(_panelIdMap[p.id] || null);
+        } else if (!_poppingState) {
+          _setUrlPanel(null);
+        }
+      }).observe(p, { attributes: true, attributeFilter: ['class'] });
     });
 
     // Watch dashboardEjecutivoModal
@@ -25430,6 +25475,9 @@ async function loadSysHealth() {
     if (modal) new MutationObserver(function () {
       if (!_poppingState && modal.style.display === 'block') _pushNav();
     }).observe(modal, { attributes: true, attributeFilter: ['style'] });
+
+    // Aplicar panel desde URL al cargar (después de que auth inicialice)
+    setTimeout(applyUrlPanel, 1500);
   });
 })();
 

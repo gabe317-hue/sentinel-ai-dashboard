@@ -3137,6 +3137,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando candidatos…</div>
         </div>
 
+        <!-- ── Proveedores Nuevos <90 días (S152) ── -->
+        <div class="exec-section-hd" style="cursor:default;">
+          🆕 &nbsp;Proveedores Nuevos &lt;90 días
+          <span class="exec-section-badge" id="new-vendors-badge" style="background:rgba(0,200,100,0.12);color:#4ade80;">cargando…</span>
+        </div>
+        <div id="new-vendors-list">
+          <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
+        </div>
+
         <!-- ── S89-B: Detecciones Automáticas ── -->
         <div class="exec-section-hd" style="cursor:default;">
           🤖 &nbsp;Detecciones Automáticas
@@ -6512,8 +6521,9 @@ async function loadAlerts() {
     setStatus('connected');
     hideError();
     render();
-    _saveCache();      // S152 — guardar caché con datos frescos
-    _hideCacheBanner(); // S152 — ocultar banner de caché
+    _saveCache();           // S152 — guardar caché con datos frescos
+    _hideCacheBanner();     // S152 — ocultar banner de caché
+    buildNewVendorIndex();  // S152 — detectar proveedores nuevos <90 días
     poUpdateIndicators();
     if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
 
@@ -22179,27 +22189,26 @@ const PLAYBOOK_QUERIES = [
   {
     id: 'prov-nuevo',
     nombre: 'Proveedor nuevo + contrato grande',
-    desc: 'Empresa con 1 solo contrato en BD y monto > L 500K',
+    desc: 'Primer contrato en BD hace <90 días y monto acumulado > L 5M',
     severidad: 'alta',
     run: function(all) {
+      // S152: usar buildNewVendorIndex si ya está disponible, si no recalcular
+      if (!window._newVendorsData) buildNewVendorIndex();
       const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
-      const provMap = {};
-      all.forEach(a => {
-        const p = a.proveedor_nombre; if (!p || p.trim() === '') return;
-        if (!provMap[p]) provMap[p] = { contratos: [], monto: 0 };
-        provMap[p].contratos.push(a);
-        provMap[p].monto += Number(a.monto_contrato || 0);
-      });
-      const results = Object.entries(provMap)
-        .filter(([, v]) => v.contratos.length === 1 && v.monto > 500000)
-        .sort((a, b) => b[1].monto - a[1].monto)
-        .slice(0, 30)
-        .map(([nombre, v]) => ({ nombre, monto: v.monto, contrato: v.contratos[0] }));
-      return { titulo: 'Proveedor Nuevo + Contrato Grande', filas: results.map((r, i) => ({
-        num: i+1, proveedor: r.nombre, entidad: r.contrato.entity_name || '—',
-        monto: fmtL(r.monto), fecha: r.contrato.fecha_contrato || '—',
-        severidad: r.contrato.severity || r.contrato.severidad || '—'
-      })), cols: ['#','Proveedor','Entidad','Monto','Fecha','Severidad'] };
+      const results = (window._newVendorsData || []).slice(0, 50);
+      if (!results.length) return { titulo: 'Proveedor Nuevo + Contrato Grande', filas: [], cols: ['#','Proveedor','Monto','Contratos','Primer Contrato','Severidad'], noResultsMsg: 'Sin proveedores nuevos (primer contrato <90 días) con monto > L 5M' };
+      return {
+        titulo: 'Proveedores Nuevos <90 días + Monto > L 5M',
+        filas: results.map(([nombre, v], i) => ({
+          num: i+1,
+          proveedor: nombre,
+          monto: fmtL(v.monto),
+          contratos: v.contratos,
+          primer_contrato: v.firstDate ? v.firstDate.toLocaleDateString('es-HN') : '—',
+          severidad: v.severity
+        })),
+        cols: ['#','Proveedor','Monto','Contratos','Primer Contrato','Severidad']
+      };
     }
   },
   {
@@ -25354,6 +25363,61 @@ async function loadSysHealth() {
     document.getElementById('sh-total').textContent = 'Error';
     console.warn('loadSysHealth:', e);
   }
+}
+
+// ─── ALERTA PROVEEDOR NUEVO <90 DÍAS (S152) ──────────────────────────────────
+// Detecta proveedores cuyo primer contrato en la BD fue hace <90 días y
+// acumulan monto total > L 5M. Señal clásica de empresa de maletín.
+const _NV_MIN_MONTO  = 5_000_000;   // L 5M mínimo
+const _NV_DAYS       = 90;          // ventana en días
+const _NV_MAX_SHOW   = 5;           // top en portal
+
+function buildNewVendorIndex() {
+  const cutoff = new Date(Date.now() - _NV_DAYS * 86400000);
+  const provMap = {};
+  (window.allAlerts || []).forEach(a => {
+    const p = (a.proveedor_nombre || '').trim(); if (!p) return;
+    if (!provMap[p]) provMap[p] = { monto: 0, firstDate: null, severity: 'BAJA', contratos: 0 };
+    const fd = a.fecha_contrato ? new Date(a.fecha_contrato) : null;
+    if (fd && (!provMap[p].firstDate || fd < provMap[p].firstDate)) provMap[p].firstDate = fd;
+    provMap[p].monto    += Number(a.monto_contrato || 0);
+    provMap[p].contratos++;
+    const sRank = s => ({ 'CRÍTICA':0,'ALTA':1,'MEDIA':2,'BAJA':3 }[(s||'').toUpperCase()] ?? 3);
+    if (sRank(a.severity) < sRank(provMap[p].severity)) provMap[p].severity = (a.severity||'').toUpperCase();
+  });
+
+  window._newVendorsData = Object.entries(provMap)
+    .filter(([, v]) => v.firstDate && v.firstDate >= cutoff && v.monto >= _NV_MIN_MONTO)
+    .sort((a, b) => b[1].monto - a[1].monto);
+
+  _renderNewVendorsPortal();
+}
+
+function _renderNewVendorsPortal() {
+  const badge = document.getElementById('new-vendors-badge');
+  const list  = document.getElementById('new-vendors-list');
+  if (!badge || !list) return;
+
+  const data = window._newVendorsData || [];
+  badge.textContent = data.length + ' detectados';
+  badge.style.color = data.length > 0 ? '#4ade80' : 'var(--text-dim)';
+
+  if (!data.length) {
+    list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Sin proveedores nuevos con contratos grandes</div>';
+    return;
+  }
+
+  const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : 'L ' + (n/1e6).toFixed(1) + 'M';
+  const sevColor = s => ({ 'CRÍTICA':'var(--red)', 'ALTA':'var(--amber)', 'MEDIA':'#60a5fa' }[s] || 'var(--text-dim)');
+
+  list.innerHTML = data.slice(0, _NV_MAX_SHOW).map(([nombre, v]) => `
+    <div onclick="showVendorPanel('${nombre.replace(/'/g,"\\'")}') " style="padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background='transparent'">
+      <span style="font-size:9px;font-weight:700;color:${sevColor(v.severity)};min-width:44px;">${v.severity}</span>
+      <span style="flex:1;font-size:10px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nombre}</span>
+      <span style="font-size:10px;font-weight:700;color:#4ade80;white-space:nowrap;">${fmtL(v.monto)}</span>
+      <span style="font-size:9px;color:var(--text-dim);white-space:nowrap;">${v.contratos}c</span>
+    </div>`).join('') +
+    (data.length > _NV_MAX_SHOW ? `<div style="padding:6px 12px;font-size:9px;color:var(--text-dim);text-align:right;">+${data.length - _NV_MAX_SHOW} más · playbook →</div>` : '');
 }
 
 // ─── MODO OFFLINE / CACHÉ (S152) ─────────────────────────────────────────────

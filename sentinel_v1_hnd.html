@@ -22189,7 +22189,7 @@ const PLAYBOOK_QUERIES = [
   {
     id: 'prov-nuevo',
     nombre: 'Proveedor nuevo + contrato grande',
-    desc: 'Primer contrato en BD hace <90 días y monto acumulado > L 5M',
+    desc: 'Primer contrato en BD hace <90 días y monto acumulado > L 1M',
     severidad: 'alta',
     run: function(all) {
       // S152: usar buildNewVendorIndex si ya está disponible, si no recalcular
@@ -25368,7 +25368,7 @@ async function loadSysHealth() {
 // ─── ALERTA PROVEEDOR NUEVO <90 DÍAS (S152) ──────────────────────────────────
 // Detecta proveedores cuyo primer contrato en la BD fue hace <90 días y
 // acumulan monto total > L 5M. Señal clásica de empresa de maletín.
-const _NV_MIN_MONTO  = 5_000_000;   // L 5M mínimo
+const _NV_MIN_MONTO  = 1_000_000;   // L 1M mínimo
 const _NV_DAYS       = 90;          // ventana en días
 const _NV_MAX_SHOW   = 5;           // top en portal
 

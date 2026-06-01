@@ -25256,6 +25256,92 @@ function exportReporteSESEGUPDF() {
   pw.addEventListener('load', () => pw.focus());
 }
 
+// ─── HISTORY API — Browser Back Button Support (S151) ────────────────────────
+// Pushes a state whenever a panel opens so the browser back button closes the
+// current panel instead of navigating away to the landing page.
+(function () {
+  let _navDepth = 0;
+  let _poppingState = false;
+
+  function _pushNav() {
+    if (_poppingState) return;
+    _navDepth++;
+    history.pushState({ sentinel: true, depth: _navDepth }, '');
+  }
+
+  function _closeTopPanel() {
+    _poppingState = true;
+    try {
+      // 1. Modo presentación
+      if (document.body.classList.contains('modo-demo')) {
+        document.body.classList.remove('modo-demo');
+        typeof hideAllPanels === 'function' && hideAllPanels();
+        return;
+      }
+      // 2. Any open fuente-panel (side panels)
+      const openPanel = document.querySelector('.fuente-panel.open');
+      if (openPanel) { openPanel.classList.remove('open'); return; }
+      // 3. Portal overlay
+      const portal = document.getElementById('portalOverlay');
+      if (portal && portal.classList.contains('visible')) {
+        typeof hidePortal === 'function' && hidePortal(); return;
+      }
+      // 4. Vista Ejecutiva
+      const ve = document.getElementById('vistaEjecutiva');
+      if (ve && ve.style.display && ve.style.display !== 'none') {
+        typeof hideAllPanels === 'function' && hideAllPanels(); return;
+      }
+      // 5. Dashboard Ejecutivo modal
+      const modal = document.getElementById('dashboardEjecutivoModal');
+      if (modal && modal.style.display === 'block') { modal.style.display = 'none'; return; }
+    } finally {
+      _poppingState = false;
+    }
+  }
+
+  window.addEventListener('popstate', function (e) {
+    if (e.state && e.state.sentinel) {
+      _closeTopPanel();
+      if (_navDepth > 0) _navDepth--;
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', function () {
+    // Base state — prevents navigating away on first back press
+    history.replaceState({ sentinel: true, depth: 0 }, '');
+
+    // Watch vistaEjecutiva (style.display changes)
+    const ve = document.getElementById('vistaEjecutiva');
+    if (ve) new MutationObserver(function () {
+      if (!_poppingState && ve.style.display && ve.style.display !== 'none') _pushNav();
+    }).observe(ve, { attributes: true, attributeFilter: ['style'] });
+
+    // Watch portalOverlay (class changes)
+    const portal = document.getElementById('portalOverlay');
+    if (portal) new MutationObserver(function () {
+      if (!_poppingState && portal.classList.contains('visible')) _pushNav();
+    }).observe(portal, { attributes: true, attributeFilter: ['class'] });
+
+    // Watch body for modo-demo class
+    new MutationObserver(function () {
+      if (!_poppingState && document.body.classList.contains('modo-demo')) _pushNav();
+    }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    // Watch all .fuente-panel elements for .open class
+    document.querySelectorAll('.fuente-panel').forEach(function (panel) {
+      new MutationObserver(function () {
+        if (!_poppingState && panel.classList.contains('open')) _pushNav();
+      }).observe(panel, { attributes: true, attributeFilter: ['class'] });
+    });
+
+    // Watch dashboardEjecutivoModal
+    const modal = document.getElementById('dashboardEjecutivoModal');
+    if (modal) new MutationObserver(function () {
+      if (!_poppingState && modal.style.display === 'block') _pushNav();
+    }).observe(modal, { attributes: true, attributeFilter: ['style'] });
+  });
+})();
+
 </script>
 
 </body>

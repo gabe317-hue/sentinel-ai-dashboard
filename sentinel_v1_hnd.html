@@ -6407,6 +6407,13 @@ async function _loadRemainingAlertsBackground() {
 }
 
 async function loadAlerts() {
+  // S152 — Restaurar caché inmediatamente si existe y es reciente
+  const _cached = _getCachedAlerts();
+  if (_cached) {
+    allAlerts = _cached; window.allAlerts = _cached;
+    render();
+    _showCacheBanner();
+  }
   // S126 — Full load, all records, with per-page timeout + retry.
   // Root cause of freeze: Promise.all with 8 concurrent requests → one slow/hung request blocked everything.
   // Fix: Promise.allSettled (never hangs) + 12s timeout per page + automatic retry of failed pages.
@@ -6505,6 +6512,8 @@ async function loadAlerts() {
     setStatus('connected');
     hideError();
     render();
+    _saveCache();      // S152 — guardar caché con datos frescos
+    _hideCacheBanner(); // S152 — ocultar banner de caché
     poUpdateIndicators();
     if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
 
@@ -25345,6 +25354,50 @@ async function loadSysHealth() {
     document.getElementById('sh-total').textContent = 'Error';
     console.warn('loadSysHealth:', e);
   }
+}
+
+// ─── MODO OFFLINE / CACHÉ (S152) ─────────────────────────────────────────────
+// Guarda top-300 alertas + stats en localStorage después de cada load exitoso.
+// Si Supabase tarda o falla, muestra los datos cacheados inmediatamente con un
+// badge "📦 Caché · actualizando..." que desaparece cuando llegan datos frescos.
+const _LS_ALERTS = 'sentinel_cache_alerts';
+const _LS_TS     = 'sentinel_cache_ts';
+const _CACHE_TTL = 8 * 3600 * 1000; // 8 horas
+
+function _saveCache() {
+  try {
+    if (!window.allAlerts || !window.allAlerts.length) return;
+    // Ordenar por severidad + monto y guardar top 300
+    const sevRank = s => ({ critica:0, crítica:0, alta:1, media:2, baja:3 }[(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')] ?? 4);
+    const top = [...window.allAlerts]
+      .sort((a,b) => sevRank(a.severity) - sevRank(b.severity) || Number(b.monto_contrato||0) - Number(a.monto_contrato||0))
+      .slice(0, 300);
+    localStorage.setItem(_LS_ALERTS, JSON.stringify(top));
+    localStorage.setItem(_LS_TS, Date.now().toString());
+  } catch(e) { /* localStorage lleno o no disponible */ }
+}
+
+function _getCachedAlerts() {
+  try {
+    const ts = parseInt(localStorage.getItem(_LS_TS) || '0', 10);
+    if (!ts || Date.now() - ts > _CACHE_TTL) return null;
+    const raw = localStorage.getItem(_LS_ALERTS);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function _showCacheBanner() {
+  if (document.getElementById('cache-banner')) return;
+  const b = document.createElement('div');
+  b.id = 'cache-banner';
+  b.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9000;background:rgba(10,22,40,0.95);border:1px solid rgba(255,180,0,0.4);border-radius:10px;padding:8px 18px;font-family:"JetBrains Mono",monospace;font-size:11px;color:#fbbf24;letter-spacing:.04em;display:flex;align-items:center;gap:8px;backdrop-filter:blur(8px);';
+  b.innerHTML = '<span>📦</span><span>Datos en caché · actualizando desde Supabase…</span>';
+  document.body.appendChild(b);
+}
+
+function _hideCacheBanner() {
+  const b = document.getElementById('cache-banner');
+  if (b) { b.style.opacity = '0'; b.style.transition = 'opacity .4s'; setTimeout(() => b.remove(), 400); }
 }
 
 // ─── URL COMPARTIBLE POR PANEL (S152) ────────────────────────────────────────

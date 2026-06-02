@@ -2761,6 +2761,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-5</span>
     </div>
 
+    <!-- Card 20 — BCAI: Adherencia al Techo Presupuestal (NS-4) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showBcaiPanel)">
+      <div class="pe-card-num">20</div>
+      <div class="pe-card-icon">📐</div>
+      <div class="pe-card-title">Adherencia al Techo</div>
+      <div class="pe-card-desc">Proveedores que ganan licitaciones al 88–99% del precio promedio institucional — patrón estadístico de conocer el techo antes de ofertar</div>
+      <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-4</span>
+    </div>
+
   </div>
 </div>
 
@@ -3099,6 +3108,56 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </thead>
         <tbody id="pts-tbody">
           <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ NS-4: BCAI — ADHERENCIA AL TECHO PRESUPUESTAL PANEL ══ -->
+  <div class="fuente-panel" id="bcaiPanel">
+    <button class="fuente-back" onclick="hideBcaiPanel()">← Panel Ejecutivo</button>
+    <div class="fuente-header">
+      <div class="fuente-title">📐 <span>Adherencia al Techo Presupuestal</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">
+        Proveedores que ganan licitaciones al 88–99% del precio referencial estimado — patrón estadístico de conocer el techo antes de ofertar (BCAI: Budget Ceiling Adherence Index)
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Casos detectados</div>
+        <div id="bcai-stat-total" style="font-size:22px;font-weight:700;color:#818cf8;">—</div>
+      </div>
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">BCAI promedio top</div>
+        <div id="bcai-stat-avg" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto expuesto</div>
+        <div id="bcai-stat-monto" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#818cf8;">
+      📐 <strong>Señal NS-4 (BCAI):</strong> En licitaciones competitivas, un proveedor legítimo llega al 65–85% del precio referencial. Llegar consistentemente al 88–99% indica que conoce el techo exacto — información privilegiada. Proxy estadístico: precio referencial = promedio institucional por tipo de contrato y año.
+    </div>
+    <div style="margin-bottom:10px;">
+      <input type="text" id="bcai-search" placeholder="Filtrar por proveedor o institución..." oninput="bcaiFiltrar()"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;">
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--text-dim);font-weight:600;">PROVEEDOR</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--text-dim);font-weight:600;">INSTITUCIÓN</th>
+            <th style="padding:8px 10px;text-align:center;font-size:10px;color:var(--text-dim);font-weight:600;">LICITACIONES</th>
+            <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--text-dim);font-weight:600;">BCAI PROM.</th>
+            <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--text-dim);font-weight:600;">RANGO</th>
+            <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--text-dim);font-weight:600;">MONTO</th>
+            <th style="padding:8px 10px;text-align:center;font-size:10px;color:var(--text-dim);font-weight:600;">SCORE</th>
+          </tr>
+        </thead>
+        <tbody id="bcai-tbody">
+          <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
         </tbody>
       </table>
     </div>
@@ -3455,42 +3514,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
         <div class="po-submenu">
 
-        <!-- ── Candidatos Sentinel (S69) ── -->
-        <div class="exec-section-hd" style="cursor:pointer;" onclick="poGo(showCandidatosPanel)">
-          🎯 &nbsp;Candidatos a investigar
-          <span class="exec-section-badge" id="po-candidatos-badge" style="background:rgba(255,61,87,0.15);color:var(--red);">cargando…</span>
-          <span style="margin-left:auto;font-size:11px;color:var(--electric);font-weight:600;">Ver todos →</span>
-        </div>
-        <div id="po-candidatos-preview" style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
-          <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando candidatos…</div>
-        </div>
-
-        <!-- ── Proveedores Nuevos <90 días (S152) ── -->
-        <div class="exec-section-hd" style="cursor:default;">
-          🆕 &nbsp;Proveedores Nuevos &lt;90 días
-          <span class="exec-section-badge" id="new-vendors-badge" style="background:rgba(0,200,100,0.12);color:#4ade80;">cargando…</span>
-        </div>
-        <div id="new-vendors-list">
-          <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
-        </div>
-
-        <!-- ── S89-B: Detecciones Automáticas ── -->
-        <div class="exec-section-hd" style="cursor:default;">
-          🤖 &nbsp;Detecciones Automáticas
-          <span class="exec-section-badge" id="auto-inv-badge" style="background:rgba(138,43,226,0.18);color:#a78bfa;">cargando…</span>
-        </div>
-        <div id="auto-inv-list">
-          <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
-        </div>
-
-        <div class="exec-section-hd">
-          🗂 &nbsp;Investigaciones activas
-          <span class="exec-section-badge" id="exec-inv-badge" style="background:var(--red-dim);color:var(--red);">cargando…</span>
-        </div>
-        <div id="exec-inv-list">
-          <div style="color:var(--text-dim);font-size:10px;padding:10px;text-align:center;">Cargando investigaciones…</div>
-        </div>
-
         <div class="exec-section-hd" style="margin-top:4px;">
           🔍 &nbsp;Consultas rápidas
           <span class="exec-section-badge" style="background:var(--electric-dim);color:var(--electric);">→ PDF directo</span>
@@ -3521,17 +3544,56 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
 
+      <!-- CANDIDATOS (separado de Consultas S157) -->
+      <div class="po-card po-red" id="poc-candidatos" onclick="poToggle('candidatos')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>🎯</span></div>
+          <div><div class="po-card-title">Candidatos</div><div class="po-card-desc">Detecciones · Proveedores nuevos · Investigaciones</div></div>
+          <div class="po-chevron">▼</div>
+        </div>
+        <div class="po-submenu">
+          <!-- Candidatos a investigar -->
+          <div class="exec-section-hd" style="cursor:pointer;" onclick="poGo(showCandidatosPanel)">
+            🎯 &nbsp;Candidatos a investigar
+            <span class="exec-section-badge" id="po-candidatos-badge" style="background:rgba(255,61,87,0.15);color:var(--red);">cargando…</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--electric);font-weight:600;">Ver todos →</span>
+          </div>
+          <div id="po-candidatos-preview" style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando candidatos…</div>
+          </div>
+          <!-- Proveedores Nuevos <90 días -->
+          <div class="exec-section-hd" style="cursor:default;">
+            🆕 &nbsp;Proveedores Nuevos &lt;90 días
+            <span class="exec-section-badge" id="new-vendors-badge" style="background:rgba(0,200,100,0.12);color:#4ade80;">cargando…</span>
+          </div>
+          <div id="new-vendors-list">
+            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
+          </div>
+          <!-- Detecciones Automáticas -->
+          <div class="exec-section-hd" style="cursor:default;">
+            🤖 &nbsp;Detecciones Automáticas
+            <span class="exec-section-badge" id="auto-inv-badge" style="background:rgba(138,43,226,0.18);color:#a78bfa;">cargando…</span>
+          </div>
+          <div id="auto-inv-list">
+            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
+          </div>
+          <!-- Investigaciones activas -->
+          <div class="exec-section-hd">
+            🗂 &nbsp;Investigaciones activas
+            <span class="exec-section-badge" id="exec-inv-badge" style="background:var(--red-dim);color:var(--red);">cargando…</span>
+          </div>
+          <div id="exec-inv-list">
+            <div style="color:var(--text-dim);font-size:10px;padding:10px;text-align:center;">Cargando investigaciones…</div>
+          </div>
+        </div>
+      </div>
+
       <!-- ANÁLISIS -->
       <div class="po-card po-amber" id="poc-analisis" onclick="poToggle('analisis')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>📊</span></div>
           <div><div class="po-card-title">Análisis</div><div class="po-card-desc">5 módulos · Riesgo cuantitativo</div></div>
           <div class="po-chevron">▼</div>
-        </div>
-        <div style="padding:8px 12px 4px;display:flex;flex-direction:column;gap:2px;">
-          <button class="po-item" onclick="event.stopPropagation();poGo(showAnalyticsPanel)"><span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span></button>
-          <button class="po-item" onclick="event.stopPropagation();poGo(showGlobalSobrecostos)"><span class="po-item-icon">💰</span><span class="po-item-label">Sobrepresupuestos</span><span class="po-arrow">›</span></button>
-          <button class="po-item" onclick="event.stopPropagation();poGo(showPhase4Detection)"><span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span></button>
         </div>
         <div class="po-submenu">
           <button class="po-item" onclick="poGo(showAnalyticsPanel)">
@@ -3558,13 +3620,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <div class="po-card-icon"><span>🔎</span></div>
           <div><div class="po-card-title">Investigación</div><div class="po-card-desc">Casos · Cronología · Escáner</div></div>
           <div class="po-chevron">▼</div>
-        </div>
-        <div style="padding:8px 12px 4px;display:flex;flex-direction:column;gap:2px;">
-          <button class="po-item" onclick="event.stopPropagation();abrirConstructorCaso()"><span class="po-item-icon">⚖️</span><span class="po-item-label">Constructor de Caso</span><span class="po-item-tag" style="background:rgba(0,200,255,0.1);color:var(--cyan);border:1px solid rgba(0,200,255,0.25);">NUEVO</span><span class="po-arrow">›</span></button>
-          <button class="po-item" onclick="event.stopPropagation();poGo(showSeguimientoPanel)"><span class="po-item-icon">📋</span><span class="po-item-label">Seguimiento de Casos</span><span class="po-item-tag" style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.25);">NUEVO</span><span class="po-arrow">›</span></button>
-          <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()"><span class="po-item-icon">📄</span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span></button>
-          <button class="po-item" onclick="event.stopPropagation();poGo(()=>showTimelinePanel('portal'))"><span class="po-item-icon">🕐</span><span class="po-item-label">Cronología</span><span class="po-arrow">›</span></button>
-          <button class="po-item" onclick="event.stopPropagation();poGo(showScannerPanel)"><span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-arrow">›</span></button>
         </div>
         <div class="po-submenu">
           <button class="po-item" onclick="abrirConstructorCaso()" style="border-bottom:1px solid rgba(0,200,255,0.15);margin-bottom:4px;">
@@ -3838,8 +3893,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div id="vistaEjecutiva" style="display:none;">
 
     <!-- Back button -->
-    <div style="margin-bottom:16px;">
+    <div style="margin-bottom:16px;display:flex;gap:12px;align-items:center;">
       <button onclick="document.body.classList.remove('modo-demo');hideAllPanels()" style="background:none;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);padding:0;display:inline-flex;align-items:center;gap:6px;transition:color .15s;" onmouseover="this.style.color='var(--electric)'" onmouseout="this.style.color='var(--text-dim)'">← Dashboard</button>
+      <button id="ve-back-pe" onclick="volverAPanelEjecutivo()" style="display:none;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);padding:4px 12px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.2)'" onmouseout="this.style.background='rgba(0,200,255,0.1)'">← Panel Ejecutivo</button>
     </div>
 
     <!-- Ticker bar — live data feed (inside Vista Ejecutiva) -->
@@ -6158,7 +6214,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ═══════════════════ REPORTES PANEL ═══════════════════ -->
   <div class="fuente-panel" id="reportesPanel">
-    <button class="fuente-back" onclick="hideReportesPanel()">← Contratos</button>
+    <button class="fuente-back" onclick="hideReportesPanel();showPortal()">← Portal Principal</button>
 
     <div class="fuente-header">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
@@ -6166,7 +6222,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span>Reportes Investigativos</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Genera reportes PDF desde los datos en vivo del dashboard · 136,578 contratos monitoreados
+        Genera reportes PDF desde los datos en vivo del dashboard · <span id="reportes-bd-count">cargando…</span> contratos monitoreados
       </div>
     </div>
 
@@ -6212,7 +6268,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);"></div>
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;">Contratos Monitoreados</div>
-        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--green);" id="dbe-contratos">136,578</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--green);" id="dbe-contratos">—</div>
         <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">SEFIN + ONCAE</div>
       </div>
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
@@ -9042,7 +9098,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel','bcaiPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -9294,6 +9350,69 @@ function ptsRender() {
       <td style="padding:8px 10px;text-align:right;font-weight:600;color:${pctColor(r.pct_contratos_ventana)};font-size:12px;">${r.pct_contratos_ventana}%</td>
       <td style="padding:8px 10px;text-align:right;font-weight:700;color:${pctColor(r.pct_monto_ventana)};font-size:12px;">${r.pct_monto_ventana}%</td>
       <td style="padding:8px 10px;text-align:right;color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;">${fmtLps(Number(r.monto_ventana))}</td>
+    </tr>`).join('');
+}
+
+// ══ NS-4: BCAI — ADHERENCIA AL TECHO PRESUPUESTAL ════════════════════════════
+let _bcaiData = [], _bcaiFiltered = [];
+
+async function showBcaiPanel() {
+  document.getElementById('bcaiPanel').classList.add('open');
+  if (_bcaiData.length === 0) await loadBcai();
+}
+function hideBcaiPanel() { document.getElementById('bcaiPanel')?.classList.remove('open'); }
+
+async function loadBcai() {
+  const tbody = document.getElementById('bcai-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando señales BCAI…</td></tr>';
+  try {
+    const { data, error } = await db.rpc('get_bcai_signals', {
+      min_licitaciones: 2, bcai_min: 0.88, bcai_max: 0.995, min_monto: 1000000
+    });
+    if (error) throw error;
+    _bcaiData = data || [];
+    _bcaiFiltered = [..._bcaiData];
+
+    // Stats
+    const topBcai = _bcaiData.length ? _bcaiData.slice(0,10).reduce((s,r) => s + Number(r.bcai_promedio||0), 0) / Math.min(10, _bcaiData.length) : 0;
+    const montoTotal = _bcaiData.reduce((s,r) => s + Number(r.monto_total||0), 0);
+    document.getElementById('bcai-stat-total').textContent = _bcaiData.length;
+    document.getElementById('bcai-stat-avg').textContent   = (topBcai * 100).toFixed(1) + '%';
+    document.getElementById('bcai-stat-monto').textContent = fmtLpsCompact(montoTotal);
+    bcaiRender();
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function bcaiFiltrar() {
+  const q = (document.getElementById('bcai-search')?.value || '').toLowerCase();
+  _bcaiFiltered = q
+    ? _bcaiData.filter(r => (r.proveedor_nombre||'').toLowerCase().includes(q) || (r.entity_name||'').toLowerCase().includes(q))
+    : [..._bcaiData];
+  bcaiRender();
+}
+
+function bcaiRender() {
+  const tbody = document.getElementById('bcai-tbody');
+  if (!_bcaiFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados.</td></tr>';
+    return;
+  }
+  const fmtPct  = v => (Number(v) * 100).toFixed(1) + '%';
+  const fmtM    = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
+  const scoreColor = s => Number(s) >= 80 ? '#f87171' : Number(s) >= 50 ? '#fb923c' : '#fbbf24';
+  tbody.innerHTML = _bcaiFiltered.map(r => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:8px 10px;color:var(--text);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.proveedor_nombre}">${r.proveedor_nombre}</td>
+      <td style="padding:8px 10px;color:var(--text-dim);font-size:10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entity_name}">${r.entity_name}</td>
+      <td style="padding:8px 10px;text-align:center;font-weight:700;color:var(--electric);font-size:12px;">${r.n_licitaciones}</td>
+      <td style="padding:8px 10px;text-align:right;font-weight:700;color:#818cf8;font-size:12px;">${fmtPct(r.bcai_promedio)}</td>
+      <td style="padding:8px 10px;text-align:right;font-size:10px;color:var(--text-dim);">${fmtPct(r.bcai_min_val)}–${fmtPct(r.bcai_max_val)}</td>
+      <td style="padding:8px 10px;text-align:right;color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;">${fmtM(Number(r.monto_total))}</td>
+      <td style="padding:8px 10px;text-align:center;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(129,140,248,0.12);color:${scoreColor(r.bcai_score)};">${r.bcai_score}</span>
+      </td>
     </tr>`).join('');
 }
 
@@ -15641,11 +15760,15 @@ function selectPanel(tipo) {
 }
 
 function irDesdeEjecutivo(fn) {
+  window._fromPanelEjecutivo = true;
   document.getElementById('panelEjecutivo').classList.add('hidden');
   setTimeout(() => {
     try {
       fn();
       document.getElementById('btnVolverEjecutivoFloat').style.display = 'block';
+      // Mostrar botón inline en Vista Ejecutiva si aplica
+      const veBk = document.getElementById('ve-back-pe');
+      if (veBk) veBk.style.display = 'inline-flex';
       // Set the opened panel's back button to return to Panel Ejecutivo
       const bb = document.querySelector('.fuente-panel.open .fuente-back');
       if (bb) { bb.textContent = '← Panel Ejecutivo'; bb.onclick = volverAPanelEjecutivo; }
@@ -16398,11 +16521,25 @@ function abrirTop5() {
 }
 
 function volverAPanelEjecutivo() {
+  // Ocultar todos los paneles posibles que se abren desde Panel Ejecutivo
   document.getElementById('top5Panel').classList.add('hidden');
-  document.getElementById('investigacionProyectoPanel').classList.add('hidden');
+  document.getElementById('investigacionProyectoPanel') && document.getElementById('investigacionProyectoPanel').classList.add('hidden');
   document.getElementById('constructorCasoPanel').classList.add('hidden');
+  // Cerrar fuente-panels y vista ejecutiva
+  document.querySelectorAll('.fuente-panel.open').forEach(p => p.classList.remove('open'));
+  const ve = document.getElementById('vistaEjecutiva');
+  if (ve) { ve.style.display = 'none'; }
+  // Ocultar elementos de vista contratos (evitar pantalla en blanco)
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = 'none');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
+  document.getElementById('risk-band') && (document.getElementById('risk-band').style.display = 'none');
+  // Mostrar Panel Ejecutivo
   document.getElementById('panelEjecutivo').classList.remove('hidden');
   document.getElementById('btnVolverEjecutivoFloat').style.display = 'none';
+  const veBk = document.getElementById('ve-back-pe');
+  if (veBk) veBk.style.display = 'none';
+  window._fromPanelEjecutivo = false;
 }
 
 // ═══ CONSTRUCTOR DE CASO — S97 ═══════════════════════════════════════
@@ -17494,7 +17631,7 @@ async function renderTop5() {
   // ── Queries paralelas: investigaciones + 5 señales NS
   const normV = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
 
-  const [invResult, ns1Res, ns5Res, ns6Res, ns7Res, ns3Res] = await Promise.allSettled([
+  const [invResult, ns1Res, ns5Res, ns6Res, ns7Res, ns3Res, ns2Res, ns4Res] = await Promise.allSettled([
     Promise.race([
       db.from('investigaciones').select('proveedor,estado').not('estado','in','("Borrador-Auto","Descartado","Nuevo")'),
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000))
@@ -17504,6 +17641,8 @@ async function renderTop5() {
     db.rpc('get_surge_reciente',   { meses: 12, min_pct_reciente: 0.55, min_monto_reciente: 2000000, min_contratos_total: 2 }),
     db.rpc('get_twin_contracts',   { max_diff_pct: 0.05, max_dias: 90, min_monto: 500000 }),
     db.rpc('get_debut_anomaly',    { min_debut_monto: 2000000, min_contratos: 2 }),
+    db.rpc('get_pressure_window_contracts', { top_n: 100 }),
+    db.rpc('get_bcai_signals', { min_licitaciones: 2, bcai_min: 0.88, bcai_max: 0.995, min_monto: 1000000 }),
   ]);
 
   // ── Investigaciones confirmadas
@@ -17516,7 +17655,7 @@ async function renderTop5() {
   const vendorSignals = {}; // key: normV(proveedor_nombre)
   const addSig = (nombre, key, rawScore, label) => {
     const k = normV(nombre); if (!k) return;
-    if (!vendorSignals[k]) vendorSignals[k] = { ns1:0, ns3:0, ns5:0, ns6:0, ns7:0, labels:[] };
+    if (!vendorSignals[k]) vendorSignals[k] = { ns1:0, ns2:0, ns3:0, ns4:0, ns5:0, ns6:0, ns7:0, labels:[] };
     const s = Math.max(0, Math.min(100, Math.round(rawScore)));
     vendorSignals[k][key] = Math.max(vendorSignals[k][key], s);
     if (s > 0 && !vendorSignals[k].labels.includes(label)) vendorSignals[k].labels.push(label);
@@ -17532,9 +17671,42 @@ async function renderTop5() {
     addSig(r.proveedor_nombre, 'ns7', Math.min(100, Number(r.twin_score||0)*4), 'NS-7 GEMELOS'));
   if (ns3Res.status==='fulfilled') (ns3Res.value?.data||[]).forEach(r =>
     addSig(r.proveedor_nombre, 'ns3', Math.min(100, Number(r.anomaly_score||0)*2.5), 'NS-3 DEBUT'));
+  // NS-4: BCAI — vendor-level signal (entity-specific)
+  if (ns4Res.status==='fulfilled') (ns4Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns4', Math.min(100, Number(r.bcai_score||0)), 'NS-4 BCAI'));
+
+  // ── NS-2: índice institucional → score por institución (pct_monto_ventana)
+  // Un proveedor hereda esta señal si alguna de sus instituciones contratantes tiene
+  // alta concentración de contratos en ventana de presión fiscal (fin de año, nueva admin, inicio año)
+  const normInst = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+  const instSignals = {}; // normInst(institucion) → pct_monto_ventana
+  if (ns2Res.status === 'fulfilled') {
+    (ns2Res.value?.data || []).forEach(r => {
+      const pct = Number(r.pct_monto_ventana || 0);
+      if (pct >= 40) {  // umbral mínimo: ≥40% del monto en ventana fiscal
+        const k = normInst(r.institucion);
+        instSignals[k] = Math.max(instSignals[k] || 0, pct);
+      }
+    });
+  }
+  // Función: máximo pct_monto_ventana entre las instituciones de un proveedor
+  function getInst2Score(entidades) {
+    let maxPct = 0;
+    for (const ent of entidades) {
+      const k = normInst(ent);
+      if (instSignals[k] && instSignals[k] > maxPct) { maxPct = instSignals[k]; continue; }
+      // Fuzzy match: primeros 10 chars
+      for (const [ik, ipct] of Object.entries(instSignals)) {
+        if (k.length > 8 && ik.length > 8 && (k.includes(ik.slice(0,10)) || ik.includes(k.slice(0,10)))) {
+          if (ipct > maxPct) maxPct = ipct;
+        }
+      }
+    }
+    return maxPct;
+  }
 
   Object.values(vendorSignals).forEach(v => {
-    v.count = ['ns1','ns3','ns5','ns6','ns7'].filter(k => v[k] > 0).length;
+    v.count = ['ns1','ns2','ns3','ns4','ns5','ns6','ns7'].filter(k => v[k] > 0).length;
   });
 
   // Find signal data for a proveedor (exact then partial match)
@@ -17543,7 +17715,7 @@ async function renderTop5() {
     if (vendorSignals[k]) return vendorSignals[k];
     const hit = Object.keys(vendorSignals).find(vk =>
       vk.length > 6 && (k.includes(vk.slice(0,10)) || vk.includes(k.slice(0,10))));
-    return hit ? vendorSignals[hit] : { ns1:0, ns3:0, ns5:0, ns6:0, ns7:0, count:0, labels:[] };
+    return hit ? vendorSignals[hit] : { ns1:0, ns2:0, ns3:0, ns4:0, ns5:0, ns6:0, ns7:0, count:0, labels:[] };
   }
 
   const esc     = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -17633,6 +17805,14 @@ async function renderTop5() {
   //    Pesos: MONTO 20% · PATRONES 20% · ALCANCE 15% · RECENCIA 10% · EXT 10% · NS_SIGNALS 25%
   const candidatos = todos.map((c, idx) => {
     const sig      = getSig(c.proveedor);
+    // NS-2: heredado de institución → proveedor
+    const ns2Score = getInst2Score(c.entidades);
+    if (ns2Score >= 40) {
+      sig.ns2 = Math.round(ns2Score);
+      if (!sig.labels.includes('NS-2 VENTANA')) sig.labels.push('NS-2 VENTANA');
+    }
+    // Recompute count incluyendo ns2
+    sig.count = ['ns1','ns2','ns3','ns4','ns5','ns6','ns7'].filter(k => sig[k] > 0).length;
     const dMonto   = zNorm(logMontos[idx], stM);
     const dPatron  = zNorm(c.patrones.size, stP);
     const dAlcance = zNorm(c.entidades.size, stE);
@@ -17640,7 +17820,7 @@ async function renderTop5() {
     const dExterno = scoreExterno(c);
 
     // NS Signals: promedio de señales activas + bonus de convergencia (+15% por señal adicional)
-    const nsVals    = [sig.ns1, sig.ns3, sig.ns5, sig.ns6, sig.ns7];
+    const nsVals    = [sig.ns1, sig.ns2, sig.ns3, sig.ns4, sig.ns5, sig.ns6, sig.ns7];
     const nsActivos = nsVals.filter(v => v > 0);
     // Convergencia agresiva: +25% por señal adicional. Sin señales: penalización -12 pts
     const dSignals = nsActivos.length > 0
@@ -17664,7 +17844,8 @@ async function renderTop5() {
       { label: 'ALCANCE',    val: dAlcance, color: '#60a5fa', texto: `${c.entidades.size} entidad${c.entidades.size!==1?'es':''}` },
       { label: 'RECENCIA',   val: dRecente, color: '#34d399', texto: `${c.nReciente} contratos ult. 18m` },
       { label: 'EXT',        val: dExterno, color: '#fbbf24', texto: dExterno >= 50 ? 'Lista Engel/OFAC' : dExterno >= 30 ? 'Confirmado ONCAE' : dExterno > 0 ? 'SEN-INV activo' : '—' },
-      { label: 'NS SIGNALS', val: dSignals, color: '#e879f9', texto: nsActivos.length > 0 ? `${nsActivos.length} señal${nsActivos.length!==1?'es':''}` : 'Sin señales NS' },
+      { label: 'NS SIGNALS', val: dSignals, color: '#e879f9', texto: nsActivos.length > 0 ? `${nsActivos.length} señal${nsActivos.length!==1?'es':''}` : 'Sin señales NS',
+        nsDetail: sig.labels.length > 0 ? sig.labels.join(' · ') : '—' },
     ];
     const dominante = dims.filter(d => d.val > 0).reduce((a, b) => b.val > a.val ? b : a);
     const sector = detectarSector(c.proveedor, c.entidades);
@@ -17799,6 +17980,12 @@ function updateConsultasMetrics(all) {
   if (elC) elC.textContent = criticos.length.toLocaleString('es-HN');
   if (elM) elM.textContent = fmtM(monto);
   if (elS) elS.textContent = sobreInst > 0 ? sobreInst + ' inst.' : '—';
+  // Actualizar contadores de BD en reportes/dashboard
+  const totalStr = (window._bdTotalCount || all.length).toLocaleString('es-HN');
+  const dbeCont = document.getElementById('dbe-contratos');
+  if (dbeCont) dbeCont.textContent = totalStr;
+  const rptCount = document.getElementById('reportes-bd-count');
+  if (rptCount) rptCount.textContent = totalStr;
 }
 
 function poUpdateIndicators() {
@@ -18452,8 +18639,8 @@ function renderAnalytics() {
 
   // ── Headline cards ──
   document.getElementById('analyticsHeadline').innerHTML = [
-    { label: 'Contratos Analizados', value: '147,122', sub: 'Año 2025 · SEFIN OCDS' },
-    { label: 'Total Contratos',        value: totalAlerts.toLocaleString(), sub: (totalAlerts/147122*100).toFixed(1) + '% de contratos flaggeados' },
+    { label: 'Contratos en BD', value: (window._bdTotalCount || totalAlerts).toLocaleString('es-HN'), sub: 'SEFIN + ONCAE 2019–2026' },
+    { label: 'Contratos con Señales', value: totalAlerts.toLocaleString(), sub: ((totalAlerts / (window._bdTotalCount || totalAlerts)) * 100).toFixed(1) + '% de la BD total' },
     { label: 'Exposición Total',     value: fmtLarge(totalMonto), sub: fmtUSD(totalMonto) + ' USD estimado' },
   ].map(c => `
     <div style="background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:20px;">
@@ -23061,7 +23248,7 @@ const PLAYBOOK_QUERIES = [
   {
     id: 'top10-riesgo',
     nombre: 'Top 10 proveedores de riesgo',
-    desc: 'Score compuesto: contratos CRÍTICA + monto total',
+    desc: 'Score de riesgo = (contratos CRÍTICA × 3) + total contratos. Mayor score = mayor exposición.',
     severidad: 'alta',
     run: function(all) {
       const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
@@ -23151,6 +23338,9 @@ const PLAYBOOK_QUERIES = [
         const budget = Number(a.budget_amount||0);
         return mc > 0 && budget > mc * 1.15;
       });
+      // Detectar años con datos PIEP disponibles
+      const añosPIEP = [...new Set(sobre.map(a => (a.fecha_contrato||'').slice(0,4)).filter(y => y >= '2019'))].sort();
+      const rangoAños = añosPIEP.length > 0 ? (añosPIEP[0] === añosPIEP[añosPIEP.length-1] ? añosPIEP[0] : añosPIEP[0] + '–' + añosPIEP[añosPIEP.length-1]) : 'datos disponibles';
       const instMap = {};
       sobre.forEach(a => {
         const inst = a.entity_name || a.entidad || '—';
@@ -23168,7 +23358,10 @@ const PLAYBOOK_QUERIES = [
           monto: 'L ' + (d.monto/1e6).toFixed(1) + 'M',
           ratio: (d.maxRatio * 100).toFixed(0) + '%'
         }));
-      return { titulo: 'Instituciones Sobrepresupuesto — SEFIN PIEP', filas, cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'] };
+      if (!filas.length) return { titulo: 'Instituciones Sobrepresupuesto — SEFIN PIEP', filas: [], cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'],
+        nota: 'Sin instituciones sobrepresupuesto detectadas con los datos PIEP disponibles. Esta consulta requiere el cruce SEFIN budget_amount × monto_contrato ONCAE. Cobertura limitada a instituciones presentes en ambas fuentes.' };
+      return { titulo: `Instituciones Sobrepresupuesto — SEFIN PIEP ${rangoAños}`, filas, cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'],
+        nota: `Período presupuestario: SEFIN PIEP ${rangoAños}. Ritmo Máx. = presupuesto PIEP asignado / monto contratado ONCAE — valores >100% indican que el presupuesto supera el monto contratado por más del 15%. Solo instituciones con datos disponibles en ambas fuentes (SEFIN PIEP + ONCAE) aparecen. Cobertura parcial.` };
     }
   },
   {
@@ -23527,7 +23720,7 @@ function executePlaybookQuery(id) {
 </div>
 <div class="body">
   <div class="meta">
-    <span class="meta-pill">BD: 136,578 registros</span>
+    <span class="meta-pill">BD: ${(window._bdTotalCount || (window.allAlerts||[]).length).toLocaleString('es-HN')} registros</span>
     <span class="meta-pill">Fuente: SEFIN + ONCAE 2019–2026</span>
     <span class="meta-pill">Generado: ${now}</span>
   </div>
@@ -26196,7 +26389,7 @@ function _renderNewVendorsPortal() {
   const sevColor = s => ({ 'CRÍTICA':'var(--red)', 'ALTA':'var(--amber)', 'MEDIA':'#60a5fa' }[s] || 'var(--text-dim)');
 
   list.innerHTML = data.slice(0, _NV_MAX_SHOW).map(([nombre, v]) => `
-    <div onclick="showVendorPanel('${nombre.replace(/'/g,"\\'")}') " style="padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background='transparent'">
+    <div onclick="poGo(() => showVendorPanel('${nombre.replace(/'/g,"\\'")}'))" style="padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background='transparent'">
       <span style="font-size:9px;font-weight:700;color:${sevColor(v.severity)};min-width:44px;">${v.severity}</span>
       <span style="flex:1;font-size:10px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nombre}</span>
       <span style="font-size:10px;font-weight:700;color:#4ade80;white-space:nowrap;">${fmtL(v.monto)}</span>
@@ -26305,7 +26498,12 @@ function _setUrlPanel(panelKey) {
       }
       // 2. Any open fuente-panel (side panels)
       const openPanel = document.querySelector('.fuente-panel.open');
-      if (openPanel) { openPanel.classList.remove('open'); return; }
+      if (openPanel) {
+        openPanel.classList.remove('open');
+        // Si veníamos del Panel Ejecutivo, regresar a él (no a contratos)
+        if (window._fromPanelEjecutivo) { typeof volverAPanelEjecutivo === 'function' && volverAPanelEjecutivo(); }
+        return;
+      }
       // 3. Portal overlay
       const portal = document.getElementById('portalOverlay');
       if (portal && portal.classList.contains('visible')) {
@@ -26314,9 +26512,16 @@ function _setUrlPanel(panelKey) {
       // 4. Vista Ejecutiva
       const ve = document.getElementById('vistaEjecutiva');
       if (ve && ve.style.display && ve.style.display !== 'none') {
-        typeof hideAllPanels === 'function' && hideAllPanels(); return;
+        if (window._fromPanelEjecutivo) { typeof volverAPanelEjecutivo === 'function' && volverAPanelEjecutivo(); }
+        else { typeof hideAllPanels === 'function' && hideAllPanels(); }
+        return;
       }
-      // 5. Dashboard Ejecutivo modal
+      // 5. Panel Ejecutivo
+      const pe = document.getElementById('panelEjecutivo');
+      if (pe && !pe.classList.contains('hidden')) {
+        typeof volverAlPortal === 'function' && volverAlPortal(); return;
+      }
+      // 6. Dashboard Ejecutivo modal
       const modal = document.getElementById('dashboardEjecutivoModal');
       if (modal && modal.style.display === 'block') { modal.style.display = 'none'; return; }
     } finally {

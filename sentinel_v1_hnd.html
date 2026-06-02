@@ -17564,18 +17564,24 @@ async function renderTop5() {
     return 'COMERCIO';
   }
 
-  // ── Agrupar CRÍTICOS por proveedor (cross-entidad), piso L 100M
+  // ── Agrupar CRÍTICA + ALTA por proveedor (cross-entidad), piso L 100M
+  // CRÍTICA = peso 1.0 · ALTA = peso 0.6
   const map = {};
   allAlerts
-    .filter(a => normSev(a.severity).includes('CRITICA'))
+    .filter(a => normSev(a.severity).includes('CRITICA') || normSev(a.severity).includes('ALTA'))
     .filter(a => Number(a.monto_contrato) > 0 && a.proveedor_nombre)
     .filter(a => !EXCLUIR.some(ex => (a.proveedor_nombre||'').toUpperCase().includes(ex)))
     .forEach(a => {
+      const isCritica = normSev(a.severity).includes('CRITICA');
+      const peso = isCritica ? 1.0 : 0.6;
       const key = (a.proveedor_nombre||'').toUpperCase().trim();
-      if (!map[key]) map[key] = { proveedor: a.proveedor_nombre, entidades: new Set(), monto: 0, n: 0, patrones: new Set(), nReciente: 0, fuentes: new Set() };
+      if (!map[key]) map[key] = { proveedor: a.proveedor_nombre, entidades: new Set(), monto: 0, montoW: 0, n: 0, nCritica: 0, patrones: new Set(), nReciente: 0, fuentes: new Set() };
       const c = map[key];
-      c.monto += Number(a.monto_contrato);
+      const montoNum = Number(a.monto_contrato);
+      c.monto  += montoNum;
+      c.montoW += montoNum * peso;  // monto ponderado para scoring
       c.n++;
+      if (isCritica) c.nCritica++;
       if (a.entity_name) c.entidades.add(a.entity_name);
       (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(p => c.patrones.add(p));
       if (a.source) c.fuentes.add(a.source);
@@ -17583,7 +17589,7 @@ async function renderTop5() {
       if (mes && mes >= hace18m) c.nReciente++;
     });
 
-  // Aplicar piso L 100M
+  // Aplicar piso L 100M (monto total, no ponderado)
   const todos = Object.values(map).filter(c => c.monto >= 100000000);
   if (!todos.length) {
     body.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Sin contratos CRÍTICA ≥ L 100M en base de datos.</div>';
@@ -17604,8 +17610,8 @@ async function renderTop5() {
     return Math.max(0, Math.min(100, Math.round(((z + 2) / 5) * 100)));
   }
 
-  // Pre-calcular stats por dimensión
-  const logMontos  = todos.map(c => Math.log(c.monto + 1));
+  // Pre-calcular stats por dimensión (usar montoW — monto ponderado por severidad)
+  const logMontos  = todos.map(c => Math.log(c.montoW + 1));
   const stM = zStats(logMontos);
   const stP = zStats(todos.map(c => c.patrones.size));
   const stE = zStats(todos.map(c => c.entidades.size));
@@ -17634,20 +17640,23 @@ async function renderTop5() {
     const dExterno = scoreExterno(c);
 
     // NS Signals: promedio de señales activas + bonus de convergencia (+15% por señal adicional)
-    const nsVals   = [sig.ns1, sig.ns3, sig.ns5, sig.ns6, sig.ns7];
+    const nsVals    = [sig.ns1, sig.ns3, sig.ns5, sig.ns6, sig.ns7];
     const nsActivos = nsVals.filter(v => v > 0);
+    // Convergencia agresiva: +25% por señal adicional. Sin señales: penalización -12 pts
     const dSignals = nsActivos.length > 0
-      ? Math.min(100, Math.round((nsActivos.reduce((a,b)=>a+b,0)/nsActivos.length) * (1 + nsActivos.length * 0.15)))
+      ? Math.min(100, Math.round((nsActivos.reduce((a,b)=>a+b,0)/nsActivos.length) * (1 + nsActivos.length * 0.25)))
       : 0;
+    const nspenalty = nsActivos.length === 0 ? 12 : 0;
 
-    const score = Math.round(
+    const score = Math.max(0, Math.round(
       dMonto   * 0.20 +
       dPatron  * 0.20 +
       dAlcance * 0.15 +
       dRecente * 0.10 +
       dExterno * 0.10 +
       dSignals * 0.25
-    );
+      - nspenalty
+    ));
 
     const dims = [
       { label: 'MONTO',      val: dMonto,   color: '#ff3d57', texto: fmtM(c.monto) },

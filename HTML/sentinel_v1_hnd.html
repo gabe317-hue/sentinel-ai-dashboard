@@ -3514,42 +3514,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
         <div class="po-submenu">
 
-        <!-- ── Candidatos Sentinel (S69) ── -->
-        <div class="exec-section-hd" style="cursor:pointer;" onclick="poGo(showCandidatosPanel)">
-          🎯 &nbsp;Candidatos a investigar
-          <span class="exec-section-badge" id="po-candidatos-badge" style="background:rgba(255,61,87,0.15);color:var(--red);">cargando…</span>
-          <span style="margin-left:auto;font-size:11px;color:var(--electric);font-weight:600;">Ver todos →</span>
-        </div>
-        <div id="po-candidatos-preview" style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
-          <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando candidatos…</div>
-        </div>
-
-        <!-- ── Proveedores Nuevos <90 días (S152) ── -->
-        <div class="exec-section-hd" style="cursor:default;">
-          🆕 &nbsp;Proveedores Nuevos &lt;90 días
-          <span class="exec-section-badge" id="new-vendors-badge" style="background:rgba(0,200,100,0.12);color:#4ade80;">cargando…</span>
-        </div>
-        <div id="new-vendors-list">
-          <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
-        </div>
-
-        <!-- ── S89-B: Detecciones Automáticas ── -->
-        <div class="exec-section-hd" style="cursor:default;">
-          🤖 &nbsp;Detecciones Automáticas
-          <span class="exec-section-badge" id="auto-inv-badge" style="background:rgba(138,43,226,0.18);color:#a78bfa;">cargando…</span>
-        </div>
-        <div id="auto-inv-list">
-          <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
-        </div>
-
-        <div class="exec-section-hd">
-          🗂 &nbsp;Investigaciones activas
-          <span class="exec-section-badge" id="exec-inv-badge" style="background:var(--red-dim);color:var(--red);">cargando…</span>
-        </div>
-        <div id="exec-inv-list">
-          <div style="color:var(--text-dim);font-size:10px;padding:10px;text-align:center;">Cargando investigaciones…</div>
-        </div>
-
         <div class="exec-section-hd" style="margin-top:4px;">
           🔍 &nbsp;Consultas rápidas
           <span class="exec-section-badge" style="background:var(--electric-dim);color:var(--electric);">→ PDF directo</span>
@@ -3579,6 +3543,50 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
       </div>
     </div>
+
+      <!-- CANDIDATOS (separado de Consultas S157) -->
+      <div class="po-card po-red" id="poc-candidatos" onclick="poToggle('candidatos')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>🎯</span></div>
+          <div><div class="po-card-title">Candidatos</div><div class="po-card-desc">Detecciones · Proveedores nuevos · Investigaciones</div></div>
+          <div class="po-chevron">▼</div>
+        </div>
+        <div class="po-submenu">
+          <!-- Candidatos a investigar -->
+          <div class="exec-section-hd" style="cursor:pointer;" onclick="poGo(showCandidatosPanel)">
+            🎯 &nbsp;Candidatos a investigar
+            <span class="exec-section-badge" id="po-candidatos-badge" style="background:rgba(255,61,87,0.15);color:var(--red);">cargando…</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--electric);font-weight:600;">Ver todos →</span>
+          </div>
+          <div id="po-candidatos-preview" style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando candidatos…</div>
+          </div>
+          <!-- Proveedores Nuevos <90 días -->
+          <div class="exec-section-hd" style="cursor:default;">
+            🆕 &nbsp;Proveedores Nuevos &lt;90 días
+            <span class="exec-section-badge" id="new-vendors-badge" style="background:rgba(0,200,100,0.12);color:#4ade80;">cargando…</span>
+          </div>
+          <div id="new-vendors-list">
+            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
+          </div>
+          <!-- Detecciones Automáticas -->
+          <div class="exec-section-hd" style="cursor:default;">
+            🤖 &nbsp;Detecciones Automáticas
+            <span class="exec-section-badge" id="auto-inv-badge" style="background:rgba(138,43,226,0.18);color:#a78bfa;">cargando…</span>
+          </div>
+          <div id="auto-inv-list">
+            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
+          </div>
+          <!-- Investigaciones activas -->
+          <div class="exec-section-hd">
+            🗂 &nbsp;Investigaciones activas
+            <span class="exec-section-badge" id="exec-inv-badge" style="background:var(--red-dim);color:var(--red);">cargando…</span>
+          </div>
+          <div id="exec-inv-list">
+            <div style="color:var(--text-dim);font-size:10px;padding:10px;text-align:center;">Cargando investigaciones…</div>
+          </div>
+        </div>
+      </div>
 
       <!-- ANÁLISIS -->
       <div class="po-card po-amber" id="poc-analisis" onclick="poToggle('analisis')">
@@ -6214,7 +6222,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span>Reportes Investigativos</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Genera reportes PDF desde los datos en vivo del dashboard · 136,578 contratos monitoreados
+        Genera reportes PDF desde los datos en vivo del dashboard · <span id="reportes-bd-count">cargando…</span> contratos monitoreados
       </div>
     </div>
 
@@ -6260,7 +6268,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);"></div>
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;">Contratos Monitoreados</div>
-        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--green);" id="dbe-contratos">136,578</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--green);" id="dbe-contratos">—</div>
         <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">SEFIN + ONCAE</div>
       </div>
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;">
@@ -17972,6 +17980,12 @@ function updateConsultasMetrics(all) {
   if (elC) elC.textContent = criticos.length.toLocaleString('es-HN');
   if (elM) elM.textContent = fmtM(monto);
   if (elS) elS.textContent = sobreInst > 0 ? sobreInst + ' inst.' : '—';
+  // Actualizar contadores de BD en reportes/dashboard
+  const totalStr = (window._bdTotalCount || all.length).toLocaleString('es-HN');
+  const dbeCont = document.getElementById('dbe-contratos');
+  if (dbeCont) dbeCont.textContent = totalStr;
+  const rptCount = document.getElementById('reportes-bd-count');
+  if (rptCount) rptCount.textContent = totalStr;
 }
 
 function poUpdateIndicators() {
@@ -18625,8 +18639,8 @@ function renderAnalytics() {
 
   // ── Headline cards ──
   document.getElementById('analyticsHeadline').innerHTML = [
-    { label: 'Contratos Analizados', value: '147,122', sub: 'Año 2025 · SEFIN OCDS' },
-    { label: 'Total Contratos',        value: totalAlerts.toLocaleString(), sub: (totalAlerts/147122*100).toFixed(1) + '% de contratos flaggeados' },
+    { label: 'Contratos en BD', value: (window._bdTotalCount || totalAlerts).toLocaleString('es-HN'), sub: 'SEFIN + ONCAE 2019–2026' },
+    { label: 'Contratos con Señales', value: totalAlerts.toLocaleString(), sub: ((totalAlerts / (window._bdTotalCount || totalAlerts)) * 100).toFixed(1) + '% de la BD total' },
     { label: 'Exposición Total',     value: fmtLarge(totalMonto), sub: fmtUSD(totalMonto) + ' USD estimado' },
   ].map(c => `
     <div style="background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:20px;">
@@ -23324,6 +23338,9 @@ const PLAYBOOK_QUERIES = [
         const budget = Number(a.budget_amount||0);
         return mc > 0 && budget > mc * 1.15;
       });
+      // Detectar años con datos PIEP disponibles
+      const añosPIEP = [...new Set(sobre.map(a => (a.fecha_contrato||'').slice(0,4)).filter(y => y >= '2019'))].sort();
+      const rangoAños = añosPIEP.length > 0 ? (añosPIEP[0] === añosPIEP[añosPIEP.length-1] ? añosPIEP[0] : añosPIEP[0] + '–' + añosPIEP[añosPIEP.length-1]) : 'datos disponibles';
       const instMap = {};
       sobre.forEach(a => {
         const inst = a.entity_name || a.entidad || '—';
@@ -23341,8 +23358,10 @@ const PLAYBOOK_QUERIES = [
           monto: 'L ' + (d.monto/1e6).toFixed(1) + 'M',
           ratio: (d.maxRatio * 100).toFixed(0) + '%'
         }));
-      return { titulo: 'Instituciones Sobrepresupuesto — SEFIN PIEP', filas, cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'],
-        nota: 'Período analizado: datos presupuestarios SEFIN PIEP (Presupuesto Institucional de Egresos). Ritmo Máx. = presupuesto asignado / monto contratado — valores >100% indican que el monto contratado excede el presupuesto. Solo instituciones con datos disponibles en ambas fuentes (SEFIN + ONCAE) aparecen en este reporte.' };
+      if (!filas.length) return { titulo: 'Instituciones Sobrepresupuesto — SEFIN PIEP', filas: [], cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'],
+        nota: 'Sin instituciones sobrepresupuesto detectadas con los datos PIEP disponibles. Esta consulta requiere el cruce SEFIN budget_amount × monto_contrato ONCAE. Cobertura limitada a instituciones presentes en ambas fuentes.' };
+      return { titulo: `Instituciones Sobrepresupuesto — SEFIN PIEP ${rangoAños}`, filas, cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'],
+        nota: `Período presupuestario: SEFIN PIEP ${rangoAños}. Ritmo Máx. = presupuesto PIEP asignado / monto contratado ONCAE — valores >100% indican que el presupuesto supera el monto contratado por más del 15%. Solo instituciones con datos disponibles en ambas fuentes (SEFIN PIEP + ONCAE) aparecen. Cobertura parcial.` };
     }
   },
   {
@@ -23701,7 +23720,7 @@ function executePlaybookQuery(id) {
 </div>
 <div class="body">
   <div class="meta">
-    <span class="meta-pill">BD: 136,578 registros</span>
+    <span class="meta-pill">BD: ${(window._bdTotalCount || (window.allAlerts||[]).length).toLocaleString('es-HN')} registros</span>
     <span class="meta-pill">Fuente: SEFIN + ONCAE 2019–2026</span>
     <span class="meta-pill">Generado: ${now}</span>
   </div>
@@ -26370,7 +26389,7 @@ function _renderNewVendorsPortal() {
   const sevColor = s => ({ 'CRÍTICA':'var(--red)', 'ALTA':'var(--amber)', 'MEDIA':'#60a5fa' }[s] || 'var(--text-dim)');
 
   list.innerHTML = data.slice(0, _NV_MAX_SHOW).map(([nombre, v]) => `
-    <div onclick="showVendorPanel('${nombre.replace(/'/g,"\\'")}') " style="padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background='transparent'">
+    <div onclick="poGo(() => showVendorPanel('${nombre.replace(/'/g,"\\'")}'))" style="padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='var(--glass)'" onmouseout="this.style.background='transparent'">
       <span style="font-size:9px;font-weight:700;color:${sevColor(v.severity)};min-width:44px;">${v.severity}</span>
       <span style="flex:1;font-size:10px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nombre}</span>
       <span style="font-size:10px;font-weight:700;color:#4ade80;white-space:nowrap;">${fmtL(v.monto)}</span>

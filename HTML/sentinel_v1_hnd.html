@@ -2761,6 +2761,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-5</span>
     </div>
 
+    <!-- Card 20 — BCAI: Adherencia al Techo Presupuestal (NS-4) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showBcaiPanel)">
+      <div class="pe-card-num">20</div>
+      <div class="pe-card-icon">📐</div>
+      <div class="pe-card-title">Adherencia al Techo</div>
+      <div class="pe-card-desc">Proveedores que ganan licitaciones al 88–99% del precio promedio institucional — patrón estadístico de conocer el techo antes de ofertar</div>
+      <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-4</span>
+    </div>
+
   </div>
 </div>
 
@@ -3099,6 +3108,56 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </thead>
         <tbody id="pts-tbody">
           <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ NS-4: BCAI — ADHERENCIA AL TECHO PRESUPUESTAL PANEL ══ -->
+  <div class="fuente-panel" id="bcaiPanel">
+    <button class="fuente-back" onclick="hideBcaiPanel()">← Panel Ejecutivo</button>
+    <div class="fuente-header">
+      <div class="fuente-title">📐 <span>Adherencia al Techo Presupuestal</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">
+        Proveedores que ganan licitaciones al 88–99% del precio referencial estimado — patrón estadístico de conocer el techo antes de ofertar (BCAI: Budget Ceiling Adherence Index)
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Casos detectados</div>
+        <div id="bcai-stat-total" style="font-size:22px;font-weight:700;color:#818cf8;">—</div>
+      </div>
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">BCAI promedio top</div>
+        <div id="bcai-stat-avg" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto expuesto</div>
+        <div id="bcai-stat-monto" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#818cf8;">
+      📐 <strong>Señal NS-4 (BCAI):</strong> En licitaciones competitivas, un proveedor legítimo llega al 65–85% del precio referencial. Llegar consistentemente al 88–99% indica que conoce el techo exacto — información privilegiada. Proxy estadístico: precio referencial = promedio institucional por tipo de contrato y año.
+    </div>
+    <div style="margin-bottom:10px;">
+      <input type="text" id="bcai-search" placeholder="Filtrar por proveedor o institución..." oninput="bcaiFiltrar()"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;">
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--text-dim);font-weight:600;">PROVEEDOR</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--text-dim);font-weight:600;">INSTITUCIÓN</th>
+            <th style="padding:8px 10px;text-align:center;font-size:10px;color:var(--text-dim);font-weight:600;">LICITACIONES</th>
+            <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--text-dim);font-weight:600;">BCAI PROM.</th>
+            <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--text-dim);font-weight:600;">RANGO</th>
+            <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--text-dim);font-weight:600;">MONTO</th>
+            <th style="padding:8px 10px;text-align:center;font-size:10px;color:var(--text-dim);font-weight:600;">SCORE</th>
+          </tr>
+        </thead>
+        <tbody id="bcai-tbody">
+          <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
         </tbody>
       </table>
     </div>
@@ -9031,7 +9090,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel','bcaiPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -9283,6 +9342,69 @@ function ptsRender() {
       <td style="padding:8px 10px;text-align:right;font-weight:600;color:${pctColor(r.pct_contratos_ventana)};font-size:12px;">${r.pct_contratos_ventana}%</td>
       <td style="padding:8px 10px;text-align:right;font-weight:700;color:${pctColor(r.pct_monto_ventana)};font-size:12px;">${r.pct_monto_ventana}%</td>
       <td style="padding:8px 10px;text-align:right;color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;">${fmtLps(Number(r.monto_ventana))}</td>
+    </tr>`).join('');
+}
+
+// ══ NS-4: BCAI — ADHERENCIA AL TECHO PRESUPUESTAL ════════════════════════════
+let _bcaiData = [], _bcaiFiltered = [];
+
+async function showBcaiPanel() {
+  document.getElementById('bcaiPanel').classList.add('open');
+  if (_bcaiData.length === 0) await loadBcai();
+}
+function hideBcaiPanel() { document.getElementById('bcaiPanel')?.classList.remove('open'); }
+
+async function loadBcai() {
+  const tbody = document.getElementById('bcai-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando señales BCAI…</td></tr>';
+  try {
+    const { data, error } = await db.rpc('get_bcai_signals', {
+      min_licitaciones: 2, bcai_min: 0.88, bcai_max: 0.995, min_monto: 1000000
+    });
+    if (error) throw error;
+    _bcaiData = data || [];
+    _bcaiFiltered = [..._bcaiData];
+
+    // Stats
+    const topBcai = _bcaiData.length ? _bcaiData.slice(0,10).reduce((s,r) => s + Number(r.bcai_promedio||0), 0) / Math.min(10, _bcaiData.length) : 0;
+    const montoTotal = _bcaiData.reduce((s,r) => s + Number(r.monto_total||0), 0);
+    document.getElementById('bcai-stat-total').textContent = _bcaiData.length;
+    document.getElementById('bcai-stat-avg').textContent   = (topBcai * 100).toFixed(1) + '%';
+    document.getElementById('bcai-stat-monto').textContent = fmtLpsCompact(montoTotal);
+    bcaiRender();
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function bcaiFiltrar() {
+  const q = (document.getElementById('bcai-search')?.value || '').toLowerCase();
+  _bcaiFiltered = q
+    ? _bcaiData.filter(r => (r.proveedor_nombre||'').toLowerCase().includes(q) || (r.entity_name||'').toLowerCase().includes(q))
+    : [..._bcaiData];
+  bcaiRender();
+}
+
+function bcaiRender() {
+  const tbody = document.getElementById('bcai-tbody');
+  if (!_bcaiFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados.</td></tr>';
+    return;
+  }
+  const fmtPct  = v => (Number(v) * 100).toFixed(1) + '%';
+  const fmtM    = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
+  const scoreColor = s => Number(s) >= 80 ? '#f87171' : Number(s) >= 50 ? '#fb923c' : '#fbbf24';
+  tbody.innerHTML = _bcaiFiltered.map(r => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:8px 10px;color:var(--text);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.proveedor_nombre}">${r.proveedor_nombre}</td>
+      <td style="padding:8px 10px;color:var(--text-dim);font-size:10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entity_name}">${r.entity_name}</td>
+      <td style="padding:8px 10px;text-align:center;font-weight:700;color:var(--electric);font-size:12px;">${r.n_licitaciones}</td>
+      <td style="padding:8px 10px;text-align:right;font-weight:700;color:#818cf8;font-size:12px;">${fmtPct(r.bcai_promedio)}</td>
+      <td style="padding:8px 10px;text-align:right;font-size:10px;color:var(--text-dim);">${fmtPct(r.bcai_min_val)}–${fmtPct(r.bcai_max_val)}</td>
+      <td style="padding:8px 10px;text-align:right;color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;">${fmtM(Number(r.monto_total))}</td>
+      <td style="padding:8px 10px;text-align:center;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(129,140,248,0.12);color:${scoreColor(r.bcai_score)};">${r.bcai_score}</span>
+      </td>
     </tr>`).join('');
 }
 
@@ -17501,7 +17623,7 @@ async function renderTop5() {
   // ── Queries paralelas: investigaciones + 5 señales NS
   const normV = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
 
-  const [invResult, ns1Res, ns5Res, ns6Res, ns7Res, ns3Res, ns2Res] = await Promise.allSettled([
+  const [invResult, ns1Res, ns5Res, ns6Res, ns7Res, ns3Res, ns2Res, ns4Res] = await Promise.allSettled([
     Promise.race([
       db.from('investigaciones').select('proveedor,estado').not('estado','in','("Borrador-Auto","Descartado","Nuevo")'),
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000))
@@ -17512,6 +17634,7 @@ async function renderTop5() {
     db.rpc('get_twin_contracts',   { max_diff_pct: 0.05, max_dias: 90, min_monto: 500000 }),
     db.rpc('get_debut_anomaly',    { min_debut_monto: 2000000, min_contratos: 2 }),
     db.rpc('get_pressure_window_contracts', { top_n: 100 }),
+    db.rpc('get_bcai_signals', { min_licitaciones: 2, bcai_min: 0.88, bcai_max: 0.995, min_monto: 1000000 }),
   ]);
 
   // ── Investigaciones confirmadas
@@ -17524,7 +17647,7 @@ async function renderTop5() {
   const vendorSignals = {}; // key: normV(proveedor_nombre)
   const addSig = (nombre, key, rawScore, label) => {
     const k = normV(nombre); if (!k) return;
-    if (!vendorSignals[k]) vendorSignals[k] = { ns1:0, ns2:0, ns3:0, ns5:0, ns6:0, ns7:0, labels:[] };
+    if (!vendorSignals[k]) vendorSignals[k] = { ns1:0, ns2:0, ns3:0, ns4:0, ns5:0, ns6:0, ns7:0, labels:[] };
     const s = Math.max(0, Math.min(100, Math.round(rawScore)));
     vendorSignals[k][key] = Math.max(vendorSignals[k][key], s);
     if (s > 0 && !vendorSignals[k].labels.includes(label)) vendorSignals[k].labels.push(label);
@@ -17540,6 +17663,9 @@ async function renderTop5() {
     addSig(r.proveedor_nombre, 'ns7', Math.min(100, Number(r.twin_score||0)*4), 'NS-7 GEMELOS'));
   if (ns3Res.status==='fulfilled') (ns3Res.value?.data||[]).forEach(r =>
     addSig(r.proveedor_nombre, 'ns3', Math.min(100, Number(r.anomaly_score||0)*2.5), 'NS-3 DEBUT'));
+  // NS-4: BCAI — vendor-level signal (entity-specific)
+  if (ns4Res.status==='fulfilled') (ns4Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns4', Math.min(100, Number(r.bcai_score||0)), 'NS-4 BCAI'));
 
   // ── NS-2: índice institucional → score por institución (pct_monto_ventana)
   // Un proveedor hereda esta señal si alguna de sus instituciones contratantes tiene
@@ -17572,7 +17698,7 @@ async function renderTop5() {
   }
 
   Object.values(vendorSignals).forEach(v => {
-    v.count = ['ns1','ns2','ns3','ns5','ns6','ns7'].filter(k => v[k] > 0).length;
+    v.count = ['ns1','ns2','ns3','ns4','ns5','ns6','ns7'].filter(k => v[k] > 0).length;
   });
 
   // Find signal data for a proveedor (exact then partial match)
@@ -17581,7 +17707,7 @@ async function renderTop5() {
     if (vendorSignals[k]) return vendorSignals[k];
     const hit = Object.keys(vendorSignals).find(vk =>
       vk.length > 6 && (k.includes(vk.slice(0,10)) || vk.includes(k.slice(0,10))));
-    return hit ? vendorSignals[hit] : { ns1:0, ns2:0, ns3:0, ns5:0, ns6:0, ns7:0, count:0, labels:[] };
+    return hit ? vendorSignals[hit] : { ns1:0, ns2:0, ns3:0, ns4:0, ns5:0, ns6:0, ns7:0, count:0, labels:[] };
   }
 
   const esc     = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -17678,7 +17804,7 @@ async function renderTop5() {
       if (!sig.labels.includes('NS-2 VENTANA')) sig.labels.push('NS-2 VENTANA');
     }
     // Recompute count incluyendo ns2
-    sig.count = ['ns1','ns2','ns3','ns5','ns6','ns7'].filter(k => sig[k] > 0).length;
+    sig.count = ['ns1','ns2','ns3','ns4','ns5','ns6','ns7'].filter(k => sig[k] > 0).length;
     const dMonto   = zNorm(logMontos[idx], stM);
     const dPatron  = zNorm(c.patrones.size, stP);
     const dAlcance = zNorm(c.entidades.size, stE);
@@ -17686,7 +17812,7 @@ async function renderTop5() {
     const dExterno = scoreExterno(c);
 
     // NS Signals: promedio de señales activas + bonus de convergencia (+15% por señal adicional)
-    const nsVals    = [sig.ns1, sig.ns2, sig.ns3, sig.ns5, sig.ns6, sig.ns7];
+    const nsVals    = [sig.ns1, sig.ns2, sig.ns3, sig.ns4, sig.ns5, sig.ns6, sig.ns7];
     const nsActivos = nsVals.filter(v => v > 0);
     // Convergencia agresiva: +25% por señal adicional. Sin señales: penalización -12 pts
     const dSignals = nsActivos.length > 0

@@ -2563,7 +2563,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 <div id="top5Panel" class="hidden">
   <div class="t5-header">
     <div class="t5-header-left">
-      <h2>🚨 Top 10 Casos Críticos</h2>
+      <h2>🧠 Sentinel Score™ — Top 10 Investigación Prioritaria</h2>
       <p>ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · DATOS EN TIEMPO REAL</p>
     </div>
     <div style="display:flex;gap:10px;">
@@ -2601,8 +2601,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="pe-card" onclick="abrirTop5()">
       <div class="pe-card-num">01</div>
       <div class="pe-card-icon">🚨</div>
-      <div class="pe-card-title">Top 10 Casos Críticos</div>
-      <div class="pe-card-desc">Los 10 casos de mayor riesgo · Análisis multi-dimensional monto × comportamiento</div>
+      <div class="pe-card-title">Sentinel Score™ — Top 10</div>
+      <div class="pe-card-desc">Score compuesto · 6 dimensiones · 5 señales NS · Z-score estadístico · Investigación prioritaria</div>
       <span class="pe-card-tag pe-tag-active">ACTIVO</span>
     </div>
 
@@ -17484,22 +17484,67 @@ async function renderTop5() {
     body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Datos aún cargando — intenta en unos segundos.</div>';
     return;
   }
-  body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Calculando análisis multi-dimensional…</div>';
+  body.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Calculando Sentinel Score™ — integrando señales…</div>';
 
   try {
 
   // ── Excluidos por error de datos conocido
   const EXCLUIR = ['RILMAC IMPRESORES'];
 
-  // ── Investigaciones confirmadas (timeout 5s)
+  // ── Queries paralelas: investigaciones + 5 señales NS
+  const normV = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+
+  const [invResult, ns1Res, ns5Res, ns6Res, ns7Res, ns3Res] = await Promise.allSettled([
+    Promise.race([
+      db.from('investigaciones').select('proveedor,estado').not('estado','in','("Borrador-Auto","Descartado","Nuevo")'),
+      new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+    ]),
+    db.rpc('get_vendor_monogamy',  { min_contratos: 3, min_monto: 500000 }),
+    db.rpc('get_threshold_hugging',{ min_contratos: 2 }),
+    db.rpc('get_surge_reciente',   { meses: 12, min_pct_reciente: 0.55, min_monto_reciente: 2000000, min_contratos_total: 2 }),
+    db.rpc('get_twin_contracts',   { max_diff_pct: 0.05, max_dias: 90, min_monto: 500000 }),
+    db.rpc('get_debut_anomaly',    { min_debut_monto: 2000000, min_contratos: 2 }),
+  ]);
+
+  // ── Investigaciones confirmadas
   let investigados = new Map();
-  try {
-    const timeout = new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000));
-    const query   = db.from('investigaciones').select('proveedor,estado')
-                      .not('estado','in','("Borrador-Auto","Descartado","Nuevo")');
-    const { data } = await Promise.race([query, timeout]);
-    (data||[]).forEach(r => investigados.set((r.proveedor||'').toUpperCase().trim(), r.estado));
-  } catch(e) { console.warn('Top10: investigaciones no disponible:', e.message); }
+  if (invResult.status === 'fulfilled' && invResult.value?.data) {
+    invResult.value.data.forEach(r => investigados.set((r.proveedor||'').toUpperCase().trim(), r.estado));
+  }
+
+  // ── Índice de señales NS por proveedor
+  const vendorSignals = {}; // key: normV(proveedor_nombre)
+  const addSig = (nombre, key, rawScore, label) => {
+    const k = normV(nombre); if (!k) return;
+    if (!vendorSignals[k]) vendorSignals[k] = { ns1:0, ns3:0, ns5:0, ns6:0, ns7:0, labels:[] };
+    const s = Math.max(0, Math.min(100, Math.round(rawScore)));
+    vendorSignals[k][key] = Math.max(vendorSignals[k][key], s);
+    if (s > 0 && !vendorSignals[k].labels.includes(label)) vendorSignals[k].labels.push(label);
+  };
+
+  if (ns1Res.status==='fulfilled') (ns1Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns1', Number(r.concentracion_pct||0), 'NS-1 MONOGAMIA'));
+  if (ns5Res.status==='fulfilled') (ns5Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns5', Math.min(100, Number(r.hugging_score||0)*3), 'NS-5 UMBRAL'));
+  if (ns6Res.status==='fulfilled') (ns6Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns6', Number(r.pct_monto_reciente||0), 'NS-6 SURGE'));
+  if (ns7Res.status==='fulfilled') (ns7Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns7', Math.min(100, Number(r.twin_score||0)*4), 'NS-7 GEMELOS'));
+  if (ns3Res.status==='fulfilled') (ns3Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns3', Math.min(100, Number(r.anomaly_score||0)*2.5), 'NS-3 DEBUT'));
+
+  Object.values(vendorSignals).forEach(v => {
+    v.count = ['ns1','ns3','ns5','ns6','ns7'].filter(k => v[k] > 0).length;
+  });
+
+  // Find signal data for a proveedor (exact then partial match)
+  function getSig(proveedor) {
+    const k = normV(proveedor);
+    if (vendorSignals[k]) return vendorSignals[k];
+    const hit = Object.keys(vendorSignals).find(vk =>
+      vk.length > 6 && (k.includes(vk.slice(0,10)) || vk.includes(k.slice(0,10))));
+    return hit ? vendorSignals[hit] : { ns1:0, ns3:0, ns5:0, ns6:0, ns7:0, count:0, labels:[] };
+  }
 
   const esc     = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -17545,12 +17590,26 @@ async function renderTop5() {
     return;
   }
 
-  // ── Normalizadores globales
-  const maxMonto    = Math.max(...todos.map(c => c.monto));
-  const maxPatrones = Math.max(...todos.map(c => c.patrones.size)) || 1;
-  const maxEntidades= Math.max(...todos.map(c => c.entidades.size)) || 1;
-  const maxReciente = Math.max(...todos.map(c => c.nReciente)) || 1;
-  const norm = (val, mx) => mx > 0 ? Math.min(100, Math.round((val / mx) * 100)) : 0;
+  // ── Z-score helpers (robusto frente a outliers)
+  function zStats(arr) {
+    const n = arr.length;
+    if (n < 2) return { mean: arr[0]||0, std: 1 };
+    const mean = arr.reduce((s,v) => s+v, 0) / n;
+    const std  = Math.sqrt(arr.reduce((s,v) => s+(v-mean)**2, 0) / n) || 1;
+    return { mean, std };
+  }
+  function zNorm(val, st) {
+    // z en [-2, 3] → [0, 100]
+    const z = (val - st.mean) / st.std;
+    return Math.max(0, Math.min(100, Math.round(((z + 2) / 5) * 100)));
+  }
+
+  // Pre-calcular stats por dimensión
+  const logMontos  = todos.map(c => Math.log(c.monto + 1));
+  const stM = zStats(logMontos);
+  const stP = zStats(todos.map(c => c.patrones.size));
+  const stE = zStats(todos.map(c => c.entidades.size));
+  const stR = zStats(todos.map(c => c.nReciente));
 
   // ── Corroboración externa (0–100)
   function scoreExterno(c) {
@@ -17564,39 +17623,60 @@ async function renderTop5() {
     return Math.min(100, pts);
   }
 
-  // ── Score: media geométrica de (monto_norm) × (comportamiento_norm)
-  //    comportamiento = promedio ponderado de 4 dimensiones (patrones 35, alcance 30, recencia 20, externo 15)
-  const candidatos = todos.map(c => {
-    const dMonto   = norm(c.monto, maxMonto);
-    const dPatron  = norm(c.patrones.size, maxPatrones);
-    const dAlcance = norm(c.entidades.size, maxEntidades);
-    const dRecente = norm(c.nReciente, maxReciente);
+  // ── Sentinel Score™: suma ponderada de 6 dimensiones
+  //    Pesos: MONTO 20% · PATRONES 20% · ALCANCE 15% · RECENCIA 10% · EXT 10% · NS_SIGNALS 25%
+  const candidatos = todos.map((c, idx) => {
+    const sig      = getSig(c.proveedor);
+    const dMonto   = zNorm(logMontos[idx], stM);
+    const dPatron  = zNorm(c.patrones.size, stP);
+    const dAlcance = zNorm(c.entidades.size, stE);
+    const dRecente = zNorm(c.nReciente, stR);
     const dExterno = scoreExterno(c);
-    const comportamiento = Math.round(dPatron*0.35 + dAlcance*0.30 + dRecente*0.20 + dExterno*0.15);
-    const score = Math.round(Math.sqrt(dMonto * comportamiento));
+
+    // NS Signals: promedio de señales activas + bonus de convergencia (+15% por señal adicional)
+    const nsVals   = [sig.ns1, sig.ns3, sig.ns5, sig.ns6, sig.ns7];
+    const nsActivos = nsVals.filter(v => v > 0);
+    const dSignals = nsActivos.length > 0
+      ? Math.min(100, Math.round((nsActivos.reduce((a,b)=>a+b,0)/nsActivos.length) * (1 + nsActivos.length * 0.15)))
+      : 0;
+
+    const score = Math.round(
+      dMonto   * 0.20 +
+      dPatron  * 0.20 +
+      dAlcance * 0.15 +
+      dRecente * 0.10 +
+      dExterno * 0.10 +
+      dSignals * 0.25
+    );
+
     const dims = [
-      { label: 'MONTO',    val: dMonto,   color: '#ff3d57', texto: fmtM(c.monto) },
-      { label: 'PATRONES', val: dPatron,  color: '#a78bfa', texto: `${c.patrones.size} señal${c.patrones.size!==1?'es':''}` },
-      { label: 'ALCANCE',  val: dAlcance, color: '#60a5fa', texto: `${c.entidades.size} entidad${c.entidades.size!==1?'es':''}` },
-      { label: 'RECENCIA', val: dRecente, color: '#34d399', texto: `${c.nReciente} contratos ult. 18m` },
-      { label: 'EXT',      val: dExterno, color: '#fbbf24', texto: dExterno >= 50 ? 'Lista Engel/OFAC' : dExterno >= 30 ? 'Confirmado ONCAE' : 'SEN-INV activo' },
+      { label: 'MONTO',      val: dMonto,   color: '#ff3d57', texto: fmtM(c.monto) },
+      { label: 'PATRONES',   val: dPatron,  color: '#a78bfa', texto: `${c.patrones.size} señal${c.patrones.size!==1?'es':''}` },
+      { label: 'ALCANCE',    val: dAlcance, color: '#60a5fa', texto: `${c.entidades.size} entidad${c.entidades.size!==1?'es':''}` },
+      { label: 'RECENCIA',   val: dRecente, color: '#34d399', texto: `${c.nReciente} contratos ult. 18m` },
+      { label: 'EXT',        val: dExterno, color: '#fbbf24', texto: dExterno >= 50 ? 'Lista Engel/OFAC' : dExterno >= 30 ? 'Confirmado ONCAE' : dExterno > 0 ? 'SEN-INV activo' : '—' },
+      { label: 'NS SIGNALS', val: dSignals, color: '#e879f9', texto: nsActivos.length > 0 ? `${nsActivos.length} señal${nsActivos.length!==1?'es':''}` : 'Sin señales NS' },
     ];
-    const dominante = dims.reduce((a, b) => b.val > a.val ? b : a);
+    const dominante = dims.filter(d => d.val > 0).reduce((a, b) => b.val > a.val ? b : a);
     const sector = detectarSector(c.proveedor, c.entidades);
-    return { ...c, dMonto, comportamiento, score, dims, dominante, sector };
+    return { ...c, dMonto, dPatron, dAlcance, dRecente, dExterno, dSignals, sig, score, dims, dominante, sector };
   });
 
   // ── Top 10 por score ─────────────────────────────────────────────────────
   const top10 = candidatos.sort((a, b) => b.score - a.score).slice(0, 10);
 
-  // ── Insight sectorial ────────────────────────────────────────────────────
+  // ── Insight sectorial + estadística señales ─────────────────────────────
   const sectorCount = {};
   top10.forEach(c => { sectorCount[c.sector] = (sectorCount[c.sector]||0) + 1; });
   const sectorTop = Object.entries(sectorCount).sort((a,b) => b[1]-a[1]);
-  const montoTotal = top10.reduce((s, c) => s + c.monto, 0);
+  const montoTotal    = top10.reduce((s, c) => s + c.monto, 0);
+  const withSignals   = top10.filter(c => c.sig.count > 0).length;
+  const avgScore      = Math.round(top10.reduce((s,c) => s+c.score, 0) / top10.length);
   const insightHtml = `<div class="t5-insight">
-    <strong>PATRÓN DETECTADO:</strong> ${sectorTop.map(([s,n]) => `${n} de 10 casos — ${s}`).join(' · ')}
-    &nbsp;·&nbsp; Exposición total Top 10: <strong>${fmtM(montoTotal)}</strong>
+    <strong>SENTINEL SCORE™</strong> — Score promedio Top 10: <strong>${avgScore}/100</strong>
+    &nbsp;·&nbsp; ${withSignals} de 10 con señales NS activas
+    &nbsp;·&nbsp; Sectores: ${sectorTop.map(([s,n]) => `${s} (${n})`).join(' · ')}
+    &nbsp;·&nbsp; Exposición total: <strong>${fmtM(montoTotal)}</strong>
   </div>`;
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -17634,10 +17714,17 @@ async function renderTop5() {
           ${esEngel   ? '<span class="t5-tag t5-tag-externo">⚠ ENGEL</span>' : ''}
           ${invEstado ? `<span class="t5-tag t5-tag-sent">SEN-INV ${esc(invEstado)}</span>` : ''}
         </div>
+        ${c.sig.labels && c.sig.labels.length > 0 ? `<div style="margin:6px 0 4px;display:flex;flex-wrap:wrap;gap:4px;">
+          ${c.sig.labels.map(l => `<span style="font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.07em;padding:2px 7px;border-radius:10px;background:rgba(232,121,249,0.15);color:#e879f9;border:1px solid rgba(232,121,249,0.35);">⬡ ${l}</span>`).join('')}
+        </div>` : ''}
         <div class="t5-badge-dominante">▲ ${esc(c.dominante.label)}: ${esc(c.dominante.texto)}</div>
         <div class="t5-dims">${dimRows}</div>
       </div>
       <div class="t5-right">
+        <div style="text-align:right;margin-bottom:6px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:900;color:${c.score>=70?'#ff3d57':c.score>=45?'#ff6400':'#fbbf24'};line-height:1;">${c.score}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.12em;color:rgba(232,121,249,0.7);text-transform:uppercase;">Sentinel Score™</div>
+        </div>
         <div class="t5-monto-val">${fmtM(c.monto)}</div>
         <div class="t5-monto-label">monto en riesgo</div>
         <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">

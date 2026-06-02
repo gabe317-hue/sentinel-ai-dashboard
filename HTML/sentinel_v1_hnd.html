@@ -17501,7 +17501,7 @@ async function renderTop5() {
   // ── Queries paralelas: investigaciones + 5 señales NS
   const normV = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
 
-  const [invResult, ns1Res, ns5Res, ns6Res, ns7Res, ns3Res] = await Promise.allSettled([
+  const [invResult, ns1Res, ns5Res, ns6Res, ns7Res, ns3Res, ns2Res] = await Promise.allSettled([
     Promise.race([
       db.from('investigaciones').select('proveedor,estado').not('estado','in','("Borrador-Auto","Descartado","Nuevo")'),
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000))
@@ -17511,6 +17511,7 @@ async function renderTop5() {
     db.rpc('get_surge_reciente',   { meses: 12, min_pct_reciente: 0.55, min_monto_reciente: 2000000, min_contratos_total: 2 }),
     db.rpc('get_twin_contracts',   { max_diff_pct: 0.05, max_dias: 90, min_monto: 500000 }),
     db.rpc('get_debut_anomaly',    { min_debut_monto: 2000000, min_contratos: 2 }),
+    db.rpc('get_pressure_window_contracts', { top_n: 100 }),
   ]);
 
   // ── Investigaciones confirmadas
@@ -17523,7 +17524,7 @@ async function renderTop5() {
   const vendorSignals = {}; // key: normV(proveedor_nombre)
   const addSig = (nombre, key, rawScore, label) => {
     const k = normV(nombre); if (!k) return;
-    if (!vendorSignals[k]) vendorSignals[k] = { ns1:0, ns3:0, ns5:0, ns6:0, ns7:0, labels:[] };
+    if (!vendorSignals[k]) vendorSignals[k] = { ns1:0, ns2:0, ns3:0, ns5:0, ns6:0, ns7:0, labels:[] };
     const s = Math.max(0, Math.min(100, Math.round(rawScore)));
     vendorSignals[k][key] = Math.max(vendorSignals[k][key], s);
     if (s > 0 && !vendorSignals[k].labels.includes(label)) vendorSignals[k].labels.push(label);
@@ -17540,8 +17541,38 @@ async function renderTop5() {
   if (ns3Res.status==='fulfilled') (ns3Res.value?.data||[]).forEach(r =>
     addSig(r.proveedor_nombre, 'ns3', Math.min(100, Number(r.anomaly_score||0)*2.5), 'NS-3 DEBUT'));
 
+  // ── NS-2: índice institucional → score por institución (pct_monto_ventana)
+  // Un proveedor hereda esta señal si alguna de sus instituciones contratantes tiene
+  // alta concentración de contratos en ventana de presión fiscal (fin de año, nueva admin, inicio año)
+  const normInst = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+  const instSignals = {}; // normInst(institucion) → pct_monto_ventana
+  if (ns2Res.status === 'fulfilled') {
+    (ns2Res.value?.data || []).forEach(r => {
+      const pct = Number(r.pct_monto_ventana || 0);
+      if (pct >= 40) {  // umbral mínimo: ≥40% del monto en ventana fiscal
+        const k = normInst(r.institucion);
+        instSignals[k] = Math.max(instSignals[k] || 0, pct);
+      }
+    });
+  }
+  // Función: máximo pct_monto_ventana entre las instituciones de un proveedor
+  function getInst2Score(entidades) {
+    let maxPct = 0;
+    for (const ent of entidades) {
+      const k = normInst(ent);
+      if (instSignals[k] && instSignals[k] > maxPct) { maxPct = instSignals[k]; continue; }
+      // Fuzzy match: primeros 10 chars
+      for (const [ik, ipct] of Object.entries(instSignals)) {
+        if (k.length > 8 && ik.length > 8 && (k.includes(ik.slice(0,10)) || ik.includes(k.slice(0,10)))) {
+          if (ipct > maxPct) maxPct = ipct;
+        }
+      }
+    }
+    return maxPct;
+  }
+
   Object.values(vendorSignals).forEach(v => {
-    v.count = ['ns1','ns3','ns5','ns6','ns7'].filter(k => v[k] > 0).length;
+    v.count = ['ns1','ns2','ns3','ns5','ns6','ns7'].filter(k => v[k] > 0).length;
   });
 
   // Find signal data for a proveedor (exact then partial match)
@@ -17550,7 +17581,7 @@ async function renderTop5() {
     if (vendorSignals[k]) return vendorSignals[k];
     const hit = Object.keys(vendorSignals).find(vk =>
       vk.length > 6 && (k.includes(vk.slice(0,10)) || vk.includes(k.slice(0,10))));
-    return hit ? vendorSignals[hit] : { ns1:0, ns3:0, ns5:0, ns6:0, ns7:0, count:0, labels:[] };
+    return hit ? vendorSignals[hit] : { ns1:0, ns2:0, ns3:0, ns5:0, ns6:0, ns7:0, count:0, labels:[] };
   }
 
   const esc     = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -17640,6 +17671,14 @@ async function renderTop5() {
   //    Pesos: MONTO 20% · PATRONES 20% · ALCANCE 15% · RECENCIA 10% · EXT 10% · NS_SIGNALS 25%
   const candidatos = todos.map((c, idx) => {
     const sig      = getSig(c.proveedor);
+    // NS-2: heredado de institución → proveedor
+    const ns2Score = getInst2Score(c.entidades);
+    if (ns2Score >= 40) {
+      sig.ns2 = Math.round(ns2Score);
+      if (!sig.labels.includes('NS-2 VENTANA')) sig.labels.push('NS-2 VENTANA');
+    }
+    // Recompute count incluyendo ns2
+    sig.count = ['ns1','ns2','ns3','ns5','ns6','ns7'].filter(k => sig[k] > 0).length;
     const dMonto   = zNorm(logMontos[idx], stM);
     const dPatron  = zNorm(c.patrones.size, stP);
     const dAlcance = zNorm(c.entidades.size, stE);
@@ -17647,7 +17686,7 @@ async function renderTop5() {
     const dExterno = scoreExterno(c);
 
     // NS Signals: promedio de señales activas + bonus de convergencia (+15% por señal adicional)
-    const nsVals    = [sig.ns1, sig.ns3, sig.ns5, sig.ns6, sig.ns7];
+    const nsVals    = [sig.ns1, sig.ns2, sig.ns3, sig.ns5, sig.ns6, sig.ns7];
     const nsActivos = nsVals.filter(v => v > 0);
     // Convergencia agresiva: +25% por señal adicional. Sin señales: penalización -12 pts
     const dSignals = nsActivos.length > 0
@@ -17671,7 +17710,8 @@ async function renderTop5() {
       { label: 'ALCANCE',    val: dAlcance, color: '#60a5fa', texto: `${c.entidades.size} entidad${c.entidades.size!==1?'es':''}` },
       { label: 'RECENCIA',   val: dRecente, color: '#34d399', texto: `${c.nReciente} contratos ult. 18m` },
       { label: 'EXT',        val: dExterno, color: '#fbbf24', texto: dExterno >= 50 ? 'Lista Engel/OFAC' : dExterno >= 30 ? 'Confirmado ONCAE' : dExterno > 0 ? 'SEN-INV activo' : '—' },
-      { label: 'NS SIGNALS', val: dSignals, color: '#e879f9', texto: nsActivos.length > 0 ? `${nsActivos.length} señal${nsActivos.length!==1?'es':''}` : 'Sin señales NS' },
+      { label: 'NS SIGNALS', val: dSignals, color: '#e879f9', texto: nsActivos.length > 0 ? `${nsActivos.length} señal${nsActivos.length!==1?'es':''}` : 'Sin señales NS',
+        nsDetail: sig.labels.length > 0 ? sig.labels.join(' · ') : '—' },
     ];
     const dominante = dims.filter(d => d.val > 0).reduce((a, b) => b.val > a.val ? b : a);
     const sector = detectarSector(c.proveedor, c.entidades);

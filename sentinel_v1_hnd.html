@@ -2316,7 +2316,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="login-shield">🛡️</div>
     <div class="login-country">República de Honduras</div>
     <div class="login-logo">SENTINEL<span>-AI</span></div>
-    <div class="login-sub">Sistema Anticorrupción · PGR Honduras</div>
+    <div class="login-sub">Sistema Anticorrupción</div>
     <div class="login-field">
       <label>Correo Electrónico</label>
       <input type="email" id="loginEmail" placeholder="usuario@pgr.gob.hn"
@@ -2594,7 +2594,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
     <!-- Título sección -->
     <div style="grid-column:1/-1;text-align:center;margin-bottom:8px;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);display:inline-block;padding:6px 22px;border-radius:20px;">Panel Ejecutivo</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);display:inline-block;padding:6px 22px;border-radius:20px;">Panel Ejecutivo</div>
     </div>
 
     <!-- Card 1 — Top 10 Casos Críticos (S93-A) -->
@@ -15642,10 +15642,10 @@ function selectPanel(tipo) {
 
 function irDesdeEjecutivo(fn) {
   document.getElementById('panelEjecutivo').classList.add('hidden');
-  document.getElementById('btnVolverEjecutivoFloat').style.display = 'none';
   setTimeout(() => {
     try {
       fn();
+      document.getElementById('btnVolverEjecutivoFloat').style.display = 'block';
       // Set the opened panel's back button to return to Panel Ejecutivo
       const bb = document.querySelector('.fuente-panel.open .fuente-back');
       if (bb) { bb.textContent = '← Panel Ejecutivo'; bb.onclick = volverAPanelEjecutivo; }

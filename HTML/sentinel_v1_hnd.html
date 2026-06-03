@@ -3503,7 +3503,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="po-grid-top">
 
       <!-- CONSULTAS (S92B — movida al grid) -->
-      <div class="po-card po-amber po-expanded" id="poc-playbook" onclick="poToggle('playbook')">
+      <div class="po-card po-amber" id="poc-playbook" onclick="poToggle('playbook')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>🔍</span></div>
           <div><div class="po-card-title">Consultas</div><div class="po-card-desc">Vista ejecutiva · datos en tiempo real</div></div>
@@ -3548,13 +3548,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
 
       <!-- INVESTIGACIÓN -->
-      <div class="po-card po-red po-expanded" id="poc-investigacion" onclick="poToggle('investigacion')">
-        <div class="po-card-hd">
+      <div class="po-card po-red" id="poc-investigacion">
+        <div class="po-card-hd" style="cursor:default;">
           <div class="po-card-icon"><span>🔎</span></div>
           <div><div class="po-card-title">Investigación</div><div class="po-card-desc">Casos · Cronología · Escáner</div></div>
-          <div class="po-chevron">▼</div>
         </div>
-        <div class="po-submenu">
+        <div class="po-submenu" style="display:block;">
           <button class="po-item" onclick="abrirConstructorCaso()" style="border-bottom:1px solid rgba(0,200,255,0.15);margin-bottom:4px;">
             <span class="po-item-icon">⚖️</span><span class="po-item-label">Constructor de Caso</span><span class="po-item-tag" style="background:rgba(0,200,255,0.1);color:var(--cyan);border:1px solid rgba(0,200,255,0.25);">NUEVO</span><span class="po-arrow">›</span>
           </button>
@@ -3574,13 +3573,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
 
       <!-- ANÁLISIS -->
-      <div class="po-card po-amber po-expanded" id="poc-analisis" onclick="poToggle('analisis')">
-        <div class="po-card-hd">
+      <div class="po-card po-amber" id="poc-analisis">
+        <div class="po-card-hd" style="cursor:default;">
           <div class="po-card-icon"><span>📊</span></div>
           <div><div class="po-card-title">Análisis</div><div class="po-card-desc">5 módulos · Riesgo cuantitativo</div></div>
-          <div class="po-chevron">▼</div>
         </div>
-        <div class="po-submenu">
+        <div class="po-submenu" style="display:block;">
           <button class="po-item" onclick="poGo(showAnalyticsPanel)">
             <span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span>
           </button>
@@ -3604,7 +3602,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="po-grid-bottom">
 
       <!-- CANDIDATOS -->
-      <div class="po-card po-red po-expanded" id="poc-candidatos" onclick="poToggle('candidatos')">
+      <div class="po-card po-red" id="poc-candidatos" onclick="poToggle('candidatos')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>🎯</span></div>
           <div><div class="po-card-title">Candidatos</div><div class="po-card-desc">Detecciones · Proveedores nuevos · Investigaciones</div></div>
@@ -3644,7 +3642,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
 
       <!-- NOTIFICACIÓN MANUAL -->
-      <div class="po-card po-electric po-expanded" id="poc-notificacion" onclick="poToggle('notificacion')">
+      <div class="po-card po-electric" id="poc-notificacion" onclick="poToggle('notificacion')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>📧</span></div>
           <div><div class="po-card-title">Notificación Manual</div><div class="po-card-desc">Disparar alerta · sin esperar schedule</div></div>
@@ -3670,7 +3668,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
 
       <!-- REPORTES -->
-      <div class="po-card po-green po-expanded" id="poc-reportes" onclick="poToggle('reportes')">
+      <div class="po-card po-green" id="poc-reportes" onclick="poToggle('reportes')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>📄</span></div>
           <div><div class="po-card-title">Reportes</div><div class="po-card-desc">PDF · Memorándums · Briefings</div></div>
@@ -3704,7 +3702,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
 
       <!-- SISTEMA -->
-      <div class="po-card po-purple po-expanded" id="poc-sistema" onclick="poToggle('sistema')">
+      <div class="po-card po-purple" id="poc-sistema" onclick="poToggle('sistema')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>⚙️</span></div>
           <div><div class="po-card-title">Sistema</div><div class="po-card-desc">Auditoría · Ingesta · Sesión</div></div>
@@ -3728,7 +3726,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
 
       <!-- BÚSQUEDA BD -->
-      <div class="po-card po-electric po-expanded" id="poc-busqueda" onclick="poToggle('busqueda')">
+      <div class="po-card po-electric" id="poc-busqueda" onclick="poToggle('busqueda')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>🔎</span></div>
           <div><div class="po-card-title">Búsqueda BD</div><div class="po-card-desc"><span id="busqueda-card-count">—</span> registros · filtros avanzados</div></div>
@@ -3746,7 +3744,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
 
       <!-- ACTIVIDAD DEL SISTEMA -->
-      <div class="po-card po-green po-expanded" id="poc-actividad" onclick="poToggle('actividad')">
+      <div class="po-card po-green" id="poc-actividad" onclick="poToggle('actividad')">
         <div class="po-card-hd">
           <div class="po-card-icon"><span>📡</span></div>
           <div>
@@ -15804,7 +15802,7 @@ function afIcon(accion, type) {
 }
 
 function showPortal() {
-  document.querySelectorAll('.po-card').forEach(c => c.classList.add('po-expanded'));
+  document.querySelectorAll('.po-card').forEach(c => c.classList.remove('po-expanded'));
   document.getElementById('portalOverlay').classList.add('visible');
   poUpdateIndicators();
   loadActivityFeed();

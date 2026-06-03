@@ -3640,6 +3640,32 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
       </div>
 
+      <!-- NOTIFICACIÓN MANUAL -->
+      <div class="po-card po-electric" id="poc-notificacion" onclick="poToggle('notificacion')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>📧</span></div>
+          <div><div class="po-card-title">Notificación Manual</div><div class="po-card-desc">Disparar alerta · sin esperar schedule</div></div>
+          <div class="po-chevron">▼</div>
+        </div>
+        <div class="po-submenu" style="padding:16px 20px;">
+          <select id="notif-select" onclick="event.stopPropagation()" style="width:100%;padding:10px 12px;background:var(--navy);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;margin-bottom:12px;cursor:pointer;">
+            <option value="alerta-critica">🚨 Alerta Crítica</option>
+            <option value="reporte-semanal">📊 Reporte Semanal</option>
+            <option value="reporte-mensual">📅 Reporte Mensual</option>
+            <option value="monitor-red-flags">🚩 Red Flags</option>
+            <option value="post-ingesta-detector">🔍 Post-Ingesta Detector</option>
+            <option value="auto-investigador">🤖 Auto-Investigador</option>
+            <option value="digest-borradores">📋 Digest Borradores</option>
+            <option value="resumen-investigaciones">📊 Resumen Investigaciones</option>
+            <option value="alerta-sobrepresupuesto">⚠️ Sobrepresupuesto SEFIN</option>
+            <option value="tsc-sync">⚖️ TSC Sync</option>
+            <option value="alerta-vencimiento-expedientes">📋 Vencimiento Expedientes</option>
+          </select>
+          <button onclick="event.stopPropagation();const s=document.getElementById('notif-select');dispararNotificacion(s.value,s.options[s.selectedIndex].text.replace(/^[^\w\s]+\s*/,'').trim())" style="width:100%;padding:10px;background:var(--electric-dim);border:1px solid var(--electric);border-radius:8px;color:var(--electric);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,200,255,0.15)'" onmouseout="this.style.background='var(--electric-dim)'">Disparar ›</button>
+          <div id="notif-status" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);display:none;"></div>
+        </div>
+      </div>
+
     </div>
 
     <div class="po-grid-bottom">
@@ -3720,56 +3746,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- NOTIFICACIONES MANUALES -->
-  <div style="padding:0 40px 32px;">
-    <div class="po-section-label">Notificaciones</div>
-    <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:14px;padding:20px 24px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-        <span style="font-size:16px;">📧</span>
-        <div>
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);">Disparar Notificación Manual</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-top:2px;">Envía correo inmediatamente sin esperar el schedule automático</div>
-        </div>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;" id="notif-btn-row">
-        <button onclick="dispararNotificacion('alerta-critica','Alerta Crítica')" class="notif-trigger-btn">
-          🚨 Alerta Crítica
-        </button>
-        <button onclick="dispararNotificacion('reporte-semanal','Reporte Semanal')" class="notif-trigger-btn">
-          📊 Reporte Semanal
-        </button>
-        <button onclick="dispararNotificacion('reporte-mensual','Reporte Mensual')" class="notif-trigger-btn">
-          📅 Reporte Mensual
-        </button>
-        <button onclick="dispararNotificacion('monitor-red-flags','Red Flags')" class="notif-trigger-btn">
-          🚩 Red Flags
-        </button>
-        <button onclick="dispararNotificacion('post-ingesta-detector','Post-Ingesta Detector')" class="notif-trigger-btn">
-          🔍 Post-Ingesta Detector
-        </button>
-        <button onclick="dispararNotificacion('auto-investigador','Auto-Investigador')" class="notif-trigger-btn">
-          🤖 Auto-Investigador
-        </button>
-        <button onclick="dispararNotificacion('digest-borradores','Digest Borradores')" class="notif-trigger-btn">
-          📋 Digest Borradores
-        </button>
-        <button onclick="dispararNotificacion('resumen-investigaciones','Resumen Investigaciones')" class="notif-trigger-btn">
-          📊 Resumen Investigaciones
-        </button>
-        <button onclick="dispararNotificacion('alerta-sobrepresupuesto','Alerta Sobrepresupuesto')" class="notif-trigger-btn">
-          ⚠️ Sobrepresupuesto SEFIN
-        </button>
-        <button onclick="dispararNotificacion('tsc-sync','TSC Sync')" class="notif-trigger-btn">
-          ⚖️ TSC Sync
-        </button>
-        <button onclick="dispararNotificacion('alerta-vencimiento-expedientes','Vencimiento Expedientes')" class="notif-trigger-btn">
-          📋 Vencimiento Expedientes
-        </button>
-      </div>
-      <div id="notif-status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);display:none;"></div>
     </div>
   </div>
 

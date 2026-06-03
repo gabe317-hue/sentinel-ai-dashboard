@@ -15804,7 +15804,7 @@ function afIcon(accion, type) {
 }
 
 function showPortal() {
-  document.querySelectorAll('.po-card').forEach(c => c.classList.remove('po-expanded'));
+  document.querySelectorAll('.po-card').forEach(c => c.classList.add('po-expanded'));
   document.getElementById('portalOverlay').classList.add('visible');
   poUpdateIndicators();
   loadActivityFeed();

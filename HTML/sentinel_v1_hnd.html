@@ -11964,20 +11964,38 @@ async function generarMemoPGR(folio, entidad) {
 ${cmAnomaliesRows ? `<div style="background:#fff3cd;border:2px solid #e0a800;border-radius:6px;padding:10px 14px;margin:12px 0;"><strong style="color:#856404;font-size:10.5pt;">⚠️ Contratos adjudicados sin proceso competitivo con monto fuera de norma</strong><p style="font-size:9.5pt;margin:6px 0 8px 0;color:#555;">Los siguientes contratos fueron adjudicados mediante modalidad directa con montos que exceden los parámetros legales establecidos en la Ley de Contratación del Estado:</p><table><tr><th>Proveedor</th><th style="text-align:right;">Monto Adjudicado</th><th>Modalidad Declarada</th></tr>${cmAnomaliesRows}</table></div>` : ''}
 ${concentrationRows ? `<div style="background:#fdecea;border:2px solid #e74c3c;border-radius:6px;padding:10px 14px;margin:12px 0;"><strong style="color:#c0392b;font-size:10.5pt;">⚠️ Concentración extrema del gasto en un proveedor único</strong><p style="font-size:9.5pt;margin:6px 0 8px 0;color:#555;">El siguiente proveedor concentra más del 60% del monto total expuesto de la entidad, lo que indica ausencia de competencia real en el proceso de contratación:</p><table><tr><th>Proveedor</th><th style="text-align:right;">Monto Total</th><th style="text-align:right;">% del Gasto Entidad</th></tr>${concentrationRows}</table></div>` : ''}` : '';
 
-    // 5C. Señales NS — esperar hasta 4s a que renderTop5 termine de cargar
-    if (!window._sentinelVendorSignals || !Object.keys(window._sentinelVendorSignals).length) {
-      await new Promise(resolve => {
-        let tries = 0;
-        const check = setInterval(() => {
-          tries++;
-          if ((window._sentinelVendorSignals && Object.keys(window._sentinelVendorSignals).length) || tries >= 8) {
-            clearInterval(check); resolve();
-          }
-        }, 500);
-      });
-    }
+    // 5C. Señales NS — calcular directamente desde allAlerts (no depende de renderTop5)
+    const _nv = s => (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,20);
+    const allA = window.allAlerts || [];
     const nsProveedores = [...new Set(sorted.slice(0,15).map(a => a.proveedor_nombre || a.proveedor).filter(Boolean))];
-    const nsConSenal = nsProveedores.map(p => ({ p, sig: _getNS(p) })).filter(x => x.sig.count > 0);
+    const nsConSenal = nsProveedores.map(p => {
+      // Primero intentar _sentinelVendorSignals si ya cargó
+      const fromCache = _getNS(p);
+      if (fromCache.count > 0) return { p, sig: fromCache };
+      // Calcular desde allAlerts
+      const k = _nv(p);
+      const mine = allA.filter(a => _nv(a.proveedor_nombre||a.proveedor||'') === k);
+      if (!mine.length) return null;
+      const totalM = mine.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+      const entM = {}; mine.forEach(a=>{const e=a.entity_name||a.entidad||'?';entM[e]=(entM[e]||0)+Number(a.monto_contrato||0);});
+      const maxPct = totalM>0 ? Math.max(...Object.values(entM))/totalM : 0;
+      const ns1 = maxPct >= 0.8 ? Math.round(maxPct*100) : 0;
+      const fechas = mine.map(a=>new Date(a.fecha_contrato||0)).filter(d=>!isNaN(d));
+      const minF = fechas.length ? new Date(Math.min(...fechas)) : null;
+      const ns3 = minF && (new Date()-minF)<(1000*60*60*24*730) ? 70 : 0;
+      const umbral = mine.filter(a=>{const m=Number(a.monto_contrato||0);return m>=900000&&m<=1100000;}).length;
+      const ns5 = umbral >= 2 ? Math.min(100,umbral*25) : 0;
+      // NS-6 Surge: >3 contratos en 90 días
+      const recientes = mine.filter(a=>{const d=new Date(a.fecha_contrato||0);return !isNaN(d)&&(new Date()-d)<(1000*60*60*24*90);});
+      const ns6 = recientes.length >= 3 ? Math.min(100,recientes.length*20) : 0;
+      const labels = [];
+      if (ns1>0) labels.push('NS-1 MONOGAMIA');
+      if (ns3>0) labels.push('NS-3 DEBUT');
+      if (ns5>0) labels.push('NS-5 UMBRAL');
+      if (ns6>0) labels.push('NS-6 SURGE');
+      const count = labels.length;
+      return count > 0 ? { p, sig: { ns1,ns2:0,ns3,ns4:0,ns5,ns6,ns7:0,count,labels } } : null;
+    }).filter(Boolean);
     const nsSection = nsConSenal.length > 0 ? `
 <h2 style="border-left:4px solid #e0a800;padding-left:10px;color:#1a1a2e;font-size:13pt;margin:22px 0 6px 0;">4-C. Señales de Comportamiento Anómalo (Sentinel Score™)</h2>
 <p class="section-p" style="color:#555;font-style:italic;font-size:10pt;">El módulo Sentinel Score™ identificó las siguientes señales de comportamiento en proveedores activos con esta entidad. Cada señal representa un patrón estadístico detectado en el historial de contratación.</p>

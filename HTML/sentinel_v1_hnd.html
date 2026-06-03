@@ -25220,7 +25220,7 @@ function setNewsFilter(source, btn) {
 function renderNewsCards() {
   const grid = document.getElementById('newsGrid');
   const raw  = newsFilter === 'all' ? allNewsItems : allNewsItems.filter(n => n.key === newsFilter);
-  // Fuentes 100% hondureñas — no aplicar filtro geográfico, solo mostrar todas
+  // Fuentes 100% hondureñas — no aplicar filtro geográfico, solo mostrar todas (S162)
   const LOCAL_SOURCES = new Set(['criterio','contracorriente','confidencial','proceso','icn','elpais']);
   const items = raw.filter(n => LOCAL_SOURCES.has(n.key) ? true : isHondurasRelevant(n));
   const hiddenCount = raw.length - items.length;

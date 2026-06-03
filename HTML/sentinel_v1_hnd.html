@@ -3544,47 +3544,29 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
 
-      <!-- CANDIDATOS (separado de Consultas S157) -->
-      <div class="po-card po-red" id="poc-candidatos" onclick="poToggle('candidatos')">
+      <!-- INVESTIGACIÓN -->
+      <div class="po-card po-red" id="poc-investigacion" onclick="poToggle('investigacion')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span>🎯</span></div>
-          <div><div class="po-card-title">Candidatos</div><div class="po-card-desc">Detecciones · Proveedores nuevos · Investigaciones</div></div>
+          <div class="po-card-icon"><span>🔎</span></div>
+          <div><div class="po-card-title">Investigación</div><div class="po-card-desc">Casos · Cronología · Escáner</div></div>
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
-          <!-- Candidatos a investigar -->
-          <div class="exec-section-hd" style="cursor:pointer;" onclick="poGo(showCandidatosPanel)">
-            🎯 &nbsp;Candidatos a investigar
-            <span class="exec-section-badge" id="po-candidatos-badge" style="background:rgba(255,61,87,0.15);color:var(--red);">cargando…</span>
-            <span style="margin-left:auto;font-size:11px;color:var(--electric);font-weight:600;">Ver todos →</span>
-          </div>
-          <div id="po-candidatos-preview" style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
-            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando candidatos…</div>
-          </div>
-          <!-- Proveedores Nuevos <90 días -->
-          <div class="exec-section-hd" style="cursor:default;">
-            🆕 &nbsp;Proveedores Nuevos &lt;90 días
-            <span class="exec-section-badge" id="new-vendors-badge" style="background:rgba(0,200,100,0.12);color:#4ade80;">cargando…</span>
-          </div>
-          <div id="new-vendors-list">
-            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
-          </div>
-          <!-- Detecciones Automáticas -->
-          <div class="exec-section-hd" style="cursor:default;">
-            🤖 &nbsp;Detecciones Automáticas
-            <span class="exec-section-badge" id="auto-inv-badge" style="background:rgba(138,43,226,0.18);color:#a78bfa;">cargando…</span>
-          </div>
-          <div id="auto-inv-list">
-            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
-          </div>
-          <!-- Investigaciones activas -->
-          <div class="exec-section-hd">
-            🗂 &nbsp;Investigaciones activas
-            <span class="exec-section-badge" id="exec-inv-badge" style="background:var(--red-dim);color:var(--red);">cargando…</span>
-          </div>
-          <div id="exec-inv-list">
-            <div style="color:var(--text-dim);font-size:10px;padding:10px;text-align:center;">Cargando investigaciones…</div>
-          </div>
+          <button class="po-item" onclick="abrirConstructorCaso()" style="border-bottom:1px solid rgba(0,200,255,0.15);margin-bottom:4px;">
+            <span class="po-item-icon">⚖️</span><span class="po-item-label">Constructor de Caso</span><span class="po-item-tag" style="background:rgba(0,200,255,0.1);color:var(--cyan);border:1px solid rgba(0,200,255,0.25);">NUEVO</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()">
+            <span class="po-item-icon">📄</span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(() => showTimelinePanel('portal'))">
+            <span class="po-item-icon">🕐</span><span class="po-item-label">Cronología</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showNewsPanel)">
+            <span class="po-item-icon">📰</span><span class="po-item-label">Noticias</span><span class="po-arrow">›</span>
+          </button>
+          <button class="po-item" onclick="poGo(showScannerPanel)">
+            <span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-item-tag tag-l">6 patrones</span><span class="po-arrow">›</span>
+          </button>
         </div>
       </div>
 
@@ -3614,29 +3596,47 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
       </div>
 
-      <!-- INVESTIGACIÓN -->
-      <div class="po-card po-red" id="poc-investigacion" onclick="poToggle('investigacion')">
+    </div>
+
+    <div class="po-grid-bottom">
+
+      <!-- CANDIDATOS -->
+      <div class="po-card po-red" id="poc-candidatos" onclick="poToggle('candidatos')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span>🔎</span></div>
-          <div><div class="po-card-title">Investigación</div><div class="po-card-desc">Casos · Cronología · Escáner</div></div>
+          <div class="po-card-icon"><span>🎯</span></div>
+          <div><div class="po-card-title">Candidatos</div><div class="po-card-desc">Detecciones · Proveedores nuevos · Investigaciones</div></div>
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
-          <button class="po-item" onclick="abrirConstructorCaso()" style="border-bottom:1px solid rgba(0,200,255,0.15);margin-bottom:4px;">
-            <span class="po-item-icon">⚖️</span><span class="po-item-label">Constructor de Caso</span><span class="po-item-tag" style="background:rgba(0,200,255,0.1);color:var(--cyan);border:1px solid rgba(0,200,255,0.25);">NUEVO</span><span class="po-arrow">›</span>
-          </button>
-          <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()">
-            <span class="po-item-icon">📄</span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span>
-          </button>
-          <button class="po-item" onclick="poGo(() => showTimelinePanel('portal'))">
-            <span class="po-item-icon">🕐</span><span class="po-item-label">Cronología</span><span class="po-arrow">›</span>
-          </button>
-          <button class="po-item" onclick="poGo(showNewsPanel)">
-            <span class="po-item-icon">📰</span><span class="po-item-label">Noticias</span><span class="po-arrow">›</span>
-          </button>
-          <button class="po-item" onclick="poGo(showScannerPanel)">
-            <span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-item-tag tag-l">6 patrones</span><span class="po-arrow">›</span>
-          </button>
+          <div class="exec-section-hd" style="cursor:pointer;" onclick="poGo(showCandidatosPanel)">
+            🎯 &nbsp;Candidatos a investigar
+            <span class="exec-section-badge" id="po-candidatos-badge" style="background:rgba(255,61,87,0.15);color:var(--red);">cargando…</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--electric);font-weight:600;">Ver todos →</span>
+          </div>
+          <div id="po-candidatos-preview" style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px;">
+            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando candidatos…</div>
+          </div>
+          <div class="exec-section-hd" style="cursor:default;">
+            🆕 &nbsp;Proveedores Nuevos &lt;90 días
+            <span class="exec-section-badge" id="new-vendors-badge" style="background:rgba(0,200,100,0.12);color:#4ade80;">cargando…</span>
+          </div>
+          <div id="new-vendors-list">
+            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
+          </div>
+          <div class="exec-section-hd" style="cursor:default;">
+            🤖 &nbsp;Detecciones Automáticas
+            <span class="exec-section-badge" id="auto-inv-badge" style="background:rgba(138,43,226,0.18);color:#a78bfa;">cargando…</span>
+          </div>
+          <div id="auto-inv-list">
+            <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
+          </div>
+          <div class="exec-section-hd">
+            🗂 &nbsp;Investigaciones activas
+            <span class="exec-section-badge" id="exec-inv-badge" style="background:var(--red-dim);color:var(--red);">cargando…</span>
+          </div>
+          <div id="exec-inv-list">
+            <div style="color:var(--text-dim);font-size:10px;padding:10px;text-align:center;">Cargando investigaciones…</div>
+          </div>
         </div>
       </div>
 
@@ -3665,10 +3665,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <div id="notif-status" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);display:none;"></div>
         </div>
       </div>
-
-    </div>
-
-    <div class="po-grid-bottom">
 
       <!-- REPORTES -->
       <div class="po-card po-green" id="poc-reportes" onclick="poToggle('reportes')">

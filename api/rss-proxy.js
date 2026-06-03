@@ -18,10 +18,11 @@
 
 const SOURCES = {
   confidencial:     'https://confidencialhn.com/feed/',
-  elpais:   'https://www.elpais.hn/feed/',
-  proceso:  'https://proceso.hn/feed/',
-  criterio: 'https://criterio.hn/feed/',
-  icn:      'https://icndiario.com/feed/',
+  elpais:           'https://www.elpais.hn/feed/',
+  proceso:          'https://proceso.hn/feed/',
+  criterio:         'https://criterio.hn/feed/',
+  icn:              'https://icndiario.com/feed/',
+  contracorriente:  'https://contracorriente.red/feed/',
 };
 
 /**

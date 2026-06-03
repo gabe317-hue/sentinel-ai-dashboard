@@ -1,4 +1,9 @@
 {
+  "rewrites": [
+    { "source": "/sentinel_v1_hnd.html", "destination": "/HTML/sentinel_v1_hnd.html" },
+    { "source": "/mvp.html", "destination": "/HTML/mvp.html" },
+    { "source": "/demo.html", "destination": "/HTML/demo.html" }
+  ],
   "headers": [
     {
       "source": "/(.*\\.html)",

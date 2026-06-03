@@ -10922,6 +10922,22 @@ function closeReferModal() {
   document.getElementById('referModalOverlay').classList.remove('open');
 }
 
+// ── Helper global NS signals ─────────────────────────────────────────────────
+function _getNS(proveedor) {
+  const vs = window._sentinelVendorSignals || {};
+  const nv = window._sentinelNormV || (s => (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,20));
+  const k = nv(proveedor);
+  if (vs[k]) return vs[k];
+  const hit = Object.keys(vs).find(vk => vk.length > 6 && (k.includes(vk.slice(0,10)) || vk.includes(k.slice(0,10))));
+  return hit ? vs[hit] : { ns1:0, ns2:0, ns3:0, ns4:0, ns5:0, ns6:0, ns7:0, count:0, labels:[] };
+}
+function _nsBadgesHTML(sig) {
+  if (!sig || !sig.count) return '<span style="color:#aaa;font-size:9pt;">—</span>';
+  const map = { ns1:'NS-1 MONOGAMIA', ns2:'NS-2 VENTANA', ns3:'NS-3 DEBUT', ns4:'NS-4 BCAI', ns5:'NS-5 UMBRAL', ns6:'NS-6 SURGE', ns7:'NS-7 GEMELOS' };
+  return Object.entries(map).filter(([k]) => sig[k] > 0)
+    .map(([,l]) => `<span style="display:inline-block;background:#1a1a2e;border:1px solid #e0a800;color:#e0a800;font-size:7.5pt;font-family:monospace;padding:1px 5px;border-radius:3px;margin:1px;">${l}</span>`).join(' ');
+}
+
 function generarMemorandum() {
   const destino = document.getElementById('rm-dest').value;
   const d = _referModalData;
@@ -11912,6 +11928,21 @@ async function generarMemoPGR(folio, entidad) {
 ${cmAnomaliesRows ? `<div style="background:#fff3cd;border:2px solid #e0a800;border-radius:6px;padding:10px 14px;margin:12px 0;"><strong style="color:#856404;font-size:10.5pt;">⚠️ Contratos adjudicados sin proceso competitivo con monto fuera de norma</strong><p style="font-size:9.5pt;margin:6px 0 8px 0;color:#555;">Los siguientes contratos fueron adjudicados mediante modalidad directa con montos que exceden los parámetros legales establecidos en la Ley de Contratación del Estado:</p><table><tr><th>Proveedor</th><th style="text-align:right;">Monto Adjudicado</th><th>Modalidad Declarada</th></tr>${cmAnomaliesRows}</table></div>` : ''}
 ${concentrationRows ? `<div style="background:#fdecea;border:2px solid #e74c3c;border-radius:6px;padding:10px 14px;margin:12px 0;"><strong style="color:#c0392b;font-size:10.5pt;">⚠️ Concentración extrema del gasto en un proveedor único</strong><p style="font-size:9.5pt;margin:6px 0 8px 0;color:#555;">El siguiente proveedor concentra más del 60% del monto total expuesto de la entidad, lo que indica ausencia de competencia real en el proceso de contratación:</p><table><tr><th>Proveedor</th><th style="text-align:right;">Monto Total</th><th style="text-align:right;">% del Gasto Entidad</th></tr>${concentrationRows}</table></div>` : ''}` : '';
 
+    // 5C. Señales NS por proveedor
+    const nsProveedores = [...new Set(sorted.slice(0,15).map(a => a.proveedor_nombre || a.proveedor).filter(Boolean))];
+    const nsConSenal = nsProveedores.map(p => ({ p, sig: _getNS(p) })).filter(x => x.sig.count > 0);
+    const nsSection = nsConSenal.length > 0 ? `
+<h2 style="border-left:4px solid #e0a800;padding-left:10px;color:#1a1a2e;font-size:13pt;margin:22px 0 6px 0;">4-C. Señales de Comportamiento Anómalo (Sentinel Score™)</h2>
+<p class="section-p" style="color:#555;font-style:italic;font-size:10pt;">El módulo Sentinel Score™ identificó las siguientes señales de comportamiento en proveedores activos con esta entidad. Cada señal representa un patrón estadístico detectado en el historial de contratación.</p>
+<table>
+<tr><th>Proveedor</th><th style="text-align:center;">Señales Activas</th><th>Patrones Detectados</th></tr>
+${nsConSenal.map((x,i) => `<tr style="background:${i%2===0?'#fffbea':'#fff'};">
+  <td style="padding:7px 10px;font-size:10pt;font-weight:700;">${x.p}</td>
+  <td style="padding:7px 10px;text-align:center;font-size:11pt;font-weight:800;color:#856404;">${x.sig.count}</td>
+  <td style="padding:7px 10px;">${_nsBadgesHTML(x.sig)}</td>
+</tr>`).join('')}
+</table>` : '';
+
     // 6. Construir HTML del memo
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -12036,6 +12067,7 @@ ${concentrationRows ? `<div style="background:#fdecea;border:2px solid #e74c3c;b
 </ul>
 
 ${anomaliasSection}
+${nsSection}
 
 <!-- ── SECCIÓN 5 ── -->
 <h2>5. Pareto — Top 20 Contratos por Monto (${totalMonto>0?((sorted.slice(0,20).reduce((s,a)=>s+(parseFloat(a.monto)||0),0)/totalMonto*100).toFixed(1)):'—'}% del total)</h2>
@@ -15780,6 +15812,10 @@ function generarBriefingEjecutivo() {
     const sev       = a.severity || 'Baja';
     const pats      = (a.patterns||'').split(',').filter(Boolean).slice(0,2).join(', ') || '—';
     const bg        = i % 2 === 0 ? '#fff' : '#f8f9fa';
+    const sig       = _getNS(proveedor);
+    const nsBadges  = sig.count > 0
+      ? sig.labels.slice(0,3).map(l=>`<span style="display:inline-block;background:#1a1a2e;border:1px solid #e0a800;color:#e0a800;font-size:7px;font-family:monospace;padding:1px 4px;border-radius:2px;margin:1px;">${l}</span>`).join('')
+      : '<span style="color:#aaa;font-size:9px;">—</span>';
     return `<tr style="background:${bg}">
       <td style="padding:7px 10px;font-size:11px;color:#6b7280;text-align:center;">${i+1}</td>
       <td style="padding:7px 10px;font-size:12px;font-weight:600;">${esc(proveedor)}</td>
@@ -15787,10 +15823,12 @@ function generarBriefingEjecutivo() {
       <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#c0392b;text-align:right;">${monto}</td>
       <td style="padding:7px 10px;font-size:11px;font-weight:700;color:${sevColor(sev)};text-align:center;">${esc(sev)}</td>
       <td style="padding:7px 10px;font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;">${esc(pats)}</td>
+      <td style="padding:7px 10px;">${nsBadges}</td>
     </tr>`;
   }).join('');
 
   const totalMonto = top20.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
+  const conNS = top20.filter(a => _getNS(a.proveedor_nombre||'').count > 0).length;
 
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <style>
@@ -15817,6 +15855,7 @@ function generarBriefingEjecutivo() {
     <div class="kpi"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">Monto Expuesto</div></div>
     <div class="kpi"><div class="kpi-val">${top20.filter(a=>(a.severity||'').includes('rít')).length}</div><div class="kpi-lbl">Críticos</div></div>
     <div class="kpi"><div class="kpi-val">${top20.filter(a=>(a.severity||'').includes('lta')).length}</div><div class="kpi-lbl">Altos</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#e0a800;">${conNS}</div><div class="kpi-lbl">Con Señales NS</div></div>
   </div>
   <table>
     <thead><tr>
@@ -15826,6 +15865,7 @@ function generarBriefingEjecutivo() {
       <th style="text-align:right;">Monto</th>
       <th style="text-align:center;">Severidad</th>
       <th>Patrones</th>
+      <th>Señales NS</th>
     </tr></thead>
     <tbody>${filas}</tbody>
   </table>
@@ -17684,6 +17724,10 @@ async function renderTop5() {
   Object.values(vendorSignals).forEach(v => {
     v.count = ['ns1','ns2','ns3','ns4','ns5','ns6','ns7'].filter(k => v[k] > 0).length;
   });
+
+  // Exponer globalmente para memo/briefing
+  window._sentinelVendorSignals = vendorSignals;
+  window._sentinelNormV = normV;
 
   // Find signal data for a proveedor (exact then partial match)
   function getSig(proveedor) {

@@ -11839,10 +11839,16 @@ async function generarMemoPGR(folio, entidad) {
       .select('*').eq('folio', folio).single();
 
     // 2. Filtrar alertas CRÍTICAS de la entidad desde allAlerts (ya cargado)
+    const _normEnt = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9\s]/g,'').trim();
+    const entQN = _normEnt(entidad);
     const alerts = (window.allAlerts || []).filter(a => {
-      const ent = (a.entidad || a.entity_name || '').toLowerCase();
-      const entQ = entidad.toLowerCase();
-      return ent.includes(entQ) || entQ.includes(ent.split(' ')[0]);
+      const entN = _normEnt(a.entidad || a.entity_name || '');
+      // Exacto o substring largo (≥10 chars) para evitar falsos positivos con "comision"
+      if (entN === entQN) return true;
+      if (entN.includes(entQN) || entQN.includes(entN)) return true;
+      // Coincidencia por primeras 3 palabras significativas (>3 chars)
+      const words = entQN.split(/\s+/).filter(w => w.length > 3).slice(0, 3);
+      return words.length >= 2 && words.every(w => entN.includes(w));
     });
     const criticas = alerts.filter(a => (a.severidad||a.severity||'').toUpperCase() === 'CRÍTICA' || (a.severidad||a.severity||'').toUpperCase() === 'CRITICA');
     const sorted = criticas.sort((a,b) => (parseFloat(b.monto)||0) - (parseFloat(a.monto)||0));

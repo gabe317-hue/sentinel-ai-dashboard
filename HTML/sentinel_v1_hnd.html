@@ -3742,19 +3742,26 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- ACTIVIDAD DEL SISTEMA -->
-  <div style="padding:0 40px 32px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div class="po-section-label" style="margin-bottom:0;">Actividad del Sistema</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--green);display:flex;align-items:center;gap:6px;">
-        <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite;"></span>EN VIVO
+      <!-- ACTIVIDAD DEL SISTEMA -->
+      <div class="po-card po-green" id="poc-actividad" onclick="poToggle('actividad')">
+        <div class="po-card-hd">
+          <div class="po-card-icon"><span>📡</span></div>
+          <div>
+            <div class="po-card-title">Actividad del Sistema</div>
+            <div class="po-card-desc" style="display:flex;align-items:center;gap:5px;">
+              <span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite;"></span>
+              EN VIVO · LOG DE EVENTOS
+            </div>
+          </div>
+          <div class="po-chevron">▼</div>
+        </div>
+        <div class="po-submenu" style="padding:8px 0;">
+          <div id="portal-activity-feed" style="padding:4px 0;min-height:60px;">
+            <div style="padding:16px 20px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">Cargando actividad…</div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div id="portal-activity-feed" style="background:var(--navy-light);border:1px solid var(--border);border-radius:14px;padding:4px 0;min-height:80px;">
-      <div style="padding:20px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">Cargando actividad…</div>
+
     </div>
   </div>
 

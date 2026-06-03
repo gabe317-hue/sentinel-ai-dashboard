@@ -2459,7 +2459,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <h2>⚖️ Constructor de Caso</h2>
       <p>DEFINE LA HIPÓTESIS · SENTINEL ANALIZA LA EVIDENCIA · REPORTE DE INVESTIGACIÓN</p>
     </div>
-    <button id="ccBtnBack" class="pe-btn-back" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="pe-btn-back" onclick="hideAllPanels();showPortal()">← Portal Principal</button>
+      <button id="ccBtnBack" class="pe-btn-back" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
+    </div>
   </div>
   <div class="ip-body" style="max-width:880px;">
 

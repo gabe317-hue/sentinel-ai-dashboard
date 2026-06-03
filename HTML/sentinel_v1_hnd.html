@@ -11964,7 +11964,18 @@ async function generarMemoPGR(folio, entidad) {
 ${cmAnomaliesRows ? `<div style="background:#fff3cd;border:2px solid #e0a800;border-radius:6px;padding:10px 14px;margin:12px 0;"><strong style="color:#856404;font-size:10.5pt;">⚠️ Contratos adjudicados sin proceso competitivo con monto fuera de norma</strong><p style="font-size:9.5pt;margin:6px 0 8px 0;color:#555;">Los siguientes contratos fueron adjudicados mediante modalidad directa con montos que exceden los parámetros legales establecidos en la Ley de Contratación del Estado:</p><table><tr><th>Proveedor</th><th style="text-align:right;">Monto Adjudicado</th><th>Modalidad Declarada</th></tr>${cmAnomaliesRows}</table></div>` : ''}
 ${concentrationRows ? `<div style="background:#fdecea;border:2px solid #e74c3c;border-radius:6px;padding:10px 14px;margin:12px 0;"><strong style="color:#c0392b;font-size:10.5pt;">⚠️ Concentración extrema del gasto en un proveedor único</strong><p style="font-size:9.5pt;margin:6px 0 8px 0;color:#555;">El siguiente proveedor concentra más del 60% del monto total expuesto de la entidad, lo que indica ausencia de competencia real en el proceso de contratación:</p><table><tr><th>Proveedor</th><th style="text-align:right;">Monto Total</th><th style="text-align:right;">% del Gasto Entidad</th></tr>${concentrationRows}</table></div>` : ''}` : '';
 
-    // 5C. Señales NS por proveedor
+    // 5C. Señales NS — esperar hasta 4s a que renderTop5 termine de cargar
+    if (!window._sentinelVendorSignals || !Object.keys(window._sentinelVendorSignals).length) {
+      await new Promise(resolve => {
+        let tries = 0;
+        const check = setInterval(() => {
+          tries++;
+          if ((window._sentinelVendorSignals && Object.keys(window._sentinelVendorSignals).length) || tries >= 8) {
+            clearInterval(check); resolve();
+          }
+        }, 500);
+      });
+    }
     const nsProveedores = [...new Set(sorted.slice(0,15).map(a => a.proveedor_nombre || a.proveedor).filter(Boolean))];
     const nsConSenal = nsProveedores.map(p => ({ p, sig: _getNS(p) })).filter(x => x.sig.count > 0);
     const nsSection = nsConSenal.length > 0 ? `
@@ -12161,7 +12172,7 @@ ${sorted.length > 0 ? `<!-- ── SECCIÓN 5 ── -->
   <li><strong>Considerar investigación formal</strong> si la documentación primaria confirma los patrones de fraccionamiento o adjudicación sin competencia, a criterio de la autoridad competente.</li>
 </ol>
 
-<!-- ── ANEXO A ── -->
+${sorted.length > 0 ? `<!-- ── ANEXO A ── -->
 <div class="page-break"></div>
 <h2>Anexo A — Top 25 Contratos CRÍTICOS por Monto (${Math.min(sorted.length,25)} de ${sorted.length} total)</h2>
 <div class="legend" style="margin-bottom:8px;font-family:Arial,sans-serif;font-size:9pt;color:#856404;background:#fff3cd;padding:6px 10px;border-radius:4px;border:1px solid #e0a800;">
@@ -12175,9 +12186,9 @@ ${sorted.length > 0 ? `<!-- ── SECCIÓN 5 ── -->
     <th style="text-align:center;">Fecha</th>
     <th>Tipo Alerta</th>
   </tr>
-  ${anexoRows || '<tr><td colspan="5" style="text-align:center;color:#999;">Sin datos</td></tr>'}
+  ${anexoRows}
 </table>
-${sorted.length > 25 ? `<p style="font-size:9pt;color:#555;font-style:italic;margin:12px 0;padding:10px 14px;background:#f5f5f0;border-left:3px solid #c0392b;border-radius:0 4px 4px 0;">📋 Este anexo incluye los <strong>25 contratos de mayor monto</strong> (Pareto). El listado completo de <strong>${sorted.length} contratos</strong> está disponible como documento separado — use el botón <strong>"📋 Lista"</strong> en la sección <em>Investigaciones Activas</em> del dashboard Sentinel AI.</p>` : ''}
+${sorted.length > 25 ? `<p style="font-size:9pt;color:#555;font-style:italic;margin:12px 0;padding:10px 14px;background:#f5f5f0;border-left:3px solid #c0392b;border-radius:0 4px 4px 0;">📋 Este anexo incluye los <strong>25 contratos de mayor monto</strong> (Pareto). El listado completo de <strong>${sorted.length} contratos</strong> está disponible como documento separado — use el botón <strong>"📋 Lista"</strong> en la sección <em>Investigaciones Activas</em> del dashboard Sentinel AI.</p>` : ''}` : ''}
 
 <div class="footer">
   <div><strong>Sentinel-AI</strong> · The Prieto Group<br>Sistema de Análisis de Riesgo en Contratación Pública · Honduras</div>

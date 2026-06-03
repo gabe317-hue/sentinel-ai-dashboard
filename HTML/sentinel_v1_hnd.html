@@ -10924,8 +10924,34 @@ function closeReferModal() {
 
 // ── Helper global NS signals ─────────────────────────────────────────────────
 function _getNS(proveedor) {
-  const vs = window._sentinelVendorSignals || {};
   const nv = window._sentinelNormV || (s => (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,20));
+  // Si el Top5 no cargó aún, construir señales básicas desde allAlerts
+  if (!window._sentinelVendorSignals || !Object.keys(window._sentinelVendorSignals).length) {
+    const alerts = window.allAlerts || [];
+    const k = nv(proveedor);
+    const mine = alerts.filter(a => nv(a.proveedor_nombre||a.proveedor||'') === k);
+    if (!mine.length) return { ns1:0, ns2:0, ns3:0, ns4:0, ns5:0, ns6:0, ns7:0, count:0, labels:[] };
+    const entidades = new Set(mine.map(a => a.entity_name||a.entidad||'').filter(Boolean));
+    // NS-1 Monogamia: ≥80% monto en una entidad
+    const totalM = mine.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
+    const entM = {}; mine.forEach(a=>{const e=a.entity_name||a.entidad||'?';entM[e]=(entM[e]||0)+Number(a.monto_contrato||0);});
+    const maxPct = totalM>0 ? Math.max(...Object.values(entM))/totalM : 0;
+    const ns1 = maxPct >= 0.8 ? Math.round(maxPct*100) : 0;
+    // NS-3 Debut: primer contrato <2 años
+    const fechas = mine.map(a=>new Date(a.fecha_contrato||0)).filter(d=>!isNaN(d));
+    const minFecha = fechas.length ? new Date(Math.min(...fechas)) : null;
+    const ns3 = minFecha && (new Date()-minFecha)<(1000*60*60*24*730) ? 70 : 0;
+    // NS-5 Umbral: contratos entre 900K-1.1M
+    const umbral = mine.filter(a=>{const m=Number(a.monto_contrato||0);return m>=900000&&m<=1100000;}).length;
+    const ns5 = umbral >= 2 ? Math.min(100, umbral*25) : 0;
+    const labels = [];
+    if (ns1>0) labels.push('NS-1 MONOGAMIA');
+    if (ns3>0) labels.push('NS-3 DEBUT');
+    if (ns5>0) labels.push('NS-5 UMBRAL');
+    const count = labels.length;
+    return { ns1, ns2:0, ns3, ns4:0, ns5, ns6:0, ns7:0, count, labels };
+  }
+  const vs = window._sentinelVendorSignals;
   const k = nv(proveedor);
   if (vs[k]) return vs[k];
   const hit = Object.keys(vs).find(vk => vk.length > 6 && (k.includes(vk.slice(0,10)) || vk.includes(k.slice(0,10))));
@@ -11768,6 +11794,10 @@ function tryExecuteInvestigacionPDF(invId) {
 // Genera HTML memo + window.print() para imprimir/guardar PDF
 // ════════════════════════════════════════════════════════════
 async function seleccionarInvParaMemo() {
+  // Pre-cargar señales NS en background si no están disponibles
+  if (!window._sentinelVendorSignals || !Object.keys(window._sentinelVendorSignals).length) {
+    renderTop5().catch(() => {}); // silencioso — no bloquea el flujo del memo
+  }
   try {
     const { data } = await db.from('investigaciones')
       .select('folio,entidad,monto,estado')
@@ -12075,7 +12105,7 @@ ${nsConSenal.map((x,i) => `<tr style="background:${i%2===0?'#fffbea':'#fff'};">
 ${anomaliasSection}
 ${nsSection}
 
-<!-- ── SECCIÓN 5 ── -->
+${sorted.length > 0 ? `<!-- ── SECCIÓN 5 ── -->
 <h2>5. Pareto — Top 20 Contratos por Monto (${totalMonto>0?((sorted.slice(0,20).reduce((s,a)=>s+(parseFloat(a.monto)||0),0)/totalMonto*100).toFixed(1)):'—'}% del total)</h2>
 <div class="legend" style="margin-bottom:8px;font-family:Arial,sans-serif;font-size:9pt;color:#856404;background:#fff3cd;padding:6px 10px;border-radius:4px;border:1px solid #e0a800;">
   ⚠️ Filas en amarillo = contrato anterior al Decreto PCM 16-2024 (1 jun 2024) — sin justificación de emergencia verificada
@@ -12088,8 +12118,8 @@ ${nsSection}
     <th style="text-align:center;">Fecha</th>
     <th style="text-align:right;">% Acum.</th>
   </tr>
-  ${pareto || '<tr><td colspan="5" style="text-align:center;color:#999;">Sin datos disponibles</td></tr>'}
-</table>
+  ${pareto}
+</table>` : ''}
 
 <!-- ── SECCIÓN 6 ── -->
 <h2>6. Dónde Ir y Qué Solicitar</h2>

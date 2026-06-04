@@ -9655,7 +9655,7 @@ async function loadOperadorInvisible() {
   const tbody = document.getElementById('oi-tbody');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
   try {
-    const { data, error } = await db.rpc('get_invisible_operators', { min_contratos: 3, min_pct_opaco: 0.70 });
+    const { data, error } = await db.rpc('get_invisible_operators', { min_contratos: 3, min_pct_opaco: 0.50 });
     if (error) throw error;
     _oiData = (data || []).map(r => ({
       ...r,

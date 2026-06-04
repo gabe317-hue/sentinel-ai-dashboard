@@ -21,7 +21,7 @@ const SOURCES = {
   elpais:           'https://www.elpais.hn/feed/',
   proceso:          'https://proceso.hn/feed/',
   criterio:         'https://criterio.hn/feed/',
-  icn:              'https://icndiario.com/feed/',
+  icn:              'https://icndigital.com/feed/',
   contracorriente:  'https://contracorriente.red/feed/',
 };
 

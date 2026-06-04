@@ -2773,6 +2773,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-4</span>
     </div>
 
+    <!-- Card 21 — Operador Invisible (NS-8) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showOperadorInvisiblePanel)">
+      <div class="pe-card-num">21</div>
+      <div class="pe-card-icon">👁️</div>
+      <div class="pe-card-title">Operador Invisible</div>
+      <div class="pe-card-desc">Proveedores con contratos registrados pero monto opaco (NULL o L0) en &gt;70% de sus registros — presencia en sistema sin valor trazable</div>
+      <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-8</span>
+    </div>
+
   </div>
 </div>
 
@@ -3254,6 +3263,53 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           </tr>
         </thead>
         <tbody id="tw-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ NS-8: OPERADOR INVISIBLE PANEL ══ -->
+  <div class="fuente-panel" id="operadorInvisiblePanel">
+    <button class="fuente-back" onclick="hideOperadorInvisiblePanel()">← Panel Ejecutivo</button>
+    <div class="fuente-header">
+      <div class="fuente-title">👁️ <span>Operador Invisible</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con contratos activos en SEFIN pero con monto opaco (NULL o L0) en más del 70% de sus registros — presencia oficial sin valor trazable. Indicador de Opacidad Sistémica Nivel 1.</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Operadores invisibles</div>
+        <div id="oi-stat-total" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
+      </div>
+      <div style="background:rgba(255,100,0,0.08);border:1px solid rgba(255,100,0,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Contratos opacos</div>
+        <div id="oi-stat-contratos" style="font-size:22px;font-weight:700;color:#ff6400;">—</div>
+      </div>
+      <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Opacidad máx.</div>
+        <div id="oi-stat-pct" style="font-size:22px;font-weight:700;color:#818cf8;">—</div>
+      </div>
+    </div>
+    <div style="background:rgba(255,61,87,0.06);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#f87171;">
+      👁️ <strong>Señal NS-8 — Opacidad Sistémica N1:</strong> Un proveedor con contratos registrados en SEFIN pero sin monto reportado no es un error de datos — es una decisión. La opacidad deliberada en el valor de un contrato impide auditoría, comparación de precios y detección de sobreprecios. Caso modelo: LAARSA (L0 en contrato SEDH-01-2025).
+    </div>
+    <div style="margin-bottom:10px;">
+      <input type="text" id="oi-search" placeholder="Filtrar por proveedor o institución..." oninput="oiFiltrar()"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;">
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Proveedor</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Institución</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Contratos</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Opacos</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">% Opaco</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Nivel</th>
+          </tr>
+        </thead>
+        <tbody id="oi-tbody">
           <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
         </tbody>
       </table>
@@ -9583,6 +9639,101 @@ function twRender() {
       <td style="padding:8px 10px;text-align:center;">
         <span style="font-weight:700;font-size:12px;color:${scoreColor(r.twin_score)};">${Number(r.twin_score).toFixed(1)}</span>
       </td>
+    </tr>`).join('');
+}
+
+// ══ NS-8: OPERADOR INVISIBLE ══════════════════════════════════════════════════
+let _oiData = [], _oiFiltered = [];
+
+async function showOperadorInvisiblePanel() {
+  document.getElementById('operadorInvisiblePanel').classList.add('open');
+  if (_oiData.length === 0) await loadOperadorInvisible();
+}
+function hideOperadorInvisiblePanel() { document.getElementById('operadorInvisiblePanel')?.classList.remove('open'); }
+
+async function loadOperadorInvisible() {
+  const tbody = document.getElementById('oi-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
+  try {
+    const { data, error } = await db
+      .from('contratos')
+      .select('proveedor_nombre, institucion, id')
+      .not('proveedor_nombre', 'is', null)
+      .limit(50000);
+    if (error) throw error;
+
+    // Agrupar por proveedor + institución
+    const grupos = {};
+    for (const r of (data || [])) {
+      const key = `${r.proveedor_nombre}||${r.institucion||'N/A'}`;
+      if (!grupos[key]) grupos[key] = { proveedor: r.proveedor_nombre, institucion: r.institucion||'N/A', total: 0 };
+      grupos[key].total++;
+    }
+
+    // Segunda query: contar contratos con monto NULL o 0
+    const { data: data2, error: e2 } = await db
+      .from('contratos')
+      .select('proveedor_nombre, institucion')
+      .or('monto_contrato.is.null,monto_contrato.eq.0')
+      .not('proveedor_nombre', 'is', null)
+      .limit(50000);
+    if (e2) throw e2;
+
+    const opacos = {};
+    for (const r of (data2 || [])) {
+      const key = `${r.proveedor_nombre}||${r.institucion||'N/A'}`;
+      opacos[key] = (opacos[key] || 0) + 1;
+    }
+
+    // Filtrar: ≥3 contratos total, >70% opacos
+    _oiData = Object.entries(grupos)
+      .filter(([k, g]) => g.total >= 3 && (opacos[k] || 0) / g.total > 0.70)
+      .map(([k, g]) => ({
+        proveedor_nombre: g.proveedor,
+        institucion:      g.institucion,
+        total_contratos:  g.total,
+        contratos_opacos: opacos[k] || 0,
+        pct_opaco:        Math.round((opacos[k] || 0) / g.total * 100)
+      }))
+      .sort((a, b) => b.pct_opaco - a.pct_opaco);
+
+    _oiFiltered = [..._oiData];
+    const maxPct = _oiData.length ? Math.max(..._oiData.map(r => r.pct_opaco)) : 0;
+    const totalOpacos = _oiData.reduce((s, r) => s + r.contratos_opacos, 0);
+    document.getElementById('oi-stat-total').textContent     = _oiData.length;
+    document.getElementById('oi-stat-contratos').textContent = totalOpacos;
+    document.getElementById('oi-stat-pct').textContent       = maxPct + '%';
+    oiRender();
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function oiFiltrar() {
+  const q = (document.getElementById('oi-search')?.value || '').toLowerCase();
+  _oiFiltered = q ? _oiData.filter(r =>
+    (r.proveedor_nombre||'').toLowerCase().includes(q) ||
+    (r.institucion||'').toLowerCase().includes(q)
+  ) : [..._oiData];
+  oiRender();
+}
+
+function oiRender() {
+  const tbody = document.getElementById('oi-tbody');
+  if (!_oiFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados.</td></tr>';
+    return;
+  }
+  const nivelColor = p => p === 100 ? '#f87171' : p >= 85 ? '#ff6400' : '#fbbf24';
+  const nivelLabel = p => p === 100 ? '🔴 TOTAL' : p >= 85 ? '🟠 CRÍTICA' : '🟡 ALTA';
+  tbody.innerHTML = _oiFiltered.map(r => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:8px 10px;color:var(--text);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.proveedor_nombre}">${r.proveedor_nombre}</td>
+      <td style="padding:8px 10px;color:var(--text-dim);font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.institucion}">${r.institucion}</td>
+      <td style="padding:8px 10px;text-align:center;color:var(--text-dim);font-size:12px;">${r.total_contratos}</td>
+      <td style="padding:8px 10px;text-align:center;font-weight:700;color:#f87171;font-size:12px;">${r.contratos_opacos}</td>
+      <td style="padding:8px 10px;text-align:center;font-weight:700;font-size:13px;color:${nivelColor(r.pct_opaco)};">${r.pct_opaco}%</td>
+      <td style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:${nivelColor(r.pct_opaco)};">${nivelLabel(r.pct_opaco)}</td>
     </tr>`).join('');
 }
 

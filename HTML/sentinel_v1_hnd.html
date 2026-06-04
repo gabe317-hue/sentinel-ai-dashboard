@@ -9655,51 +9655,15 @@ async function loadOperadorInvisible() {
   const tbody = document.getElementById('oi-tbody');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
   try {
-    const { data, error } = await db
-      .from('contratos')
-      .select('proveedor_nombre, institucion, id')
-      .not('proveedor_nombre', 'is', null)
-      .limit(50000);
+    const { data, error } = await db.rpc('get_invisible_operators', { min_contratos: 3, min_pct_opaco: 0.70 });
     if (error) throw error;
-
-    // Agrupar por proveedor + institución
-    const grupos = {};
-    for (const r of (data || [])) {
-      const key = `${r.proveedor_nombre}||${r.institucion||'N/A'}`;
-      if (!grupos[key]) grupos[key] = { proveedor: r.proveedor_nombre, institucion: r.institucion||'N/A', total: 0 };
-      grupos[key].total++;
-    }
-
-    // Segunda query: contar contratos con monto NULL o 0
-    const { data: data2, error: e2 } = await db
-      .from('contratos')
-      .select('proveedor_nombre, institucion')
-      .or('monto_contrato.is.null,monto_contrato.eq.0')
-      .not('proveedor_nombre', 'is', null)
-      .limit(50000);
-    if (e2) throw e2;
-
-    const opacos = {};
-    for (const r of (data2 || [])) {
-      const key = `${r.proveedor_nombre}||${r.institucion||'N/A'}`;
-      opacos[key] = (opacos[key] || 0) + 1;
-    }
-
-    // Filtrar: ≥3 contratos total, >70% opacos
-    _oiData = Object.entries(grupos)
-      .filter(([k, g]) => g.total >= 3 && (opacos[k] || 0) / g.total > 0.70)
-      .map(([k, g]) => ({
-        proveedor_nombre: g.proveedor,
-        institucion:      g.institucion,
-        total_contratos:  g.total,
-        contratos_opacos: opacos[k] || 0,
-        pct_opaco:        Math.round((opacos[k] || 0) / g.total * 100)
-      }))
-      .sort((a, b) => b.pct_opaco - a.pct_opaco);
-
+    _oiData = (data || []).map(r => ({
+      ...r,
+      pct_opaco: Math.round(Number(r.pct_opaco) * 100)
+    }));
     _oiFiltered = [..._oiData];
-    const maxPct = _oiData.length ? Math.max(..._oiData.map(r => r.pct_opaco)) : 0;
-    const totalOpacos = _oiData.reduce((s, r) => s + r.contratos_opacos, 0);
+    const maxPct     = _oiData.length ? Math.max(..._oiData.map(r => r.pct_opaco)) : 0;
+    const totalOpacos = _oiData.reduce((s, r) => s + Number(r.contratos_opacos), 0);
     document.getElementById('oi-stat-total').textContent     = _oiData.length;
     document.getElementById('oi-stat-contratos').textContent = totalOpacos;
     document.getElementById('oi-stat-pct').textContent       = maxPct + '%';

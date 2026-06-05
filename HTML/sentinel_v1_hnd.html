@@ -18825,6 +18825,17 @@ function getEntityVariants(name) {
   return [...variants];
 }
 
+function fmtLpsCompact(n) {
+  if (!n) return 'L —';
+  if (n >= 1e9) return 'L ' + (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return 'L ' + (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return 'L ' + (n / 1e3).toFixed(0) + 'K';
+  return 'L ' + Math.round(n).toLocaleString('es-HN');
+}
+function fmtLps(n) {
+  if (!n) return 'L —';
+  return 'L ' + Math.round(n).toLocaleString('es-HN');
+}
 function fmtLarge(n) {
   if (!n) return 'L. —';
   if (n >= 1e9) return 'L. ' + (n / 1e9).toFixed(2) + 'B';

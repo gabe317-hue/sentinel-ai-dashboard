@@ -6691,6 +6691,12 @@ try {
 
 // ════════════════════════════════════════════════════════════
 // ════════════════════════════════════════════════════════════
+// ── GLOBAL SEVERITY NORMALIZER — uso consistente en todo el sistema ──
+// Convierte 'CRÍTICA', 'CRITICA', 'crítica' → 'critica' (sin tilde, minúscula)
+function gNormSev(s) {
+  return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+}
+
 // APP STATE
 // ════════════════════════════════════════════════════════════
 let allAlerts      = [];    // Full dataset from Supabase
@@ -12001,7 +12007,7 @@ async function generarMemoPGR(folio, entidad) {
       const words = entQN.split(/\s+/).filter(w => w.length > 3).slice(0, 3);
       return words.length >= 2 && words.every(w => entN.includes(w));
     });
-    const criticas = alerts.filter(a => (a.severidad||a.severity||'').toUpperCase() === 'CRÍTICA' || (a.severidad||a.severity||'').toUpperCase() === 'CRITICA');
+    const criticas = alerts.filter(a => gNormSev(a.severidad||a.severity)==='critica');
     const sorted = criticas.sort((a,b) => (parseFloat(b.monto)||0) - (parseFloat(a.monto)||0));
 
     // 3. Calcular métricas
@@ -12368,7 +12374,7 @@ async function exportarListaCompleta(folio, entidad) {
       const entQ = entidad.toLowerCase();
       return ent.includes(entQ) || entQ.includes(ent.split(' ')[0]);
     });
-    const criticas = alerts.filter(a => (a.severidad||a.severity||'').toUpperCase() === 'CRÍTICA' || (a.severidad||a.severity||'').toUpperCase() === 'CRITICA');
+    const criticas = alerts.filter(a => gNormSev(a.severidad||a.severity)==='critica');
     const sorted = criticas.sort((a,b) => (parseFloat(b.monto)||0) - (parseFloat(a.monto)||0));
 
     const fmtL = v => v >= 1e9 ? 'L ' + (v/1e9).toFixed(2) + 'B' : v >= 1e6 ? 'L ' + (v/1e6).toFixed(1) + 'M' : 'L ' + v.toLocaleString('es-HN');
@@ -16935,7 +16941,7 @@ function ccCalcPatrones(vendorContratos) {
     const pats = Array.isArray(a.patterns) ? a.patterns : (typeof a.patterns === 'string' ? a.patterns.split(',') : []);
     pats.forEach(p => { const k = (p||'').trim(); if (k) patMap[k] = (patMap[k]||0)+1; });
   });
-  return { patMap, criticos: vendorContratos.filter(a => a.severity==='CRÍTICA').length, altos: vendorContratos.filter(a => a.severity==='ALTA').length };
+  return { patMap, criticos: vendorContratos.filter(a => gNormSev(a.severity)==='critica').length, altos: vendorContratos.filter(a => gNormSev(a.severity)==='alta').length };
 }
 
 function ccCalcScore(vendorContratos, vendorGlobal, conc, timeline, pats) {
@@ -18198,8 +18204,9 @@ function poUpdateIndicators() {
   try {
     const data = (typeof allAlerts !== 'undefined') ? allAlerts : [];
     if (!data.length) return;
-    const crit  = data.filter(a => a.severity === 'CRÍTICA').length;
-    const alto  = data.filter(a => a.severity === 'ALTA').length;
+    const normSevP = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    const crit  = data.filter(a => normSevP(a.severity) === 'critica').length;
+    const alto  = data.filter(a => normSevP(a.severity) === 'alta').length;
     const sob   = data.filter(a => {
       const mc = Number(a.monto_contrato||0);
       const budget = Number(a.budget_amount||0);
@@ -21229,11 +21236,11 @@ function showDashboardEjecutivo() {
 
     // 2 — Conteo por severidad + monto críticos en paralelo
     Promise.all([
-      db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','CRÍTICA'),
+      db.from('alerts').select('severity', {count:'exact', head:true}).or('severity.eq.CRÍTICA,severity.eq.CRITICA'),
       db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','ALTA'),
       db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','MEDIA'),
       db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','BAJA'),
-      db.from('alerts').select('monto_contrato').eq('severity','CRÍTICA').limit(2000)
+      db.from('alerts').select('monto_contrato').or('severity.eq.CRÍTICA,severity.eq.CRITICA').limit(2000)
     ]).then(([crit, alta, media, baja, montoRes]) => {
       const sev = {
         'CRÍTICA': crit.count || 0,
@@ -21772,7 +21779,7 @@ function renderRedFlagPanel() {
   const activeActors = Object.values(actorMap).filter(b => b.alerts.length > 0);
   const totalContratos = activeActors.reduce((s,b) => s + b.alerts.length, 0);
   const totalMonto = activeActors.reduce((s,b) => s + b.alerts.reduce((ss,a) => ss + Number(a.monto_contrato||0), 0), 0);
-  const totalCriticos = activeActors.reduce((s,b) => s + b.alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA').length, 0);
+  const totalCriticos = activeActors.reduce((s,b) => s + b.alerts.filter(a => gNormSev(a.severity||a.severidad)==='critica').length, 0);
 
   document.getElementById('rf-stat-actores').textContent   = activeActors.length || '—';
   document.getElementById('rf-stat-contratos').textContent = totalContratos.toLocaleString() || '—';
@@ -21789,7 +21796,7 @@ function renderRedFlagPanel() {
   activeActors.sort((a,b) => b.alerts.length - a.alerts.length).forEach((bucket, idx) => {
     const { meta, alerts } = bucket;
     const monto    = alerts.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
-    const criticos = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA').length;
+    const criticos = alerts.filter(a => gNormSev(a.severity||a.severidad)==='critica').length;
     const altos    = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'ALTA').length;
     const nivelColor = meta.nivel === 'alto' ? 'var(--red)' : 'var(--amber)';
     const tableRows = alerts.slice(0,50).map(a => {
@@ -22024,7 +22031,7 @@ function renderEngelPanel() {
   const activeActors = Object.values(actorMap).filter(b => b.alerts.length > 0);
   const totalContratos = activeActors.reduce((s,b) => s + b.alerts.length, 0);
   const totalMonto = activeActors.reduce((s,b) => s + b.alerts.reduce((ss,a) => ss + Number(a.monto_contrato||0), 0), 0);
-  const totalCriticos = activeActors.reduce((s,b) => s + b.alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA').length, 0);
+  const totalCriticos = activeActors.reduce((s,b) => s + b.alerts.filter(a => gNormSev(a.severity||a.severidad)==='critica').length, 0);
 
   // Update summary bar
   document.getElementById('engel-stat-actores').textContent = activeActors.length || '—';
@@ -22041,7 +22048,7 @@ function renderEngelPanel() {
   activeActors.sort((a,b) => b.alerts.length - a.alerts.length).forEach(bucket => {
     const { meta, alerts } = bucket;
     const monto = alerts.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
-    const criticos = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA').length;
+    const criticos = alerts.filter(a => gNormSev(a.severity||a.severidad)==='critica').length;
     const altos = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'ALTA').length;
     html += `
     <div style="margin-bottom:28px;border:1px solid rgba(168,85,247,0.25);border-radius:12px;overflow:hidden;">
@@ -22107,12 +22114,12 @@ function exportEngelPDF() {
   const activeActors = Object.values(actorMap).filter(b => b.alerts.length > 0).sort((a,b) => b.alerts.length - a.alerts.length);
   const totalContratos = activeActors.reduce((s,b) => s+b.alerts.length, 0);
   const totalMonto = activeActors.reduce((s,b) => s+b.alerts.reduce((ss,a) => ss+Number(a.monto_contrato||0),0), 0);
-  const totalCriticos = activeActors.reduce((s,b) => s+b.alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length, 0);
+  const totalCriticos = activeActors.reduce((s,b) => s+b.alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length, 0);
 
   const actorRows = activeActors.map(bucket => {
     const { meta, alerts } = bucket;
     const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
-    const criticos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+    const criticos = alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
     const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
     const entidades = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
     const detRows = alerts.slice(0,20).map(a => {
@@ -22248,7 +22255,7 @@ function renderOfacPanel() {
   const provList = Object.entries(provMap).sort((a,b) => b[1].length - a[1].length);
 
   const totalMonto = ofacAlerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
-  const totalCriticos = ofacAlerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+  const totalCriticos = ofacAlerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
   const entidades = new Set(ofacAlerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean));
 
   // Update summary bar
@@ -22265,7 +22272,7 @@ function renderOfacPanel() {
   let html = '';
   provList.forEach(([prov, alerts]) => {
     const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
-    const criticos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+    const criticos = alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
     const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
     html += `
     <div style="margin-bottom:28px;border:1px solid rgba(255,61,87,0.3);border-radius:12px;overflow:hidden;">
@@ -22333,12 +22340,12 @@ function exportOfacPDF() {
   });
   const provList = Object.entries(provMap).sort((a,b) => b[1].length - a[1].length);
   const totalMonto = ofacAlerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
-  const totalCriticos = ofacAlerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+  const totalCriticos = ofacAlerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
   const entidades = new Set(ofacAlerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean));
 
   const provRows = provList.map(([prov, alerts]) => {
     const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
-    const criticos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+    const criticos = alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
     const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
     const entsInv = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
     const detRows = alerts.slice(0,15).map(a => {
@@ -22465,12 +22472,12 @@ function exportRedFlagPDF() {
   const activeActors = Object.values(actorMap).filter(b => b.alerts.length > 0).sort((a,b) => b.alerts.length - a.alerts.length);
   const totalContratos = activeActors.reduce((s,b) => s+b.alerts.length, 0);
   const totalMonto = activeActors.reduce((s,b) => s+b.alerts.reduce((ss,a) => ss+Number(a.monto_contrato||0),0), 0);
-  const totalCriticos = activeActors.reduce((s,b) => s+b.alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length, 0);
+  const totalCriticos = activeActors.reduce((s,b) => s+b.alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length, 0);
 
   const actorRows = activeActors.map(bucket => {
     const { meta, alerts } = bucket;
     const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
-    const criticos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='CRÍTICA').length;
+    const criticos = alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
     const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
     const entidades = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
     const nivelColor = meta.nivel === 'alto' ? '#dc2626' : '#d97706';
@@ -24068,9 +24075,8 @@ function renderReportesPanel() {
     (() => {
       const all2 = window.allAlerts || [];
       const compMenorCrit = all2.filter(a => {
-        const sev = (a.severity||a.severidad||'').toUpperCase();
         const pats = (a.patterns||'');
-        return sev === 'CRÍTICA' && pats.includes('COMPRA_MENOR_ONCAE');
+        return gNormSev(a.severity||a.severidad) === 'critica' && pats.includes('COMPRA_MENOR_ONCAE');
       });
       const corinfar = all2.filter(a => (a.proveedor_nombre||'').toUpperCase().includes('CORINFAR'));
       const totalMonto = compMenorCrit.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
@@ -24095,7 +24101,7 @@ function renderReportesPanel() {
         const p = (a.proveedor_nombre||'').toUpperCase();
         return provTargets.some(t => p.includes(t));
       });
-      const criticos = provContratos.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'CRÍTICA');
+      const criticos = provContratos.filter(a => gNormSev(a.severity||a.severidad)==='critica');
       const totalMonto = criticos.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
       return {
         icon: '🕵️',
@@ -24800,8 +24806,7 @@ function exportReporteInvestigacionCriticaPDF() {
 
   // ── B: Compra Menor CRÍTICA ONCAE 2025
   const compMenorCrit = all.filter(a => {
-    const sev = (a.severity||a.severidad||'').toUpperCase();
-    return sev === 'CRÍTICA' && (a.patterns||'').includes('COMPRA_MENOR_ONCAE');
+    return gNormSev(a.severity||a.severidad) === 'critica' && (a.patterns||'').includes('COMPRA_MENOR_ONCAE');
   }).sort((a,b) => Number(b.monto_contrato||0) - Number(a.monto_contrato||0));
   const totalCMC = compMenorCrit.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
 
@@ -25420,9 +25425,9 @@ function exportReporteS36PDF() {
     return p.includes('CONSULTORIA INTEGRAL') || p.includes('CONSULTORÍA INTEGRAL');
   });
 
-  const rilmacCrit   = rilmac.filter(a => (a.severity||'').toUpperCase()==='CRÍTICA');
-  const greentecCrit = greentec.filter(a => (a.severity||'').toUpperCase()==='CRÍTICA');
-  const consultCrit  = consult.filter(a => (a.severity||'').toUpperCase()==='CRÍTICA');
+  const rilmacCrit   = rilmac.filter(a => gNormSev(a.severity)==='critica');
+  const greentecCrit = greentec.filter(a => gNormSev(a.severity)==='critica');
+  const consultCrit  = consult.filter(a => gNormSev(a.severity)==='critica');
 
   const totalRilmac   = rilmac.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
   const totalGreentec = greentec.reduce((s,a)=>s+Number(a.monto_contrato||0),0);

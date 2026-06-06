@@ -17589,6 +17589,26 @@ async function ccGenerarExpediente() {
       <div><label>Esquema</label><span>${_ccData.esquema || 'Por determinar'}</span></div>
     </div>
 
+    ${(_ccData.vendorVariants || []).length > 1 ? `
+    <div class="sec" style="border-left:4px solid #ef4444;padding-left:14px;">
+      <div class="sec-title" style="color:#ef4444;">🚨 EMPRESA ESPEJO — RAZONES SOCIALES MÚLTIPLES</div>
+      <div class="sec-body">
+        <strong>Alerta de fragmentación de identidad jurídica.</strong> La búsqueda por "<em>${_ccData.proveedor}</em>" devolvió contratos registrados bajo <strong>${(_ccData.vendorVariants||[]).length} razones sociales distintas</strong>, lo que puede indicar el uso deliberado de empresas relacionadas para evadir umbrales de contratación, duplicar adjudicaciones o dificultar la trazabilidad de recursos públicos.<br><br>
+        <strong>Razones sociales identificadas:</strong><br>
+        ${(_ccData.vendorVariants||[]).map((v,i)=>`<strong>${i+1}.</strong> ${v}`).join('<br>')}
+        <br><br>
+        <strong>Acciones recomendadas:</strong> (i) Verificar en el Registro Nacional de Contribuyentes (RNC) si comparten RTN, accionistas o representante legal. (ii) Solicitar al IMPREMA/Despacho de Justicia el certificado de constitución de cada persona jurídica. (iii) Cruzar socios y apoderados contra el RNP y registros de servidores públicos de SESAL.
+      </div>
+    </div>` : ''}
+    ${sections.filter(s => !s.trim().toUpperCase().startsWith('DISCLAIMER')).map(s => {
+      const nl = s.indexOf('\n');
+      const title = s.substring(0, nl).trim();
+      const body  = s.substring(nl + 1).trim();
+      if (!body || body === '#') return '';
+      const icons = { 'RESUMEN':'📋', 'HALLAZGOS':'🔍', 'ANÁLISIS':'⚠️', 'AN':'⚠️', 'PRÓXIMOS':'📌', 'PROX':'📌' };
+      const icon = Object.entries(icons).find(([k]) => title.toUpperCase().startsWith(k))?.[1] || '▸';
+      return `<div class="sec"><div class="sec-title">${icon} ${title}</div><div class="sec-body">${mdToHtml(body)}</div></div>`;
+    }).join('')}
     <div class="sec">
       <div class="sec-title">📊 ANÁLISIS VISUAL</div>
       <div class="charts-grid">
@@ -17613,7 +17633,6 @@ async function ccGenerarExpediente() {
       const CD = ${_chartDataJson};
       const PURPLE='rgba(124,58,237,0.75)', RED='rgba(239,68,68,0.75)', AMBER='rgba(245,158,11,0.75)', TEAL='rgba(20,184,166,0.75)';
       const PALETTE=[PURPLE,RED,AMBER,TEAL,'rgba(99,102,241,0.75)','rgba(236,72,153,0.75)'];
-      // Chart 1: Variantes
       if(CD.variants.length>1 && document.getElementById('chartVariants')){
         new Chart(document.getElementById('chartVariants'),{
           type:'bar',
@@ -17621,7 +17640,6 @@ async function ccGenerarExpediente() {
           options:{ plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>v+'M' }}}, responsive:true }
         });
       }
-      // Chart 2: Patrones
       if(document.getElementById('chartPatterns')){
         const pKeys=Object.keys(CD.patterns); const pVals=pKeys.map(k=>CD.patterns[k]);
         new Chart(document.getElementById('chartPatterns'),{
@@ -17630,7 +17648,6 @@ async function ccGenerarExpediente() {
           options:{ plugins:{ legend:{ position:'right', labels:{ font:{ size:9 }, boxWidth:12 }}}, responsive:true }
         });
       }
-      // Chart 3: Timeline
       if(CD.timeline.length>1 && document.getElementById('chartTimeline')){
         new Chart(document.getElementById('chartTimeline'),{
           type:'bar',
@@ -17640,27 +17657,6 @@ async function ccGenerarExpediente() {
       }
     })();
     <\/script>
-
-    ${(_ccData.vendorVariants || []).length > 1 ? `
-    <div class="sec" style="border-left:4px solid #ef4444;padding-left:14px;">
-      <div class="sec-title" style="color:#ef4444;">🚨 EMPRESA ESPEJO — RAZONES SOCIALES MÚLTIPLES</div>
-      <div class="sec-body">
-        <strong>Alerta de fragmentación de identidad jurídica.</strong> La búsqueda por "<em>${_ccData.proveedor}</em>" devolvió contratos registrados bajo <strong>${(_ccData.vendorVariants||[]).length} razones sociales distintas</strong>, lo que puede indicar el uso deliberado de empresas relacionadas para evadir umbrales de contratación, duplicar adjudicaciones o dificultar la trazabilidad de recursos públicos.<br><br>
-        <strong>Razones sociales identificadas:</strong><br>
-        ${(_ccData.vendorVariants||[]).map((v,i)=>`<strong>${i+1}.</strong> ${v}`).join('<br>')}
-        <br><br>
-        <strong>Acciones recomendadas:</strong> (i) Verificar en el Registro Nacional de Contribuyentes (RNC) si comparten RTN, accionistas o representante legal. (ii) Solicitar al IMPREMA/Despacho de Justicia el certificado de constitución de cada persona jurídica. (iii) Cruzar socios y apoderados contra el RNP y registros de servidores públicos de SESAL.
-      </div>
-    </div>` : ''}
-    ${sections.filter(s => !s.trim().toUpperCase().startsWith('DISCLAIMER')).map(s => {
-      const nl = s.indexOf('\n');
-      const title = s.substring(0, nl).trim();
-      const body  = s.substring(nl + 1).trim();
-      if (!body || body === '#') return '';
-      const icons = { 'RESUMEN':'📋', 'HALLAZGOS':'🔍', 'ANÁLISIS':'⚠️', 'AN':'⚠️', 'PRÓXIMOS':'📌', 'PROX':'📌' };
-      const icon = Object.entries(icons).find(([k]) => title.toUpperCase().startsWith(k))?.[1] || '▸';
-      return `<div class="sec"><div class="sec-title">${icon} ${title}</div><div class="sec-body">${mdToHtml(body)}</div></div>`;
-    }).join('')}
     <div class="disclaimer">${secMap['DISCLAIMER'] || (sections.find(s=>s.trim().toUpperCase().startsWith('DISCLAIMER'))?.split('\n').slice(1).join(' ').trim()) || 'Este reporte fue generado por Sentinel AI con datos de ONCAE/SEFIN y es de carácter preliminar; no constituye prueba judicial ni opinión legal.'}</div>
     <div class="footer"><span>Sentinel AI — Sistema de Detección de Riesgo</span><span>Generado: ${ts} · Folio: ${folio}</span></div>
     </div></body></html>`;

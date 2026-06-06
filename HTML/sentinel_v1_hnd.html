@@ -17798,19 +17798,23 @@ async function ccMisExpedientes() {
     const fmtM = n => n ? `L ${(n/1e6).toFixed(1)}M` : '—';
     const fmtDate = s => s ? new Date(s).toLocaleDateString('es-HN',{year:'numeric',month:'short',day:'numeric'}) : '';
     list.innerHTML = data.map(exp => `
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(160,180,210,0.15);border-radius:10px;padding:14px 18px;cursor:pointer;transition:border-color .2s;"
-           onmouseover="this.style.borderColor='rgba(251,191,36,0.4)'" onmouseout="this.style.borderColor='rgba(160,180,210,0.15)'"
-           onclick="ccCargarExpediente(${JSON.stringify(exp).replace(/"/g,'&quot;')})">
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(160,180,210,0.15);border-radius:10px;padding:14px 18px;transition:border-color .2s;"
+           onmouseover="this.style.borderColor='rgba(251,191,36,0.4)'" onmouseout="this.style.borderColor='rgba(160,180,210,0.15)'">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-          <div>
+          <div style="flex:1;cursor:pointer;" onclick="ccCargarExpediente(${JSON.stringify(exp).replace(/"/g,'&quot;')})">
             <div style="font-size:13px;font-weight:800;color:#e2e8f0;margin-bottom:4px;">${exp.nombre}</div>
             <div style="font-size:10px;color:rgba(160,180,210,0.5);letter-spacing:.05em;">${exp.entidad} · ${exp.proveedor}</div>
             ${exp.notas ? `<div style="font-size:10px;color:rgba(160,180,210,0.45);margin-top:6px;font-style:italic;">${exp.notas}</div>` : ''}
           </div>
-          <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:11px;color:#fbbf24;font-weight:800;">${exp.score_total ?? '—'}/6</div>
-            <div style="font-size:10px;color:rgba(160,180,210,0.4);">${fmtM(exp.monto_total)}</div>
-            <div style="font-size:9px;color:rgba(160,180,210,0.3);margin-top:4px;">${fmtDate(exp.created_at)}</div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+            <div style="text-align:right;">
+              <div style="font-size:11px;color:#fbbf24;font-weight:800;">${exp.score_total ?? '—'}/6</div>
+              <div style="font-size:10px;color:rgba(160,180,210,0.4);">${fmtM(exp.monto_total)}</div>
+              <div style="font-size:9px;color:rgba(160,180,210,0.3);margin-top:4px;">${fmtDate(exp.created_at)}</div>
+            </div>
+            <button onclick="ccEliminarExpediente('${exp.id}')" title="Eliminar expediente"
+              style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:3px 8px;font-size:10px;cursor:pointer;transition:all .2s;"
+              onmouseover="this.style.background='rgba(239,68,68,0.25)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">🗑 Eliminar</button>
           </div>
         </div>
       </div>`).join('');
@@ -17829,6 +17833,13 @@ function ccCargarExpediente(exp) {
     if (opt) esqSel.value = exp.esquema;
   }
   ccAnalizar();
+}
+
+async function ccEliminarExpediente(id) {
+  if (!confirm('¿Eliminar este expediente? Esta acción no se puede deshacer.')) return;
+  const { error } = await db.from('expedientes').delete().eq('id', id);
+  if (error) { alert('Error al eliminar: ' + error.message); return; }
+  ccMisExpedientes(); // refrescar lista
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

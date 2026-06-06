@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
+<script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
 <style>
 :root {
   --navy:       #0a1628;
@@ -24,7 +24,6 @@
   --orange:     #ff6b35;
   --orange-dim: rgba(255,107,53,0.12);
   --purple:     #a855f7;
-  --purple-dim: rgba(168,85,247,0.12);
   --text:       #e8edf5;
   --text-dim:   #7a8ba8;
   --border:     rgba(0,200,255,0.12);
@@ -4288,7 +4287,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div class="controls-bar" style="margin-bottom:6px;gap:8px;">
     <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.06em;white-space:nowrap;align-self:center;">🔍 BUSCAR:</span>
     <input id="global-search" type="text" placeholder="Proveedor, entidad, o ID de contrato..."
-      oninput="_setSearchDebounced(this.value)"
+      oninput="setSearch(this.value)"
       style="flex:1;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;
              padding:7px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;
              outline:none;transition:border-color .2s;min-width:0;"
@@ -6667,13 +6666,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 <!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
 <script>
 // ════════════════════════════════════════════════════════════
-// S170 — UTILITY HELPERS
-// ════════════════════════════════════════════════════════════
-const _debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-const _setSearchDebounced = _debounce((...a) => typeof setSearch === 'function' && setSearch(...a), 280);
-const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-
-// ════════════════════════════════════════════════════════════
 // CONFIGURATION
 // ════════════════════════════════════════════════════════════
 const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
@@ -6691,6 +6683,7 @@ try {
       detectSessionInUrl: false
     }
   });
+  console.log('✅ Supabase client initialized successfully');
 } catch (e) {
   console.error('❌ Supabase init failed:', e.message);
   showError('No se pudo inicializar Supabase: ' + e.message);
@@ -6747,31 +6740,20 @@ function fmtDate(iso) {
 // NEVER falls back to localStorage on failure — shows error instead.
 // Required console output for Week 3 Step 5 verification.
 // ════════════════════════════════════════════════════════════
-// S126 — Configuración global: arrays de filtrado (movidos a scope global en S170)
-// S92 — Exclusiones quirúrgicas: pares proveedor+entidad con justificación operacional legítima.
-const EXCLUSIONES_OPERACIONALES = [
-  { proveedor: 'ASTRO TOUR',    entidad: 'EJERCITO DE HONDURAS'      },
-  { proveedor: 'ASTRO TOUR',    entidad: 'ESTADO MAYOR CONJUNTO'     },
-  { proveedor: 'ASTRO TOUR',    entidad: 'UNIDAD CENTRAL'            },
-  { proveedor: 'VOLARE',        entidad: 'EJERCITO DE HONDURAS'      },
-  { proveedor: 'VOLARE',        entidad: 'ESTADO MAYOR CONJUNTO'     },
-  { proveedor: 'VOLARE',        entidad: 'UNIDAD CENTRAL'            },
-];
-// S99 — Entity resolution
-const VENDOR_ALIASES = [
-  { patron: 'SOLINT',          canonico: 'SOLUCIONES INTEGRALES (SOLINTSA)' },
-  { patron: 'INFRA DE HONDUR', canonico: 'INFRA DE HONDURAS S.A.'           },
-];
-// S100 — ERROR_DATOS
-const ERROR_DATOS_CONTRATOS = [
-  { patron: 'RILMAC IMPRESORES', montoMin: 1_000_000_000 }
-];
-
 // S126 — Helper: apply exclusiones, entity resolution, error_datos filters to a records array.
 // Does NOT include FRACCIONAMIENTO scrub (needs full dataset) — caller handles that separately.
 function _applyAlertsFilters(records) {
   let arr = records;
 
+  // S92 — Exclusiones quirúrgicas: pares proveedor+entidad con justificación operacional legítima.
+  const EXCLUSIONES_OPERACIONALES = [
+    { proveedor: 'ASTRO TOUR',    entidad: 'EJERCITO DE HONDURAS'      },
+    { proveedor: 'ASTRO TOUR',    entidad: 'ESTADO MAYOR CONJUNTO'     },
+    { proveedor: 'ASTRO TOUR',    entidad: 'UNIDAD CENTRAL'            },
+    { proveedor: 'VOLARE',        entidad: 'EJERCITO DE HONDURAS'      },
+    { proveedor: 'VOLARE',        entidad: 'ESTADO MAYOR CONJUNTO'     },
+    { proveedor: 'VOLARE',        entidad: 'UNIDAD CENTRAL'            },
+  ];
   arr = arr.filter(a => {
     const prov    = (a.proveedor_nombre || '').toUpperCase();
     const entidad = (a.entity_name     || '').toUpperCase();
@@ -6780,6 +6762,11 @@ function _applyAlertsFilters(records) {
     );
   });
 
+  // S99 — Entity resolution
+  const VENDOR_ALIASES = [
+    { patron: 'SOLINT',          canonico: 'SOLUCIONES INTEGRALES (SOLINTSA)' },
+    { patron: 'INFRA DE HONDUR', canonico: 'INFRA DE HONDURAS S.A.'           },
+  ];
   arr.forEach(a => {
     const prov = (a.proveedor_nombre || '').toUpperCase();
     for (const alias of VENDOR_ALIASES) {
@@ -6787,6 +6774,10 @@ function _applyAlertsFilters(records) {
     }
   });
 
+  // S100 — ERROR_DATOS
+  const ERROR_DATOS_CONTRATOS = [
+    { patron: 'RILMAC IMPRESORES', montoMin: 1_000_000_000 }
+  ];
   arr = arr.filter(a => !ERROR_DATOS_CONTRATOS.some(e =>
     (a.proveedor_nombre||'').toUpperCase().includes(e.patron) &&
     (Number(a.monto_contrato)||0) > e.montoMin
@@ -6843,10 +6834,10 @@ async function _loadRemainingAlertsBackground() {
       allAlerts.concat(_applyAlertsFilters(remaining))
     );
     allAlerts = combined;
-    allAlerts.forEach(a => { a._sev = normSev(a.severity); }); // S170 — pre-compute
     window.allAlerts = allAlerts;
     window._bdTotalCount = allAlerts.length; // update to exact count now that full data is ready
     updateBDCountDisplay(allAlerts.length);
+    console.log(`✅ Background load complete: ${allAlerts.length} total alerts`);
   } catch (err) {
     console.warn('⚠️ Background load partial — using priority data only:', err.message);
   }
@@ -6856,9 +6847,7 @@ async function loadAlerts() {
   // S152 — Restaurar caché inmediatamente si existe y es reciente
   const _cached = _getCachedAlerts();
   if (_cached) {
-    allAlerts = _cached;
-    allAlerts.forEach(a => { a._sev = normSev(a.severity); }); // S170 — pre-compute
-    window.allAlerts = _cached;
+    allAlerts = _cached; window.allAlerts = _cached;
     render();
     _showCacheBanner();
   }
@@ -6930,6 +6919,7 @@ async function loadAlerts() {
 
     // Retry failed pages one at a time
     if (failedPages.length) {
+      console.log(`Retrying ${failedPages.length} failed pages...`);
       for (const p of failedPages) {
         const { data, error } = await fetchPage(p);
         if (!error && data) { all = all.concat(data); pagesLoaded++; }
@@ -6941,10 +6931,10 @@ async function loadAlerts() {
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
     allAlerts = _applyFraccionamientoScrub(_applyAlertsFilters(all));
-    allAlerts.forEach(a => { a._sev = normSev(a.severity); }); // S170 — pre-compute
     window.allAlerts = allAlerts;
     window._bdTotalCount = window._bdTotalCount || allAlerts.length;
     updateBDCountDisplay(window._bdTotalCount);
+    console.log(`✅ All alerts loaded: ${allAlerts.length} records (${failedPages.length} retried)`);
 
     updateConsultasMetrics(allAlerts);
     buildNewsMatchIndex();
@@ -6986,7 +6976,7 @@ function render() {
   const c = { critica: 0, alta: 0, media: 0, baja: 0 };
   const m = { critica: 0, alta: 0, media: 0, baja: 0 };
   allAlerts.forEach(a => {
-    const k = a._sev || normSev(a.severity); // S170 — usa pre-computado
+    const k = normSev(a.severity);
     if (k in c) { c[k]++; m[k] += Number(a.monto_contrato || 0); }
   });
   const totalMonto = Object.values(m).reduce((s, v) => s + v, 0);
@@ -7037,7 +7027,7 @@ function render() {
   // ── Filter for table display ──
   let filtered = activeFilter === 'all'
     ? allAlerts
-    : allAlerts.filter(a => (a._sev || normSev(a.severity)) === activeFilter); // S170
+    : allAlerts.filter(a => normSev(a.severity) === activeFilter);
   if (activePattern !== 'all') {
     if (activePattern === 'ENGEL') {
       filtered = filtered.filter(a => _engelMatchedIds.has(a.alert_id || a.id));
@@ -7102,7 +7092,7 @@ function render() {
 
   tbody.innerHTML = paged.map(a => {
     // normSev used for CSS class only — stored value 'Crítica' displayed as-is
-    const sc  = a._sev || normSev(a.severity); // S170
+    const sc  = normSev(a.severity);
     const stc = (a.status || '').toLowerCase().includes('pgr') ? 'enviado' : 'pendiente';
     const desc = (a.description || '').length > 65
       ? a.description.substring(0, 65) + '…'
@@ -7114,8 +7104,8 @@ function render() {
       const m = (a.description || '').match(new RegExp(key + ':\\s*([^\\n]+)'));
       return m ? m[1].trim() : null;
     };
-    const proveedorDisplay = _sanitize(parseDesc('Proveedor') || a.proveedor_nombre || '—');
-    const entidadDisplay   = _sanitize(parseDesc('Entidad compradora') || a.entity_name || '—');
+    const proveedorDisplay = parseDesc('Proveedor') || a.proveedor_nombre || '—';
+    const entidadDisplay   = parseDesc('Entidad compradora') || a.entity_name || '—';
 
     return `<tr onclick="openAlertDetail(${a.id}, event)">
       <td><span class="cell-id">${a.alert_id || ('#' + a.id)}</span></td>
@@ -7229,7 +7219,7 @@ async function generateReport(mode = 'todo') {
     // ── 1. Collect alerts from window.allAlerts (always fresh) ──
     let filtered = (window.allAlerts || []);
     if (activeFilter !== 'all') {
-      filtered = filtered.filter(a => (a._sev || normSev(a.severity)) === activeFilter); // S170
+      filtered = filtered.filter(a => normSev(a.severity) === activeFilter);
     }
     if (activePattern !== 'all') {
       filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
@@ -7702,12 +7692,14 @@ function startRealtime() {
       schema: 'public',
       table:  'alerts'
     }, payload => {
+      console.log('🔴 Realtime INSERT received:', payload.new.alert_id);
       // Prepend to local state and re-render instantly
       allAlerts.unshift(payload.new);
       render();
       showToast('🔴 Nueva alerta recibida en tiempo real');
     })
     .subscribe(status => {
+      console.log('Realtime channel status:', status);
     });
 }
 
@@ -15327,9 +15319,17 @@ function updateSyncStatus(recordCount) {
   localStorage.setItem('lastSyncTime', timeString);
   localStorage.setItem('syncRecordCount', recordCount);
 
+  console.log(`✅ Sync actualizado: ${recordCount} registros a las ${timeString}`);
 }
 
 function showSyncStatus() {
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('📡 SYNC STATUS');
+  console.log('═══════════════════════════════════════════════════════');
+  console.log(`✅ Última sincronización: ${lastSyncTime}`);
+  console.log(`📊 Registros cargados: ${syncRecordCount}`);
+  console.log(`🔄 Total en dashboard: ${allAlerts ? allAlerts.length : 'N/A'}`);
+  console.log('');
 }
 
 function exportGlobalSobrecostos(format = 'csv') {
@@ -15381,6 +15381,11 @@ function exportSobrecostosCSV(sobrecostos) {
 }
 
 function showPerformanceMetrics() {
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('⚡ PERFORMANCE METRICS');
+  console.log('═══════════════════════════════════════════════════════');
+  console.log(`\n📊 DATA STATISTICS:`);
+  console.log(`   • Total Registros: ${allAlerts ? allAlerts.length : 0}`);
 
   if (allAlerts && allAlerts.length > 0) {
     const sources = {};
@@ -15389,8 +15394,10 @@ function showPerformanceMetrics() {
       sources[source] = (sources[source] || 0) + 1;
     });
 
+    console.log(`\n🔍 DATA SOURCES:`);
     Object.entries(sources).forEach(([source, count]) => {
       const pct = ((count / allAlerts.length) * 100).toFixed(1);
+      console.log(`   • ${source}: ${count} registros (${pct}%)`);
     });
 
     const sobrecostos = allAlerts.filter(a => {
@@ -15400,8 +15407,18 @@ function showPerformanceMetrics() {
       return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
     });
 
+    console.log(`\n🚨 ALERTS DETECTED:`);
+    console.log(`   • SOBRECOSTOS: ${sobrecostos.length}`);
+    console.log(`\n✅ INDEXES STATUS:`);
+    console.log(`   • idx_alerts_monto_contrato: ACTIVE`);
+    console.log(`   • idx_alerts_entity_name: ACTIVE`);
+    console.log(`   • idx_alerts_created_date: ACTIVE`);
   }
 
+  console.log('\n🎯 LAST SYNC:');
+  console.log(`   • Timestamp: ${lastSyncTime}`);
+  console.log(`   • Records: ${syncRecordCount}`);
+  console.log('');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -15410,10 +15427,16 @@ function showPerformanceMetrics() {
 // ════════════════════════════════════════════════════════════
 
 async function testPaymentAPIEndpoint(documentId = '1') {
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('🔬 TESTING SEFIN PAYMENT API ENDPOINT');
+  console.log('═══════════════════════════════════════════════════════');
+  console.log(`\n📍 Endpoint: /datosabiertos/api/v1/documentoF01F07/${documentId}`);
+  console.log(`🌐 Base: https://guancasco.sefin.gob.hn/EDCA_WEBAPI/`);
 
   const url = `https://guancasco.sefin.gob.hn/EDCA_WEBAPI/datosabiertos/api/v1/documentoF01F07/${documentId}`;
 
   try {
+    console.log(`\n⏳ Calling API...`);
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -15422,36 +15445,69 @@ async function testPaymentAPIEndpoint(documentId = '1') {
       }
     });
 
+    console.log(`\n✅ Response Status: ${response.status} ${response.statusText}`);
 
     if (response.status === 200) {
       const data = await response.json();
+      console.log(`\n📊 Response Structure:`);
+      console.log(data);
 
       // Document key fields
+      console.log(`\n🔍 KEY FIELDS FOUND:`);
       if (data.implementation) {
+        console.log(`   ✅ implementation: Object`);
         if (data.implementation.transactions) {
+          console.log(`      ✅ transactions: Array (${data.implementation.transactions.length} items)`);
           if (data.implementation.transactions.length > 0) {
+            console.log(`         Sample transaction:`, data.implementation.transactions[0]);
           }
         }
         if (data.implementation.financialObligations) {
+          console.log(`      ✅ financialObligations: Array`);
         }
       }
+      if (data.awards) console.log(`   ✅ awards: Array`);
+      if (data.contracts) console.log(`   ✅ contracts: Array`);
+      if (data.planning) console.log(`   ✅ planning: Object`);
 
+      console.log(`\n✅ SUCCESS: API endpoint is accessible!`);
       return { success: true, data };
     } else if (response.status === 404) {
+      console.log(`\n❌ ERROR 404: Document not found`);
+      console.log(`   Hint: Try with a valid SEFIN document ID`);
       return { success: false, error: 'Document not found' };
     } else {
       const text = await response.text();
+      console.log(`\n❌ ERROR: Status ${response.status}`);
+      console.log(`   Response:`, text.slice(0, 200));
       return { success: false, error: `HTTP ${response.status}` };
     }
   } catch (error) {
+    console.log(`\n❌ CORS or Network Error:`);
+    console.log(`   ${error.message}`);
+    console.log(`\n💡 ANALYSIS:`);
     if (error.message.includes('CORS')) {
+      console.log(`   → CORS ISSUE DETECTED`);
+      console.log(`   → Solution: Use backend proxy (sefin-sync.js)`);
     } else {
+      console.log(`   → Network/Fetch error`);
     }
     return { success: false, error: error.message };
   }
 }
 
 async function discoverPaymentAPIStructure() {
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('🔎 DISCOVERING PAYMENT API STRUCTURE');
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('\n📝 Instructions:');
+  console.log('   1. Go to SEFIN and find a contract ID');
+  console.log('   2. Run: testPaymentAPIEndpoint("CONTRACT_ID")');
+  console.log('   3. Check console for response structure');
+  console.log('\n💡 Example:');
+  console.log('   testPaymentAPIEndpoint("123456")');
+  console.log('\n⚠️  Note: If you get CORS error, we need backend proxy');
+  console.log('═══════════════════════════════════════════════════════');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -15461,6 +15517,7 @@ async function discoverPaymentAPIStructure() {
 
 async function fetchPaymentData(docId) {
   try {
+    console.log(`📥 Fetching payment data for document: ${docId}`);
 
     const response = await fetch(`/api/sefin-sync?action=payment&docId=${encodeURIComponent(docId)}`);
 
@@ -15472,6 +15529,7 @@ async function fetchPaymentData(docId) {
     const result = await response.json();
 
     if (result.success && result.data) {
+      console.log(`✅ Payment data retrieved:`, result.data);
       return result.data;
     } else {
       console.error(`❌ Payment API error:`, result.error);
@@ -15728,22 +15786,35 @@ function calculateSupplierRiskScores(alerts = allAlerts) {
 }
 
 function showEnhancedDetectionReport() {
+  console.log('═══════════════════════════════════════════════════════');
+  console.log('🔍 PHASE 4: ENHANCED FRAUD DETECTION REPORT');
+  console.log('═══════════════════════════════════════════════════════\n');
 
   // Velocity Detection
   const velocityThreats = detectVelocityThreats();
+  console.log('⚡ VELOCITY DETECTION (Multiple overpayments per vendor):\n');
   velocityThreats.slice(0, 10).forEach(threat => {
+    console.log(`   ${threat.vendor} | Incidents: ${threat.count} | Risk: ${threat.severity.toUpperCase()} | Score: ${threat.risk_score.toFixed(1)}`);
   });
 
   // Anomaly Detection
   const anomalies = detectAnomalies();
+  console.log(`\n\n🚨 ANOMALY DETECTION (${anomalies.length} statistical outliers):\n`);
   anomalies.slice(0, 5).forEach(anom => {
+    console.log(`   ID: ${anom.alert_id} | Entity: ${anom.entity} | Deviation: ${anom.deviation_score.toFixed(1)}σ`);
   });
 
   // Risk Scoring
   const riskScores = calculateSupplierRiskScores();
+  console.log(`\n\n📊 SUPPLIER RISK SCORES (Top 10):\n`);
   riskScores.slice(0, 10).forEach(supplier => {
+    console.log(`   ${supplier.vendor} | Score: ${supplier.risk_score.toFixed(0)}/100 | ${supplier.severity.toUpperCase()}`);
+    console.log(`      Contracts: ${supplier.total_contracts} | Overpayments: ${supplier.overpay_count} | Risk Factors: ${supplier.risk_factors.join(', ') || 'None'}`);
   });
 
+  console.log('\n═══════════════════════════════════════════════════════');
+  console.log(`✅ Report generated at: ${new Date().toISOString()}`);
+  console.log('═══════════════════════════════════════════════════════\n');
 
   return { velocityThreats, anomalies, riskScores };
 }
@@ -20610,6 +20681,7 @@ async function downloadSEFINCSV(url) {
   const deploymentUrl = window.location.origin; // Works for both localhost and production
 
   try {
+    console.log(`📥 Descargando vía proxy backend: ${url.substring(0, 60)}...`);
     const response = await fetch(
       `${deploymentUrl}/api/sefin-sync?action=download&url=${encodedUrl}`
     );
@@ -20638,6 +20710,7 @@ async function downloadSEFINCSV(url) {
         csvLines.push(values.join(','));
       }
 
+      console.log(`✅ Descargado: ${data.records.length} registros desde proxy`);
       return csvLines.join('\n');
     }
 
@@ -20646,6 +20719,7 @@ async function downloadSEFINCSV(url) {
     console.error('❌ Proxy backend falló:', err.message);
     // Fallback: Try direct download (might work for some URLs)
     try {
+      console.log('⚠️  Intentando descarga directa como fallback...');
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.text();
@@ -20680,6 +20754,7 @@ async function syncSEFINHistoricalData() {
     return;
   }
 
+  console.log('📥 Descargando listado de archivos SEFIN disponibles...');
 
   try {
     // NEW (Apr 2, 2026): Get list via backend proxy endpoint (no CORS issues)
@@ -20697,6 +20772,8 @@ async function syncSEFINHistoricalData() {
       return;
     }
 
+    console.log(`📋 Encontrados ${downloads.length} archivos`);
+    console.log('Descargando los 5 archivos más recientes...\n');
 
     let totalInserted = 0;
 
@@ -20707,12 +20784,14 @@ async function syncSEFINHistoricalData() {
 
       if (!csvUrl) continue;
 
+      console.log(`⬇️  Descargando: ${file.año}-${file.mes} (${file.publicador})...`);
 
       try {
         const csvContent = await downloadSEFINCSV(csvUrl);
         const records = parseCSVtoJSON(csvContent);
 
         if (records.length === 0) {
+          console.log('   ℹ️  Archivo vacío');
           continue;
         }
 
@@ -20742,6 +20821,7 @@ async function syncSEFINHistoricalData() {
           if (error) {
             console.warn(`   ⚠️  Error al insertar: ${error.message}`);
           } else {
+            console.log(`   ✅ Insertados ${transformed.length} registros`);
             totalInserted += transformed.length;
           }
         }
@@ -20754,9 +20834,13 @@ async function syncSEFINHistoricalData() {
       }
     }
 
+    console.log(`\n✅ DESCARGA HISTÓRICA COMPLETADA`);
+    console.log(`📊 Total insertado: ${totalInserted} registros`);
+    console.log(`🔄 Recargando dashboard...`);
     // S149: Dispara auto-investigador post-ingesta histórica SEFIN (fire & forget)
     if (totalInserted > 0) {
       fetch(`${SUPABASE_URL}/functions/v1/auto-investigador`, { method: 'GET' }).catch(() => {})
+      console.log('🤖 Auto-Investigador disparado post-ingesta histórica SEFIN');
     }
     await loadAlerts();
 
@@ -20771,6 +20855,7 @@ async function syncSEFINDaily() {
     return;
   }
 
+  console.log('🔄 Sincronización diaria de SEFIN vía backend proxy...');
 
   try {
     // NEW (Apr 2, 2026): Call backend endpoint that handles full sync
@@ -20788,9 +20873,11 @@ async function syncSEFINDaily() {
     const records = data.records || [];
 
     if (records.length === 0) {
+      console.log('ℹ️  Sin registros disponibles');
       return;
     }
 
+    console.log(`📥 Backend retornó ${records.length} registros de: ${data.latestFile?.año}-${data.latestFile?.mes}`);
 
     // Get last sync date
     const lastSync = localStorage.getItem('sefin_last_sync');
@@ -20826,12 +20913,15 @@ async function syncSEFINDaily() {
       if (error) {
         console.error('❌ Error al insertar:', error.message);
       } else {
+        console.log(`✅ ${newRecords.length} registros nuevos sincronizados`);
         localStorage.setItem('sefin_last_sync', new Date().toISOString());
         // S149: Dispara auto-investigador post-ingesta SEFIN (fire & forget)
         fetch(`${SUPABASE_URL}/functions/v1/auto-investigador`, { method: 'GET' }).catch(() => {})
+        console.log('🤖 Auto-Investigador disparado post-ingesta SEFIN');
         await loadAlerts();
       }
     } else {
+      console.log('ℹ️  Sin cambios desde última sincronización');
     }
 
   } catch (err) {
@@ -20856,7 +20946,10 @@ function detectSEFINRisk(monto, budget) {
 
 function debugSobrecosto() {
   console.clear();
+  console.log('🔍 DEBUG SOBRECOSTO');
+  console.log('═══════════════════════════════════════════════════════');
 
+  console.log(`\n📊 TOTAL ALERTS: ${allAlerts.length}`);
 
   if (allAlerts.length === 0) {
     console.warn('⚠️  NO HAY DATOS EN allAlerts');
@@ -20866,11 +20959,15 @@ function debugSobrecosto() {
   // Check monto_pagado
   const with_pagado = allAlerts.filter(a => a.monto_pagado != null).length;
   const with_budget = allAlerts.filter(a => a.budget_amount != null).length;
+  console.log(`📈 Con monto_pagado: ${with_pagado}`);
+  console.log(`📈 Con budget_amount: ${with_budget}`);
 
   // List entities
   const entities = new Set(allAlerts.map(a => a.entity_name || a.entidad || 'UNKNOWN'));
+  console.log(`\n🏢 ENTIDADES (${entities.size}):`);
   entities.forEach(e => {
     const count = allAlerts.filter(a => (a.entity_name || a.entidad) === e).length;
+    console.log(`   • ${e} (${count} alertas)`);
   });
 
   // Check SOBRECOSTO detection
@@ -20881,6 +20978,7 @@ function debugSobrecosto() {
     return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
   });
 
+  console.log(`\n🚨 SOBRECOSTOS DETECTADOS: ${sobrecostos.length}`);
   if (sobrecostos.length > 0) {
     sobrecostos.slice(0, 5).forEach(s => {
       const mc = Number(s.monto_contrato || 0);
@@ -20888,12 +20986,15 @@ function debugSobrecosto() {
       const budget = Number(s.budget_amount || 0);
       const comp = mp > 0 ? mp : budget;
       const pct = ((comp / mc - 1) * 100).toFixed(1);
+      console.log(`   ✓ ${s.alert_id || s.id} | ${s.entity_name || s.entidad} | +${pct}%`);
     });
   } else {
     console.warn('⚠️  NINGÚN SOBRECOSTO ENCONTRADO');
   }
 
   // Sample record
+  console.log(`\n📋 SAMPLE RECORD:`);
+  console.log(allAlerts[0]);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -20940,6 +21041,7 @@ async function insertTestSobrecostoData() {
   }
 
   try {
+    console.log(`📝 Insertando ${testAlerts.length} registros de test SOBRECOSTO...`);
     const { error } = await db.from('alerts').insert(testAlerts);
 
     if (error) {
@@ -20948,11 +21050,16 @@ async function insertTestSobrecostoData() {
       return;
     }
 
+    console.log(`✅ ${testAlerts.length} registros insertados exitosamente`);
+    console.log('📊 Resumen de test data:');
     testAlerts.forEach(a => {
       const pct = (((a.monto_pagado - a.monto_contrato) / a.monto_contrato) * 100).toFixed(1);
+      console.log(`   ${a.alert_id} | ${a.entity_name} | ${a.proveedor_nombre} | +${pct}%`);
     });
 
+    console.log('\n🔄 Recargando datos...');
     await loadAlerts();
+    console.log('✅ Datos recargados. Verifica el dashboard.');
 
   } catch (err) {
     console.error('❌ Error:', err);
@@ -20966,6 +21073,8 @@ async function insertTestSobrecostoData() {
 // ════════════════════════════════════════════════════════════
 
 async function checkDatabaseHealth() {
+  console.log('📊 Database Health Check - Apr 2, 2026');
+  console.log('═'.repeat(60));
 
   if (!db) {
     console.error('❌ Supabase no inicializado');
@@ -20978,6 +21087,7 @@ async function checkDatabaseHealth() {
       .from('alerts')
       .select('*', { count: 'exact', head: true });
 
+    console.log(`\n✅ Total Records: ${totalRecords || 0}`);
 
     // 2. Check SOBRECOSTO count
     const sobrecostos = window.globalAlerts.filter(a => {
@@ -20986,6 +21096,7 @@ async function checkDatabaseHealth() {
       const budget = Number(a.budget_amount || 0);
       return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
     });
+    console.log(`✅ SOBRECOSTOS Detected: ${sobrecostos.length}`);
 
     // 3. Check data source distribution
     const sources = {};
@@ -20993,8 +21104,10 @@ async function checkDatabaseHealth() {
       const source = a.data_source || 'Unknown';
       sources[source] = (sources[source] || 0) + 1;
     });
+    console.log('\n📊 Data Source Distribution:');
     Object.entries(sources).forEach(([source, count]) => {
       const pct = (count / window.globalAlerts.length * 100).toFixed(1);
+      console.log(`   ${source}: ${count} records (${pct}%)`);
     });
 
     // 4. Check entity distribution
@@ -21006,20 +21119,32 @@ async function checkDatabaseHealth() {
     const topEntities = Object.entries(entities)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
+    console.log('\n🏢 Top 5 Entities by Record Count:');
     topEntities.forEach(([entity, count]) => {
+      console.log(`   ${entity}: ${count}`);
     });
 
     // 5. Check test data status
     const testRecords = window.globalAlerts.filter(a =>
       a.alert_id && a.alert_id.startsWith('TEST-')
     );
+    console.log(`\n🧪 Test Data Records: ${testRecords.length}`);
 
     // 6. Check monto_pagado field population
     const withPayment = window.globalAlerts.filter(a =>
       a.monto_pagado && Number(a.monto_pagado) > 0
     ).length;
     const withoutPayment = window.globalAlerts.length - withPayment;
+    console.log(`\n💰 Payment Data Status:`);
+    console.log(`   With monto_pagado: ${withPayment} (${(withPayment/window.globalAlerts.length*100).toFixed(1)}%)`);
+    console.log(`   Without monto_pagado: ${withoutPayment} (${(withoutPayment/window.globalAlerts.length*100).toFixed(1)}%)`);
 
+    console.log('\n' + '═'.repeat(60));
+    console.log('✅ Database Health Check Complete');
+    console.log('\n📋 Next steps:');
+    console.log('   1. Review PHASE_3A_DATABASE_OPTIMIZATION_SQL.md');
+    console.log('   2. Execute SQL scripts in Supabase SQL Editor');
+    console.log('   3. Run checkDatabaseHealth() again after optimization');
 
   } catch (err) {
     console.error('❌ Error checking database health:', err);
@@ -21027,10 +21152,32 @@ async function checkDatabaseHealth() {
 }
 
 async function showDatabaseOptimizationStatus() {
+  console.log('\n📈 PHASE 3a: Database Optimization Status');
+  console.log('═'.repeat(60));
+  console.log('\n⏳ Current Status:');
+  console.log('   Database Indexes: ⏳ PENDING (see SQL script)');
+  console.log('   Query Performance: ⏳ BASELINE (before optimization)');
+  console.log('   Materialized View: ⏳ PENDING (optional)');
 
+  console.log('\n✅ Completed:');
+  console.log('   • TEST SOBRECOSTOS: 20 records inserted');
+  console.log('   • Global SOBRECOSTOS Panel: Working perfectly');
+  console.log('   • SEFIN Data: 40,161 records loaded');
 
+  console.log('\n📝 Instructions:');
+  console.log('   1. Open file: _02-WORK/PHASE_3A_DATABASE_OPTIMIZATION_SQL.md');
+  console.log('   2. Copy SQL script');
+  console.log('   3. Paste into Supabase SQL Editor');
+  console.log('   4. Execute and wait for completion (5-10 min)');
+  console.log('   5. Run checkDatabaseHealth() to verify');
 
+  console.log('\n💡 Benefits after optimization:');
+  console.log('   • SOBRECOSTO queries: 50-100ms (was 2-5 sec)');
+  console.log('   • Dashboard load: 2-3 sec (was 10-15 sec)');
+  console.log('   • Entity filtering: 50-150ms (was 1-3 sec)');
+  console.log('   • Support 100K+ records efficiently');
 
+  console.log('\n═'.repeat(60));
 }
 
 init();
@@ -21545,6 +21692,7 @@ function buildNewsMatchIndex() {
     entities: Object.entries(entityMap).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count),
     vendors:  Object.entries(vendorMap).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count)
   };
+  console.log(`🔗 Match index built: ${_newsMatchIndex.entities.length} entidades, ${_newsMatchIndex.vendors.length} proveedores`);
 }
 
 function matchNewsToContracts(title, summary) {
@@ -21584,6 +21732,7 @@ function buildHighRiskIndex() {
     vendors:  Object.entries(vendorMap).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count),
     total:    highRisk.length
   };
+  console.log(`🚨 Índice alto riesgo (CRÍTICA/ALTA): ${highRisk.length} contratos, ${_highRiskIndex.entities.length} entidades, ${_highRiskIndex.vendors.length} proveedores`);
 }
 
 // ── RED FLAGS CNA/UFERCO — Cross-reference contra allAlerts ────────────────────
@@ -21604,6 +21753,7 @@ function buildRedFlagIndex() {
   });
   const chip = document.getElementById('nav-redflag-chip');
   if (chip) chip.textContent = _redFlagMatchedIds.size || '—';
+  console.log(`🚩 Red Flag index built: ${_redFlagMatchedIds.size} contratos con coincidencia CNA/UFERCO/ASJ`);
 }
 
 function renderRedFlagPanel() {
@@ -21727,6 +21877,7 @@ function buildEngelIndex() {
   });
   const srcEl = document.getElementById('src-engel');
   if (srcEl) srcEl.textContent = `${_engelMatchedIds.size} coincidencia${_engelMatchedIds.size !== 1 ? 's' : ''}`;
+  console.log(`🇺🇸 Engel index built: ${_engelMatchedIds.size} contratos con coincidencia`);
   // Update nav chip
   const chip = document.getElementById('nav-engel-chip');
   if (chip) chip.textContent = _engelMatchedIds.size || '—';
@@ -21784,6 +21935,7 @@ async function loadRedFlagsFromSupabase() {
       added++;
     });
     if (added > 0) {
+      console.log(`[red-flags] ${added} entidades adicionales desde Supabase (activo=true)`);
       buildRedFlagIndex();
     }
   } catch(err) { console.error('[red-flags] loadRedFlagsFromSupabase error:', err); }

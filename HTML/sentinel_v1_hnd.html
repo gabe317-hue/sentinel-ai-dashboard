@@ -17521,8 +17521,9 @@ async function ccGenerarExpediente() {
     const folio = `SEN-EXP-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
 
     // ── Datos para charts ──────────────────────────────────────────────────────
+    // ── Datos para charts (rediseño S171) ────────────────────────────────────
     const _chartVariants = (d.vendorVariants||[]).map(v => ({
-      name: v.length > 40 ? v.substring(0,38)+'…' : v,
+      name: v.length > 38 ? v.substring(0,36)+'…' : v,
       fullName: v,
       monto: (d.vendorContratos||[]).filter(c=>c.proveedor_nombre===v).reduce((s,c)=>s+(c.monto||0),0),
       count: (d.vendorContratos||[]).filter(c=>c.proveedor_nombre===v).length
@@ -17534,7 +17535,24 @@ async function ccGenerarExpediente() {
       pats.forEach(p => { const k=(p||'').trim().replace(/_ONCAE|_SEFIN/g,''); if(k) _chartPatterns[k]=(_chartPatterns[k]||0)+1; });
     });
     const _chartTimeline = (d.timeline||[]).filter(t=>t.monto>0).map(t=>({ nombre: t.nombre, monto: +(t.monto/1e6).toFixed(2), count: t.count }));
-    const _chartDataJson = JSON.stringify({ variants: _chartVariants, patterns: _chartPatterns, timeline: _chartTimeline, concentracion: { mntPct: d.concentracion.mntPct, vendorMonto: d.concentracion.vendorMonto, entityMonto: d.concentracion.entityMonto } });
+    // Por año
+    const _chartByYear = {};
+    (d.vendorContratos||[]).forEach(c => {
+      const y = (c.fecha_contrato||c.created_at||'').substring(0,4); if(!y) return;
+      if(!_chartByYear[y]) _chartByYear[y]={monto:0,count:0};
+      _chartByYear[y].monto += (c.monto||0); _chartByYear[y].count++;
+    });
+    // Por severidad
+    const _chartSev = {CRÍTICA:0, ALTA:0, MEDIA:0, BAJA:0};
+    (d.vendorContratos||[]).forEach(c => { const s=gNormSev?gNormSev(c.severity):''; if(s==='critica') _chartSev['CRÍTICA']++; else if(s==='alta') _chartSev['ALTA']++; else if(s==='media') _chartSev['MEDIA']++; else _chartSev['BAJA']++; });
+    // Top contratos por monto
+    const _chartTopContratos = [...(d.vendorContratos||[])].sort((a,b)=>(b.monto||0)-(a.monto||0)).slice(0,8).map(c=>({ label:(c.title||c.contract_id||'Sin título').substring(0,25), monto:+((c.monto||0)/1e6).toFixed(2), prov:(c.proveedor_nombre||'').substring(0,30) }));
+    const _chartDataJson = JSON.stringify({
+      variants: _chartVariants, patterns: _chartPatterns, timeline: _chartTimeline,
+      byYear: _chartByYear, severity: _chartSev, topContratos: _chartTopContratos,
+      concentracion: { mntPct: d.concentracion.mntPct, vendorMonto: d.concentracion.vendorMonto, entityMonto: d.concentracion.entityMonto },
+      score: { total: d.score.total, max: d.score.max }
+    });
     // ─────────────────────────────────────────────────────────────────────────
 
     const mdToHtml = (text) => text
@@ -17611,48 +17629,99 @@ async function ccGenerarExpediente() {
     }).join('')}
     <div class="sec">
       <div class="sec-title">📊 ANÁLISIS VISUAL</div>
-      <div class="charts-grid">
-        ${_chartVariants.length > 1 ? `
+      <!-- Fila 1: stats rápidos -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+        <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:9px;color:#9ca3af;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Monto Total</div>
+          <div style="font-size:20px;font-weight:900;color:#7c3aed;">L ${(d.concentracion.vendorMonto/1e6).toFixed(1)}M</div>
+        </div>
+        <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:9px;color:#9ca3af;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Contratos</div>
+          <div style="font-size:20px;font-weight:900;color:#7c3aed;">${d.concentracion.vendorCount}</div>
+        </div>
+        <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:9px;color:#9ca3af;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Riesgo</div>
+          <div style="font-size:20px;font-weight:900;color:${d.score.total>=5?'#ef4444':d.score.total>=3?'#f59e0b':'#22c55e'};">${d.score.total}/${d.score.max}</div>
+        </div>
+      </div>
+      <!-- Fila 2: top contratos (full) -->
+      <div class="chart-box full" style="margin-bottom:14px;">
+        <div class="chart-lbl">Top contratos por monto (L millones)</div>
+        <canvas id="chartTopContratos" height="90"></canvas>
+      </div>
+      <!-- Fila 3: por año + severidad -->
+      <div class="charts-grid" style="margin-bottom:14px;">
         <div class="chart-box">
-          <div class="chart-lbl">Montos por razón social (L millones)</div>
-          <canvas id="chartVariants" height="160"></canvas>
-        </div>` : ''}
-        <div class="chart-box ${_chartVariants.length <= 1 ? 'full' : ''}">
+          <div class="chart-lbl">Contratos por año</div>
+          <canvas id="chartByYear" height="160"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-lbl">Distribución por severidad</div>
+          <canvas id="chartSeverity" height="160"></canvas>
+        </div>
+      </div>
+      <!-- Fila 4: métodos + variantes (si aplica) -->
+      <div class="charts-grid">
+        <div class="chart-box ${_chartVariants.length > 1 ? '' : 'full'}">
           <div class="chart-lbl">Métodos de contratación</div>
           <canvas id="chartPatterns" height="160"></canvas>
         </div>
-        ${_chartTimeline.length > 1 ? `
-        <div class="chart-box full">
-          <div class="chart-lbl">Concentración por administración (L millones)</div>
-          <canvas id="chartTimeline" height="100"></canvas>
+        ${_chartVariants.length > 1 ? `
+        <div class="chart-box">
+          <div class="chart-lbl">Monto por razón social (L millones)</div>
+          <canvas id="chartVariants" height="160"></canvas>
         </div>` : ''}
       </div>
     </div>
     <script>
     (function(){
       const CD = ${_chartDataJson};
-      const PURPLE='rgba(124,58,237,0.75)', RED='rgba(239,68,68,0.75)', AMBER='rgba(245,158,11,0.75)', TEAL='rgba(20,184,166,0.75)';
-      const PALETTE=[PURPLE,RED,AMBER,TEAL,'rgba(99,102,241,0.75)','rgba(236,72,153,0.75)'];
-      if(CD.variants.length>1 && document.getElementById('chartVariants')){
-        new Chart(document.getElementById('chartVariants'),{
-          type:'bar',
-          data:{ labels:CD.variants.map(v=>v.name), datasets:[{ label:'L millones', data:CD.variants.map(v=>+(v.monto/1e6).toFixed(2)), backgroundColor:PALETTE.slice(0,CD.variants.length), borderRadius:5 }]},
-          options:{ plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>v+'M' }}}, responsive:true }
+      const PURPLE='rgba(124,58,237,0.8)', RED='rgba(239,68,68,0.8)', AMBER='rgba(245,158,11,0.8)', TEAL='rgba(20,184,166,0.8)', BLUE='rgba(59,130,246,0.8)';
+      const PALETTE=[PURPLE,RED,AMBER,TEAL,BLUE,'rgba(236,72,153,0.8)','rgba(16,185,129,0.8)','rgba(249,115,22,0.8)'];
+      const optBase = { responsive:true, plugins:{ legend:{ display:false }} };
+      const fmtM = v => v+'M';
+      // Top contratos
+      if(document.getElementById('chartTopContratos') && CD.topContratos.length){
+        new Chart(document.getElementById('chartTopContratos'),{
+          type:'bar', indexAxis:'y',
+          data:{ labels:CD.topContratos.map(c=>c.label), datasets:[{ label:'L M', data:CD.topContratos.map(c=>c.monto), backgroundColor:PURPLE, borderRadius:4 }]},
+          options:{...optBase, scales:{ x:{ beginAtZero:true, ticks:{ callback:fmtM }}, y:{ ticks:{ font:{ size:9 }}}}}
         });
       }
+      // Por año
+      if(document.getElementById('chartByYear')){
+        const yrs=Object.keys(CD.byYear).sort();
+        new Chart(document.getElementById('chartByYear'),{
+          type:'bar',
+          data:{ labels:yrs, datasets:[{ label:'L M', data:yrs.map(y=>+(CD.byYear[y].monto/1e6).toFixed(2)), backgroundColor:TEAL, borderRadius:4 }]},
+          options:{...optBase, scales:{ y:{ beginAtZero:true, ticks:{ callback:fmtM }}}}
+        });
+      }
+      // Severidad
+      if(document.getElementById('chartSeverity')){
+        const sevKeys=['CRÍTICA','ALTA','MEDIA','BAJA'].filter(k=>CD.severity[k]>0);
+        const sevColors={'CRÍTICA':RED,'ALTA':AMBER,'MEDIA':BLUE,'BAJA':'rgba(156,163,175,0.7)'};
+        new Chart(document.getElementById('chartSeverity'),{
+          type:'doughnut',
+          data:{ labels:sevKeys, datasets:[{ data:sevKeys.map(k=>CD.severity[k]), backgroundColor:sevKeys.map(k=>sevColors[k]), borderWidth:1 }]},
+          options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ font:{ size:9 }, boxWidth:10 }}}}
+        });
+      }
+      // Patrones
       if(document.getElementById('chartPatterns')){
         const pKeys=Object.keys(CD.patterns); const pVals=pKeys.map(k=>CD.patterns[k]);
         new Chart(document.getElementById('chartPatterns'),{
           type:'doughnut',
           data:{ labels:pKeys.map(k=>k.replace(/_/g,' ')), datasets:[{ data:pVals, backgroundColor:PALETTE.slice(0,pKeys.length), borderWidth:1 }]},
-          options:{ plugins:{ legend:{ position:'right', labels:{ font:{ size:9 }, boxWidth:12 }}}, responsive:true }
+          options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ font:{ size:9 }, boxWidth:10 }}}}
         });
       }
-      if(CD.timeline.length>1 && document.getElementById('chartTimeline')){
-        new Chart(document.getElementById('chartTimeline'),{
+      // Variantes
+      if(CD.variants.length>1 && document.getElementById('chartVariants')){
+        new Chart(document.getElementById('chartVariants'),{
           type:'bar',
-          data:{ labels:CD.timeline.map(t=>t.nombre), datasets:[{ label:'L millones', data:CD.timeline.map(t=>t.monto), backgroundColor:PURPLE, borderRadius:5 }]},
-          options:{ plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>v+'M' }}}, responsive:true }
+          data:{ labels:CD.variants.map(v=>v.name), datasets:[{ label:'L M', data:CD.variants.map(v=>+(v.monto/1e6).toFixed(2)), backgroundColor:[PURPLE,RED], borderRadius:4 }]},
+          options:{...optBase, scales:{ y:{ beginAtZero:true, ticks:{ callback:fmtM }}}}
         });
       }
     })();

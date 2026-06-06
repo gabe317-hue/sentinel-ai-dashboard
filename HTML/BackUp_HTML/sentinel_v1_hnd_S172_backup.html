@@ -16960,10 +16960,10 @@ function ccRenderResultados() {
       <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
         <div class="cc-kpi"><div class="cc-kpi-val">${concentracion.vendorCount}</div><div class="cc-kpi-lbl">contratos del proveedor</div></div>
         <div class="cc-kpi"><div class="cc-kpi-val">${concentracion.cntPct.toFixed(1)}%</div><div class="cc-kpi-lbl">del total de contratos</div></div>
-        <div class="cc-kpi"><div class="cc-kpi-val">${concentracion.mntPct.toFixed(1)}%</div><div class="cc-kpi-lbl">del monto en sistema*</div></div>
+        <div class="cc-kpi"><div class="cc-kpi-val">${concentracion.mntPct.toFixed(1)}%</div><div class="cc-kpi-lbl">del monto total</div></div>
         <div class="cc-kpi"><div class="cc-kpi-val">${fmt(concentracion.vendorMonto)}</div><div class="cc-kpi-lbl">monto del proveedor</div></div>
       </div>
-      <div style="font-size:11px;color:rgba(160,180,210,0.5);">La entidad trabaja con <strong style="color:#e2e8f0;">${concentracion.uniqueVendors}</strong> proveedores distintos. Nivel de concentración: <strong style="color:#e2e8f0;">${concLevel}</strong><br><span style="font-size:10px;opacity:0.6;">*% calculado sobre contratos ONCAE/SEFIN en sistema (${fmt(concentracion.entityMonto)}), no el presupuesto total de la entidad.</span></div>
+      <div style="font-size:11px;color:rgba(160,180,210,0.5);">La entidad trabaja con <strong style="color:#e2e8f0;">${concentracion.uniqueVendors}</strong> proveedores distintos. Nivel de concentración: <strong style="color:#e2e8f0;">${concLevel}</strong></div>
     </div>`;
 
   // Timeline
@@ -17214,9 +17214,9 @@ function ccExportPDF() {
         <div class="kpi"><div class="val">${concentracion.vendorCount}</div><div class="lbl">contratos proveedor</div></div>
         <div class="kpi"><div class="val">${concentracion.cntPct.toFixed(1)}%</div><div class="lbl">del total contratos</div></div>
         <div class="kpi"><div class="val">${fmt(concentracion.vendorMonto)}</div><div class="lbl">monto proveedor</div></div>
-        <div class="kpi"><div class="val">${concentracion.mntPct.toFixed(1)}%</div><div class="lbl">del monto en sistema*</div></div>
+        <div class="kpi"><div class="val">${concentracion.mntPct.toFixed(1)}%</div><div class="lbl">del monto total entidad</div></div>
       </div>
-      <p style="font-size:11px;color:#374151;margin:0;">La entidad trabaja con <strong>${concentracion.uniqueVendors}</strong> proveedores distintos. Este proveedor representa el <strong>${concentracion.mntPct.toFixed(1)}%</strong> del monto contratado registrado en Sentinel (${fmt(concentracion.entityMonto)}). <em style="color:#6b7280;">*Porcentaje calculado sobre contratos ONCAE/SEFIN disponibles en el sistema — no refleja el presupuesto total de la entidad.</em></p>
+      <p style="font-size:11px;color:#374151;margin:0;">La entidad trabaja con <strong>${concentracion.uniqueVendors}</strong> proveedores distintos. Este proveedor representa el <strong>${concentracion.mntPct.toFixed(1)}%</strong> del monto contratado total (${fmt(concentracion.entityMonto)}).</p>
     </div>
     <div class="sec">
       <div class="sec-title">3 · Actividad por Administración Presidencial</div>
@@ -17586,8 +17586,8 @@ async function ccGenerarExpediente() {
       .sec { margin-bottom:22px; }
       .sec-title { font-size:10px; letter-spacing:.15em; text-transform:uppercase; font-weight:800; color:#374151; border-bottom:1px solid #e5e7eb; padding-bottom:6px; margin-bottom:12px; }
       .sec-body { font-size:12px; line-height:1.7; color:#374151; }
-      .disclaimer { margin-top:10px; padding:8px 14px; background:#f3e8ff; border:1px solid #e9d5ff; border-radius:6px; font-size:10px; color:#5b21b6; font-style:italic; }
-      .footer { margin-top:10px; padding-top:8px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; }
+      .disclaimer { margin-top:28px; padding:10px 14px; background:#f3e8ff; border:1px solid #e9d5ff; border-radius:6px; font-size:10px; color:#5b21b6; font-style:italic; }
+      .footer { margin-top:20px; padding-top:10px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; }
       .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:8px; }
       .chart-box { background:#fafafa; border:1px solid #e5e7eb; border-radius:8px; padding:14px; }
       .chart-box.full { grid-column:1/-1; }
@@ -17704,7 +17704,7 @@ async function ccGenerarExpediente() {
         new Chart(document.getElementById('chartSeverity'),{
           type:'doughnut',
           data:{ labels:sevKeys, datasets:[{ data:sevKeys.map(k=>CD.severity[k]), backgroundColor:sevKeys.map(k=>sevColors[k]), borderWidth:1 }]},
-          options:{ responsive:true, maintainAspectRatio:true, plugins:{ legend:{ position:'bottom', labels:{ font:{ size:9 }, boxWidth:10 }}}}
+          options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ font:{ size:9 }, boxWidth:10 }}}}
         });
       }
       // Patrones
@@ -17713,7 +17713,7 @@ async function ccGenerarExpediente() {
         new Chart(document.getElementById('chartPatterns'),{
           type:'doughnut',
           data:{ labels:pKeys.map(k=>k.replace(/_/g,' ')), datasets:[{ data:pVals, backgroundColor:PALETTE.slice(0,pKeys.length), borderWidth:1 }]},
-          options:{ responsive:true, maintainAspectRatio:true, plugins:{ legend:{ position:'bottom', labels:{ font:{ size:9 }, boxWidth:10 }}}}
+          options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ font:{ size:9 }, boxWidth:10 }}}}
         });
       }
       // Variantes

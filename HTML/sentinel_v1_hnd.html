@@ -17265,8 +17265,8 @@ async function ccExportExcelCore() {
   const xFill  = hex => ({ type:'pattern', pattern:'solid', fgColor:{argb:'FF'+hex} });
   const xFont  = (bold,hex,sz) => ({ bold:!!bold, color:{argb:'FF'+hex}, size:sz||10, name:'Calibri' });
   const xAlign = (h,wrap) => ({ horizontal:h||'left', vertical:'middle', wrapText:!!wrap });
-  const xBorder= () => ({ top:{style:'thin',color:{argb:'FF263238'}}, bottom:{style:'thin',color:{argb:'FF263238'}}, left:{style:'thin',color:{argb:'FF263238'}}, right:{style:'thin',color:{argb:'FF263238'}} });
-  const xBorderTeal = () => ({ bottom:{style:'medium',color:{argb:'FF00C8FF'}} });
+  const xBorder= () => ({ top:{style:'thin',color:{argb:'FFBFDBFE'}}, bottom:{style:'thin',color:{argb:'FFBFDBFE'}}, left:{style:'thin',color:{argb:'FFBFDBFE'}}, right:{style:'thin',color:{argb:'FFBFDBFE'}} });
+  const xBorderTeal = () => ({ bottom:{style:'medium',color:{argb:'FF2563EB'}} });
 
   function sc(cell, bg, fgHex, bold, sz, halign, wrap) {
     if (bg) cell.fill = xFill(bg);
@@ -17276,11 +17276,11 @@ async function ccExportExcelCore() {
   function addTitleRow(ws, text, subtitle, cols) {
     const r1 = ws.addRow([text, ...Array(cols-1).fill('')]);
     r1.height = 26;
-    for(let i=1;i<=cols;i++) sc(r1.getCell(i),'0A1628','FFFFFF',true,14,'left');
+    for(let i=1;i<=cols;i++) sc(r1.getCell(i),'1E3A5F','FFFFFF',true,14,'left');
     if (subtitle) {
       const r2 = ws.addRow([subtitle, ...Array(cols-1).fill('')]);
       r2.height = 14;
-      for(let i=1;i<=cols;i++) sc(r2.getCell(i),'0A1628','8899AA',false,9,'left');
+      for(let i=1;i<=cols;i++) sc(r2.getCell(i),'EEF4FF','4A6FA5',false,9,'left');
     }
     ws.addRow([]);
   }
@@ -17288,7 +17288,7 @@ async function ccExportExcelCore() {
     const hr = ws.addRow(labels);
     hr.height = 18;
     for(let i=1;i<=labels.length;i++) {
-      sc(hr.getCell(i),'0D2137','FFFFFF',true,10,'center');
+      sc(hr.getCell(i),'BFDBFE','1E3A5F',true,10,'center');
       hr.getCell(i).border = xBorderTeal();
     }
     return hr;
@@ -17312,14 +17312,14 @@ async function ccExportExcelCore() {
     const row = ws1.addRow([k, v]);
     row.height = 18;
     sc(row.getCell(1), null,'8899AA',true,10,'left');
-    sc(row.getCell(2),'0D1B2A','FFFFFF',false,10,'left');
+    sc(row.getCell(2),'F0F7FF','1E3A5F',false,10,'left');
   });
   ws1.addRow([]);
 
   // Concentración
   const secC = ws1.addRow(['CONCENTRACIÓN','','','']);
   secC.height = 16;
-  for(let i=1;i<=4;i++) sc(secC.getCell(i),'0A1628','00C8FF',true,10,'left');
+  for(let i=1;i<=4;i++) sc(secC.getCell(i),'DBEAFE','1E3A5F',true,10,'left');
   const concData = [
     ['Contratos del proveedor en entidad', String(concentracion.vendorCount)],
     ['Total contratos de la entidad', String(concentracion.entityCount)],
@@ -17332,22 +17332,22 @@ async function ccExportExcelCore() {
     const row = ws1.addRow([k, v]);
     row.height = 18;
     sc(row.getCell(1), null,'8899AA',true,10,'left');
-    sc(row.getCell(2),'0D1B2A','FFFFFF',false,10, k.startsWith('%')?'center':'left');
+    sc(row.getCell(2),'F0F7FF','1E3A5F',false,10, k.startsWith('%')?'center':'left');
   });
   ws1.addRow([]);
 
   // Criterios de solidez
   const secS = ws1.addRow(['CRITERIOS DE SOLIDEZ DEL CASO','','','']);
   secS.height = 16;
-  for(let i=1;i<=4;i++) sc(secS.getCell(i),'0A1628','00C8FF',true,10,'left');
+  for(let i=1;i<=4;i++) sc(secS.getCell(i),'DBEAFE','1E3A5F',true,10,'left');
   addHdrRow(ws1, ['Criterio','Detectado','Detalle','']);
   score.criteria.forEach(c => {
     const row = ws1.addRow([c.label, c.val?'✔ SÍ':'✘ NO', c.detail, '']);
     row.height = 18;
-    sc(row.getCell(1),'0D1B2A','8899AA',true,10,'left');
-    sc(row.getCell(2), c.val?'0A1E0A':'1A0A0A', c.val?'4ADE80':'FF6B6B', true,10,'center');
-    sc(row.getCell(3),'0D1B2A','CCDDEE',false,10,'left',true);
-    sc(row.getCell(4),'0D1B2A','CCDDEE',false,10,'left');
+    sc(row.getCell(1),'F0F7FF','4A6FA5',true,10,'left');
+    sc(row.getCell(2), c.val?'DCFCE7':'FEE2E2', c.val?'166534':'991B1B', true,10,'center');
+    sc(row.getCell(3),'F0F7FF','1E3A5F',false,10,'left',true);
+    sc(row.getCell(4),'F0F7FF','1E3A5F',false,10,'left');
   });
   ws1.addRow([]);
 
@@ -17367,8 +17367,8 @@ async function ccExportExcelCore() {
 
   vendorContratos.forEach((a,i) => {
     const sv = normSv(a.severity);
-    const bg = sv.includes('CRITICA')?'2A0A0A':sv.includes('ALTA')?'1E1400':'0D1B2A';
-    const fg = sv.includes('CRITICA')?'FF6B6B':sv.includes('ALTA')?'FFB347':'CCDDEE';
+    const bg = sv.includes('CRITICA')?'FEE2E2':sv.includes('ALTA')?'FEF3C7':'F0F7FF';
+    const fg = sv.includes('CRITICA')?'991B1B':sv.includes('ALTA')?'92400E':'1E3A5F';
     const monto = Number(a.monto||a.monto_contrato||0);
     const pats  = (Array.isArray(a.patterns)?a.patterns:((a.patterns||'').split(/[,·]/))).filter(Boolean).join(' | ');
     const row = ws2.addRow([i+1, a.entity_name||'—', a.proveedor_nombre||'—', a.description||'—',
@@ -17390,11 +17390,11 @@ async function ccExportExcelCore() {
     const row = ws3.addRow([t.nombre, `${t.inicio} → ${t.fin||'Presente'}`, t.count,
       fmtL(t.monto), totalM?`${(t.monto/totalM*100).toFixed(1)}%`:'0%']);
     row.height = 18;
-    sc(row.getCell(1),'0D1B2A','CCDDEE',false,10,'left');
-    sc(row.getCell(2),'0D1B2A','CCDDEE',false,10,'left');
-    sc(row.getCell(3),'0D1B2A','CCDDEE',false,10,'center');
-    sc(row.getCell(4),'0D1B2A','FFFFFF',true,10,'right');
-    sc(row.getCell(5),'0D1B2A','00C8FF',true,10,'center');
+    sc(row.getCell(1),'F0F7FF','1E3A5F',false,10,'left');
+    sc(row.getCell(2),'F0F7FF','1E3A5F',false,10,'left');
+    sc(row.getCell(3),'F0F7FF','1E3A5F',false,10,'center');
+    sc(row.getCell(4),'F0F7FF','1E3A5F',true,10,'right');
+    sc(row.getCell(5),'F0F7FF','2563EB',true,10,'center');
   });
 
   // ════════════════════════════════════════════
@@ -17407,8 +17407,8 @@ async function ccExportExcelCore() {
   gaps.forEach((g,i) => {
     const row = ws4.addRow([i+1, g.gap, g.ltaip, `Unidad de Transparencia — ${entidad}`, 'Art. 3, 8 y 13 LTAIP', '10 días hábiles']);
     row.height = 20;
-    sc(row.getCell(1),'0D1B2A','CCDDEE',false,10,'center');
-    for(let c=2;c<=6;c++) sc(row.getCell(c),'0D1B2A','CCDDEE',false,10,'left', c===3);
+    sc(row.getCell(1),'F0F7FF','1E3A5F',false,10,'center');
+    for(let c=2;c<=6;c++) sc(row.getCell(c),'F0F7FF','1E3A5F',false,10,'left', c===3);
   });
 
   // ════════════════════════════════════════════
@@ -17450,15 +17450,15 @@ async function ccExportExcelCore() {
     const row = ws5.addRow([k, v]);
     row.height = k && sectionKeys.has(k) ? 16 : v && v.length > 60 ? 36 : 18;
     if (sectionKeys.has(k)) {
-      sc(row.getCell(1), '0A1628', '00C8FF', true, 10, 'left');
-      sc(row.getCell(2), '0A1628', '00C8FF', true, 10, 'left');
+      sc(row.getCell(1), 'DBEAFE', '1E3A5F', true, 10, 'left');
+      sc(row.getCell(2), 'DBEAFE', '1E3A5F', true, 10, 'left');
     } else if (k && !v) {
       // empty row
     } else if (k) {
       sc(row.getCell(1), null, '8899AA', true, 9, 'left');
-      sc(row.getCell(2), '0D1B2A', 'CCDDEE', false, 9, 'left', true);
+      sc(row.getCell(2), 'F0F7FF', '1E3A5F', false, 9, 'left', true);
     } else {
-      sc(row.getCell(2), '0D1B2A', 'AABBCC', false, 9, 'left', true);
+      sc(row.getCell(2), 'F0F7FF', '4A6FA5', false, 9, 'left', true);
     }
   });
 
@@ -17605,6 +17605,11 @@ async function ccGenerarExpediente() {
       <div><label>Entidad</label><span>${_ccData.entidad}</span></div>
       <div><label>Proveedor</label><span>${_ccData.proveedor}</span></div>
       <div><label>Esquema</label><span>${_ccData.esquema || 'Por determinar'}</span></div>
+    </div>
+
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:18px;font-size:11px;color:#78350f;">
+      <strong style="display:block;margin-bottom:4px;">📎 Reportes complementarios disponibles</strong>
+      Este expediente narrativo se complementa con dos reportes adicionales generados por Sentinel: <strong>(1) Ficha de Investigación Excel</strong> — análisis tabular con criterios de solidez, contratos, patrones de riesgo y vacíos de evidencia; y <strong>(2) Reporte PDF de Concentración</strong> — análisis visual de los proveedores más activos en la entidad con distribución por severidad. Ambos están disponibles desde el botón <em>"Exportar"</em> en el panel del caso.
     </div>
 
     ${(_ccData.vendorVariants || []).length > 1 ? `

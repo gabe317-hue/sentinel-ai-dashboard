@@ -17520,6 +17520,23 @@ async function ccGenerarExpediente() {
 
     const folio = `SEN-EXP-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
 
+    // ── Datos para charts ──────────────────────────────────────────────────────
+    const _chartVariants = (d.vendorVariants||[]).map(v => ({
+      name: v.length > 40 ? v.substring(0,38)+'…' : v,
+      fullName: v,
+      monto: (d.vendorContratos||[]).filter(c=>c.proveedor_nombre===v).reduce((s,c)=>s+(c.monto||0),0),
+      count: (d.vendorContratos||[]).filter(c=>c.proveedor_nombre===v).length
+    }));
+    const _chartPatterns = {};
+    (d.vendorContratos||[]).forEach(c => {
+      const pats = Array.isArray(c.patterns) ? c.patterns
+        : (typeof c.patterns==='string' ? c.patterns.replace(/[\[\]"]/g,'').split(',') : []);
+      pats.forEach(p => { const k=(p||'').trim().replace(/_ONCAE|_SEFIN/g,''); if(k) _chartPatterns[k]=(_chartPatterns[k]||0)+1; });
+    });
+    const _chartTimeline = (d.timeline||[]).filter(t=>t.monto>0).map(t=>({ nombre: t.nombre, monto: +(t.monto/1e6).toFixed(2), count: t.count }));
+    const _chartDataJson = JSON.stringify({ variants: _chartVariants, patterns: _chartPatterns, timeline: _chartTimeline, concentracion: { mntPct: d.concentracion.mntPct, vendorMonto: d.concentracion.vendorMonto, entityMonto: d.concentracion.entityMonto } });
+    // ─────────────────────────────────────────────────────────────────────────
+
     const mdToHtml = (text) => text
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -17553,8 +17570,14 @@ async function ccGenerarExpediente() {
       .sec-body { font-size:12px; line-height:1.7; color:#374151; }
       .disclaimer { margin-top:28px; padding:10px 14px; background:#f3e8ff; border:1px solid #e9d5ff; border-radius:6px; font-size:10px; color:#5b21b6; font-style:italic; }
       .footer { margin-top:20px; padding-top:10px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; }
+      .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:8px; }
+      .chart-box { background:#fafafa; border:1px solid #e5e7eb; border-radius:8px; padding:14px; }
+      .chart-box.full { grid-column:1/-1; }
+      .chart-lbl { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#6b7280; margin-bottom:10px; font-weight:700; }
       @media print { .no-print { display:none; } }
-    </style></head><body><div class="page">
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    </head><body><div class="page">
     <div class="hdr">
       <div class="hdr-eyebrow">República de Honduras · ONCAE / SEFIN · ${ts}</div>
       <div class="hdr-title">Expediente Narrativo de Investigación <span class="ai-badge">✦ IA</span></div>
@@ -17565,6 +17588,59 @@ async function ccGenerarExpediente() {
       <div><label>Proveedor</label><span>${_ccData.proveedor}</span></div>
       <div><label>Esquema</label><span>${_ccData.esquema || 'Por determinar'}</span></div>
     </div>
+
+    <div class="sec">
+      <div class="sec-title">📊 ANÁLISIS VISUAL</div>
+      <div class="charts-grid">
+        ${_chartVariants.length > 1 ? `
+        <div class="chart-box">
+          <div class="chart-lbl">Montos por razón social (L millones)</div>
+          <canvas id="chartVariants" height="160"></canvas>
+        </div>` : ''}
+        <div class="chart-box ${_chartVariants.length <= 1 ? 'full' : ''}">
+          <div class="chart-lbl">Métodos de contratación</div>
+          <canvas id="chartPatterns" height="160"></canvas>
+        </div>
+        ${_chartTimeline.length > 1 ? `
+        <div class="chart-box full">
+          <div class="chart-lbl">Concentración por administración (L millones)</div>
+          <canvas id="chartTimeline" height="100"></canvas>
+        </div>` : ''}
+      </div>
+    </div>
+    <script>
+    (function(){
+      const CD = ${_chartDataJson};
+      const PURPLE='rgba(124,58,237,0.75)', RED='rgba(239,68,68,0.75)', AMBER='rgba(245,158,11,0.75)', TEAL='rgba(20,184,166,0.75)';
+      const PALETTE=[PURPLE,RED,AMBER,TEAL,'rgba(99,102,241,0.75)','rgba(236,72,153,0.75)'];
+      // Chart 1: Variantes
+      if(CD.variants.length>1 && document.getElementById('chartVariants')){
+        new Chart(document.getElementById('chartVariants'),{
+          type:'bar',
+          data:{ labels:CD.variants.map(v=>v.name), datasets:[{ label:'L millones', data:CD.variants.map(v=>+(v.monto/1e6).toFixed(2)), backgroundColor:PALETTE.slice(0,CD.variants.length), borderRadius:5 }]},
+          options:{ plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>v+'M' }}}, responsive:true }
+        });
+      }
+      // Chart 2: Patrones
+      if(document.getElementById('chartPatterns')){
+        const pKeys=Object.keys(CD.patterns); const pVals=pKeys.map(k=>CD.patterns[k]);
+        new Chart(document.getElementById('chartPatterns'),{
+          type:'doughnut',
+          data:{ labels:pKeys.map(k=>k.replace(/_/g,' ')), datasets:[{ data:pVals, backgroundColor:PALETTE.slice(0,pKeys.length), borderWidth:1 }]},
+          options:{ plugins:{ legend:{ position:'right', labels:{ font:{ size:9 }, boxWidth:12 }}}, responsive:true }
+        });
+      }
+      // Chart 3: Timeline
+      if(CD.timeline.length>1 && document.getElementById('chartTimeline')){
+        new Chart(document.getElementById('chartTimeline'),{
+          type:'bar',
+          data:{ labels:CD.timeline.map(t=>t.nombre), datasets:[{ label:'L millones', data:CD.timeline.map(t=>t.monto), backgroundColor:PURPLE, borderRadius:5 }]},
+          options:{ plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>v+'M' }}}, responsive:true }
+        });
+      }
+    })();
+    </script>
+
     ${(_ccData.vendorVariants || []).length > 1 ? `
     <div class="sec" style="border-left:4px solid #ef4444;padding-left:14px;">
       <div class="sec-title" style="color:#ef4444;">🚨 EMPRESA ESPEJO — RAZONES SOCIALES MÚLTIPLES</div>

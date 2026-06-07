@@ -921,6 +921,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 }
 .status-badge.pendiente { color: var(--amber); background: var(--amber-dim); }
 .status-badge.enviado   { color: var(--green); background: var(--green-dim); }
+.status-badge.revisado  { color: var(--text-dim); background: rgba(100,116,139,0.12); }
 
 /* Action buttons */
 .action-group { display: flex; gap: 6px; }
@@ -7244,11 +7245,11 @@ function render() {
         html += '</div>';
         return html;
       })()}</td>
-      <td><span class="status-badge ${stc}">${a.status || 'Pendiente'}</span></td>
+      <td><span class="status-badge ${(_rStatus === 'LEGITIMO' || _rStatus === 'FALSO_POSITIVO') ? 'revisado' : stc}">${(_rStatus === 'LEGITIMO') ? 'Legítimo' : (_rStatus === 'FALSO_POSITIVO') ? 'Falso Positivo' : (a.status || 'Pendiente')}</span></td>
       <td>
         <div class="action-group" onclick="event.stopPropagation()">
           ${(sc === 'critica' || sc === 'alta') ? `<button class="btn-action btn-refer" onclick="openReferModal(${a.id})" title="Generar memorándum de referencia">📋 Referir</button>` : ''}
-          <button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta">📤 Enviar</button>
+          ${(!_rStatus || _rStatus === 'ESCALADO') ? `<button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta">📤 Enviar</button>` : ''}
           <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Borrar">🗑️</button>
         </div>
       </td>

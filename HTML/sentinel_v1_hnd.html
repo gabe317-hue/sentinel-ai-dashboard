@@ -16878,7 +16878,7 @@ function ccCalcPatrones(vendorContratos) {
 function ccCalcScore(vendorContratos, vendorGlobal, conc, timeline, pats) {
   const criteria = [
     { label: 'Contratos con señal CRÍTICA',       val: pats.criticos > 0,                                 detail: pats.criticos > 0 ? `${pats.criticos} contrato(s) CRÍTICA detectados` : 'Ningún contrato alcanza severidad CRÍTICA' },
-    { label: 'Concentración alta en entidad',      val: conc.mntPct > 30,                                  detail: `${conc.mntPct.toFixed(1)}% del presupuesto contratado va a este proveedor` },
+    { label: 'Concentración alta en entidad',      val: conc.mntPct > 30,                                  detail: `${conc.mntPct.toFixed(1)}% del monto ONCAE/SEFIN en sistema (no refleja presupuesto total de la entidad)` },
     { label: 'Persistencia multi-administración',  val: timeline.filter(t=>t.count>0).length >= 2,         detail: `Activo en ${timeline.filter(t=>t.count>0).length} período(s) presidencial(es)` },
     { label: 'Volumen significativo (>L 50M)',      val: conc.vendorMonto > 50_000_000,                     detail: `L ${(conc.vendorMonto/1e6).toFixed(1)}M contratados con esta entidad` },
     { label: 'Patrones de riesgo detectados',      val: Object.keys(pats.patMap).length > 0,               detail: Object.keys(pats.patMap).length > 0 ? Object.keys(pats.patMap).slice(0,3).join(', ') : 'Sin patrones específicos' },
@@ -17198,7 +17198,7 @@ function ccExportPDF() {
     <div class="meta">
       <div><label>Folio</label><span>${folio}</span></div>
       <div><label>Fecha</label><span>${ts}</span></div>
-      <div><label>Base de datos</label><span>137,190 registros ONCAE/SEFIN</span></div>
+      <div><label>Base de datos</label><span>${(window._bdTotalCount||0).toLocaleString('es-HN')} registros ONCAE/SEFIN</span></div>
       <div><label>Entidad</label><span>${entidad}</span></div>
       <div><label>Proveedor investigado</label><span>${proveedor}</span></div>
       <div><label>Contratos analizados</label><span>${concentracion.vendorCount} de ${concentracion.entityCount} totales</span></div>

@@ -7201,8 +7201,8 @@ function render() {
     const proveedorDisplay = _sanitize(parseDesc('Proveedor') || a.proveedor_nombre || '—');
     const entidadDisplay   = _sanitize(parseDesc('Entidad compradora') || a.entity_name || '—');
 
-    // Review badge — lookup en _reviewCache
-    const _rKey = `${a.proveedor_nombre||''}|${a.entidad||a.entity_name||''}|${a.fecha_contrato||''}`;
+    // Review badge — lookup en _reviewCache (normalizar fecha a yyyy-mm-dd)
+    const _rKey = `${a.proveedor_nombre||''}|${a.entidad||a.entity_name||''}|${(a.fecha_contrato||'').slice(0,10)}`;
     const _rStatus = _reviewCache.get(_rKey);
     const _rBadge = _rStatus === 'LEGITIMO'
       ? `<span title="Verificado como legítimo" style="margin-left:4px;font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);vertical-align:middle;">✓</span>`
@@ -8886,6 +8886,7 @@ function isSiafiReal(a) {
 // ALERT DETAIL PANEL — drill-down for a single alert row
 // ════════════════════════════════════════════════════════════
 let _alertDetailSource = 'tabla'; // 'tabla' | 'busqueda'
+let _adpRawFecha = null; // fecha_contrato raw del alert actual (para review lookup)
 
 function openAlertDetail(alertId, event, source = 'tabla') {
   // Ignore right-clicks / modifier-clicks
@@ -8896,6 +8897,7 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   if (!a) return;
 
   _alertDetailSource = source;
+  _adpRawFecha = (a.fecha_contrato || '').slice(0, 10); // yyyy-mm-dd, sin hora ni timezone
   const backBtn = document.getElementById('adp-back-btn');
   if (backBtn) backBtn.textContent = source === 'busqueda' ? '← Búsqueda BD' : source === 'redflag' ? '← Red Flags' : '← Contratos';
 
@@ -9045,18 +9047,12 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   document.getElementById('alertDetailPanel').classList.add('open');
   window.scrollTo({ top: 0, behavior: 'instant' });
 
-  // Cargar review existente si aplica
-  const _prov  = document.getElementById('adp-proveedor')?.textContent?.trim();
-  const _ent   = document.getElementById('adp-entidad')?.textContent?.trim();
-  const _fraw  = document.getElementById('adp-fecha')?.textContent?.trim();
-  let _fISO = null;
-  if (_fraw && _fraw !== '—') {
-    const _p = _fraw.split('/');
-    if (_p.length === 3) _fISO = `${_p[2]}-${_p[1].padStart(2,'0')}-${_p[0].padStart(2,'0')}`;
-  }
+  // Cargar review existente si aplica (usar fecha raw, no la display con hora/timezone)
+  const _prov = document.getElementById('adp-proveedor')?.textContent?.trim();
+  const _ent  = document.getElementById('adp-entidad')?.textContent?.trim();
   // Reset form state
   document.getElementById('adp-review-form').classList.remove('open');
-  if (_prov && _ent) adpCargarReview(_prov, _ent, _fISO);
+  if (_prov && _ent) adpCargarReview(_prov, _ent, _adpRawFecha);
 }
 
 // ── Alert Review Functions ──
@@ -9104,7 +9100,6 @@ async function adpCargarReview(proveedor, entidad, fechaContrato) {
 async function adpGuardarReview() {
   const proveedor = document.getElementById('adp-proveedor')?.textContent?.trim();
   const entidad   = document.getElementById('adp-entidad')?.textContent?.trim();
-  const fechaRaw  = document.getElementById('adp-fecha')?.textContent?.trim();
   const montoRaw  = document.getElementById('adp-monto')?.textContent?.trim();
   const status    = document.getElementById('adp-review-status')?.value;
   const categoria = document.getElementById('adp-review-categoria')?.value;
@@ -9115,12 +9110,8 @@ async function adpGuardarReview() {
     return;
   }
 
-  // Convertir fecha display a ISO (dd/mm/yyyy → yyyy-mm-dd)
-  let fechaISO = null;
-  if (fechaRaw && fechaRaw !== '—') {
-    const parts = fechaRaw.split('/');
-    if (parts.length === 3) fechaISO = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-  }
+  // Usar fecha raw del alert (yyyy-mm-dd, sin ambigüedad de timezone)
+  const fechaISO = _adpRawFecha || null;
 
   // Convertir monto display a número
   const montoNum = parseFloat(montoRaw?.replace(/[L\s,]/g,'')) || null;

@@ -882,38 +882,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 .alert-table tbody tr { cursor: pointer; }
 .alert-table tbody tr:hover { background: var(--glass-hover); }
 
-/* ── Alert Review UI ── */
-.adp-review-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 16px; border-radius: 6px; cursor: pointer;
-  font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace;
-  border: 1px solid rgba(16,185,129,0.4);
-  background: rgba(16,185,129,0.08); color: #10b981;
-  transition: all .2s; margin-top: 14px;
-}
-.adp-review-btn:hover { background: rgba(16,185,129,0.18); }
-.adp-review-btn.reviewed { border-color: rgba(100,116,139,0.4); background: rgba(100,116,139,0.08); color: var(--text-dim); cursor: default; }
-.adp-review-form {
-  display: none; margin-top: 12px; padding: 14px;
-  background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2);
-  border-radius: 8px;
-}
-.adp-review-form.open { display: block; }
-.adp-review-form select, .adp-review-form textarea {
-  width: 100%; background: rgba(0,0,0,0.3); color: var(--text);
-  border: 1px solid rgba(255,255,255,0.1); border-radius: 5px;
-  padding: 7px 10px; font-size: 12px; font-family: 'JetBrains Mono', monospace;
-  margin-top: 6px; box-sizing: border-box;
-}
-.adp-review-form label { font-size: 10px; color: var(--text-dim); font-weight: 600; letter-spacing: .06em; }
-.adp-review-badge {
-  display: none; margin-top: 10px; padding: 5px 12px; border-radius: 5px;
-  font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace;
-}
-.adp-review-badge.LEGITIMO      { display:inline-block; background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
-.adp-review-badge.FALSO_POSITIVO{ display:inline-block; background:rgba(100,116,139,0.12); color:var(--text-dim); border:1px solid rgba(100,116,139,0.3); }
-.adp-review-badge.ESCALADO      { display:inline-block; background:rgba(255,165,0,0.12); color:var(--amber); border:1px solid rgba(255,165,0,0.3); }
-
 /* Status badges */
 .status-badge {
   display: inline-block; padding: 3px 8px; border-radius: 4px;
@@ -5016,43 +4984,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
 
-    <!-- ── Marcar como Revisado ── -->
-    <div style="margin-top:4px;">
-      <div id="adp-review-badge" class="adp-review-badge"></div>
-      <button class="adp-review-btn" id="adp-review-btn" onclick="adpToggleReviewForm()">✓ Marcar como Revisado</button>
-      <div class="adp-review-form" id="adp-review-form">
-        <div style="margin-bottom:10px;">
-          <label>RESULTADO</label>
-          <select id="adp-review-status">
-            <option value="LEGITIMO">✅ Legítimo — contrato verificado</option>
-            <option value="FALSO_POSITIVO">⚪ Falso positivo — no es riesgo real</option>
-            <option value="ESCALADO">⚠️ Escalado — referido a autoridades</option>
-          </select>
-        </div>
-        <div style="margin-bottom:10px;">
-          <label>CATEGORÍA</label>
-          <select id="adp-review-categoria">
-            <option value="OTRO">— Seleccionar —</option>
-            <option value="INFRAESTRUCTURA">Infraestructura / Obra pública</option>
-            <option value="FINANCIAMIENTO_EXTERNO">Financiamiento externo (BID, España, USAID…)</option>
-            <option value="EMPRESA_EXTRANJERA_VERIFICADA">Empresa extranjera verificada</option>
-            <option value="LICITACION_VALIDA">Licitación válida confirmada</option>
-            <option value="PANDEMIA_EMERGENCIA">Pandemia / Emergencia declarada</option>
-            <option value="DUPLICADO_DB">Duplicado en DB</option>
-            <option value="OTRO">Otro</option>
-          </select>
-        </div>
-        <div style="margin-bottom:12px;">
-          <label>NOTA (fuente, referencia, observación)</label>
-          <textarea id="adp-review-nota" rows="3" placeholder="Ej: Hospital Roatán — contrato EDUCTRADE verificado con noticia empresaexterior.com…"></textarea>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button onclick="adpGuardarReview()" style="padding:7px 18px;border-radius:5px;border:1px solid rgba(16,185,129,0.5);background:rgba(16,185,129,0.15);color:#10b981;font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;">💾 Guardar</button>
-          <button onclick="adpToggleReviewForm()" style="padding:7px 14px;border-radius:5px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Cancelar</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Vendor history & entity history row -->
     <div class="adp-grid">
       <div class="adp-card">
@@ -6776,7 +6707,6 @@ function gNormSev(s) {
 // APP STATE
 // ════════════════════════════════════════════════════════════
 let allAlerts      = [];    // Full dataset from Supabase
-let _reviewCache   = new Map(); // key: "proveedor|entidad|fecha" → review_status
 let activeFilter   = 'all'; // Active severity filter
 let activePattern  = 'all'; // Active pattern filter
 let searchQuery    = '';    // Global search — proveedor, entidad, ID
@@ -6920,20 +6850,6 @@ async function _loadRemainingAlertsBackground() {
   } catch (err) {
     console.warn('⚠️ Background load partial — using priority data only:', err.message);
   }
-}
-
-async function loadReviewCache() {
-  // Carga todas las revisiones de alert_reviews en un Map para lookup O(1) en tabla
-  try {
-    const { data } = await _supabase
-      .from('alert_reviews')
-      .select('proveedor_nombre, entidad, fecha_contrato, review_status');
-    _reviewCache = new Map();
-    (data || []).forEach(r => {
-      const key = `${r.proveedor_nombre}|${r.entidad}|${r.fecha_contrato}`;
-      _reviewCache.set(key, r.review_status);
-    });
-  } catch(e) { /* silencioso — no bloquear carga de alertas */ }
 }
 
 async function loadAlerts() {
@@ -7201,19 +7117,10 @@ function render() {
     const proveedorDisplay = _sanitize(parseDesc('Proveedor') || a.proveedor_nombre || '—');
     const entidadDisplay   = _sanitize(parseDesc('Entidad compradora') || a.entity_name || '—');
 
-    // Review badge — lookup en _reviewCache
-    const _rKey = `${a.proveedor_nombre||''}|${a.entidad||a.entity_name||''}|${a.fecha_contrato||''}`;
-    const _rStatus = _reviewCache.get(_rKey);
-    const _rBadge = _rStatus === 'LEGITIMO'
-      ? `<span title="Verificado como legítimo" style="margin-left:4px;font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);vertical-align:middle;">✓</span>`
-      : _rStatus === 'FALSO_POSITIVO'
-      ? `<span title="Falso positivo registrado" style="margin-left:4px;font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(100,116,139,0.12);color:var(--text-dim);border:1px solid rgba(100,116,139,0.3);vertical-align:middle;">⚪</span>`
-      : '';
-
     return `<tr onclick="openAlertDetail(${a.id}, event)">
       <td><span class="cell-id">${a.alert_id || ('#' + a.id)}</span></td>
       <td><span class="cell-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${desc}</span></td>
-      <td>${proveedorDisplay !== '—' ? `<button class="cell-entity-link" onclick="event.stopPropagation();showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button>` : `<span style="color:var(--text-dim);">—</span>`}${_rBadge}</td>
+      <td>${proveedorDisplay !== '—' ? `<button class="cell-entity-link" onclick="event.stopPropagation();showVendorPanel('${proveedorDisplay.replace(/'/g,"\\'")}')">${proveedorDisplay}</button>` : `<span style="color:var(--text-dim);">—</span>`}</td>
       <td><button class="cell-entity-link" onclick="event.stopPropagation();showEntityPanel('${entidadDisplay.replace(/'/g,"\\'")}')">${entidadDisplay}</button></td>
       <td><span class="sev-badge ${sc}">${a.severity || '—'}</span></td>
       <td><span class="cell-source">${a.data_source || '—'}</span></td>
@@ -9044,113 +8951,6 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   document.getElementById('mainTableContainer').style.display = 'none';
   document.getElementById('alertDetailPanel').classList.add('open');
   window.scrollTo({ top: 0, behavior: 'instant' });
-
-  // Cargar review existente si aplica
-  const _prov  = document.getElementById('adp-proveedor')?.textContent?.trim();
-  const _ent   = document.getElementById('adp-entidad')?.textContent?.trim();
-  const _fraw  = document.getElementById('adp-fecha')?.textContent?.trim();
-  let _fISO = null;
-  if (_fraw && _fraw !== '—') {
-    const _p = _fraw.split('/');
-    if (_p.length === 3) _fISO = `${_p[2]}-${_p[1].padStart(2,'0')}-${_p[0].padStart(2,'0')}`;
-  }
-  // Reset form state
-  document.getElementById('adp-review-form').classList.remove('open');
-  if (_prov && _ent) adpCargarReview(_prov, _ent, _fISO);
-}
-
-// ── Alert Review Functions ──
-
-function adpToggleReviewForm() {
-  const form = document.getElementById('adp-review-form');
-  form.classList.toggle('open');
-}
-
-async function adpCargarReview(proveedor, entidad, fechaContrato) {
-  // Verificar si este contrato ya tiene review registrada
-  try {
-    const { data } = await _supabase
-      .from('alert_reviews')
-      .select('review_status, review_categoria, review_nota')
-      .eq('proveedor_nombre', proveedor)
-      .eq('entidad', entidad)
-      .eq('fecha_contrato', fechaContrato)
-      .maybeSingle();
-
-    const badge = document.getElementById('adp-review-badge');
-    const btn   = document.getElementById('adp-review-btn');
-
-    if (data) {
-      const labels = { LEGITIMO: '✅ Verificado: Legítimo', FALSO_POSITIVO: '⚪ Falso Positivo', ESCALADO: '⚠️ Escalado' };
-      badge.textContent = labels[data.review_status] || data.review_status;
-      badge.className = `adp-review-badge ${data.review_status}`;
-      btn.textContent = '✎ Editar revisión';
-      btn.classList.add('reviewed');
-      // Pre-llenar el form con datos existentes
-      document.getElementById('adp-review-status').value   = data.review_status;
-      document.getElementById('adp-review-categoria').value = data.review_categoria || 'OTRO';
-      document.getElementById('adp-review-nota').value     = data.review_nota || '';
-    } else {
-      badge.className = 'adp-review-badge';
-      btn.textContent = '✓ Marcar como Revisado';
-      btn.classList.remove('reviewed');
-      document.getElementById('adp-review-status').value   = 'LEGITIMO';
-      document.getElementById('adp-review-categoria').value = 'OTRO';
-      document.getElementById('adp-review-nota').value     = '';
-    }
-  } catch(e) { /* silencioso */ }
-}
-
-async function adpGuardarReview() {
-  const proveedor = document.getElementById('adp-proveedor')?.textContent?.trim();
-  const entidad   = document.getElementById('adp-entidad')?.textContent?.trim();
-  const fechaRaw  = document.getElementById('adp-fecha')?.textContent?.trim();
-  const montoRaw  = document.getElementById('adp-monto')?.textContent?.trim();
-  const status    = document.getElementById('adp-review-status')?.value;
-  const categoria = document.getElementById('adp-review-categoria')?.value;
-  const nota      = document.getElementById('adp-review-nota')?.value?.trim();
-
-  if (!proveedor || !entidad || !status) {
-    alert('Faltan datos del contrato. Cierra y abre el panel de nuevo.');
-    return;
-  }
-
-  // Convertir fecha display a ISO (dd/mm/yyyy → yyyy-mm-dd)
-  let fechaISO = null;
-  if (fechaRaw && fechaRaw !== '—') {
-    const parts = fechaRaw.split('/');
-    if (parts.length === 3) fechaISO = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-  }
-
-  // Convertir monto display a número
-  const montoNum = parseFloat(montoRaw?.replace(/[L\s,]/g,'')) || null;
-
-  const btn = document.getElementById('adp-review-btn');
-  btn.textContent = 'Guardando…';
-
-  try {
-    const { error } = await _supabase
-      .from('alert_reviews')
-      .upsert({
-        proveedor_nombre: proveedor,
-        entidad: entidad,
-        fecha_contrato: fechaISO,
-        monto_contrato: montoNum,
-        review_status: status,
-        review_categoria: categoria,
-        review_nota: nota,
-        reviewed_by: 'sentinel-operador',
-        reviewed_at: new Date().toISOString()
-      }, { onConflict: 'proveedor_nombre,entidad,fecha_contrato' });
-
-    if (error) throw error;
-
-    document.getElementById('adp-review-form').classList.remove('open');
-    await adpCargarReview(proveedor, entidad, fechaISO);
-  } catch(e) {
-    alert('Error al guardar: ' + (e.message || e));
-    btn.textContent = '✓ Marcar como Revisado';
-  }
 }
 
 function closeAlertDetail() {
@@ -20334,7 +20134,7 @@ async function init() {
   // Check for existing session first — if valid, skip login
   if (checkStoredSession()) {
     showPortal();
-    await Promise.all([loadAlerts(), loadReviewCache()]);
+    await loadAlerts();
     startRealtime();
   } else {
     // No valid session — show login screen

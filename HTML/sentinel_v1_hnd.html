@@ -7250,7 +7250,7 @@ function render() {
         <div class="action-group" onclick="event.stopPropagation()">
           ${(sc === 'critica' || sc === 'alta') ? `<button class="btn-action btn-refer" onclick="openReferModal(${a.id})" title="Generar memorándum de referencia">📋 Referir</button>` : ''}
           ${(!_rStatus || _rStatus === 'ESCALADO') ? `<button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta">📤 Enviar</button>` : ''}
-          <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Borrar">🗑️</button>
+          <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Archivar contrato">📁 Archivar</button>
         </div>
       </td>
     </tr>`;

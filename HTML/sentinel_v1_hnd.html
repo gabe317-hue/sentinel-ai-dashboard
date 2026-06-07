@@ -6925,7 +6925,7 @@ async function _loadRemainingAlertsBackground() {
 async function loadReviewCache() {
   // Carga todas las revisiones de alert_reviews en un Map para lookup O(1) en tabla
   try {
-    const { data } = await _supabase
+    const { data } = await db
       .from('alert_reviews')
       .select('proveedor_nombre, entidad, fecha_contrato, review_status');
     _reviewCache = new Map();
@@ -9065,7 +9065,7 @@ function adpToggleReviewForm() {
 async function adpCargarReview(proveedor, entidad, fechaContrato) {
   // Verificar si este contrato ya tiene review registrada
   try {
-    const { data } = await _supabase
+    const { data } = await db
       .from('alert_reviews')
       .select('review_status, review_categoria, review_nota')
       .eq('proveedor_nombre', proveedor)
@@ -9120,7 +9120,7 @@ async function adpGuardarReview() {
   btn.textContent = 'Guardando…';
 
   try {
-    const { error } = await _supabase
+    const { error } = await db
       .from('alert_reviews')
       .upsert({
         proveedor_nombre: proveedor,

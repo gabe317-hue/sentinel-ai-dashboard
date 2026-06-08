@@ -2817,6 +2817,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);margin-top:4px;">En desarrollo</span>
     </div>
 
+    <!-- Card 22 — Fraccionamiento (NS-9) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showFraccionamientoPanel)">
+      <div class="pe-card-num">22</div>
+      <div class="pe-card-icon">✂️</div>
+      <div class="pe-card-title">Fraccionamiento</div>
+      <div class="pe-card-desc">Proveedor recibe 3+ contratos directos o compras menores a la misma entidad en el mismo año — evasión sistemática de licitación pública</div>
+      <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-9</span>
+    </div>
+
   </div>
 </div>
 
@@ -4138,7 +4147,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
 
       <!-- KPI: Fraccionamiento -->
-      <div class="exec-card exec-card-red" style="cursor:pointer;" onclick="showFraccionamientoPanel()" title="Ver patrones de fraccionamiento" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor=''">
+      <div class="exec-card exec-card-red" style="cursor:pointer;" onclick="irDesdeEjecutivo(showFraccionamientoPanel)" title="Ver patrones de fraccionamiento" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor=''">
         <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
           <span>Fraccionamiento</span>
           <span style="background:var(--red);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">✂️</span>
@@ -21699,7 +21708,7 @@ function hideFraccionamientoPanel() {
 
 async function fracLoad() {
   try {
-    const { data, error } = await _supabase
+    const { data, error } = await db
       .from('mv_fraccionamiento')
       .select('*')
       .order('fraccionamiento_score', { ascending: false })

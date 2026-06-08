@@ -4137,6 +4137,17 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-note">▸ Clic para ver informes →</div>
       </div>
 
+      <!-- KPI: Fraccionamiento -->
+      <div class="exec-card exec-card-red" style="cursor:pointer;" onclick="showFraccionamientoPanel()" title="Ver patrones de fraccionamiento" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor=''">
+        <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Fraccionamiento</span>
+          <span style="background:var(--red);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">✂️</span>
+        </div>
+        <div class="exec-card-value" id="exec-frac-criticos">28</div>
+        <div class="exec-card-sub">casos críticos detectados</div>
+        <div class="exec-card-note">▸ Evasión de licitación pública →</div>
+      </div>
+
     </div>
     <!-- P4 — Score de Riesgo Institucional (moved above P5 for visibility) -->
     <div class="exec-section-title">🏛️ Puntaje de Riesgo Institucional — Top 10 Entidades</div>

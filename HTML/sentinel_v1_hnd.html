@@ -2521,6 +2521,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <option value="SOBRECOSTO">Sobrecosto o precio inflado</option>
           <option value="PROVEEDOR_ÚNICO">Proveedor único / captura de proceso</option>
           <option value="CAPTURA_INSTITUCIONAL">Captura institucional (relación preferencial persistente)</option>
+          <option value="CONSULTOR_DOMINANTE">NS-10 — Concentración de consultoría / asesoría sin licitación</option>
         </select>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
           <button onclick="ccAnalizar()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:10px;padding:10px 24px;font-size:12px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;">⚡ ANALIZAR CASO</button>
@@ -27375,7 +27376,7 @@ async function consLoadDrilldown(entidad) {
         <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${d.contratos}</td>
         <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text);font-weight:600;">${fmtLpsCompact(d.monto)}</td>
         <td style="padding:8px 10px;text-align:center;">
-          <button onclick="abrirConstructorCaso(showConsultoriaPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='${entEsc2}';document.getElementById('ccProveedor').value='${provEsc}';ccAnalizar();},250)"
+          <button onclick="abrirConstructorCaso(showConsultoriaPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='${entEsc2}';document.getElementById('ccProveedor').value='${provEsc}';document.getElementById('ccEsquema').value='CONSULTOR_DOMINANTE';ccAnalizar();},250)"
             style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
             ⚖️ Armar Caso
           </button>

@@ -27506,6 +27506,7 @@ async function consLoadKPI() {
 // ══ NS-11: IDENTIDAD DUPLICADA ════════════════════════════════════════════════
 let gIdData = [];
 let gIdFiltro = null;
+let gIdMap = {};  // rtn → nombres_lista
 
 async function showIdentidadPanel() {
   hideAllPanels();
@@ -27549,11 +27550,14 @@ function idSetFiltro(sev) {
 function idRender() {
   const sevColor = { 'CRÍTICA': '#ff4757', 'ALTA': '#ffa502', 'MEDIA': '#ffd32a' };
   const filtered = gIdFiltro ? gIdData.filter(r => r.severidad === gIdFiltro) : gIdData;
+  // Rebuild map for drilldown lookup
+  gIdMap = {};
+  filtered.forEach(r => { gIdMap[r.rtn] = r.nombres_lista || []; });
   const rows = filtered.map(r => {
     const color = sevColor[r.severidad] || '#888';
-    const rtnEsc = (r.rtn || '').replace(/'/g, "\\'");
+    const rtnEsc = (r.rtn || '').replace(/\\/g,'\\\\').replace(/'/g, "\\'");
     const nombresStr = (r.nombres_lista || []).join(' | ');
-    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;" onclick="idShowDrilldown('${rtnEsc}', ${JSON.stringify(r.nombres_lista || [])})" title="${nombresStr}">
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;" onclick="idShowDrilldown('${rtnEsc}')" title="${nombresStr}">
       <td style="padding:8px 10px;color:var(--electric);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;">${r.rtn} <span style="font-size:9px;color:var(--text-dim);font-weight:400;">▸ ver nombres</span></td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--red);font-weight:700;">${r.total_nombres}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${r.instituciones}</td>
@@ -27570,7 +27574,8 @@ function idRender() {
   document.getElementById('id-tbody').innerHTML = rows || `<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">Sin resultados.</td></tr>`;
 }
 
-function idShowDrilldown(rtn, nombres) {
+function idShowDrilldown(rtn) {
+  const nombres = gIdMap[rtn] || [];
   document.getElementById('id-drilldown').style.display = 'block';
   document.getElementById('id-drill-title').textContent = `🪪 RTN ${rtn} — ${nombres.length} nombres distintos`;
   const sevColors = ['#ff4757','#ffa502','#ffd32a','#00c8ff','#7bed9f','#eccc68'];

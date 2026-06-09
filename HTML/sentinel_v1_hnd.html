@@ -2960,7 +2960,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
     <!-- Drilldown: nombres de una RTN específica -->
     <div id="id-drilldown" style="display:none;margin-top:16px;">
-      <button onclick="idCloseDrilldown()" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;margin-bottom:12px;">← Volver a RTNs</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <button onclick="idCloseDrilldown()" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;">← Volver a RTNs</button>
+        <button id="id-drill-pdf-btn" onclick="idGenerarReportePDF()" style="background:rgba(255,71,87,0.12);color:#ff4757;border:1px solid rgba(255,71,87,0.35);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">📄 Reporte PDF</button>
+      </div>
       <div id="id-drill-title" style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;"></div>
       <div id="id-drill-nombres" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;"></div>
     </div>
@@ -27626,6 +27629,94 @@ async function idShowDrilldown(rtn) {
 
 function idCloseDrilldown() {
   document.getElementById('id-drilldown').style.display = 'none';
+}
+
+function idGenerarReportePDF() {
+  const titulo = document.getElementById('id-drill-title').textContent;
+  const rtn    = titulo.replace('🪪 RTN ', '').split(' —')[0].trim();
+  const nombres = gIdMap[rtn] || [];
+
+  // Rebuild grouped data from the rendered cards
+  const cards = document.querySelectorAll('#id-drill-nombres > div');
+  const filas = [...cards].map(card => {
+    const nombre = card.querySelector('div')?.textContent?.trim() || '';
+    const insts  = card.querySelector('div:nth-child(2)')?.textContent?.replace('🏛️ ','').trim() || '';
+    const años   = card.querySelector('div:nth-child(3)')?.textContent?.replace('📅 ','').trim() || '';
+    return { nombre, insts, años };
+  });
+
+  const hoy = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const folio = 'SEN-NS11-' + rtn.slice(-6) + '-' + new Date().toISOString().slice(0,10).replace(/-/g,'');
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>NS-11 Identidad Duplicada — RTN ${rtn}</title>
+<style>
+  @page { margin: 2cm; }
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #1a1a2e; line-height: 1.5; }
+  .header { border-bottom: 3px solid #c0392b; padding-bottom: 12px; margin-bottom: 20px; }
+  .header h1 { font-size: 18px; color: #c0392b; margin: 0 0 4px; }
+  .header .sub { font-size: 11px; color: #666; }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #f8f8f8; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 11px; }
+  .meta-grid b { color: #333; }
+  .alerta { background: #fff3cd; border-left: 4px solid #e67e22; padding: 10px 14px; border-radius: 4px; margin-bottom: 20px; font-size: 11px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  th { background: #c0392b; color: #fff; padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  td { padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 11px; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .badge { display:inline-block; background:#c0392b22; color:#c0392b; border:1px solid #c0392b44; border-radius:10px; padding:1px 8px; font-size:10px; font-weight:700; }
+  .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
+  @media print { button { display:none; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🚨 ALERTA NS-11 — Identidad Tributaria Duplicada</h1>
+  <div class="sub">Sentinel AI · Sistema de Detección de Fraude en Contratación Pública · Honduras</div>
+</div>
+<div class="meta-grid">
+  <div><b>Folio:</b> ${folio}</div>
+  <div><b>Fecha:</b> ${hoy}</div>
+  <div><b>RTN investigado:</b> ${rtn}</div>
+  <div><b>Señal:</b> <span class="badge">NS-11 CRÍTICA</span></div>
+  <div><b>Nombres distintos:</b> ${nombres.length}</div>
+  <div><b>Fuente:</b> Portal IAIP — iaip_providers</div>
+</div>
+<div class="alerta">
+  ⚠️ <b>Hallazgo:</b> El RTN <b>${rtn}</b> aparece registrado bajo <b>${nombres.length} nombres de empresa distintos</b> en documentos de adquisiciones publicados por instituciones del Estado hondureño. Esta discrepancia es incompatible con un registro tributario legítimo y constituye una señal de suplantación de identidad o reutilización fraudulenta de RTN.
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Nombre de empresa registrado</th>
+      <th>Institución(es) pagadora(s)</th>
+      <th>Período</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${filas.map((f, i) => `<tr>
+      <td style="text-align:center;font-weight:700;">${i+1}</td>
+      <td><b>${f.nombre || nombres[i] || '—'}</b></td>
+      <td style="color:#555;">${f.insts || '—'}</td>
+      <td style="color:#555;">${f.años || '—'}</td>
+    </tr>`).join('')}
+  </tbody>
+</table>
+<p style="font-size:11px;color:#555;"><b>Acción recomendada:</b> Verificar en el registro tributario del SAR el titular actual del RTN ${rtn} y comparar contra los nombres registrados. Solicitar documentación de personería jurídica a las instituciones pagadoras identificadas. Referir al PGR / TSC si se confirma uso simultáneo por entidades distintas.</p>
+<div class="footer">
+  <span>Sentinel AI — sentinelai-hn.com</span>
+  <span>Generado: ${hoy} · Folio: ${folio}</span>
+</div>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank', 'width=900,height=700');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => w.print(), 600);
 }
 
 async function idLoadKPI() {

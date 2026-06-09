@@ -2872,13 +2872,33 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto Total L</th>
             <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Prom. Contrato</th>
             <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Severidad</th>
-            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Acción</th>
           </tr>
         </thead>
         <tbody id="cons-tbody">
           <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Drilldown: consultores de una entidad específica -->
+    <div id="cons-drilldown" style="display:none;margin-top:16px;">
+      <button onclick="consCloseDrilldown()" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;margin-bottom:12px;">← Volver a entidades</button>
+      <div id="cons-drill-title" style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;"></div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+              <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Consultor / Asesor</th>
+              <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Contratos</th>
+              <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto Total L</th>
+              <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="cons-drill-tbody">
+            <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-dim);">Selecciona una entidad</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -27308,23 +27328,69 @@ function consRender() {
   const sevColor = { 'CRÍTICA': '#ff4757', 'ALTA': '#ffa502', 'MEDIA': '#ffd32a' };
   const rows = gConsData.map(r => {
     const color = sevColor[r.severidad] || '#888';
-    const entEsc = (r.entidad||'').replace(/'/g,"\\'");
-    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
-      <td style="padding:8px 10px;color:var(--text);font-size:11px;">${r.entidad}</td>
+    const entEsc = (r.entidad||'').replace(/'/g,"\'");
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;" onclick="consLoadDrilldown('${entEsc}')" title="Ver consultores de esta entidad">
+      <td style="padding:8px 10px;color:var(--electric);font-size:11px;font-weight:600;">${r.entidad} <span style="font-size:9px;color:var(--text-dim);font-weight:400;">▸ ver detalle</span></td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--electric);font-weight:700;">${r.consultores_unicos}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${r.total_contratos}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text);">${fmtLpsCompact(parseFloat(r.monto_total_lps)||0)}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${fmtLpsCompact(parseFloat(r.promedio_contrato)||0)}</td>
       <td style="padding:8px 10px;text-align:center;"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${color}22;color:${color};">${r.severidad}</span></td>
-      <td style="padding:8px 10px;text-align:center;">
-        <button onclick="abrirConstructorCaso(showConsultoriaPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='${entEsc}';ccAnalizar();},250)"
-          style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
-          ⚖️ Armar Caso
-        </button>
-      </td>
     </tr>`;
   }).join('');
-  document.getElementById('cons-tbody').innerHTML = rows || '<tr><td colspan="7" style="color:var(--text-dim);text-align:center;padding:20px;">Sin datos.</td></tr>';
+  document.getElementById('cons-tbody').innerHTML = rows || '<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">Sin datos.</td></tr>';
+}
+
+async function consLoadDrilldown(entidad) {
+  // Show drilldown, hide main table
+  document.querySelector('#consultoriaPanel table').closest('div[style*="overflow-x"]').style.display = 'none';
+  document.getElementById('cons-drilldown').style.display = 'block';
+  document.getElementById('cons-drill-title').textContent = '🧾 ' + entidad + ' — Consultores y Asesores';
+  document.getElementById('cons-drill-tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
+
+  try {
+    const { data, error } = await db
+      .from('alerts')
+      .select('proveedor_nombre, monto_contrato, tipo_contratacion')
+      .eq('entidad', entidad)
+      .or('tipo_contratacion.ilike.%consul%,tipo_contratacion.ilike.%asesor%,description.ilike.%consul%,description.ilike.%asesor%')
+      .not('proveedor_nombre', 'is', null);
+    if (error) throw error;
+
+    // Group by proveedor
+    const grouped = {};
+    (data || []).forEach(r => {
+      const k = r.proveedor_nombre;
+      if (!grouped[k]) grouped[k] = { contratos: 0, monto: 0 };
+      grouped[k].contratos++;
+      grouped[k].monto += parseFloat(r.monto_contrato) || 0;
+    });
+
+    const sorted = Object.entries(grouped).sort((a,b) => b[1].monto - a[1].monto);
+    const entEsc2 = entidad.replace(/'/g,"\'");
+    const rowsHtml = sorted.map(([prov, d]) => {
+      const provEsc = prov.replace(/'/g,"\'");
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+        <td style="padding:8px 10px;color:var(--text);font-size:11px;">${prov}</td>
+        <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${d.contratos}</td>
+        <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text);font-weight:600;">${fmtLpsCompact(d.monto)}</td>
+        <td style="padding:8px 10px;text-align:center;">
+          <button onclick="abrirConstructorCaso(showConsultoriaPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='${entEsc2}';document.getElementById('ccProveedor').value='${provEsc}';ccAnalizar();},250)"
+            style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
+            ⚖️ Armar Caso
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+    document.getElementById('cons-drill-tbody').innerHTML = rowsHtml || '<tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px;">Sin registros.</td></tr>';
+  } catch(e) {
+    document.getElementById('cons-drill-tbody').innerHTML = `<tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function consCloseDrilldown() {
+  document.getElementById('cons-drilldown').style.display = 'none';
+  document.querySelector('#consultoriaPanel table').closest('div[style*="overflow-x"]').style.display = '';
 }
 
 async function consLoadKPI() {

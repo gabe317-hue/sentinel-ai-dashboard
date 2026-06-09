@@ -2962,7 +2962,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div id="id-drilldown" style="display:none;margin-top:16px;">
       <button onclick="idCloseDrilldown()" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;margin-bottom:12px;">← Volver a RTNs</button>
       <div id="id-drill-title" style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;"></div>
-      <div id="id-drill-nombres" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      <div id="id-drill-nombres" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;"></div>
     </div>
   </div>
 
@@ -27574,14 +27574,54 @@ function idRender() {
   document.getElementById('id-tbody').innerHTML = rows || `<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">Sin resultados.</td></tr>`;
 }
 
-function idShowDrilldown(rtn) {
+async function idShowDrilldown(rtn) {
   const nombres = gIdMap[rtn] || [];
   document.getElementById('id-drilldown').style.display = 'block';
   document.getElementById('id-drill-title').textContent = `🪪 RTN ${rtn} — ${nombres.length} nombres distintos`;
+  document.getElementById('id-drill-nombres').innerHTML = '<div style="color:var(--text-dim);font-size:11px;padding:8px;">Cargando contexto…</div>';
+
+  // Query iaip_providers for this RTN — get name + institution + year
+  let rows = [];
+  try {
+    const { data, error } = await db
+      .from('iaip_providers')
+      .select('nombre_completo, institution_name, doc_year')
+      .eq('numero_identificacion', rtn)
+      .order('doc_year', { ascending: false });
+    if (!error) rows = data || [];
+  } catch(e) { /* fallback to names-only */ }
+
+  // Group by nombre_completo → set of institutions + years
+  const grouped = {};
+  rows.forEach(r => {
+    const nombre = (r.nombre_completo || '').toUpperCase().trim();
+    if (!grouped[nombre]) grouped[nombre] = { instituciones: new Set(), años: new Set() };
+    if (r.institution_name) grouped[nombre].instituciones.add(r.institution_name);
+    if (r.doc_year) grouped[nombre].años.add(r.doc_year);
+  });
+
+  // Fallback: if no DB data, just show names from gIdMap
+  const listaFinal = Object.keys(grouped).length ? Object.keys(grouped) : nombres;
+
   const sevColors = ['#ff4757','#ffa502','#ffd32a','#00c8ff','#7bed9f','#eccc68'];
-  document.getElementById('id-drill-nombres').innerHTML = nombres.map((n, i) =>
-    `<div style="background:${sevColors[i % sevColors.length]}18;border:1px solid ${sevColors[i % sevColors.length]}44;border-radius:8px;padding:8px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text);">${n}</div>`
-  ).join('');
+  const rtnEsc = rtn.replace(/'/g, "\\'");
+
+  document.getElementById('id-drill-nombres').innerHTML = listaFinal.map((n, i) => {
+    const color = sevColors[i % sevColors.length];
+    const g = grouped[n] || {};
+    const insts = g.instituciones ? [...g.instituciones].slice(0,3).join(', ') : '';
+    const años = g.años ? [...g.años].sort().join(', ') : '';
+    const nEsc = n.replace(/'/g, "\\'");
+    return `<div style="background:${color}0f;border:1px solid ${color}33;border-radius:10px;padding:12px 16px;min-width:280px;max-width:380px;">
+      <div style="font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${color};margin-bottom:6px;">${n}</div>
+      ${insts ? `<div style="font-size:10px;color:var(--text-dim);margin-bottom:2px;">🏛️ ${insts}</div>` : ''}
+      ${años  ? `<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;">📅 ${años}</div>` : ''}
+      <button onclick="abrirConstructorCaso(showIdentidadPanel);setTimeout(()=>{document.getElementById('ccProveedor').value='${nEsc}';document.getElementById('ccEsquema').value='IDENTIDAD_DUPLICADA';ccAnalizar();},250)"
+        style="background:rgba(0,200,255,0.12);color:var(--electric);border:1px solid rgba(0,200,255,0.35);border-radius:6px;padding:4px 12px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
+        ⚖️ Armar Caso con este nombre
+      </button>
+    </div>`;
+  }).join('');
 }
 
 function idCloseDrilldown() {

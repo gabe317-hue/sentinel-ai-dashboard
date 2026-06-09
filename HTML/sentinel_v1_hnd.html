@@ -2517,7 +2517,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div id="ccVendorHint" style="font-size:10px;color:rgba(160,180,210,0.4);font-family:'JetBrains Mono',monospace;margin-top:-4px;display:none;"></div>
         <select id="ccEsquema" style="width:100%;padding:10px 16px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(160,180,210,0.2);color:#e2e8f0;font-size:12px;font-family:'JetBrains Mono',monospace;outline:none;cursor:pointer;">
           <option value="GENERAL">— Análisis general (sin hipótesis específica) —</option>
-          <option value="FRACCIONAMIENTO">Fraccionamiento de contratos</option>
+          <option value="FRACCIONAMIENTO">NS-9 — Fraccionamiento de contratos</option>
           <option value="SOBRECOSTO">Sobrecosto o precio inflado</option>
           <option value="PROVEEDOR_ÚNICO">Proveedor único / captura de proceso</option>
           <option value="CAPTURA_INSTITUCIONAL">Captura institucional (relación preferencial persistente)</option>
@@ -9585,7 +9585,7 @@ function _renderMonopolioTable() {
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${r.contracts_vendor}/${r.contracts_total}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_total)}</td>
       <td style="padding:8px 10px;text-align:center;">${criTag}</td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showMonopolioPanel);setTimeout(()=>{document.getElementById('ccEntidad').value=_monEntityList[${i}];document.getElementById('ccProveedor').value=_monVendorList[${i}];},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showMonopolioPanel);setTimeout(()=>{document.getElementById('ccEntidad').value=_monEntityList[${i}];document.getElementById('ccProveedor').value=_monVendorList[${i}];document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
     </tr>`;
   }).join('');
 }
@@ -10320,7 +10320,7 @@ function _renderOncaeTable() {
       <td style="padding:8px 10px;text-align:center;">${critTag}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_total)}</td>
       <td style="padding:8px 10px;text-align:center;">${anioTag}</td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showOncaePanel);setTimeout(()=>{document.getElementById('ccProveedor').value=_oncaeKeywordList[${i}];},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showOncaePanel);setTimeout(()=>{document.getElementById('ccProveedor').value=_oncaeKeywordList[${i}];document.getElementById('ccEsquema').value='PROVEEDOR_ÚNICO';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
     </tr>`;
   }).join('');
 }
@@ -17263,6 +17263,18 @@ function ccCalcGaps(esquema) {
   return DB[esquema] || DB['GENERAL'];
 }
 
+
+// NS label lookup for report generation
+const CC_NS_LABEL = {
+  'FRACCIONAMIENTO': 'NS-9 Fraccionamiento',
+  'CAPTURA_INSTITUCIONAL': 'Monopolio / Captura Institucional',
+  'PROVEEDOR_ÚNICO': 'NS-1 Monogamia / Proveedor Único',
+  'CONSULTOR_DOMINANTE': 'NS-10 Concentración de Consultoría',
+  'SOBRECOSTO': 'Sobrecosto / Precio Inflado',
+  'GENERAL': 'Análisis General'
+};
+function ccNsLabel(esquema) { return CC_NS_LABEL[esquema] || esquema; }
+
 function ccRenderResultados() {
   if (!_ccData) return;
   const { entidad, proveedor, esquema, concentracion, timeline, patrones, score, gaps, vendorFromDesc } = _ccData;
@@ -17284,7 +17296,7 @@ function ccRenderResultados() {
         <div>
           <div style="font-size:13px;font-weight:800;color:${scoreColor};letter-spacing:.08em;">${scoreLabel}</div>
           <div style="font-size:11px;color:rgba(160,180,210,0.5);margin-top:3px;">${proveedor.toUpperCase()} × ${entidad.toUpperCase()}</div>
-          <div style="font-size:10px;color:rgba(160,180,210,0.35);font-family:'JetBrains Mono',monospace;margin-top:3px;">HIPÓTESIS: ${esquema}</div>
+          <div style="font-size:10px;color:rgba(160,180,210,0.35);font-family:'JetBrains Mono',monospace;margin-top:3px;">HIPÓTESIS: ${ccNsLabel(esquema)}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -17538,7 +17550,7 @@ function ccExportPDF() {
     <div class="hdr">
       <div class="hdr-eyebrow">Sistema Sentinel AI · República de Honduras · Clasificación: CONFIDENCIAL</div>
       <div class="hdr-title">Reporte de Investigación</div>
-      <div class="hdr-sub">${entidad.toUpperCase()} × ${proveedor.toUpperCase()} · Hipótesis: ${esquema || 'Análisis General'}</div>
+      <div class="hdr-sub">${entidad.toUpperCase()} × ${proveedor.toUpperCase()} · Hipótesis: ${ccNsLabel(esquema)}</div>
     </div>
     <div class="meta">
       <div><label>Folio</label><span>${folio}</span></div>
@@ -17650,7 +17662,7 @@ async function ccExportExcelCore() {
   const meta = [
     ['Entidad institucional', entidad],
     ['Proveedor investigado', proveedor],
-    ['Hipótesis / Esquema', esquema||'Análisis General'],
+    ['Hipótesis / Señal', ccNsLabel(esquema)],
     ['Score de solidez del caso', `${score.total} / ${score.max} criterios`],
   ];
   meta.forEach(([k,v]) => {
@@ -21859,7 +21871,7 @@ function fracRender() {
       <div style="font-size:11px;color:var(--text);font-weight:600;text-align:right;">${monto}</div>
       <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">${r.num_contratos} contratos · ${tipos}</div>
       <div style="text-align:right;margin-top:4px;">
-        <button onclick="abrirConstructorCaso(showFraccionamientoPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='${entEsc}';document.getElementById('ccProveedor').value='${provEsc}';ccAnalizar();},250)"
+        <button onclick="abrirConstructorCaso(showFraccionamientoPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='${entEsc}';document.getElementById('ccProveedor').value='${provEsc}';document.getElementById('ccEsquema').value='FRACCIONAMIENTO';ccAnalizar();},250)"
           style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
           ⚖️ Armar Caso
         </button>

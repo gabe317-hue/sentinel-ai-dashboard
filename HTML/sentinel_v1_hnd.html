@@ -2522,6 +2522,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <option value="PROVEEDOR_ÚNICO">Proveedor único / captura de proceso</option>
           <option value="CAPTURA_INSTITUCIONAL">Captura institucional (relación preferencial persistente)</option>
           <option value="CONSULTOR_DOMINANTE">NS-10 — Concentración de consultoría / asesoría sin licitación</option>
+          <option value="IDENTIDAD_DUPLICADA">NS-11 — Identidad duplicada (RTN compartido por empresas distintas)</option>
         </select>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
           <button onclick="ccAnalizar()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:10px;padding:10px 24px;font-size:12px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;">⚡ ANALIZAR CASO</button>
@@ -2836,6 +2837,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">NS-10</span>
     </div>
 
+    <!-- Card 24 — Identidad Duplicada (NS-11) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showIdentidadPanel)">
+      <div class="pe-card-num">24</div>
+      <div class="pe-card-icon">🪪</div>
+      <div class="pe-card-title">Identidad Duplicada</div>
+      <div class="pe-card-desc">RTNs compartidos por empresas con nombres completamente distintos — señal de suplantación o reutilización fraudulenta de identidad tributaria</div>
+      <span class="pe-card-tag" style="background:rgba(255,71,87,0.15);color:#ff4757;border:1px solid rgba(255,71,87,0.35);">NS-11</span>
+    </div>
+
   </div>
 </div>
 
@@ -2900,6 +2910,59 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+
+  <!-- ══ NS-11: IDENTIDAD DUPLICADA PANEL ══ -->
+  <div class="fuente-panel" id="identidadPanel">
+    <button class="fuente-back" onclick="hideIdentidadPanel()">← Contratos</button>
+    <div class="fuente-header">
+      <div class="fuente-title">🪪 <span>Identidad Duplicada — NS-11</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">RTNs compartidos por empresas con nombres completamente distintos · señal de suplantación de identidad tributaria</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Casos CRÍTICOS</div>
+        <div id="id-stat-critica" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
+      </div>
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Total RTNs</div>
+        <div id="id-stat-total" style="font-size:22px;font-weight:700;color:#fbbf24;">—</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Máx. nombres / RTN</div>
+        <div id="id-stat-maxnombres" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <!-- Filtro severidad -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <button onclick="idSetFiltro(null)" id="id-f-all" style="background:rgba(0,200,255,0.15);color:var(--electric);border:1px solid rgba(0,200,255,0.4);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">TODOS</button>
+      <button onclick="idSetFiltro('CRÍTICA')" id="id-f-crit" style="background:rgba(255,71,87,0.08);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">CRÍTICA (9)</button>
+      <button onclick="idSetFiltro('ALTA')" id="id-f-alta" style="background:rgba(255,165,2,0.08);color:#ffa502;border:1px solid rgba(255,165,2,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">ALTA (52)</button>
+      <button onclick="idSetFiltro('MEDIA')" id="id-f-media" style="background:rgba(255,211,42,0.08);color:#ffd32a;border:1px solid rgba(255,211,42,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">MEDIA (135)</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">RTN</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Nombres</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Instituciones</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Registros</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Severidad</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="id-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Drilldown: nombres de una RTN específica -->
+    <div id="id-drilldown" style="display:none;margin-top:16px;">
+      <button onclick="idCloseDrilldown()" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;margin-bottom:12px;">← Volver a RTNs</button>
+      <div id="id-drill-title" style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;"></div>
+      <div id="id-drill-nombres" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
     </div>
   </div>
 
@@ -3573,6 +3636,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <button class="nav-item" id="nav-consultoria" onclick="showConsultoriaPanel()">
         <span class="nav-icon">🧾</span> Consultoría NS-10
       </button>
+      <button class="nav-item" id="nav-identidad" onclick="showIdentidadPanel()">
+        <span class="nav-icon">🪪</span> Identidad Duplicada NS-11
+      </button>
       <button class="nav-item" id="nav-sector" onclick="showSectorPanel()">
         <span class="nav-icon">🏛️</span> Sectores Institucionales
       </button>
@@ -4243,6 +4309,17 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-value" id="exec-cons-criticas">—</div>
         <div class="exec-card-sub" id="exec-cons-sub">entidades CRÍTICAS</div>
         <div class="exec-card-note">▸ Captura presupuestal en asesorías →</div>
+      </div>
+
+      <!-- KPI: Identidad Duplicada (NS-11) -->
+      <div class="exec-card exec-card-red" style="cursor:pointer;" onclick="irDesdeEjecutivo(showIdentidadPanel)" title="Ver identidad duplicada NS-11" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor=''">
+        <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Identidad Duplicada NS-11</span>
+          <span style="background:rgba(255,71,87,0.8);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">🪪</span>
+        </div>
+        <div class="exec-card-value" id="exec-id-criticas">—</div>
+        <div class="exec-card-sub" id="exec-id-sub">RTNs CRÍTICOS</div>
+        <div class="exec-card-note">▸ Suplantación de identidad tributaria →</div>
       </div>
 
     </div>
@@ -17270,6 +17347,7 @@ const CC_NS_LABEL = {
   'CAPTURA_INSTITUCIONAL': 'Monopolio / Captura Institucional',
   'PROVEEDOR_ÚNICO': 'NS-1 Monogamia / Proveedor Único',
   'CONSULTOR_DOMINANTE': 'NS-10 Concentración de Consultoría',
+  'IDENTIDAD_DUPLICADA': 'NS-11 Identidad Duplicada',
   'SOBRECOSTO': 'Sobrecosto / Precio Inflado',
   'GENERAL': 'Análisis General'
 };
@@ -21771,6 +21849,7 @@ function showVistaEjecutiva() {
   // Populate executive data from already-loaded alerts
   renderEjecutiva();
   consLoadKPI();
+  idLoadKPI();
 }
 
 // ── P5 Drilldown — desde Vista Ejecutiva a contratos filtrados por entidad ──
@@ -27423,6 +27502,100 @@ async function consLoadKPI() {
   } catch(e) { /* silencioso — KPI no crítico */ }
 }
 // ══ FIN NS-10 ════════════════════════════════════════════════════════════════
+
+// ══ NS-11: IDENTIDAD DUPLICADA ════════════════════════════════════════════════
+let gIdData = [];
+let gIdFiltro = null;
+
+async function showIdentidadPanel() {
+  hideAllPanels();
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navBtn = document.getElementById('nav-identidad');
+  if (navBtn) navBtn.classList.add('active');
+  document.getElementById('identidadPanel').classList.add('open');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = 'none');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = 'none');
+  document.getElementById('risk-band') && (document.getElementById('risk-band').style.display = 'none');
+  if (!gIdData.length) await idLoad();
+}
+
+function hideIdentidadPanel() {
+  document.getElementById('identidadPanel').classList.remove('open');
+  hideAllPanels();
+}
+
+async function idLoad() {
+  try {
+    const { data, error } = await db.rpc('get_identidad_duplicada', { p_limit: 200 });
+    if (error) throw error;
+    gIdData = data || [];
+    const criticas = gIdData.filter(r => r.severidad === 'CRÍTICA').length;
+    const maxNombres = gIdData.reduce((m, r) => Math.max(m, parseInt(r.total_nombres) || 0), 0);
+    document.getElementById('id-stat-critica').textContent = criticas;
+    document.getElementById('id-stat-total').textContent   = gIdData.length;
+    document.getElementById('id-stat-maxnombres').textContent = maxNombres;
+    idRender();
+  } catch(e) {
+    document.getElementById('id-tbody').innerHTML = `<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function idSetFiltro(sev) {
+  gIdFiltro = sev;
+  idRender();
+}
+
+function idRender() {
+  const sevColor = { 'CRÍTICA': '#ff4757', 'ALTA': '#ffa502', 'MEDIA': '#ffd32a' };
+  const filtered = gIdFiltro ? gIdData.filter(r => r.severidad === gIdFiltro) : gIdData;
+  const rows = filtered.map(r => {
+    const color = sevColor[r.severidad] || '#888';
+    const rtnEsc = (r.rtn || '').replace(/'/g, "\\'");
+    const nombresStr = (r.nombres_lista || []).join(' | ');
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;" onclick="idShowDrilldown('${rtnEsc}', ${JSON.stringify(r.nombres_lista || [])})" title="${nombresStr}">
+      <td style="padding:8px 10px;color:var(--electric);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;">${r.rtn} <span style="font-size:9px;color:var(--text-dim);font-weight:400;">▸ ver nombres</span></td>
+      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--red);font-weight:700;">${r.total_nombres}</td>
+      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${r.instituciones}</td>
+      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${r.total_registros}</td>
+      <td style="padding:8px 10px;text-align:center;"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${color}22;color:${color};">${r.severidad}</span></td>
+      <td style="padding:8px 10px;text-align:center;">
+        <button onclick="event.stopPropagation();abrirConstructorCaso(showIdentidadPanel);setTimeout(()=>{document.getElementById('ccProveedor').value='${rtnEsc}';document.getElementById('ccEsquema').value='IDENTIDAD_DUPLICADA';ccAnalizar();},250)"
+          style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
+          ⚖️ Caso
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('id-tbody').innerHTML = rows || `<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">Sin resultados.</td></tr>`;
+}
+
+function idShowDrilldown(rtn, nombres) {
+  document.getElementById('id-drilldown').style.display = 'block';
+  document.getElementById('id-drill-title').textContent = `🪪 RTN ${rtn} — ${nombres.length} nombres distintos`;
+  const sevColors = ['#ff4757','#ffa502','#ffd32a','#00c8ff','#7bed9f','#eccc68'];
+  document.getElementById('id-drill-nombres').innerHTML = nombres.map((n, i) =>
+    `<div style="background:${sevColors[i % sevColors.length]}18;border:1px solid ${sevColors[i % sevColors.length]}44;border-radius:8px;padding:8px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text);">${n}</div>`
+  ).join('');
+}
+
+function idCloseDrilldown() {
+  document.getElementById('id-drilldown').style.display = 'none';
+}
+
+async function idLoadKPI() {
+  try {
+    const { data, error } = await db.rpc('get_identidad_duplicada', { p_severidad: 'CRÍTICA', p_limit: 20 });
+    if (error) throw error;
+    const criticas = (data || []).length;
+    const el = document.getElementById('exec-id-criticas');
+    if (el) el.textContent = criticas;
+    const sub = document.getElementById('exec-id-sub');
+    if (sub) sub.textContent = 'RTNs CRÍTICOS';
+    if (!gIdData.length && data) gIdData = data;
+  } catch(e) { /* silencioso */ }
+}
+// ══ FIN NS-11 ════════════════════════════════════════════════════════════════
 
 </script>
 

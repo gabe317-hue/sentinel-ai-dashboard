@@ -2872,10 +2872,11 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto Total L</th>
             <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Prom. Contrato</th>
             <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Severidad</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Acción</th>
           </tr>
         </thead>
         <tbody id="cons-tbody">
-          <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+          <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
         </tbody>
       </table>
     </div>
@@ -27299,7 +27300,7 @@ async function consLoad() {
     document.getElementById('cons-stat-monto').textContent   = fmtLpsCompact(totalMonto);
     consRender();
   } catch(e) {
-    document.getElementById('cons-tbody').innerHTML = `<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">Error: ${e.message}</td></tr>`;
+    document.getElementById('cons-tbody').innerHTML = `<tr><td colspan="7" style="color:var(--text-dim);text-align:center;padding:20px;">Error: ${e.message}</td></tr>`;
   }
 }
 
@@ -27307,6 +27308,7 @@ function consRender() {
   const sevColor = { 'CRÍTICA': '#ff4757', 'ALTA': '#ffa502', 'MEDIA': '#ffd32a' };
   const rows = gConsData.map(r => {
     const color = sevColor[r.severidad] || '#888';
+    const entEsc = (r.entidad||'').replace(/'/g,"\\'");
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
       <td style="padding:8px 10px;color:var(--text);font-size:11px;">${r.entidad}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--electric);font-weight:700;">${r.consultores_unicos}</td>
@@ -27314,9 +27316,15 @@ function consRender() {
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text);">${fmtLpsCompact(parseFloat(r.monto_total_lps)||0)}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${fmtLpsCompact(parseFloat(r.promedio_contrato)||0)}</td>
       <td style="padding:8px 10px;text-align:center;"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${color}22;color:${color};">${r.severidad}</span></td>
+      <td style="padding:8px 10px;text-align:center;">
+        <button onclick="abrirConstructorCaso(showConsultoriaPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='${entEsc}';ccAnalizar();},250)"
+          style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
+          ⚖️ Armar Caso
+        </button>
+      </td>
     </tr>`;
   }).join('');
-  document.getElementById('cons-tbody').innerHTML = rows || '<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">Sin datos.</td></tr>';
+  document.getElementById('cons-tbody').innerHTML = rows || '<tr><td colspan="7" style="color:var(--text-dim);text-align:center;padding:20px;">Sin datos.</td></tr>';
 }
 
 async function consLoadKPI() {

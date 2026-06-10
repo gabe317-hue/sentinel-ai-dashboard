@@ -2937,9 +2937,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- Filtro severidad -->
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
       <button onclick="idSetFiltro(null)" id="id-f-all" style="background:rgba(0,200,255,0.15);color:var(--electric);border:1px solid rgba(0,200,255,0.4);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">TODOS</button>
-      <button onclick="idSetFiltro('CRÍTICA')" id="id-f-crit" style="background:rgba(255,71,87,0.08);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">CRÍTICA (9)</button>
-      <button onclick="idSetFiltro('ALTA')" id="id-f-alta" style="background:rgba(255,165,2,0.08);color:#ffa502;border:1px solid rgba(255,165,2,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">ALTA (52)</button>
-      <button onclick="idSetFiltro('MEDIA')" id="id-f-media" style="background:rgba(255,211,42,0.08);color:#ffd32a;border:1px solid rgba(255,211,42,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">MEDIA (135)</button>
+      <button onclick="idSetFiltro('CRÍTICA')" id="id-f-crit" style="background:rgba(255,71,87,0.08);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">CRÍTICA (37)</button>
+      <button onclick="idSetFiltro('ALTA')" id="id-f-alta" style="background:rgba(255,165,2,0.08);color:#ffa502;border:1px solid rgba(255,165,2,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">ALTA (80)</button>
+      <button onclick="idSetFiltro('MEDIA')" id="id-f-media" style="background:rgba(255,211,42,0.08);color:#ffd32a;border:1px solid rgba(255,211,42,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">MEDIA (246)</button>
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -27535,10 +27535,15 @@ async function idLoad() {
     if (error) throw error;
     gIdData = data || [];
     const criticas = gIdData.filter(r => r.severidad === 'CRÍTICA').length;
+    const altas    = gIdData.filter(r => r.severidad === 'ALTA').length;
+    const medias   = gIdData.filter(r => r.severidad === 'MEDIA').length;
     const maxNombres = gIdData.reduce((m, r) => Math.max(m, parseInt(r.total_nombres) || 0), 0);
     document.getElementById('id-stat-critica').textContent = criticas;
     document.getElementById('id-stat-total').textContent   = gIdData.length;
     document.getElementById('id-stat-maxnombres').textContent = maxNombres;
+    document.getElementById('id-f-crit').textContent  = `CRÍTICA (${criticas})`;
+    document.getElementById('id-f-alta').textContent  = `ALTA (${altas})`;
+    document.getElementById('id-f-media').textContent = `MEDIA (${medias})`;
     idRender();
   } catch(e) {
     document.getElementById('id-tbody').innerHTML = `<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">Error: ${e.message}</td></tr>`;
@@ -27560,8 +27565,9 @@ function idRender() {
     const color = sevColor[r.severidad] || '#888';
     const rtnEsc = (r.rtn || '').replace(/\\/g,'\\\\').replace(/'/g, "\\'");
     const nombresStr = (r.nombres_lista || []).join(' | ');
+    const acroTag = r.posible_acronimo ? `<span title="Posible acrónimo — puede ser falso positivo" style="margin-left:5px;font-size:9px;padding:1px 5px;border-radius:8px;background:rgba(160,160,255,0.15);color:#a0a0ff;border:1px solid rgba(160,160,255,0.3);">ACRÓNIMO?</span>` : '';
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;" onclick="idShowDrilldown('${rtnEsc}')" title="${nombresStr}">
-      <td style="padding:8px 10px;color:var(--electric);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;">${r.rtn} <span style="font-size:9px;color:var(--text-dim);font-weight:400;">▸ ver nombres</span></td>
+      <td style="padding:8px 10px;color:var(--electric);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;">${r.rtn}${acroTag} <span style="font-size:9px;color:var(--text-dim);font-weight:400;">▸ ver nombres</span></td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--red);font-weight:700;">${r.total_nombres}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${r.instituciones}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${r.total_registros}</td>

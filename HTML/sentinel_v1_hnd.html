@@ -3822,6 +3822,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <button class="po-item" onclick="poGo(showScannerPanel)">
             <span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-item-tag tag-l">6 patrones</span><span class="po-arrow">›</span>
           </button>
+          <button class="po-item" onclick="poGo(mfAbrirDesdeEjecutivo)" style="border-top:1px solid rgba(168,85,247,0.2);margin-top:4px;">
+            <span class="po-item-icon">📣</span><span class="po-item-label">Canal Denuncias</span><span class="po-item-tag" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);" id="po-mf-badge">F</span><span class="po-arrow" style="color:#a855f7;">›</span>
+          </button>
         </div>
       </div>
 
@@ -25855,6 +25858,14 @@ async function mfLoadBadge() {
     // Actualizar KPI card en Panel Ejecutivo
     const kpiEl = document.getElementById('exec-denuncias-alta');
     if (kpiEl) kpiEl.textContent = count ?? 0;
+    // Actualizar badge en Portal Principal → Investigación
+    const poBadge = document.getElementById('po-mf-badge');
+    if (poBadge && count > 0) {
+      poBadge.textContent = count;
+      poBadge.style.background = 'rgba(255,23,68,0.15)';
+      poBadge.style.color = 'var(--red)';
+      poBadge.style.borderColor = 'rgba(255,23,68,0.4)';
+    }
   } catch(_) {}
 }
 

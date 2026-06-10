@@ -284,6 +284,10 @@ body::after {
   0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(0,230,118,0.4); }
   50%      { opacity:.8; box-shadow: 0 0 0 4px rgba(0,230,118,0); }
 }
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,23,68,0.5); }
+  50% { box-shadow: 0 0 0 4px rgba(255,23,68,0); }
+}
 @keyframes pulse-amber {
   0%,100% { opacity:1; } 50% { opacity:.3; }
 }
@@ -3658,7 +3662,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </button>
       <button class="nav-item mod-f" id="nav-modulof" onclick="showModuloFPanel()">
         <span class="nav-icon">📡</span> Canal Denuncias
-        <span class="nav-chip" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(168,85,247,0.3);">F</span>
+        <span class="nav-chip" id="nav-mf-chip" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(168,85,247,0.3);">F</span>
       </button>
       <button class="nav-item" id="nav-news" onclick="showNewsPanel()">
         <span class="nav-icon">📰</span> Noticias
@@ -6007,10 +6011,29 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <span class="card-title">Denuncias Entrantes — Triage IA</span>
           <span class="card-badge" style="color:var(--purple);border-color:rgba(168,85,247,0.3);background:var(--purple-dim);" id="mf-canal-status">● Canal Activo</span>
         </div>
+        <!-- Filtros -->
+        <div style="display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;">
+          <select id="mf-f-estado" onchange="mfAplicarFiltros()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);font-size:11px;padding:5px 10px;outline:none;">
+            <option value="">— Estado —</option>
+            <option>Recibida</option><option>En revisión</option><option>Escalada</option><option>Cerrada</option>
+          </select>
+          <select id="mf-f-tipo" onchange="mfAplicarFiltros()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);font-size:11px;padding:5px 10px;outline:none;">
+            <option value="">— Tipo —</option>
+            <option>Soborno / Cohecho</option><option>Fraude en Contratos</option><option>Colusión / Cartel</option>
+            <option>Extorsión</option><option>Malversación de Fondos</option><option>Lavado de Activos</option>
+            <option>Nepotismo / Favoritismo</option><option>Otro</option>
+          </select>
+          <select id="mf-f-score" onchange="mfAplicarFiltros()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);font-size:11px;padding:5px 10px;outline:none;">
+            <option value="">— Score —</option>
+            <option value="75">Alta (≥75)</option>
+            <option value="50">Media (≥50)</option>
+          </select>
+          <button onclick="mfAplicarFiltros(true)" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text-dim);font-size:11px;padding:5px 10px;cursor:pointer;">✕ Limpiar</button>
+        </div>
         <div class="card-body" style="padding:0;">
           <table class="alert-table">
             <thead>
-              <tr><th>ID</th><th>Canal</th><th>Resumen</th><th>Score IA</th><th>Corrobora BD</th><th>Acción</th></tr>
+              <tr><th>Folio</th><th>Tipo</th><th>Entidad</th><th>Score IA</th><th>Estado</th><th></th></tr>
             </thead>
             <tbody id="mf-triage-tbody">
               <tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Cargando denuncias...</td></tr>
@@ -18962,7 +18985,7 @@ async function doLogin() {
       notes: `Acceso · rol: ${localUser.role} · ${new Date().toISOString()}` }]); } catch(e){}
     setCurrentUser(email);
     document.getElementById('loginScreen').classList.add('hidden');
-    showPortal(); await loadAlerts(); startRealtime();
+    showPortal(); await loadAlerts(); startRealtime(); mfLoadBadge();
     return;
   }
 
@@ -18998,7 +19021,7 @@ async function doLogin() {
       notes: `Acceso · rol: ${demoUser.role} (Supabase) · ${new Date().toISOString()}` }]); } catch(e){}
     setCurrentUser(email, { name: demoUser.name, role: demoUser.role || 'demo', org: demoUser.org || null });
     document.getElementById('loginScreen').classList.add('hidden');
-    showPortal(); await loadAlerts(); startRealtime();
+    showPortal(); await loadAlerts(); startRealtime(); mfLoadBadge();
   } catch(e) {
     errEl.textContent = '❌ Error de conexión. Intente de nuevo.';
     btn.disabled = false; btn.textContent = 'Ingresar al Sistema';
@@ -25612,11 +25635,14 @@ function mfAccionBtn(d) {
   return `<span class="severity baja" style="cursor:default;">Archivar</span>`;
 }
 
+let _mfAllDenuncias = [];
+
 function mfRenderTabla(denuncias) {
+  _mfAllDenuncias = denuncias;
   const total = denuncias.length || 1;
-  const alta  = denuncias.filter(d => d.score_ia >= 75).length;
-  const inv   = denuncias.filter(d => d.accion === 'investigar').length;
-  const esc   = denuncias.filter(d => d.accion === 'escalar').length;
+  const alta  = denuncias.filter(d => (d.score_ia||0) >= 75).length;
+  const inv   = denuncias.filter(d => d.estado === 'En revisión').length;
+  const esc   = denuncias.filter(d => d.alerta_generada).length;
 
   document.getElementById('mf-stat-total').textContent   = denuncias.length;
   document.getElementById('mf-stat-hoy').textContent     = '↑ +' + alta + ' alta credibilidad';
@@ -25624,27 +25650,31 @@ function mfRenderTabla(denuncias) {
   document.getElementById('mf-stat-inv').textContent     = inv;
   document.getElementById('mf-stat-alertas').textContent = esc;
 
-  const tbody = document.getElementById('mf-triage-tbody');
-  if (!denuncias.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Sin denuncias registradas</td></tr>';
-    return;
+  // Badge urgencia en nav
+  const sinRevisar = denuncias.filter(d => (d.score_ia||0) >= 75 && d.estado === 'Recibida').length;
+  const chip = document.getElementById('nav-mf-chip');
+  if (chip) {
+    if (sinRevisar > 0) {
+      chip.textContent = sinRevisar;
+      chip.style.background = 'rgba(255,23,68,0.15)';
+      chip.style.color = 'var(--red)';
+      chip.style.borderColor = 'rgba(255,23,68,0.4)';
+      chip.style.animation = 'pulse-red 1.5s infinite';
+    } else {
+      chip.textContent = 'F';
+      chip.style.background = 'var(--purple-dim)';
+      chip.style.color = 'var(--purple)';
+      chip.style.borderColor = 'rgba(168,85,247,0.3)';
+      chip.style.animation = '';
+    }
   }
-  tbody.innerHTML = denuncias.map(d => {
-    const c = MF_CANAL_COLORS[d.canal] || MF_CANAL_COLORS['WEB'];
-    return `<tr>
-      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${d.folio}</td>
-      <td><span style="font-size:10px;background:${c.bg};color:${c.color};border:1px solid ${c.border};padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${d.canal}</span></td>
-      <td style="font-size:12px;">${d.resumen}</td>
-      <td>${mfScoreBadge(d.score_ia)}</td>
-      <td style="font-size:11px;font-weight:600;color:${d.score_ia>=75?'var(--green)':'var(--amber)'};">${d.corrobora_bd}</td>
-      <td>${mfAccionBtn(d)}</td>
-    </tr>`;
-  }).join('');
+
+  mfAplicarFiltros();
 
   // Barras canales
-  const web   = denuncias.filter(d => d.canal === 'WEB').length;
-  const wa    = denuncias.filter(d => d.canal === 'WhatsApp').length;
-  const email = denuncias.filter(d => d.canal === 'Email').length;
+  const web   = denuncias.filter(d => (d.fuente_portal||d.canal||'').toLowerCase().includes('web')).length;
+  const wa    = denuncias.filter(d => (d.fuente_portal||d.canal||'').toLowerCase().includes('whatsapp')).length;
+  const email = denuncias.filter(d => (d.fuente_portal||d.canal||'').toLowerCase().includes('email')).length;
   const pctW  = Math.round(web/total*100);
   const pctWa = Math.round(wa/total*100);
   const pctE  = Math.round(email/total*100);
@@ -25658,6 +25688,121 @@ function mfRenderTabla(denuncias) {
   }, 100);
 }
 
+function mfAplicarFiltros(limpiar) {
+  if (limpiar) {
+    document.getElementById('mf-f-estado').value = '';
+    document.getElementById('mf-f-tipo').value   = '';
+    document.getElementById('mf-f-score').value  = '';
+  }
+  const fEstado = document.getElementById('mf-f-estado').value;
+  const fTipo   = document.getElementById('mf-f-tipo').value;
+  const fScore  = parseInt(document.getElementById('mf-f-score').value) || 0;
+
+  let lista = _mfAllDenuncias;
+  if (fEstado) lista = lista.filter(d => d.estado === fEstado);
+  if (fTipo)   lista = lista.filter(d => d.tipo_irregularidad === fTipo);
+  if (fScore)  lista = lista.filter(d => (d.score_ia||0) >= fScore);
+
+  const tbody = document.getElementById('mf-triage-tbody');
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Sin resultados</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(d => {
+    const score = d.score_ia || 0;
+    const scoreColor = score >= 75 ? 'var(--red)' : score >= 50 ? 'var(--amber)' : 'var(--text-dim)';
+    const estadoBg = {
+      'Recibida': 'rgba(0,229,255,0.08)', 'En revisión': 'rgba(255,214,0,0.08)',
+      'Escalada': 'rgba(255,107,53,0.1)', 'Cerrada': 'rgba(0,230,118,0.08)'
+    }[d.estado] || 'rgba(255,255,255,0.04)';
+    const estadoColor = {
+      'Recibida': 'var(--electric)', 'En revisión': 'var(--amber)',
+      'Escalada': 'var(--accent2,#ff6b35)', 'Cerrada': 'var(--green)'
+    }[d.estado] || 'var(--text-dim)';
+    return `<tr id="mf-row-${d.id}">
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;color:var(--purple);" onclick="mfToggleDetail('${d.id}')">${d.folio||'—'}</td>
+      <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.tipo_irregularidad||'—'}</td>
+      <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.entidad||'—'}</td>
+      <td><span class="severity ${score>=75?'critica':score>=50?'alta':'baja'}" style="cursor:pointer;" onclick="mfToggleDetail('${d.id}')">● ${score}/100</span></td>
+      <td><span style="font-size:10px;background:${estadoBg};color:${estadoColor};border:1px solid ${estadoColor};padding:2px 8px;border-radius:12px;">${d.estado||'Recibida'}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn-mp" style="font-size:10px;padding:3px 10px;" onclick="mfArmarCaso('${d.id}')">⚖️ Armar Caso</button>
+      </td>
+    </tr>
+    <tr id="mf-detail-${d.id}" style="display:none;background:rgba(168,85,247,0.04);">
+      <td colspan="6" style="padding:12px 16px;">
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6;">${(d.resumen||'—').substring(0,300)}${(d.resumen||'').length>300?'…':''}</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;">
+          ${mfScoreBreakdownHTML(d.score_dimensiones)}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <label style="font-size:10px;color:var(--text-dim);">Estado:</label>
+          <select onchange="mfUpdateEstado('${d.id}',this.value)" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:var(--text);font-size:11px;padding:4px 8px;outline:none;">
+            ${['Recibida','En revisión','Escalada','Cerrada'].map(s=>`<option${s===d.estado?' selected':''}>${s}</option>`).join('')}
+          </select>
+          ${d.involucrado ? `<span style="font-size:10px;color:var(--text-dim);">Involucrado: <strong style="color:var(--text);">${d.involucrado}</strong></span>` : ''}
+          ${d.monto_est   ? `<span style="font-size:10px;color:var(--text-dim);">Monto: <strong style="color:var(--amber);">L ${Number(d.monto_est).toLocaleString('es-HN')}</strong></span>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function mfScoreBreakdownHTML(dims) {
+  const d = dims || {};
+  const defs = [
+    { k:'especificidad',   label:'Especificidad', color:'var(--purple)' },
+    { k:'corrobora_bd',    label:'Corrobora BD',  color:'var(--electric)' },
+    { k:'fuente',          label:'Fuente',         color:'var(--amber)' },
+    { k:'credibilidad_nlp',label:'NLP',            color:'var(--green)' },
+    { k:'duplicado',       label:'Duplicado',      color:'var(--text-dim)' },
+  ];
+  return defs.map(({ k, label, color }) => {
+    const val = Math.round(d[k] || 0);
+    return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:6px 8px;">
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;">${label}</div>
+      <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:3px;"><div style="height:100%;width:${val}%;background:${color};border-radius:2px;"></div></div>
+      <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:${color};">${val}/100</div>
+    </div>`;
+  }).join('');
+}
+
+function mfToggleDetail(id) {
+  const row = document.getElementById('mf-detail-' + id);
+  if (!row) return;
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+
+async function mfUpdateEstado(id, estado) {
+  try {
+    await db.from('denuncias').update({ estado, actualizado_en: new Date().toISOString() }).eq('id', id);
+    // Update local cache
+    const d = _mfAllDenuncias.find(x => x.id === id);
+    if (d) d.estado = estado;
+  } catch(e) { console.error('mfUpdateEstado error:', e.message); }
+}
+
+function mfArmarCaso(id) {
+  const d = _mfAllDenuncias.find(x => x.id === id);
+  if (!d) return;
+  abrirConstructorCaso(() => showModuloFPanel());
+  setTimeout(() => {
+    const entEl = document.getElementById('ccEntidad');
+    const provEl = document.getElementById('ccProveedor');
+    const esqEl  = document.getElementById('ccEsquema');
+    if (entEl) entEl.value = d.entidad || '';
+    if (provEl) provEl.value = d.involucrado || '';
+    if (esqEl) {
+      const tipo = (d.tipo_irregularidad || '').toLowerCase();
+      if (tipo.includes('fraude') || tipo.includes('contrato')) esqEl.value = 'GENERAL';
+      else if (tipo.includes('soborno') || tipo.includes('cohecho')) esqEl.value = 'CAPTURA_INSTITUCIONAL';
+      else if (tipo.includes('malversacion') || tipo.includes('malversación')) esqEl.value = 'PROVEEDOR_ÚNICO';
+      else esqEl.value = 'GENERAL';
+    }
+    ccUpdateVendorList && ccUpdateVendorList();
+  }, 300);
+}
+
 async function renderModuloF() {
   const tbody = document.getElementById('mf-triage-tbody');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Cargando...</td></tr>';
@@ -25666,13 +25811,31 @@ async function renderModuloF() {
       .from('denuncias')
       .select('*')
       .order('creado_en', { ascending: false })
-      .limit(50);
+      .limit(100);
     if (error) throw error;
     mfRenderTabla(data || []);
   } catch(e) {
     console.error('Módulo F load error:', e.message);
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red);padding:20px;font-size:12px;">Error cargando denuncias — ' + e.message + '</td></tr>';
   }
+}
+
+// Cargar badge urgencia al inicio (sin abrir el panel)
+async function mfLoadBadge() {
+  try {
+    const { count } = await db.from('denuncias')
+      .select('*', { count: 'exact', head: true })
+      .gte('score_ia', 75).eq('estado', 'Recibida');
+    const chip = document.getElementById('nav-mf-chip');
+    if (!chip) return;
+    if (count > 0) {
+      chip.textContent = count;
+      chip.style.background = 'rgba(255,23,68,0.15)';
+      chip.style.color = 'var(--red)';
+      chip.style.borderColor = 'rgba(255,23,68,0.4)';
+      chip.style.animation = 'pulse-red 1.5s infinite';
+    }
+  } catch(_) {}
 }
 
 function showModuloFPanel() {

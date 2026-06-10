@@ -4329,6 +4329,17 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-note">▸ Suplantación de identidad tributaria →</div>
       </div>
 
+      <!-- KPI: Denuncias Alta Credibilidad (Módulo F) -->
+      <div class="exec-card exec-card-red" style="cursor:pointer;border-color:rgba(168,85,247,0.35);" onclick="irDesdeEjecutivo(mfAbrirDesdeEjecutivo)" title="Ver denuncias alta credibilidad" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='rgba(168,85,247,0.35)'">
+        <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Denuncias Alta Credibilidad</span>
+          <span style="background:rgba(168,85,247,0.8);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">📣</span>
+        </div>
+        <div class="exec-card-value" id="exec-denuncias-alta" style="color:var(--purple);">—</div>
+        <div class="exec-card-sub">sin revisar · score ≥75</div>
+        <div class="exec-card-note">▸ Canal Integridad Ciudadana →</div>
+      </div>
+
     </div>
     <!-- P4 — Score de Riesgo Institucional (moved above P5 for visibility) -->
     <div class="exec-section-title">🏛️ Puntaje de Riesgo Institucional — Top 10 Entidades</div>
@@ -25821,20 +25832,29 @@ async function renderModuloF() {
 }
 
 // Cargar badge urgencia al inicio (sin abrir el panel)
+function mfAbrirDesdeEjecutivo() {
+  showModuloFPanel();
+  // Pre-set score filter to ≥75
+  const sel = document.getElementById('mf-f-score');
+  if (sel) { sel.value = '75'; mfAplicarFiltros(); }
+}
+
 async function mfLoadBadge() {
   try {
     const { count } = await db.from('denuncias')
       .select('*', { count: 'exact', head: true })
       .gte('score_ia', 75).eq('estado', 'Recibida');
     const chip = document.getElementById('nav-mf-chip');
-    if (!chip) return;
-    if (count > 0) {
+    if (chip && count > 0) {
       chip.textContent = count;
       chip.style.background = 'rgba(255,23,68,0.15)';
       chip.style.color = 'var(--red)';
       chip.style.borderColor = 'rgba(255,23,68,0.4)';
       chip.style.animation = 'pulse-red 1.5s infinite';
     }
+    // Actualizar KPI card en Panel Ejecutivo
+    const kpiEl = document.getElementById('exec-denuncias-alta');
+    if (kpiEl) kpiEl.textContent = count ?? 0;
   } catch(_) {}
 }
 

@@ -6751,7 +6751,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- FOOTER -->
     <div style="border-top:1px solid var(--border);padding-top:20px;display:flex;justify-content:space-between;align-items:center;">
       <div>
-        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;">The Prieto Group · Sentinel-AI</div>
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;">Sentinelai Group · Sentinel-AI</div>
         <div style="font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-top:3px;">Reporte Confidencial · Generado automáticamente</div>
       </div>
       <div style="text-align:right;">
@@ -7808,7 +7808,7 @@ ${capNote}
 </table>
 
 <div class="footer-bar">
-  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Reporte Confidencial &mdash; Sentinelai Group &copy; 2026</span>
   <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
 </div>
 
@@ -11308,7 +11308,7 @@ ${(function(){
 </table>
 
 <div class="footer-bar">
-  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Reporte Confidencial &mdash; Sentinelai Group &copy; 2026</span>
   <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
 </div>
 </body>
@@ -11423,7 +11423,7 @@ function exportSectorSummaryPDF() {
 </table>
 
 <div class="footer-bar">
-  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Reporte Confidencial &mdash; Sentinelai Group &copy; 2026</span>
   <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
 </div>
 </body>
@@ -11688,7 +11688,7 @@ function generarMemorandum() {
   </div>
   <div class="firma">
     <div class="flinea">Analista de Integridad</div>
-    <div class="fcargo">The Prieto Group &middot; Honduras</div>
+    <div class="fcargo">Sentinelai Group &middot; Honduras</div>
   </div>
 </div>
 
@@ -12675,7 +12675,7 @@ ${nsConSenal.map((x,i) => `<tr style="background:${i%2===0?'#fffbea':'#fff'};">
 <div class="meta-grid">
   <div><div class="meta-label">Para:</div><div class="meta-val">Procurador General de la República</div></div>
   <div><div class="meta-label">Folio:</div><div class="meta-val">${memoFolio}</div></div>
-  <div><div class="meta-label">De:</div><div class="meta-val">Sistema Sentinel-AI — The Prieto Group</div></div>
+  <div><div class="meta-label">De:</div><div class="meta-val">Sistema Sentinel-AI — Sentinelai Group</div></div>
   <div><div class="meta-label">Fecha:</div><div class="meta-val">${hoy}</div></div>
   <div><div class="meta-label">Ref. Investigación:</div><div class="meta-val">${folio}</div></div>
   <div><div class="meta-label">Entidad:</div><div class="meta-val">${entidad}</div></div>
@@ -12806,7 +12806,7 @@ ${sorted.length > 0 ? `<!-- ── ANEXO A ── -->
 ${sorted.length > 25 ? `<p style="font-size:9pt;color:#555;font-style:italic;margin:12px 0;padding:10px 14px;background:#f5f5f0;border-left:3px solid #c0392b;border-radius:0 4px 4px 0;">📋 Este anexo incluye los <strong>25 contratos de mayor monto</strong> (Pareto). El listado completo de <strong>${sorted.length} contratos</strong> está disponible como documento separado — use el botón <strong>"📋 Lista"</strong> en la sección <em>Investigaciones Activas</em> del dashboard Sentinel AI.</p>` : ''}` : ''}
 
 <div class="footer">
-  <div><strong>Sentinel-AI</strong> · The Prieto Group<br>Sistema de Análisis de Riesgo en Contratación Pública · Honduras</div>
+  <div><strong>Sentinel-AI</strong> · Sentinelai Group<br>Sistema de Análisis de Riesgo en Contratación Pública · Honduras</div>
   <div style="text-align:right;">${memoFolio}<br>${hoy} · CONFIDENCIAL</div>
 </div>
 
@@ -12916,7 +12916,7 @@ async function exportarListaCompleta(folio, entidad) {
   <div><div class="meta-label">Monto total expuesto:</div><div class="meta-val" style="color:#c0392b;">${fmtL(totalMonto)}</div></div>
   <div><div class="meta-label">Generado:</div><div class="meta-val">${hoy}</div></div>
   <div><div class="meta-label">Fuente:</div><div class="meta-val">ONCAE HonduCompras + SEFIN PIEP</div></div>
-  <div><div class="meta-label">Sistema:</div><div class="meta-val">Sentinel-AI · The Prieto Group</div></div>
+  <div><div class="meta-label">Sistema:</div><div class="meta-val">Sentinel-AI · Sentinelai Group</div></div>
 </div>
 <p style="font-size:9pt;color:#555;margin:8px 0;"><em>Este documento es un anexo de evidencia complementario al Memorándum de Alerta al PGR (${folio}). Incluye la lista completa de ${sorted.length} contratos de severidad CRÍTICA ordenados por monto descendente. Para contexto y análisis, referirse al memorándum principal.</em></p>
 <div class="legend">⚠️ Filas en amarillo = contrato anterior al Decreto PCM 16-2024 (1 jun 2024) — sin justificación de emergencia verificada</div>
@@ -12932,7 +12932,7 @@ async function exportarListaCompleta(folio, entidad) {
   ${rows || '<tr><td colspan="6" style="padding:16px;text-align:center;color:#999;">Sin datos disponibles</td></tr>'}
 </table>
 <div class="footer">
-  <div><strong>Sentinel-AI</strong> · The Prieto Group · Sistema de Análisis de Riesgo en Contratación Pública · Honduras</div>
+  <div><strong>Sentinel-AI</strong> · Sentinelai Group · Sistema de Análisis de Riesgo en Contratación Pública · Honduras</div>
   <div style="text-align:right;">${folio} · ${hoy} · CONFIDENCIAL</div>
 </div>
 </div>
@@ -13262,7 +13262,7 @@ function generarEjecutivaPDF() {
 </div>
 
 <div class="footer-bar">
-  <span>Reporte Confidencial — The Prieto Group © 2026 · ${esc(execSubtitle)}</span>
+  <span>Reporte Confidencial — Sentinelai Group © 2026 · ${esc(execSubtitle)}</span>
   <span>Sentinel-AI Honduras · ${esc(folio)} · ${esc(fechaStr)}</span>
 </div>
 </body></html>`;
@@ -13722,7 +13722,7 @@ function exportProvPDF() {
   <tbody>${detailRows}</tbody>
 </table>
 <div class="footer-bar">
-  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Reporte Confidencial &mdash; Sentinelai Group &copy; 2026</span>
   <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
 </div>
 </body>
@@ -14383,7 +14383,7 @@ function exportTlPDF() {
 </table>
 
 <div class="footer-bar">
-  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Reporte Confidencial &mdash; Sentinelai Group &copy; 2026</span>
   <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
 </div>
 
@@ -14510,7 +14510,7 @@ function exportTimelineSummaryPDF() {
 </table>
 
 <div class="footer-bar">
-  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Reporte Confidencial &mdash; Sentinelai Group &copy; 2026</span>
   <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
 </div>
 
@@ -14701,7 +14701,7 @@ function exportEntityPDF(mode = 'pareto') {
 </table>
 
 <div class="footer-bar">
-  <span>Reporte Confidencial &mdash; The Prieto Group &copy; 2026</span>
+  <span>Reporte Confidencial &mdash; Sentinelai Group &copy; 2026</span>
   <span>Sentinel-AI Honduras &mdash; ${fechaStr}</span>
 </div>
 
@@ -15536,7 +15536,7 @@ function exportAnalyticsPDF(mode) {
   </style></head><body>
   <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
   <h1>📈 Análisis de Contratos${mode==='pareto'?' — Pareto (80%)':', Todo'} — SENTINEL-AI</h1>
-  <div class="meta">Generado: ${ts} · Fuente: ${fuenteLabel} · ${alerts.length.toLocaleString()} contratos · The Prieto Group</div>
+  <div class="meta">Generado: ${ts} · Fuente: ${fuenteLabel} · ${alerts.length.toLocaleString()} contratos · Sentinelai Group</div>
   <div class="stats">
     <div class="stat-box"><div class="stat-val">${alerts.length.toLocaleString()}</div><div class="stat-lbl">Total Contratos</div></div>
     <div class="stat-box"><div class="stat-val" style="color:#c0392b;">${criticos.length.toLocaleString()}</div><div class="stat-lbl">Críticos</div></div>
@@ -15548,7 +15548,7 @@ function exportAnalyticsPDF(mode) {
   <h2>Top Entidades Compradoras${mode==='pareto'?' — Top 10':' — Top 20'}</h2>
   <table><thead><tr><th>Entidad</th><th style="text-align:right;">Contratos</th><th style="text-align:right;">Monto (L.)</th></tr></thead>
   <tbody>${entRows}</tbody></table>
-  <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · Honduras · The Prieto Group — Dallas, TX · Datos: SEFIN/EDCA Fiscal 2023–2025</div>
+  <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · Honduras · Sentinelai Group — Dallas, TX · Datos: SEFIN/EDCA Fiscal 2023–2025</div>
   </body></html>`));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
@@ -15743,7 +15743,7 @@ function exportPhase4PDF() {
   </style></head><body>
   <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
   <h1>⚡ Detección de Anomalías Estadísticas — SENTINEL-AI</h1>
-  <div class="meta">Generado: ${ts} · SEFIN Fiscal 2023–2025 · ${allAlerts.length.toLocaleString()} contratos analizados · The Prieto Group</div>
+  <div class="meta">Generado: ${ts} · SEFIN Fiscal 2023–2025 · ${allAlerts.length.toLocaleString()} contratos analizados · Sentinelai Group</div>
   <div class="stats">
     <div class="stat-box"><div class="stat-val">${velocityThreats.length}</div><div class="stat-lbl">Amenazas Velocidad</div></div>
     <div class="stat-box"><div class="stat-val">${anomalies.length}</div><div class="stat-lbl">Anomalías Detectadas</div></div>
@@ -15758,7 +15758,7 @@ function exportPhase4PDF() {
   <h2>🚨 Anomalías Estadísticas — Desviación del Promedio por Entidad (Top 10)</h2>
   <table><thead><tr><th>#</th><th>ID Contrato</th><th>Proveedor</th><th>Entidad</th><th style="text-align:center;">Desviación</th><th style="text-align:center;">Sobrepago</th></tr></thead>
   <tbody>${anomalyRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin anomalías detectadas</td></tr>'}</tbody></table>
-  <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · Honduras · The Prieto Group — Dallas, TX · Datos: SEFIN/EDCA · Este reporte es referencial — para uso interno de investigación.</div>
+  <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · Honduras · Sentinelai Group — Dallas, TX · Datos: SEFIN/EDCA · Este reporte es referencial — para uso interno de investigación.</div>
   </body></html>`));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
@@ -16993,9 +16993,9 @@ function ipExportarExcelCore() {
     ['', 'SENTINEL-AI no es un órgano jurisdiccional ni emite resoluciones vinculantes.'],
     [''],
     ['CONFIDENCIALIDAD', ''],
-    ['', 'Este documento es de uso restringido. Queda prohibida su reproducción, divulgación o distribución sin autorización expresa de The Prieto Group LLC. Su uso indebido puede acarrear responsabilidad legal.'],
+    ['', 'Este documento es de uso restringido. Queda prohibida su reproducción, divulgación o distribución sin autorización expresa de Sentinelai Group LLC. Su uso indebido puede acarrear responsabilidad legal.'],
     [''],
-    ['Generado por', 'The Prieto Group LLC — Sentinel AI'],
+    ['Generado por', 'Sentinelai Group LLC — Sentinel AI'],
   ]);
   ws5['A1'] && Object.assign(ws5['A1'], { font: { bold: true, sz: 13, color: { rgb: 'CC0000' } } });
   ['A8','A12','A16','A20'].forEach(addr => { if (ws5[addr]) Object.assign(ws5[addr], { font: { bold: true } }); });
@@ -17102,7 +17102,7 @@ function ipMemoEjecutivo() {
 <table><thead><tr><th>#</th><th>Categoría</th><th>Pregunta</th><th>Base Legal</th></tr></thead>
 <tbody>${ltaip.map(q=>`<tr><td>${q.num}</td><td>${q.categoria}</td><td>${q.pregunta}</td><td>${q.base_legal}</td></tr>`).join('')}</tbody></table>
 
-<div class="ftr"><strong>AVISO LEGAL:</strong> Generado automáticamente por Sentinel AI. La clasificación es referencial y no constituye acusación formal ni determinación judicial. Requiere verificación contra fuentes primarias antes de cualquier acción legal o administrativa. Sentinel AI © The Prieto Group · Dallas, TX.</div>
+<div class="ftr"><strong>AVISO LEGAL:</strong> Generado automáticamente por Sentinel AI. La clasificación es referencial y no constituye acusación formal ni determinación judicial. Requiere verificación contra fuentes primarias antes de cualquier acción legal o administrativa. Sentinel AI © Sentinelai Group · Dallas, TX.</div>
 </body></html>`;
 
   const pw = window.open('', '_blank', 'width=1100,height=850');
@@ -17706,8 +17706,8 @@ function ccExportPDF() {
       <div class="sec-title">5 · Gaps de Evidencia y Solicitudes LTAIP</div>
       ${gaps.map((g,i)=>`<div class="gap-item"><div class="gt">${i+1}. ${g.gap}</div><div class="lt">📋 ${g.ltaip}</div></div>`).join('')}
     </div>
-    <div class="disclaimer"><strong>AVISO LEGAL:</strong> Este reporte es un instrumento de análisis de datos de acceso público. Las señales detectadas no constituyen determinación de responsabilidad penal o administrativa. El sistema identifica patrones estadísticos que requieren investigación formal por autoridades competentes. Datos: ONCAE y SEFIN. Sentinel AI — The Prieto Group.</div>
-    <div class="footer"><span>Sentinel AI · Sistema Anticorrupción Honduras · The Prieto Group</span><span>${folio} · ${ts} · CONFIDENCIAL</span></div>
+    <div class="disclaimer"><strong>AVISO LEGAL:</strong> Este reporte es un instrumento de análisis de datos de acceso público. Las señales detectadas no constituyen determinación de responsabilidad penal o administrativa. El sistema identifica patrones estadísticos que requieren investigación formal por autoridades competentes. Datos: ONCAE y SEFIN. Sentinel AI — Sentinelai Group.</div>
+    <div class="footer"><span>Sentinel AI · Sistema Anticorrupción Honduras · Sentinelai Group</span><span>${folio} · ${ts} · CONFIDENCIAL</span></div>
   </div></body></html>`;
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
@@ -17915,9 +17915,9 @@ async function ccExportExcelCore() {
     ['', 'Toda acción formal requiere verificación independiente por autoridad competente conforme a la Ley de Contratación del Estado (Decreto 74-2001). SENTINEL-AI no es un órgano jurisdiccional ni emite resoluciones vinculantes.'],
     ['', ''],
     ['CONFIDENCIALIDAD', ''],
-    ['', 'Prohibida su reproducción o divulgación sin autorización expresa de The Prieto Group LLC.'],
+    ['', 'Prohibida su reproducción o divulgación sin autorización expresa de Sentinelai Group LLC.'],
     ['', ''],
-    ['Emitido por', 'The Prieto Group LLC — Sentinel AI · ' + tsL],
+    ['Emitido por', 'Sentinelai Group LLC — Sentinel AI · ' + tsL],
   ];
 
   const sectionKeys = new Set(['NATURALEZA DEL DOCUMENTO','LIMITACIONES','VERIFICACIÓN OBLIGATORIA','CONFIDENCIALIDAD']);
@@ -19375,7 +19375,7 @@ function addPrintBtn(html) {
     <p style="margin:0 0 6px 0;">Este documento ha sido generado por <strong>SENTINEL-AI</strong>, sistema de análisis de riesgo en contratación pública de Honduras, con base en registros públicos de la Secretaría de Finanzas (SEFIN) y la Oficina Normativa de Contratación y Adquisiciones del Estado (ONCAE). Los datos comprenden el período 2019–2026.</p>
     <p style="margin:0 0 6px 0;"><strong>Los hallazgos contenidos en este reporte son indicadores estadísticos de riesgo — no constituyen prueba de irregularidad, fraude o responsabilidad penal o administrativa.</strong> La presencia de un contrato o proveedor en este análisis no implica determinación de culpabilidad. Los datos de fuente pueden contener errores de captura, duplicados o registros incompletos que afecten los montos reportados.</p>
     <p style="margin:0 0 6px 0;">Toda acción formal — incluyendo investigación administrativa, referido a autoridad competente o apertura de proceso penal — requiere verificación independiente por la autoridad correspondiente conforme a la Ley de Contratación del Estado (Decreto 74-2001) y demás normativa aplicable. SENTINEL-AI no es un órgano jurisdiccional ni emite resoluciones vinculantes.</p>
-    <p style="margin:0;">Documento generado el <strong>${ts}</strong> · Uso restringido a destinatarios autorizados · Prohibida su reproducción o divulgación sin autorización expresa de The Prieto Group LLC.</p>
+    <p style="margin:0;">Documento generado el <strong>${ts}</strong> · Uso restringido a destinatarios autorizados · Prohibida su reproducción o divulgación sin autorización expresa de Sentinelai Group LLC.</p>
   </div>`;
   // Inject print CSS into <head> if present, else prepend
   if (html.includes('</head>')) {
@@ -20473,7 +20473,7 @@ async function exportAuditoriaPDF() {
   <h3 style="font-size:14px;margin-bottom:10px;">⚠ Eventos de Seguridad</h3>
   <table><thead><tr><th>Fecha</th><th>Tipo de Evento</th><th>Usuario / Fuente</th><th>IP</th><th>Resultado</th></tr></thead>
   <tbody>${secRows}</tbody></table>
-  <div class="footer">Sentinel-AI © The Prieto Group · Confidencial · Uso interno</div>
+  <div class="footer">Sentinel-AI © Sentinelai Group · Confidencial · Uso interno</div>
   </body></html>`;
 
   const pw = window.open('', '_blank', 'width=1100,height=800');
@@ -21854,7 +21854,7 @@ function exportDashboardEjecutivoPDF() {
     <div style="margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #0066cc;">
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;color:#0066cc;text-transform:uppercase;margin-bottom:6px;">◈ Sentinel-AI · Módulo D — Reporte Oficial</div>
       <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#1a202c;">Dashboard Ejecutivo — Resumen del Sistema Sentinel-AI</div>
-      <div style="font-size:10px;color:#6b7280;margin-top:4px;">Generado: ${fechaPDF} &nbsp;·&nbsp; Confidencial · The Prieto Group</div>
+      <div style="font-size:10px;color:#6b7280;margin-top:4px;">Generado: ${fechaPDF} &nbsp;·&nbsp; Confidencial · Sentinelai Group</div>
     </div>
     ${clone.innerHTML}
   </body></html>`;
@@ -25540,7 +25540,7 @@ function exportReporteInvestigacionCriticaPDF() {
     <li><strong>Investigar</strong> CONSULTORÍA INTEGRAL (L 57.5M) y ELECTROMECANICA GREENTEC (L 54M) via Registro Mercantil.</li>
   </ul>
 
-  <div class="disclaimer">DISCLAIMER: Análisis basado en datos al ${ds}. Hallazgos indicativos — requieren investigación adicional para confirmación legal. No constituye auditoría oficial. Folio: ${folio} · Sentinel-AI © The Prieto Group LLC · CONFIDENCIAL</div>
+  <div class="disclaimer">DISCLAIMER: Análisis basado en datos al ${ds}. Hallazgos indicativos — requieren investigación adicional para confirmación legal. No constituye auditoría oficial. Folio: ${folio} · Sentinel-AI © Sentinelai Group LLC · CONFIDENCIAL</div>
   </body></html>`;
 
   const pw = window.open('', '_blank', 'width=1100,height=850');
@@ -26035,7 +26035,7 @@ async function mfExportarPDF() {
   </div>
   <table><thead><tr><th>ID</th><th>Canal</th><th>Resumen</th><th>Score IA</th><th>Corrobora BD</th><th>Acción</th></tr></thead>
   <tbody>${filas}</tbody></table>
-  <div class="footer">🔒 Información confidencial · Anonimización automática aplicada · Sin retención de IP · Sentinel AI — The Prieto Group</div>
+  <div class="footer">🔒 Información confidencial · Anonimización automática aplicada · Sin retención de IP · Sentinel AI — Sentinelai Group</div>
   </body></html>`;
 
   const pw = window.open('', '_blank', 'width=1100,height=800');

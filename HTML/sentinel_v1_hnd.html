@@ -2850,6 +2850,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(255,71,87,0.15);color:#ff4757;border:1px solid rgba(255,71,87,0.35);">NS-11</span>
     </div>
 
+    <!-- Card 25 — Monopolio de Proveedor (NS-12) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showMonopolioPanel)">
+      <div class="pe-card-num">25</div>
+      <div class="pe-card-icon">🔒</div>
+      <div class="pe-card-title">Monopolio de Proveedor</div>
+      <div class="pe-card-desc">Proveedor que concentra ≥70% del gasto total de una entidad — señal de captura institucional y exclusión anticompetitiva de proveedores alternativos</div>
+      <span class="pe-card-tag" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.35);">NS-12</span>
+    </div>
+
   </div>
 </div>
 
@@ -2974,25 +2983,37 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
   <!-- ══ MONOPOLIO DE PROVEEDOR PANEL (B1) ══ -->
+  <!-- ══ NS-12: MONOPOLIO DE PROVEEDOR PANEL ══ -->
   <div class="fuente-panel" id="monopolioPanel">
-    <button class="fuente-back" onclick="hideMonopolioPanel()">← Portal</button>
+    <button class="fuente-back" onclick="hideMonopolioPanel()">← Contratos</button>
     <div class="fuente-header">
-      <div class="fuente-title">🔒 <span>Monopolio de Proveedor</span></div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con ≥40% de contratos adjudicados en una misma entidad · señal de captura institucional</div>
+      <div class="fuente-title">🔒 <span>Monopolio de Proveedor — NS-12</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores que concentran ≥70% del gasto total de una entidad · umbral mínimo: L 500K proveedor / L 2M entidad · señal de captura institucional</div>
     </div>
-    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Casos detectados</div>
+    <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Total casos</div>
         <div id="mon-stat-total" style="font-size:22px;font-weight:700;color:#fbbf24;">—</div>
       </div>
-      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Con contratos críticos</div>
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">CRÍTICOS</div>
         <div id="mon-stat-critica" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
       </div>
-      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Dominancia máx.</div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Concentración máx.</div>
         <div id="mon-stat-maxpct" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
       </div>
+      <div style="background:rgba(0,200,255,0.06);border:1px solid rgba(0,200,255,0.15);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto expuesto</div>
+        <div id="mon-stat-monto" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
+      </div>
+    </div>
+    <!-- Filtros severidad -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <button id="mon-f-all" onclick="_filterMonopolio(null)" style="background:rgba(255,255,255,0.08);color:var(--text);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Todos</button>
+      <button id="mon-f-crit" onclick="_filterMonopolio('CRÍTICA')" style="background:rgba(255,61,87,0.1);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🔴 CRÍTICA</button>
+      <button id="mon-f-alta" onclick="_filterMonopolio('ALTA')" style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🟡 ALTA</button>
+      <button id="mon-f-media" onclick="_filterMonopolio('MEDIA')" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🔵 MEDIA</button>
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -3000,10 +3021,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
             <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Entidad</th>
             <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Proveedor</th>
-            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">% Dom.</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">% Concentración</th>
             <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Contratos</th>
             <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto L</th>
-            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Críticos</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Severidad</th>
             <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Acción</th>
           </tr>
         </thead>
@@ -3645,6 +3666,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </button>
       <button class="nav-item" id="nav-identidad" onclick="showIdentidadPanel()">
         <span class="nav-icon">🪪</span> Identidad Duplicada NS-11
+      </button>
+      <button class="nav-item" id="nav-monopolio" onclick="showMonopolioPanel()">
+        <span class="nav-icon">🔒</span> Monopolio Proveedor NS-12
       </button>
       <button class="nav-item" id="nav-sector" onclick="showSectorPanel()">
         <span class="nav-icon">🏛️</span> Sectores Institucionales
@@ -4330,6 +4354,17 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-value" id="exec-id-criticas">—</div>
         <div class="exec-card-sub" id="exec-id-sub">RTNs CRÍTICOS</div>
         <div class="exec-card-note">▸ Suplantación de identidad tributaria →</div>
+      </div>
+
+      <!-- KPI: Monopolio de Proveedor (NS-12) -->
+      <div class="exec-card exec-card-red" style="cursor:pointer;border-color:rgba(251,191,36,0.35);" onclick="irDesdeEjecutivo(showMonopolioPanel)" title="Ver monopolio de proveedor NS-12" onmouseover="this.style.borderColor='#fbbf24'" onmouseout="this.style.borderColor='rgba(251,191,36,0.35)'">
+        <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Monopolio Proveedor NS-12</span>
+          <span style="background:rgba(251,191,36,0.8);color:#000;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">🔒</span>
+        </div>
+        <div class="exec-card-value" id="exec-mon-criticos" style="color:#fbbf24;">—</div>
+        <div class="exec-card-sub" id="exec-mon-sub">casos CRÍTICOS</div>
+        <div class="exec-card-note">▸ Captura institucional por proveedor →</div>
       </div>
 
       <!-- KPI: Denuncias Alta Credibilidad (Módulo F) -->
@@ -9662,47 +9697,71 @@ function hideTSCPanel() {
 }
 
 // ════════════════════════════════════════════════════════════
-// B1 — MONOPOLIO DE PROVEEDOR
+// NS-12 — MONOPOLIO DE PROVEEDOR POR ENTIDAD
 // ════════════════════════════════════════════════════════════
 let _monopolioData = null;
+let _monopolioFiltered = null;
 let _monEntityList = []; // safe lookup
 let _monVendorList = []; // safe lookup
-const _MON_BLOCKLIST = ['ninguno','sin nombre','sin proveedor',''];
 
 async function showMonopolioPanel() {
   _closeAllFuentePanels();
   document.getElementById('monopolioPanel').classList.add('open');
-  if (_monopolioData) { _renderMonopolioTable(); return; }
+  if (_monopolioData) { _filterMonopolio(null); return; }
   document.getElementById('monopolio-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
-  const { data, error } = await db.rpc('get_vendor_dominance', { p_min_contracts: 5, p_min_pct: 40 });
+  const { data, error } = await db.rpc('get_monopolio_proveedor');
   if (error) { document.getElementById('monopolio-tbody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:12px;">Error: ${error.message}</td></tr>`; return; }
-  _monopolioData = (data || []).filter(r => !_MON_BLOCKLIST.includes((r.vendor_name||'').toLowerCase()));
-  _renderMonopolioTable();
+  _monopolioData = data || [];
+  _filterMonopolio(null);
 }
 
 function hideMonopolioPanel() { document.getElementById('monopolioPanel')?.classList.remove('open'); }
 
+function _filterMonopolio(sev) {
+  _monopolioFiltered = sev ? _monopolioData.filter(r => r.severity === sev) : _monopolioData;
+  // highlight active filter btn
+  ['mon-f-all','mon-f-crit','mon-f-alta','mon-f-media'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.outline = '';
+  });
+  const activeId = sev === 'CRÍTICA' ? 'mon-f-crit' : sev === 'ALTA' ? 'mon-f-alta' : sev === 'MEDIA' ? 'mon-f-media' : 'mon-f-all';
+  const activeEl = document.getElementById(activeId);
+  if (activeEl) activeEl.style.outline = '2px solid currentColor';
+  _renderMonopolioTable();
+}
+
 function _renderMonopolioTable() {
-  const d = _monopolioData;
+  const d = _monopolioFiltered || _monopolioData;
   if (!d || !d.length) { document.getElementById('monopolio-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Sin datos.</td></tr>'; return; }
-  _monEntityList = d.map(r => r.entity_name || ''); // safe lookup
-  _monVendorList = d.map(r => r.vendor_name  || ''); // safe lookup
+  const all = _monopolioData;
+  _monEntityList = d.map(r => r.entidad || '');
+  _monVendorList = d.map(r => r.proveedor_nombre || '');
   const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
-  document.getElementById('mon-stat-total').textContent   = d.length;
-  document.getElementById('mon-stat-critica').textContent = d.filter(r => r.severity_critica > 0).length;
-  document.getElementById('mon-stat-maxpct').textContent  = d[0].pct_dominance + '%';
+  const nCrit = all.filter(r => r.severity === 'CRÍTICA').length;
+  const montoTotal = all.reduce((s,r) => s + Number(r.monto_proveedor||0), 0);
+  document.getElementById('mon-stat-total').textContent   = all.length;
+  document.getElementById('mon-stat-critica').textContent = nCrit;
+  document.getElementById('mon-stat-maxpct').textContent  = all[0]?.pct_concentracion + '%';
+  document.getElementById('mon-stat-monto').textContent   = fmtL(montoTotal);
+  // exec-card KPI update
+  const excEl = document.getElementById('exec-mon-criticos');
+  if (excEl) excEl.textContent = nCrit;
+  const excSub = document.getElementById('exec-mon-sub');
+  if (excSub) excSub.textContent = `de ${all.length} casos detectados`;
   const tbody = document.getElementById('monopolio-tbody');
   tbody.innerHTML = d.map((r,i) => {
-    const pctColor = r.pct_dominance >= 80 ? 'var(--red)' : r.pct_dominance >= 60 ? 'var(--amber)' : '#fbbf24';
-    const criTag = r.severity_critica > 0 ? `<span style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:4px;padding:2px 6px;font-size:10px;">${r.severity_critica} 🔴</span>` : '<span style="color:var(--text-dim);">—</span>';
+    const sev = r.severity || 'MEDIA';
+    const sevColor = sev === 'CRÍTICA' ? 'var(--red)' : sev === 'ALTA' ? '#fbbf24' : 'var(--electric)';
+    const sevBg    = sev === 'CRÍTICA' ? 'rgba(255,61,87,0.12)' : sev === 'ALTA' ? 'rgba(251,191,36,0.12)' : 'rgba(0,200,255,0.1)';
+    const pctColor = Number(r.pct_concentracion) >= 90 ? 'var(--red)' : Number(r.pct_concentracion) >= 80 ? '#fbbf24' : 'var(--electric)';
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2===0?'':'background:rgba(255,255,255,0.02)'}">
-      <td style="padding:8px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entity_name}">${r.entity_name}</td>
-      <td style="padding:8px 10px;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.vendor_name}">${r.vendor_name}</td>
-      <td style="padding:8px 10px;text-align:right;font-weight:800;color:${pctColor};font-family:'JetBrains Mono',monospace;">${r.pct_dominance}%</td>
-      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${r.contracts_vendor}/${r.contracts_total}</td>
-      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_total)}</td>
-      <td style="padding:8px 10px;text-align:center;">${criTag}</td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showMonopolioPanel);setTimeout(()=>{document.getElementById('ccEntidad').value=_monEntityList[${i}];document.getElementById('ccProveedor').value=_monVendorList[${i}];document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
+      <td style="padding:8px 10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.entidad||''}">${r.entidad||'—'}</td>
+      <td style="padding:8px 10px;font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.proveedor_nombre||''}">${r.proveedor_nombre||'—'}</td>
+      <td style="padding:8px 10px;text-align:right;font-weight:800;color:${pctColor};font-family:'JetBrains Mono',monospace;">${r.pct_concentracion}%</td>
+      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${r.contratos_proveedor||0}</td>
+      <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_proveedor)}</td>
+      <td style="padding:8px 10px;text-align:center;"><span style="background:${sevBg};color:${sevColor};border:1px solid ${sevColor}33;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">${sev}</span></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showMonopolioPanel);setTimeout(()=>{document.getElementById('ccEntidad').value=_monEntityList[${i}];document.getElementById('ccProveedor').value=_monVendorList[${i}];document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Armar Caso</button></td>
     </tr>`;
   }).join('');
 }

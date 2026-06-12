@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Sentinel Hub</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: #080f1e;
+    color: #e8eaf0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #4a90d9;
+    margin-bottom: 8px;
+  }
+
+  .title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #556080;
+    margin-top: 6px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-width: 780px;
+  }
+
+  .card {
+    background: #0e1a2e;
+    border: 1px solid #1c2d4a;
+    border-radius: 14px;
+    padding: 24px 20px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    transition: border-color 0.2s, transform 0.15s, background 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    border-color: #2d5fa6;
+    background: #112040;
+    transform: translateY(-2px);
+  }
+
+  .card:active {
+    transform: translateY(0px);
+  }
+
+  .card-icon {
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  .card-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #d0d8f0;
+    line-height: 1.2;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    color: #4a5878;
+    line-height: 1.4;
+  }
+
+  .card-arrow {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    color: #253550;
+    font-size: 16px;
+    transition: color 0.2s, transform 0.2s;
+  }
+
+  .card:hover .card-arrow {
+    color: #4a90d9;
+    transform: translate(2px, -2px);
+  }
+
+  /* accent colors per card */
+  .card.landing  { border-top: 2px solid #2563eb; }
+  .card.dashboard{ border-top: 2px solid #0ea5e9; }
+  .card.portal   { border-top: 2px solid #7c3aed; }
+  .card.denuncia { border-top: 2px solid #16a34a; }
+  .card.admin    { border-top: 2px solid #dc2626; }
+
+  .card.landing:hover  { border-color: #2563eb; }
+  .card.dashboard:hover{ border-color: #0ea5e9; }
+  .card.portal:hover   { border-color: #7c3aed; }
+  .card.denuncia:hover { border-color: #16a34a; }
+  .card.admin:hover    { border-color: #dc2626; }
+
+  .footer {
+    margin-top: 36px;
+    font-size: 11px;
+    color: #253040;
+    letter-spacing: 0.5px;
+  }
+
+  @media (max-width: 500px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .title { font-size: 20px; }
+    .card { padding: 18px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">SentinelAI Intelligence</div>
+  <div class="title">Hub de Acceso</div>
+  <div class="subtitle">Acceso rápido · Solo uso interno</div>
+</div>
+
+<div class="grid">
+
+  <a class="card landing" href="https://sentinelai-hn.com" target="_blank">
+    <span class="card-icon">🌐</span>
+    <span class="card-name">Landing Page</span>
+    <span class="card-desc">Sitio público sentinelai-hn.com</span>
+    <span class="card-arrow">↗</span>
+  </a>
+
+  <a class="card dashboard" href="https://app.sentinelai-hn.com/sentinel_v1_hnd.html" target="_blank">
+    <span class="card-icon">📊</span>
+    <span class="card-name">Dashboard</span>
+    <span class="card-desc">Sistema principal de análisis · 167K contratos</span>
+    <span class="card-arrow">↗</span>
+  </a>
+
+  <a class="card portal" href="https://app.sentinelai-hn.com/sentinel_v1_hnd.html" target="_blank">
+    <span class="card-icon">🏛️</span>
+    <span class="card-name">Portal Principal</span>
+    <span class="card-desc">Dashboard → Botón central "Portal Principal"</span>
+    <span class="card-arrow">↗</span>
+  </a>
+
+  <a class="card denuncia" href="https://app.sentinelai-hn.com/denuncia.html" target="_blank">
+    <span class="card-icon">📢</span>
+    <span class="card-name">Canal Ciudadano</span>
+    <span class="card-desc">DENUNCIA·HN · Portal de integridad ciudadana</span>
+    <span class="card-arrow">↗</span>
+  </a>
+
+  <a class="card admin" href="https://app.sentinelai-hn.com/admin.html" target="_blank">
+    <span class="card-icon">⚙️</span>
+    <span class="card-name">Admin Canal</span>
+    <span class="card-desc">Panel de administración DENUNCIA·HN</span>
+    <span class="card-arrow">↗</span>
+  </a>
+
+</div>
+
+<div class="footer">SentinelAI Intelligence LLC · Uso exclusivo interno · No compartir</div>
+
+</body>
+</html>

@@ -20675,10 +20675,15 @@ async function init() {
   history.replaceState(null, '', window.location.pathname);
   // Check for existing session first — if valid, skip login
   if (checkStoredSession()) {
-    showPortal();
-    await Promise.all([loadAlerts(), loadReviewCache()]);
-    startRealtime();
-    if (_goInv) setTimeout(() => { hidePortal(); showSeguimientoPanel(); }, 800);
+    if (_goInv) {
+      await Promise.all([loadAlerts(), loadReviewCache()]);
+      startRealtime();
+      showSeguimientoPanel();
+    } else {
+      showPortal();
+      await Promise.all([loadAlerts(), loadReviewCache()]);
+      startRealtime();
+    }
   } else {
     // No valid session — show login screen
     document.getElementById('loginScreen').classList.remove('hidden');

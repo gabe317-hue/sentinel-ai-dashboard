@@ -20665,6 +20665,13 @@ tickClock();
 setInterval(tickClock, 1000);
 
 async function init() {
+  // Auto-login via private hub token (#gp7x9k)
+  if (window.location.hash === '#gp7x9k' && !checkStoredSession()) {
+    setCurrentUser('gabe317@gmail.com');
+    document.getElementById('loginScreen').classList.add('hidden');
+    history.replaceState(null, '', window.location.pathname);
+    showPortal(); await Promise.all([loadAlerts(), loadReviewCache()]); startRealtime(); return;
+  }
   // Check for existing session first — if valid, skip login
   if (checkStoredSession()) {
     showPortal();

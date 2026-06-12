@@ -114,18 +114,36 @@
     transform: translate(2px, -2px);
   }
 
-  /* accent colors per card */
-  .card.landing  { border-top: 2px solid #2563eb; }
-  .card.dashboard{ border-top: 2px solid #0ea5e9; }
-  .card.portal   { border-top: 2px solid #7c3aed; }
-  .card.denuncia { border-top: 2px solid #16a34a; }
-  .card.admin    { border-top: 2px solid #dc2626; }
+  .section-label {
+    width: 100%;
+    max-width: 780px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #2a3a55;
+    margin-top: 28px;
+    margin-bottom: 10px;
+  }
 
-  .card.landing:hover  { border-color: #2563eb; }
-  .card.dashboard:hover{ border-color: #0ea5e9; }
-  .card.portal:hover   { border-color: #7c3aed; }
-  .card.denuncia:hover { border-color: #16a34a; }
-  .card.admin:hover    { border-color: #dc2626; }
+  /* accent colors per card */
+  .card.landing    { border-top: 2px solid #2563eb; }
+  .card.portal     { border-top: 2px solid #7c3aed; }
+  .card.expedientes{ border-top: 2px solid #f59e0b; }
+  .card.denuncia   { border-top: 2px solid #16a34a; }
+  .card.admin      { border-top: 2px solid #dc2626; }
+  .card.supabase   { border-top: 2px solid #3ecf8e; }
+  .card.vercel     { border-top: 2px solid #ffffff; }
+  .card.doc        { border-top: 2px solid #6366f1; }
+
+  .card.landing:hover    { border-color: #2563eb; }
+  .card.portal:hover     { border-color: #7c3aed; }
+  .card.expedientes:hover{ border-color: #f59e0b; }
+  .card.denuncia:hover   { border-color: #16a34a; }
+  .card.admin:hover      { border-color: #dc2626; }
+  .card.supabase:hover   { border-color: #3ecf8e; }
+  .card.vercel:hover     { border-color: #ffffff; }
+  .card.doc:hover        { border-color: #6366f1; }
 
   .footer {
     margin-top: 36px;
@@ -149,6 +167,7 @@
   <div class="subtitle">Acceso rápido · Solo uso interno</div>
 </div>
 
+<div class="section-label">Sentinel</div>
 <div class="grid">
 
   <a class="card landing" href="https://sentinelai-hn.com">
@@ -161,21 +180,66 @@
   <a class="card portal" href="https://app.sentinelai-hn.com/sentinel_v1_hnd.html#gp7x9k">
     <span class="card-icon">🏛️</span>
     <span class="card-name">Portal Principal</span>
-    <span class="card-desc">Acceso directo · auto-login admin</span>
+    <span class="card-desc">Auto-login admin · acceso completo</span>
+    <span class="card-arrow">↗</span>
+  </a>
+
+  <a class="card expedientes" href="https://app.sentinelai-hn.com/sentinel_v1_hnd.html#gp7x9k">
+    <span class="card-icon">📁</span>
+    <span class="card-name">Expedientes Activos</span>
+    <span class="card-desc">Portal → sección Investigaciones · casos abiertos</span>
     <span class="card-arrow">↗</span>
   </a>
 
   <a class="card denuncia" href="https://sentinelai-hn.com/denuncia.html">
     <span class="card-icon">📢</span>
     <span class="card-name">Canal Ciudadano</span>
-    <span class="card-desc">DENUNCIA·HN · Portal de integridad ciudadana</span>
+    <span class="card-desc">DENUNCIA·HN · Portal de integridad</span>
     <span class="card-arrow">↗</span>
   </a>
 
   <a class="card admin" href="https://sentinelai-hn.com/admin.html">
     <span class="card-icon">⚙️</span>
     <span class="card-name">Admin Canal</span>
-    <span class="card-desc">Panel de administración DENUNCIA·HN</span>
+    <span class="card-desc">Panel administración DENUNCIA·HN</span>
+    <span class="card-arrow">↗</span>
+  </a>
+
+</div>
+
+<div class="section-label">Infraestructura</div>
+<div class="grid">
+
+  <a class="card supabase" href="https://supabase.com/dashboard/project/yxvfpeigwthtokqsarvs" target="_blank">
+    <span class="card-icon">🗄️</span>
+    <span class="card-name">Supabase</span>
+    <span class="card-desc">DB · SQL Editor · Edge Functions · pg_cron</span>
+    <span class="card-arrow">↗</span>
+  </a>
+
+  <a class="card vercel" href="https://vercel.com/dashboard" target="_blank">
+    <span class="card-icon">▲</span>
+    <span class="card-name">Vercel</span>
+    <span class="card-desc">Deployments · Logs · Dominios</span>
+    <span class="card-arrow">↗</span>
+  </a>
+
+</div>
+
+<div class="section-label">Documentación</div>
+<div class="grid">
+
+  <a class="card doc" href="https://drive.google.com/drive/search?q=Sentinel_Playbook_Tecnico_v1" target="_blank">
+    <span class="card-icon">📘</span>
+    <span class="card-name">Playbook Técnico</span>
+    <span class="card-desc">Patrones · NS signals · Score · Edge Functions</span>
+    <span class="card-arrow">↗</span>
+  </a>
+
+  <a class="card doc" href="https://drive.google.com/drive/search?q=Sentinel_Playbook_Operacional_v1" target="_blank">
+    <span class="card-icon">📋</span>
+    <span class="card-name">Playbook Operacional</span>
+    <span class="card-desc">Guía analistas · flujo diario · lenguaje no acusatorio</span>
     <span class="card-arrow">↗</span>
   </a>
 

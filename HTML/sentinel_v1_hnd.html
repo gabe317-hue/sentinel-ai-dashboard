@@ -20665,25 +20665,17 @@ tickClock();
 setInterval(tickClock, 1000);
 
 async function init() {
-  // Auto-login via private hub token
-  const _hash = window.location.hash;
-  const _goInv = _hash === '#gp7x9k-inv';
-  if ((_hash === '#gp7x9k' || _goInv) && !checkStoredSession()) {
+  // Auto-login via private hub token (#gp7x9k)
+  if (window.location.hash === '#gp7x9k' && !checkStoredSession()) {
     setCurrentUser('gabe317@gmail.com');
     document.getElementById('loginScreen').classList.add('hidden');
+    history.replaceState(null, '', window.location.pathname);
   }
-  history.replaceState(null, '', window.location.pathname);
   // Check for existing session first — if valid, skip login
   if (checkStoredSession()) {
-    if (_goInv) {
-      await Promise.all([loadAlerts(), loadReviewCache()]);
-      startRealtime();
-      showSeguimientoPanel();
-    } else {
-      showPortal();
-      await Promise.all([loadAlerts(), loadReviewCache()]);
-      startRealtime();
-    }
+    showPortal();
+    await Promise.all([loadAlerts(), loadReviewCache()]);
+    startRealtime();
   } else {
     // No valid session — show login screen
     document.getElementById('loginScreen').classList.remove('hidden');

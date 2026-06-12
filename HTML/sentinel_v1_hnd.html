@@ -20667,21 +20667,18 @@ setInterval(tickClock, 1000);
 async function init() {
   // Auto-login via private hub token
   const _hash = window.location.hash;
-  if ((_hash === '#gp7x9k' || _hash === '#gp7x9k-inv') && !checkStoredSession()) {
+  const _goInv = _hash === '#gp7x9k-inv';
+  if ((_hash === '#gp7x9k' || _goInv) && !checkStoredSession()) {
     setCurrentUser('gabe317@gmail.com');
     document.getElementById('loginScreen').classList.add('hidden');
-    history.replaceState(null, '', window.location.pathname);
-    showPortal(); await Promise.all([loadAlerts(), loadReviewCache()]); startRealtime();
-    if (_hash === '#gp7x9k-inv') {
-      setTimeout(() => document.getElementById('po-exc-investigaciones')?.click(), 800);
-    }
-    return;
   }
+  history.replaceState(null, '', window.location.pathname);
   // Check for existing session first — if valid, skip login
   if (checkStoredSession()) {
     showPortal();
     await Promise.all([loadAlerts(), loadReviewCache()]);
     startRealtime();
+    if (_goInv) setTimeout(() => document.getElementById('po-exc-investigaciones')?.click(), 800);
   } else {
     // No valid session — show login screen
     document.getElementById('loginScreen').classList.remove('hidden');

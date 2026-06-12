@@ -20678,7 +20678,7 @@ async function init() {
     showPortal();
     await Promise.all([loadAlerts(), loadReviewCache()]);
     startRealtime();
-    if (_goInv) setTimeout(() => document.getElementById('po-exc-investigaciones')?.click(), 800);
+    if (_goInv) setTimeout(() => { hidePortal(); showSeguimientoPanel(); }, 800);
   } else {
     // No valid session — show login screen
     document.getElementById('loginScreen').classList.remove('hidden');

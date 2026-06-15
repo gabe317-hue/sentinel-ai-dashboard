@@ -2873,7 +2873,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-10: CONCENTRACIÓN DE CONSULTORÍA PANEL ══ -->
   <div class="fuente-panel" id="consultoriaPanel">
-    <button class="fuente-back" onclick="hideConsultoriaPanel()">← Contratos</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideConsultoriaPanel()">← Contratos</button><button onclick="exportNSPanelPDF('consultoriaPanel','NS-10 — Concentración de Consultoría')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🧾 <span>Concentración de Consultoría — NS-10</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Entidades con gasto desproporcionado en consultoría y asesoría · señal de captura presupuestal sin licitación</div>
@@ -2937,7 +2937,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-11: IDENTIDAD DUPLICADA PANEL ══ -->
   <div class="fuente-panel" id="identidadPanel">
-    <button class="fuente-back" onclick="hideIdentidadPanel()">← Contratos</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideIdentidadPanel()">← Contratos</button><button onclick="exportNSPanelPDF('identidadPanel','NS-11 — Identidad Duplicada')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🪪 <span>Identidad Duplicada — NS-11</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">RTNs compartidos por empresas con nombres completamente distintos · señal de suplantación de identidad tributaria</div>
@@ -2994,7 +2994,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <!-- ══ MONOPOLIO DE PROVEEDOR PANEL (B1) ══ -->
   <!-- ══ NS-12: MONOPOLIO DE PROVEEDOR PANEL ══ -->
   <div class="fuente-panel" id="monopolioPanel">
-    <button class="fuente-back" onclick="hideMonopolioPanel()">← Contratos</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideMonopolioPanel()">← Contratos</button><button onclick="exportNSPanelPDF('monopolioPanel','NS-12 — Monopolio de Proveedor')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🔒 <span>Monopolio de Proveedor — NS-12</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores que concentran ≥70% del gasto total de una entidad · umbral mínimo: L 500K proveedor / L 2M entidad · señal de captura institucional</div>
@@ -3046,7 +3046,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-13: DOBLE ROL PANEL ══ -->
   <div class="fuente-panel" id="dobleRolPanel">
-    <button class="fuente-back" onclick="hideDobleRolPanel()">← Contratos</button>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <button id="dr-btn-dashboard" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" onclick="hideDobleRolPanel()">← Dashboard Principal</button>
+      <button id="dr-btn-ejecutivo" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
+    </div>
     <div class="fuente-header">
       <div class="fuente-title">🎭 <span>Doble Rol — NS-13</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Personas con rol simultáneo de comprador, proveedor y/o veedor · señal de captura regulatoria · fuente: IAIP + expedientes Sentinel</div>
@@ -3151,7 +3154,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ ONCAE CROSS-REFERENCE PANEL (B2) ══ -->
   <div class="fuente-panel" id="oncaePanel">
-    <button class="fuente-back" onclick="hideOncaePanel()">← Portal</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideOncaePanel()">← Portal</button><button onclick="exportNSPanelPDF('oncaePanel','NS-7 — Proveedores ONCAE')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">⚠️ <span>Proveedores Lista ONCAE</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Empresas con anotaciones preventivas ONCAE (incumplimiento contractual) que tienen contratos activos monitoreados por Sentinel</div>
@@ -3316,7 +3319,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-1: MONOGAMIA DE PROVEEDOR PANEL ══ -->
   <div class="fuente-panel" id="monogamiaPanel">
-    <button class="fuente-back" onclick="hideMonogamiaPanel()">← Panel Ejecutivo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideMonogamiaPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('monogamiaPanel','NS-1 — Monogamia de Proveedor')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🔗 <span>Monogamia de Proveedor</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con ≥85% de contratos concentrados en una sola institución — en un mercado competitivo normal, un proveedor de alta capacidad debería contratar con múltiples entidades</div>
@@ -3362,7 +3365,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-2: VENTANA DE PRESIÓN FISCAL PANEL ══ -->
   <div class="fuente-panel" id="ventanaFiscalPanel">
-    <button class="fuente-back" onclick="hideVentanaFiscalPanel()">← Panel Ejecutivo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideVentanaFiscalPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('ventanaFiscalPanel','NS-2 — Ventana de Presión Fiscal')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">⏱️ <span>Ventana de Presión Fiscal</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Instituciones que concentran su contratación de alto riesgo en períodos de presión fiscal — fin de año (Oct–Dic), nueva administración (Ene–Abr 2026)</div>
@@ -3408,7 +3411,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-4: BCAI — ADHERENCIA AL TECHO PRESUPUESTAL PANEL ══ -->
   <div class="fuente-panel" id="bcaiPanel">
-    <button class="fuente-back" onclick="hideBcaiPanel()">← Panel Ejecutivo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideBcaiPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('bcaiPanel','NS-4 — BCAI Techo Presupuestal')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">📐 <span>Adherencia al Techo Presupuestal</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">
@@ -3458,7 +3461,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-3: DEBUT ANÓMALO PANEL ══ -->
   <div class="fuente-panel" id="debutAnomalyPanel">
-    <button class="fuente-back" onclick="hideDebutAnomalyPanel()">← Panel Ejecutivo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideDebutAnomalyPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('debutAnomalyPanel','NS-3 — Debut Anómalo')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🚀 <span>Debut Anómalo</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores cuyo primer contrato registrado es grande (≥L5M) por contratación directa — señal de empresa creada para ganar contratos, no para competir en el mercado</div>
@@ -3505,7 +3508,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-7: CONTRATOS GEMELOS PANEL ══ -->
   <div class="fuente-panel" id="twinContractsPanel">
-    <button class="fuente-back" onclick="hideTwinContractsPanel()">← Panel Ejecutivo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideTwinContractsPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('twinContractsPanel','NS-7 — Contratos Gemelos')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">👯 <span>Contratos Gemelos</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Pares de contratos del mismo proveedor + misma institución con montos casi idénticos (±5%) adjudicados en menos de 90 días — fraccionamiento quirúrgico para evadir umbrales de licitación formal</div>
@@ -3552,7 +3555,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-8: OPERADOR INVISIBLE PANEL ══ -->
   <div class="fuente-panel" id="operadorInvisiblePanel">
-    <button class="fuente-back" onclick="hideOperadorInvisiblePanel()">← Panel Ejecutivo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideOperadorInvisiblePanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('operadorInvisiblePanel','NS-8 — Operador Invisible')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">👁️ <span>Operador Invisible</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con contratos activos en SEFIN pero con monto opaco (NULL o L0) en más del 70% de sus registros — presencia oficial sin valor trazable. Indicador de Opacidad Sistémica Nivel 1.</div>
@@ -3595,11 +3598,40 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </tbody>
       </table>
     </div>
+
+    <!-- ── TOP ENTIDADES ── -->
+    <div style="margin-top:28px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">TOP ENTIDADES CON MÁS CONTRATOS OPACOS</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+              <th style="text-align:left;padding:7px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Entidad</th>
+              <th style="text-align:center;padding:7px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Proveedores</th>
+              <th style="text-align:center;padding:7px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Contratos Opacos</th>
+              <th style="text-align:center;padding:7px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">% Prom. Opacidad</th>
+            </tr>
+          </thead>
+          <tbody id="oi-ent-tbody"><tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text-dim);">—</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TENDENCIA TEMPORAL ── -->
+    <div style="margin-top:28px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">TENDENCIA ANUAL — CONTRATOS SIN MONTO REPORTADO</div>
+      <div id="oi-trend-wrap" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:16px;">
+        <div id="oi-trend-bars" style="display:flex;align-items:flex-end;gap:6px;height:80px;"></div>
+        <div id="oi-trend-labels" style="display:flex;gap:6px;margin-top:6px;"></div>
+      </div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:6px;opacity:0.6;">Fuente: SEFIN + ONCAE · Contratos con monto NULL o L0 por año fiscal</div>
+    </div>
+
   </div>
 
   <!-- ══ NS-6: SURGE RECIENTE PANEL ══ -->
   <div class="fuente-panel" id="surgeRecientePanel">
-    <button class="fuente-back" onclick="hideSurgeRecientePanel()">← Panel Ejecutivo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideSurgeRecientePanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('surgeRecientePanel','NS-6 — Surge Reciente')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">📈 <span>Surge Reciente</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores donde ≥60% de su monto histórico llegó en los últimos 12 meses — indica acceso repentino al gobierno, posible cambio de conexiones políticas o nuevo esquema activo</div>
@@ -3646,7 +3678,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-5: UMBRAL EVADIDO PANEL ══ -->
   <div class="fuente-panel" id="thresholdHuggingPanel">
-    <button class="fuente-back" onclick="hideThresholdHuggingPanel()">← Panel Ejecutivo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideThresholdHuggingPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('thresholdHuggingPanel','NS-5 — Threshold Hugging')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🎯 <span>Umbral Evadido</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con ≥2 contratos consistentemente justo debajo de los umbrales legales de licitación — Ley de Contrataciones: L500K (compra menor→directa) · L5M (directa→LPN) · L30M (LPN→LPI)</div>
@@ -9896,7 +9928,8 @@ async function showOncaePanel() {
   document.getElementById('oncaePanel').classList.add('open');
   if (_oncaeData) { _renderOncaeTable(); return; }
   document.getElementById('oncae-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
-  const { data, error } = await db.rpc('get_oncae_matches');
+  // S195: usar MV pre-computada — RPC get_oncae_matches timeout en 168K filas
+  const { data, error } = await db.from('mv_oncae_matches').select('*').order('critica', { ascending: false });
   if (error) { document.getElementById('oncae-tbody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:12px;">Error: ${error.message}</td></tr>`; return; }
   _oncaeData = data || [];
   _renderOncaeTable();
@@ -10304,9 +10337,79 @@ async function loadOperadorInvisible() {
     document.getElementById('oi-stat-contratos').textContent = totalOpacos;
     document.getElementById('oi-stat-pct').textContent       = maxPct + '%';
     oiRender();
+    oiRenderEntidades();
+    oiLoadTrend(); // async, no bloquea
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
   }
+}
+
+function oiRenderEntidades() {
+  const map = {};
+  _oiData.forEach(r => {
+    const key = r.institucion || '—';
+    if (!map[key]) map[key] = { proveedores: 0, opacos: 0, pcts: [] };
+    map[key].proveedores++;
+    map[key].opacos += Number(r.contratos_opacos || 0);
+    map[key].pcts.push(r.pct_opaco);
+  });
+  const rows = Object.entries(map)
+    .map(([ent, d]) => ({ ent, ...d, avgPct: Math.round(d.pcts.reduce((s,p)=>s+p,0)/d.pcts.length) }))
+    .sort((a,b) => b.opacos - a.opacos)
+    .slice(0, 10);
+  const red = p => p === 100 ? '#f87171' : p >= 85 ? '#ff6400' : '#fbbf24';
+  document.getElementById('oi-ent-tbody').innerHTML = rows.map(r => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:7px 10px;font-size:11px;color:var(--text);">${r.ent}</td>
+      <td style="padding:7px 10px;text-align:center;color:var(--text-dim);">${r.proveedores}</td>
+      <td style="padding:7px 10px;text-align:center;font-weight:700;color:#f87171;">${r.opacos}</td>
+      <td style="padding:7px 10px;text-align:center;font-weight:700;color:${red(r.avgPct)};">${r.avgPct}%</td>
+    </tr>`).join('') || '<tr><td colspan="4" style="color:var(--text-dim);padding:16px;text-align:center;">Sin datos</td></tr>';
+}
+
+async function oiLoadTrend() {
+  try {
+    const { data, error } = await db.rpc('get_opacity_by_year');
+    if (error || !data) { oiRenderTrendFromAlerts(); return; }
+    oiDrawTrend(data);
+  } catch(_) { oiRenderTrendFromAlerts(); }
+}
+
+async function oiRenderTrendFromAlerts() {
+  // Fallback: compute from allAlerts in memory
+  const byYear = {};
+  (allAlerts || []).forEach(a => {
+    const y = (a.fecha_contrato||'').slice(0,4);
+    if (!y || y < '2019' || y > '2026') return;
+    if (!byYear[y]) byYear[y] = { total: 0, opacos: 0 };
+    byYear[y].total++;
+    if (!a.monto_contrato || Number(a.monto_contrato) === 0) byYear[y].opacos++;
+  });
+  const rows = Object.entries(byYear).sort().map(([year, d]) => ({ year, total: d.total, opacos: d.opacos, pct: d.total ? Math.round(d.opacos/d.total*100) : 0 }));
+  oiDrawTrend(rows);
+}
+
+function oiDrawTrend(rows) {
+  if (!rows || !rows.length) return;
+  const max = Math.max(...rows.map(r => Number(r.opacos||r.total||0)));
+  const barsEl   = document.getElementById('oi-trend-bars');
+  const labelsEl = document.getElementById('oi-trend-labels');
+  if (!barsEl || !labelsEl) return;
+  const barW = `calc((100% - ${(rows.length-1)*6}px) / ${rows.length})`;
+  barsEl.innerHTML = rows.map(r => {
+    const val = Number(r.opacos || 0);
+    const h = max > 0 ? Math.round((val/max)*76) + 4 : 4;
+    const pct = r.pct || (r.total > 0 ? Math.round(val/r.total*100) : 0);
+    return `<div title="${r.year}: ${val.toLocaleString()} opacos (${pct}%)"
+      style="flex:1;background:rgba(255,61,87,${0.3+pct/200});border-radius:3px 3px 0 0;height:${h}px;min-width:24px;cursor:default;transition:opacity .15s;position:relative;"
+      onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+    </div>`;
+  }).join('');
+  labelsEl.innerHTML = rows.map(r => `
+    <div style="flex:1;text-align:center;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">
+      <div style="font-weight:700;color:var(--text);">${r.year}</div>
+      <div style="color:#f87171;">${Number(r.opacos||0).toLocaleString()}</div>
+    </div>`).join('');
 }
 
 function oiFiltrar() {
@@ -11478,6 +11581,64 @@ ${(function(){
   pw.document.write(addPrintBtn(html));
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
+}
+
+// ── Generic NS Panel PDF export ──────────────────────────────────────────────
+function exportNSPanelPDF(panelId, title) {
+  const panel = document.getElementById(panelId);
+  if (!panel) { alert('Panel no encontrado.'); return; }
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const ts = new Date().toLocaleDateString('es-HN', {year:'numeric',month:'long',day:'numeric'});
+
+  // Extract all visible tables from the panel
+  const tables = panel.querySelectorAll('table');
+  let tablesHtml = '';
+  tables.forEach(t => {
+    // Skip hidden tables
+    if (t.closest('[style*="display:none"]') || t.closest('[style*="display: none"]')) return;
+    tablesHtml += '<div style="margin-bottom:24px;overflow-x:auto;">' + t.outerHTML + '</div>';
+  });
+
+  // Extract stat cards (divs with large numbers)
+  const stats = panel.querySelectorAll('.fuente-stat, [id$="-stat-critica"], [id$="-stat-total"], [id$="-stat-monto"]');
+  let statsHtml = '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">';
+  stats.forEach(s => {
+    const val = s.querySelector('.fuente-stat-val, [style*="font-size:22px"], [style*="font-size: 22px"]');
+    const lbl = s.querySelector('.fuente-stat-lbl, [style*="text-transform:uppercase"], [style*="letter-spacing"]');
+    if (val && lbl) {
+      statsHtml += `<div style="border:1px solid #334;border-radius:8px;padding:10px 16px;min-width:100px;">
+        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.06em;">${esc(lbl.textContent)}</div>
+        <div style="font-size:22px;font-weight:700;color:#0bc;">${esc(val.textContent)}</div>
+      </div>`;
+    }
+  });
+  statsHtml += '</div>';
+
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>${esc(title)} — Sentinel AI</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
+    h1{font-size:18px;margin-bottom:4px;}
+    .meta{font-size:11px;color:#666;margin-bottom:20px;}
+    table{width:100%;border-collapse:collapse;font-size:11px;}
+    th{background:#0a1628;color:#fff;padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
+    td{padding:6px 10px;border-bottom:1px solid #e5e7eb;}
+    tr:nth-child(even) td{background:#f9fafb;}
+    .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
+    .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
+    @media print{.print-btn{display:none!important;} body{padding:14px;}}
+  </style></head><body>
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  <h1>📊 ${esc(title)}</h1>
+  <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE 2019–2026</div>
+  ${statsHtml}
+  ${tablesHtml || '<p style="color:#888;">Sin datos de tabla disponibles en este momento.</p>'}
+  <div class="footer"><span>${esc(title)}</span><span>Sentinel AI · app.sentinelai-hn.com · Confidencial</span></div>
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 600);
 }
 
 function exportSectorSummaryPDF() {
@@ -16515,13 +16676,22 @@ function irDesdeEjecutivo(fn) {
   setTimeout(() => {
     try {
       fn();
-      document.getElementById('btnVolverEjecutivoFloat').style.display = 'block';
       // Mostrar botón inline en Vista Ejecutiva si aplica
       const veBk = document.getElementById('ve-back-pe');
       if (veBk) veBk.style.display = 'inline-flex';
       // Set the opened panel's back button to return to Panel Ejecutivo
-      const bb = document.querySelector('.fuente-panel.open .fuente-back');
-      if (bb) { bb.textContent = '← Panel Ejecutivo'; bb.onclick = volverAPanelEjecutivo; }
+      // Skip panels that have their own explicit Panel Ejecutivo button (e.g. dobleRolPanel)
+      const openPanel = document.querySelector('.fuente-panel.open');
+      const hasOwnEjecutivoBtn = openPanel && openPanel.querySelector('[id$="-btn-ejecutivo"]');
+      const bb = !hasOwnEjecutivoBtn && document.querySelector('.fuente-panel.open .fuente-back');
+      if (bb || hasOwnEjecutivoBtn) {
+        if (bb) { bb.textContent = '← Panel Ejecutivo'; bb.onclick = volverAPanelEjecutivo; }
+        // Panel ya tiene botón back inline — no mostrar flotante (duplicado innecesario)
+        document.getElementById('btnVolverEjecutivoFloat').style.display = 'none';
+      } else {
+        // Panel sin fuente-back — mostrar flotante
+        document.getElementById('btnVolverEjecutivoFloat').style.display = 'block';
+      }
     } catch(e) { console.warn('irDesdeEjecutivo:', e); }
   }, 180);
 }
@@ -19597,8 +19767,8 @@ function renderAnalytics() {
 
   // ── Headline cards ──
   document.getElementById('analyticsHeadline').innerHTML = [
-    { label: 'Contratos en BD', value: (window._bdTotalCount || totalAlerts).toLocaleString('es-HN'), sub: 'SEFIN + ONCAE 2019–2026' },
-    { label: 'Contratos con Señales', value: totalAlerts.toLocaleString(), sub: ((totalAlerts / (window._bdTotalCount || totalAlerts)) * 100).toFixed(1) + '% de la BD total' },
+    { label: 'Contratos Monitoreados', value: (window._bdTotalCount || totalAlerts).toLocaleString('es-HN'), sub: 'SEFIN + ONCAE 2019–2026 · bajo análisis activo' },
+    { label: 'Con Alerta CRÍTICA / ALTA', value: (() => { const n = alerts.filter(a => { const s=(a.severity||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); return s==='critica'||s==='alta'; }).length; return n.toLocaleString('es-HN') + ' (' + ((n/(window._bdTotalCount||totalAlerts||1))*100).toFixed(1) + '%)'; })(), sub: 'contratos con riesgo elevado' },
     { label: 'Exposición Total',     value: fmtLarge(totalMonto), sub: fmtUSD(totalMonto) + ' USD estimado' },
   ].map(c => `
     <div style="background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:20px;">

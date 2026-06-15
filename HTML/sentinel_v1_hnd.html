@@ -2859,6 +2859,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.35);">NS-12</span>
     </div>
 
+    <!-- Card 26 — Doble Rol (NS-13) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showDobleRolPanel)">
+      <div class="pe-card-num">26</div>
+      <div class="pe-card-icon">🎭</div>
+      <div class="pe-card-title">Doble Rol</div>
+      <div class="pe-card-desc">Personas que actúan simultáneamente como comprador, proveedor y/o veedor — señal de captura regulatoria y conflicto de interés estructural</div>
+      <span class="pe-card-tag" style="background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.35);">NS-13</span>
+    </div>
+
   </div>
 </div>
 
@@ -3032,6 +3041,69 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ══ NS-13: DOBLE ROL PANEL ══ -->
+  <div class="fuente-panel" id="dobleRolPanel">
+    <button class="fuente-back" onclick="hideDobleRolPanel()">← Contratos</button>
+    <div class="fuente-header">
+      <div class="fuente-title">🎭 <span>Doble Rol — NS-13</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Personas con rol simultáneo de comprador, proveedor y/o veedor · señal de captura regulatoria · fuente: IAIP + expedientes Sentinel</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+      <div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Personas documentadas</div>
+        <div id="dr-stat-personas" style="font-size:22px;font-weight:700;color:#f97316;">2</div>
+      </div>
+      <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Expedientes activos</div>
+        <div id="dr-stat-exp" style="font-size:22px;font-weight:700;color:var(--red);">1</div>
+      </div>
+      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Entidades afectadas</div>
+        <div id="dr-stat-entidades" style="font-size:22px;font-weight:700;color:var(--electric);">4</div>
+      </div>
+      <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.15);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto vinculado</div>
+        <div id="dr-stat-monto" style="font-size:22px;font-weight:700;color:#f97316;">L 137M</div>
+      </div>
+    </div>
+    <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--text-dim);">
+      ⚠️ <b style="color:#f97316;">Detección NS-13:</b> Identificación manual vía cruce de representantes legales en registros IAIP, ONCAE y denuncias ciudadanas. Automatización pendiente (requiere tabla de personas con roles normalizados).
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Casos Documentados</div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Persona</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Rol Comprador</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Rol Proveedor</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Rol Veedor</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Expediente</th>
+          </tr>
+        </thead>
+        <tbody id="doblerol-tbody">
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:8px 10px;font-weight:600;">Bessy J. Ramírez Montoya</td>
+            <td style="padding:8px 10px;color:var(--electric);font-size:11px;">Fiscal — Asoc. Jóvenes Metas</td>
+            <td style="padding:8px 10px;color:#f97316;font-size:11px;">Representante — CARIBEX S.A.</td>
+            <td style="padding:8px 10px;color:#fbbf24;font-size:11px;">Presidenta — Asoc. Mujeres Unidas (veedora)</td>
+            <td style="padding:8px 10px;text-align:center;"><span style="background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">012</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);">
+            <td style="padding:8px 10px;font-weight:600;">Jose J. Portillo Aguilar</td>
+            <td style="padding:8px 10px;color:var(--text-dim);font-size:11px;">—</td>
+            <td style="padding:8px 10px;color:#f97316;font-size:11px;">Representante — CARIBEX S.A.</td>
+            <td style="padding:8px 10px;color:#fbbf24;font-size:11px;">Tesorero — Asoc. Mujeres Unidas (veedora)</td>
+            <td style="padding:8px 10px;text-align:center;"><span style="background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">012</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px;">
+      <button onclick="abrirConstructorCaso(showDobleRolPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='SEDESOL / Red Solidaria / Gobernación';document.getElementById('ccProveedor').value='Asoc. Jóvenes Metas / CARIBEX S.A.';document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Armar Caso — SEN-INV-2026-012</button>
     </div>
   </div>
 
@@ -3669,6 +3741,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </button>
       <button class="nav-item" id="nav-monopolio" onclick="showMonopolioPanel()">
         <span class="nav-icon">🔒</span> Monopolio Proveedor NS-12
+      </button>
+      <button class="nav-item" id="nav-doblerol" onclick="showDobleRolPanel()">
+        <span class="nav-icon">🎭</span> Doble Rol NS-13
       </button>
       <button class="nav-item" id="nav-sector" onclick="showSectorPanel()">
         <span class="nav-icon">🏛️</span> Sectores Institucionales
@@ -4365,6 +4440,17 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-value" id="exec-mon-criticos" style="color:#fbbf24;">—</div>
         <div class="exec-card-sub" id="exec-mon-sub">casos CRÍTICOS</div>
         <div class="exec-card-note">▸ Captura institucional por proveedor →</div>
+      </div>
+
+      <!-- KPI: Doble Rol (NS-13) -->
+      <div class="exec-card exec-card-red" style="cursor:pointer;border-color:rgba(249,115,22,0.35);" onclick="irDesdeEjecutivo(showDobleRolPanel)" title="Ver doble rol NS-13" onmouseover="this.style.borderColor='#f97316'" onmouseout="this.style.borderColor='rgba(249,115,22,0.35)'">
+        <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Doble Rol NS-13</span>
+          <span style="background:rgba(249,115,22,0.8);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">🎭</span>
+        </div>
+        <div class="exec-card-value" id="exec-dr-personas" style="color:#f97316;">2</div>
+        <div class="exec-card-sub">personas documentadas</div>
+        <div class="exec-card-note">▸ Captura regulatoria →</div>
       </div>
 
       <!-- KPI: Denuncias Alta Credibilidad (Módulo F) -->
@@ -9647,7 +9733,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel','bcaiPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','dobleRolPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel','bcaiPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -9764,6 +9850,20 @@ function _renderMonopolioTable() {
       <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showMonopolioPanel);setTimeout(()=>{document.getElementById('ccEntidad').value=_monEntityList[${i}];document.getElementById('ccProveedor').value=_monVendorList[${i}];document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Armar Caso</button></td>
     </tr>`;
   }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// NS-13 — DOBLE ROL
+// ════════════════════════════════════════════════════════════
+function showDobleRolPanel() {
+  _closeAllFuentePanels();
+  document.getElementById('dobleRolPanel').classList.add('open');
+  document.getElementById('nav-doblerol')?.classList.add('active');
+}
+
+function hideDobleRolPanel() {
+  document.getElementById('dobleRolPanel')?.classList.remove('open');
+  document.getElementById('nav-doblerol')?.classList.remove('active');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -27499,6 +27599,7 @@ const _PANEL_MAP = {
   'ejecutiva':   () => showVistaEjecutiva(),
   'seguimiento': () => showSeguimientoPanel(),
   'monopolio':   () => showMonopolioPanel(),
+  'doblerol':    () => showDobleRolPanel(),
   'ranking':     () => showEntityRankingPanel(),
   'oncae':       () => showOncaePanel(),
   'candidatos':  () => showCandidatosPanel(),
@@ -27610,7 +27711,7 @@ function _setUrlPanel(panelKey) {
 
     // Watch all .fuente-panel elements for .open class — map id to panel key
     const _panelIdMap = {
-      seguimientoPanel:'seguimiento', monopolioPanel:'monopolio',
+      seguimientoPanel:'seguimiento', monopolioPanel:'monopolio', dobleRolPanel:'doblerol',
       entityRankingPanel:'ranking', oncaePanel:'oncae',
       candidatosPanel:'candidatos', busquedaBDPanel:'busqueda',
       redesCorporativasPanel:'redes'

@@ -17652,7 +17652,12 @@ const CC_MANUAL_ALIASES = {
   'sesal':'salud', 'infop':'formación profesional', 'seplan':'planificación',
   'serna':'recursos naturales', 'condepor':'deporte', 'copeco':'contingencias',
   'sgjd':'gobernación y justicia', 'inprema':'magisterio', 'injupemp':'jubilaciones',
-  'hondutel':'hondutel', 'uep':'ejecución de proyectos', 'pcm':'presidencia'
+  'hondutel':'hondutel', 'uep':'ejecución de proyectos', 'pcm':'presidencia',
+  'sedesol':'desarrollo social', 'seduc':'educación', 'sanaa':'acueductos',
+  'enee':'energía eléctrica', 'ihss':'seguridad social', 'banadesa':'desarrollo agrícola',
+  'fhis':'inversión social', 'seip':'pueblos indígenas', 'sefin':'finanzas',
+  'setrass':'trabajo', 'stss':'trabajo', 'sedespa':'desarrollo seguimiento',
+  'gobernacion':'gobernación', 'red solidaria':'solidaria'
 };
 function ccGetEntityIdx() {
   if (_ccEntityIdx) return _ccEntityIdx;
@@ -17770,7 +17775,17 @@ function ccAnalizar() {
 
   const ent  = entidad.toLowerCase().trim();
   const prov = proveedor.toLowerCase().trim();
-  const entityContratos = allAlerts.filter(a => ccMatchEntity(ent, a.entity_name));
+  // Soporte entidades compuestas: "SEDESOL / INFOP · Múltiples" → intentar cada parte
+  let entityContratos = allAlerts.filter(a => ccMatchEntity(ent, a.entity_name));
+  if (!entityContratos.length && /[\/·,\+]/.test(ent)) {
+    const parts = ent.split(/[\/·,\+]+/).map(p => p.trim()).filter(p => p.length >= 3);
+    const seen = new Set();
+    for (const part of parts) {
+      allAlerts.filter(a => ccMatchEntity(part, a.entity_name)).forEach(a => {
+        if (!seen.has(a.id)) { seen.add(a.id); entityContratos.push(a); }
+      });
+    }
+  }
   // Buscar en proveedor_nombre primero; si no hay resultados, buscar en description también
   let vendorContratos = entityContratos.filter(a => (a.proveedor_nombre||'').toLowerCase().includes(prov));
   let _ccVendorFromDesc = false;

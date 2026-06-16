@@ -7767,12 +7767,12 @@ async function generateReport(mode = 'todo') {
       return `${sev} · ${pat}`;
     })();
 
-    // ── 2. Counts + totals — usar normSev para evitar bug de acentos ──
-    const counts = { 'critica':0, 'alta':0, 'media':0, 'baja':0 };
+    // ── 2. Counts + totals ──
+    const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
     let totalMonto = 0;
     for (const a of filtered) {
-      const s = normSev(a.severity || 'baja');
-      counts[s] = (counts[s] ?? 0) + 1;
+      const s = a.severity || 'Baja';
+      if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
       totalMonto += parseFloat(a.monto_contrato || 0);
     }
     const fmtL  = v => 'L. ' + (v||0).toLocaleString('es-HN', { minimumFractionDigits:0, maximumFractionDigits:0 });
@@ -7906,14 +7906,14 @@ async function generateReport(mode = 'todo') {
   <tr>
     <td>${filtered.length.toLocaleString('es-HN')}</td>
     <td>${esc(fmtL(totalMonto))}</td>
-    <td style="color:#C0392B;text-align:center">${counts['critica']}</td>
-    <td style="color:#C0392B;text-align:center;font-size:8pt">${pct(counts['critica'],filtered.length)}</td>
-    <td style="color:#C05000;text-align:center">${counts['alta']}</td>
-    <td style="color:#C05000;text-align:center;font-size:8pt">${pct(counts['alta'],filtered.length)}</td>
-    <td style="color:#D68910;text-align:center">${counts['media']}</td>
-    <td style="color:#D68910;text-align:center;font-size:8pt">${pct(counts['media'],filtered.length)}</td>
-    <td style="color:#1E8449;text-align:center">${counts['baja']}</td>
-    <td style="color:#1E8449;text-align:center;font-size:8pt">${pct(counts['baja'],filtered.length)}</td>
+    <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
+    <td style="color:#C0392B;text-align:center;font-size:8pt">${pct(counts['Crítica'],filtered.length)}</td>
+    <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
+    <td style="color:#C05000;text-align:center;font-size:8pt">${pct(counts['Alta'],filtered.length)}</td>
+    <td style="color:#D68910;text-align:center">${counts['Media']}</td>
+    <td style="color:#D68910;text-align:center;font-size:8pt">${pct(counts['Media'],filtered.length)}</td>
+    <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+    <td style="color:#1E8449;text-align:center;font-size:8pt">${pct(counts['Baja'],filtered.length)}</td>
   </tr>
 </table>
 
@@ -8584,7 +8584,7 @@ function showVendorPanel(vendorName) {
     ? allSorted.map(a => {
         const pats = (a.patterns||'').split(',').filter(Boolean).map(p => PLABELS[p.trim()]||p.trim());
         const patBadges = pats.map(p => `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(255,171,0,0.12);color:var(--amber);border:1px solid rgba(255,171,0,0.25);white-space:nowrap;">${p}</span>`).join('');
-        return `<div class="fuente-recent-item" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:8px 10px;overflow:hidden;cursor:pointer;" onclick="openAlertDetail(${a.id}, event)" title="Ver detalle del contrato">
+        return `<div class="fuente-recent-item" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:8px 10px;overflow:hidden;">
           <div style="display:flex;align-items:center;gap:8px;width:100%;min-width:0;">
             <span class="fri-id" style="flex-shrink:0;">${a.alert_id || '#' + a.id}</span>
             <span class="fri-desc" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(a.description||'').replace(/"/g,'&quot;')}">${a.description||'—'}</span>
@@ -11412,18 +11412,18 @@ function exportSectorPDF(mode = 'pareto') {
     ? `Pareto 80% — top ${pareto80idx} de ${sortedByMonto.length} contratos (${paretoPct}% representan el 80% del monto)`
     : `Reporte completo — ${sortedByMonto.length} contratos`;
 
-  // Counts & financials — usar normSev para evitar bug de acentos
-  const counts = { 'critica':0, 'alta':0, 'media':0, 'baja':0 };
+  // Counts & financials (full dataset for summary)
+  const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
   let mc = 0, mp = 0, hasPagado = false;
   for (const a of _sectorDrilldownData) {
-    const s = normSev(a.severity || 'baja');
-    counts[s] = (counts[s] ?? 0) + 1;
+    const s = a.severity || 'Baja';
+    if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
     mc += Number(a.monto_contrato || 0);
     mp += Number(a.monto_pagado   || 0);
     if (a.monto_pagado != null) hasPagado = true;
   }
   const pctHigh = _sectorDrilldownData.length > 0
-    ? ((counts['critica'] + counts['alta']) / _sectorDrilldownData.length * 100).toFixed(1) : '0.0';
+    ? ((counts['Crítica'] + counts['Alta']) / _sectorDrilldownData.length * 100).toFixed(1) : '0.0';
 
   // Pattern counts (from subset)
   const patCount = {};
@@ -11508,14 +11508,14 @@ function exportSectorPDF(mode = 'pareto') {
   <tr>
     <td>${_sectorDrilldownData.length.toLocaleString('es-HN')}</td>
     <td>${esc(fmtL(mc))}</td>
-    <td style="color:#C0392B;text-align:center">${counts['critica']}</td>
-    <td style="color:#C0392B;text-align:center">${pctOf(counts['critica'],_sectorDrilldownData.length)}</td>
-    <td style="color:#C05000;text-align:center">${counts['alta']}</td>
-    <td style="color:#C05000;text-align:center">${pctOf(counts['alta'],_sectorDrilldownData.length)}</td>
-    <td style="color:#D68910;text-align:center">${counts['media']}</td>
-    <td style="color:#D68910;text-align:center">${pctOf(counts['media'],_sectorDrilldownData.length)}</td>
-    <td style="color:#1E8449;text-align:center">${counts['baja']}</td>
-    <td style="color:#1E8449;text-align:center">${pctOf(counts['baja'],_sectorDrilldownData.length)}</td>
+    <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
+    <td style="color:#C0392B;text-align:center">${pctOf(counts['Crítica'],_sectorDrilldownData.length)}</td>
+    <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
+    <td style="color:#C05000;text-align:center">${pctOf(counts['Alta'],_sectorDrilldownData.length)}</td>
+    <td style="color:#D68910;text-align:center">${counts['Media']}</td>
+    <td style="color:#D68910;text-align:center">${pctOf(counts['Media'],_sectorDrilldownData.length)}</td>
+    <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+    <td style="color:#1E8449;text-align:center">${pctOf(counts['Baja'],_sectorDrilldownData.length)}</td>
     <td style="color:#C0392B;font-weight:bold;text-align:center">${pctHigh}%</td>
   </tr>
 </table>
@@ -11524,10 +11524,10 @@ function exportSectorPDF(mode = 'pareto') {
 ${(function(){
   const total = _sectorDrilldownData.length || 1;
   const bars = [
-    { label:'Crítica', count: counts['critica'], color:'#C0392B' },
-    { label:'Alta',    count: counts['alta'],    color:'#C05000' },
-    { label:'Media',   count: counts['media'],   color:'#D68910' },
-    { label:'Baja',    count: counts['baja'],    color:'#1E8449' },
+    { label:'Crítica', count: counts['Crítica'], color:'#C0392B' },
+    { label:'Alta',    count: counts['Alta'],    color:'#C05000' },
+    { label:'Media',   count: counts['Media'],   color:'#D68910' },
+    { label:'Baja',    count: counts['Baja'],    color:'#1E8449' },
   ];
   const maxCount = Math.max(...bars.map(b => b.count), 1);
   const barW = 400, barH = 22, gap = 10, labelW = 55, countW = 60;
@@ -13952,11 +13952,11 @@ function exportProvPDF() {
   const horaStr  = now.toLocaleTimeString('es-HN',{hour:'2-digit',minute:'2-digit'});
   const dateTag  = now.toISOString().slice(0,10);
 
-  const counts = { 'critica':0, 'alta':0, 'media':0, 'baja':0 };
+  const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
   let montoTotal = 0;
   for (const a of _provDrilldownData) {
-    const s = normSev(a.severity || 'baja');
-    counts[s] = (counts[s] ?? 0) + 1;
+    const s = a.severity || 'Baja';
+    if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
     montoTotal += Number(a.monto_contrato || 0);
   }
 
@@ -14017,10 +14017,10 @@ function exportProvPDF() {
   <tr>
     <td>${_provDrilldownData.length.toLocaleString('es-HN')}</td>
     <td>${esc(fmtL(montoTotal))}</td>
-    <td style="color:#C0392B;text-align:center">${counts['critica']}</td><td style="color:#C0392B;text-align:center;font-size:8pt">${pct(counts['critica'],_provDrilldownData.length)}</td>
-    <td style="color:#C05000;text-align:center">${counts['alta']}</td><td style="color:#C05000;text-align:center;font-size:8pt">${pct(counts['alta'],_provDrilldownData.length)}</td>
-    <td style="color:#D68910;text-align:center">${counts['media']}</td><td style="color:#D68910;text-align:center;font-size:8pt">${pct(counts['media'],_provDrilldownData.length)}</td>
-    <td style="color:#1E8449;text-align:center">${counts['baja']}</td><td style="color:#1E8449;text-align:center;font-size:8pt">${pct(counts['baja'],_provDrilldownData.length)}</td>
+    <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td><td style="color:#C0392B;text-align:center;font-size:8pt">${pct(counts['Crítica'],_provDrilldownData.length)}</td>
+    <td style="color:#C05000;text-align:center">${counts['Alta']}</td><td style="color:#C05000;text-align:center;font-size:8pt">${pct(counts['Alta'],_provDrilldownData.length)}</td>
+    <td style="color:#D68910;text-align:center">${counts['Media']}</td><td style="color:#D68910;text-align:center;font-size:8pt">${pct(counts['Media'],_provDrilldownData.length)}</td>
+    <td style="color:#1E8449;text-align:center">${counts['Baja']}</td><td style="color:#1E8449;text-align:center;font-size:8pt">${pct(counts['Baja'],_provDrilldownData.length)}</td>
   </tr>
 </table>
 <p class="sec">Detalle de Contratos por Entidad — ordenados por monto descendente</p>
@@ -14591,12 +14591,12 @@ function exportTlPDF() {
   const titleEl   = document.getElementById('tl-drilldown-title');
   const periodoStr = titleEl ? titleEl.textContent.trim() : 'Timeline';
 
-  // ── Summary counts — usar normSev para evitar bug de acentos ──
-  const counts = { 'critica':0, 'alta':0, 'media':0, 'baja':0 };
+  // ── Summary counts ──
+  const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
   let montoTotal = 0;
   for (const a of _tlDrilldownData) {
-    const s = normSev(a.severity || 'baja');
-    counts[s] = (counts[s] ?? 0) + 1;
+    const s = a.severity || 'Baja';
+    if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
     montoTotal += Number(a.monto_contrato || 0);
   }
 
@@ -14669,14 +14669,14 @@ function exportTlPDF() {
   <tr>
     <td>${_tlDrilldownData.length.toLocaleString('es-HN')}</td>
     <td>${esc(fmtL(montoTotal))}</td>
-    <td style="color:#C0392B;text-align:center">${counts['critica']}</td>
-    <td style="color:#C0392B;text-align:center;font-size:8pt">${pct(counts['critica'],_tlDrilldownData.length)}</td>
-    <td style="color:#C05000;text-align:center">${counts['alta']}</td>
-    <td style="color:#C05000;text-align:center;font-size:8pt">${pct(counts['alta'],_tlDrilldownData.length)}</td>
-    <td style="color:#D68910;text-align:center">${counts['media']}</td>
-    <td style="color:#D68910;text-align:center;font-size:8pt">${pct(counts['media'],_tlDrilldownData.length)}</td>
-    <td style="color:#1E8449;text-align:center">${counts['baja']}</td>
-    <td style="color:#1E8449;text-align:center;font-size:8pt">${pct(counts['baja'],_tlDrilldownData.length)}</td>
+    <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
+    <td style="color:#C0392B;text-align:center;font-size:8pt">${pct(counts['Crítica'],_tlDrilldownData.length)}</td>
+    <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
+    <td style="color:#C05000;text-align:center;font-size:8pt">${pct(counts['Alta'],_tlDrilldownData.length)}</td>
+    <td style="color:#D68910;text-align:center">${counts['Media']}</td>
+    <td style="color:#D68910;text-align:center;font-size:8pt">${pct(counts['Media'],_tlDrilldownData.length)}</td>
+    <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+    <td style="color:#1E8449;text-align:center;font-size:8pt">${pct(counts['Baja'],_tlDrilldownData.length)}</td>
   </tr>
 </table>
 
@@ -14874,12 +14874,12 @@ function exportEntityPDF(mode = 'pareto') {
     ? `Pareto 80% — top ${pareto80idx} de ${sorted.length} contratos (${paretoPct}% representan el 80% del monto)`
     : `Reporte completo — ${sorted.length} contratos`;
 
-  // Counts & financials — usar normSev para evitar bug de acentos
-  const counts = { 'critica':0, 'alta':0, 'media':0, 'baja':0 };
+  // Counts & financials (from full dataset for summary accuracy)
+  const counts = { 'Crítica':0, 'Alta':0, 'Media':0, 'Baja':0 };
   let mc = 0, mp = 0, hasPagado = false;
   for (const a of _epData) {
-    const s = normSev(a.severity || 'baja');
-    counts[s] = (counts[s] ?? 0) + 1;
+    const s = a.severity || 'Baja';
+    if (counts[s] !== undefined) counts[s]++; else counts['Baja']++;
     mc += Number(a.monto_contrato || 0);
     mp += Number(a.monto_pagado   || 0);
     if (a.monto_pagado != null) hasPagado = true;
@@ -14981,14 +14981,14 @@ function exportEntityPDF(mode = 'pareto') {
     <td>${hasPagado ? esc(fmtL(mp)) : '—'}</td>
     <td>${payPct !== null ? payPct + '%' : '—'}</td>
     <td style="color:${difColor};font-weight:bold">${esc(difStr)}</td>
-    <td style="color:#C0392B;text-align:center">${counts['critica']}</td>
-    <td style="color:#C0392B;text-align:center;font-size:8pt">${pctOf(counts['critica'],_epData.length)}</td>
-    <td style="color:#C05000;text-align:center">${counts['alta']}</td>
-    <td style="color:#C05000;text-align:center;font-size:8pt">${pctOf(counts['alta'],_epData.length)}</td>
-    <td style="color:#D68910;text-align:center">${counts['media']}</td>
-    <td style="color:#D68910;text-align:center;font-size:8pt">${pctOf(counts['media'],_epData.length)}</td>
-    <td style="color:#1E8449;text-align:center">${counts['baja']}</td>
-    <td style="color:#1E8449;text-align:center;font-size:8pt">${pctOf(counts['baja'],_epData.length)}</td>
+    <td style="color:#C0392B;text-align:center">${counts['Crítica']}</td>
+    <td style="color:#C0392B;text-align:center;font-size:8pt">${pctOf(counts['Crítica'],_epData.length)}</td>
+    <td style="color:#C05000;text-align:center">${counts['Alta']}</td>
+    <td style="color:#C05000;text-align:center;font-size:8pt">${pctOf(counts['Alta'],_epData.length)}</td>
+    <td style="color:#D68910;text-align:center">${counts['Media']}</td>
+    <td style="color:#D68910;text-align:center;font-size:8pt">${pctOf(counts['Media'],_epData.length)}</td>
+    <td style="color:#1E8449;text-align:center">${counts['Baja']}</td>
+    <td style="color:#1E8449;text-align:center;font-size:8pt">${pctOf(counts['Baja'],_epData.length)}</td>
   </tr>
 </table>
 
@@ -24534,7 +24534,7 @@ const PLAYBOOK_QUERIES = [
     run: function(all) {
       const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : n > 0 ? 'L ' + Math.round(n).toLocaleString('es-HN') : '—';
       const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-      const rfList = (typeof REDFLAG_LIST_HND !== 'undefined' ? REDFLAG_LIST_HND : []).concat(typeof ENGEL_LIST_HND !== 'undefined' ? ENGEL_LIST_HND : []);
+      const rfList = window.REDFLAG_LIST_HND || [];
       const filas = rfList.map((rf, i) => {
         const search = norm(rf.search || rf.full || '');
         const matches = all.filter(a => {
@@ -24891,7 +24891,7 @@ function executePlaybookQuery(id) {
     <tbody>${dataRows}</tbody>
   </table>
   ${result.nota ? `<div style="font-size:9px;color:#6b7280;margin-top:10px;padding-top:8px;border-top:1px solid #e5e7eb;font-style:italic;">* ${result.nota}</div>` : ''}
-  <div class="footer">SENTINEL AI · Uso oficial restringido · No distribuir sin autorización · alerts@sentinelai-hn.com</div>
+  <div class="footer">SENTINEL AI · Uso oficial restringido · No distribuir sin autorización · gabe317@gmail.com</div>
 </div>
 </body></html>`;
 

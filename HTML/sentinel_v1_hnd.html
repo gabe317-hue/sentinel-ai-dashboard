@@ -3065,26 +3065,52 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
     <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
       <div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Personas documentadas</div>
-        <div id="dr-stat-personas" style="font-size:22px;font-weight:700;color:#f97316;">2</div>
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Detectados IAIP</div>
+        <div id="dr-stat-personas" style="font-size:22px;font-weight:700;color:#f97316;">—</div>
       </div>
       <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Expedientes activos</div>
-        <div id="dr-stat-exp" style="font-size:22px;font-weight:700;color:var(--red);">1</div>
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Mismo Organismo</div>
+        <div id="dr-stat-critica" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
       </div>
       <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Entidades afectadas</div>
-        <div id="dr-stat-entidades" style="font-size:22px;font-weight:700;color:var(--electric);">4</div>
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Contratos IAIP</div>
+        <div id="dr-stat-contratos" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
       </div>
       <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.15);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto vinculado</div>
-        <div id="dr-stat-monto" style="font-size:22px;font-weight:700;color:#f97316;">L 137M</div>
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Exp. Manuales</div>
+        <div style="font-size:22px;font-weight:700;color:#f97316;">1</div>
       </div>
     </div>
-    <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--text-dim);">
-      ⚠️ <b style="color:#f97316;">Detección NS-13:</b> Identificación manual vía cruce de representantes legales en registros IAIP, ONCAE y denuncias ciudadanas. Automatización pendiente (requiere tabla de personas con roles normalizados).
+    <!-- Filtros NS-13 -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <button id="dr-fil-todos" onclick="filtrarDobleRol('TODOS')" style="background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.4);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Todos</button>
+      <button id="dr-fil-critica" onclick="filtrarDobleRol('CRÍTICA')" style="background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Solo CRÍTICA</button>
+      <button id="dr-fil-alta" onclick="filtrarDobleRol('ALTA')" style="background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Solo ALTA</button>
     </div>
-    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Casos Documentados</div>
+    <div style="background:rgba(0,200,255,0.06);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--text-dim);">
+      ✅ <b style="color:var(--electric);">Detección NS-13 automatizada:</b> mv_doble_rol · cruce IAIP registros empleado (NO) vs. proveedor (SI) por número de identidad. Actualiza con pg_cron.
+    </div>
+    <!-- Tabla IAIP detectados -->
+    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Detectados Automáticamente — IAIP</div>
+    <div style="overflow-x:auto;margin-bottom:20px;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="text-align:left;padding:7px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">ID</th>
+            <th style="text-align:left;padding:7px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Nombre / Proveedor</th>
+            <th style="text-align:left;padding:7px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Institución Empleadora</th>
+            <th style="text-align:left;padding:7px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Institución Contratante</th>
+            <th style="text-align:center;padding:7px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Cttos</th>
+            <th style="text-align:center;padding:7px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;">Severidad</th>
+          </tr>
+        </thead>
+        <tbody id="dr-iaip-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Casos manuales (expedientes activos) -->
+    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;">Expedientes Activos — Documentados Manualmente</div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead>
@@ -4540,8 +4566,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <span>Doble Rol NS-13</span>
           <span style="background:rgba(249,115,22,0.8);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">🎭</span>
         </div>
-        <div class="exec-card-value" id="exec-dr-personas" style="color:#f97316;">2</div>
-        <div class="exec-card-sub">personas documentadas</div>
+        <div class="exec-card-value" id="exec-dr-personas" style="color:#f97316;">—</div>
+        <div class="exec-card-sub">detectados IAIP</div>
         <div class="exec-card-note">▸ Captura regulatoria →</div>
       </div>
 
@@ -9947,10 +9973,65 @@ function _renderMonopolioTable() {
 // ════════════════════════════════════════════════════════════
 // NS-13 — DOBLE ROL
 // ════════════════════════════════════════════════════════════
-function showDobleRolPanel() {
+let _drData = null;
+let _drFiltro = 'TODOS';
+
+async function showDobleRolPanel() {
   _closeAllFuentePanels();
   document.getElementById('dobleRolPanel').classList.add('open');
   document.getElementById('nav-doblerol')?.classList.add('active');
+  if (_drData) { _renderDobleRolTabla(); return; }
+  const { data, error } = await db.rpc('get_doble_rol');
+  if (error || !data) {
+    document.getElementById('dr-iaip-tbody').innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:12px;">Error: ${error?.message || 'sin datos'}</td></tr>`;
+    return;
+  }
+  _drData = data;
+  const total = data.length;
+  const critica = data.filter(r => r.mismo_organismo).length;
+  const totalCttos = data.reduce((s, r) => s + (r.contratos_iaip || 0), 0);
+  document.getElementById('dr-stat-personas').textContent = total;
+  document.getElementById('dr-stat-critica').textContent = critica;
+  document.getElementById('dr-stat-contratos').textContent = totalCttos;
+  const execEl = document.getElementById('exec-dr-personas');
+  if (execEl) execEl.textContent = total;
+  _renderDobleRolTabla();
+}
+
+function _renderDobleRolTabla() {
+  const tb = document.getElementById('dr-iaip-tbody');
+  if (!tb || !_drData) return;
+  const rows = _drFiltro === 'TODOS' ? _drData : _drData.filter(r => r.severidad === _drFiltro);
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados.</td></tr>'; return; }
+  tb.innerHTML = rows.map((r, i) => {
+    const sevColor = r.mismo_organismo ? 'var(--red)' : '#f97316';
+    const sevBg = r.mismo_organismo ? 'rgba(255,61,87,0.12)' : 'rgba(249,115,22,0.12)';
+    const sevBorder = r.mismo_organismo ? 'rgba(255,61,87,0.3)' : 'rgba(249,115,22,0.3)';
+    const inst_emp = (r.instituciones_empleador || '').split(' | ')[0];
+    const inst_cnt = (r.instituciones_contratante || '').split(' | ')[0];
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2?'background:rgba(255,255,255,0.02)':''}">
+      <td style="padding:7px 10px;color:var(--text-dim);font-size:10px;font-family:'JetBrains Mono',monospace;">${r.id_num}</td>
+      <td style="padding:7px 10px;">
+        <div style="font-weight:600;font-size:11px;">${r.nombre_empleado || '—'}</div>
+        <div style="font-size:10px;color:#f97316;">${r.nombre_proveedor !== r.nombre_empleado ? (r.nombre_proveedor || '') : ''}</div>
+      </td>
+      <td style="padding:7px 10px;font-size:11px;color:var(--text-dim);">${inst_emp}</td>
+      <td style="padding:7px 10px;font-size:11px;color:var(--electric);">${inst_cnt}</td>
+      <td style="padding:7px 10px;text-align:center;font-family:'JetBrains Mono',monospace;">${r.contratos_iaip}</td>
+      <td style="padding:7px 10px;text-align:center;"><span style="background:${sevBg};color:${sevColor};border:1px solid ${sevBorder};border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">${r.severidad}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function filtrarDobleRol(filtro) {
+  _drFiltro = filtro;
+  ['TODOS','CRÍTICA','ALTA'].forEach(f => {
+    const el = document.getElementById(`dr-fil-${f === 'TODOS' ? 'todos' : f === 'CRÍTICA' ? 'critica' : 'alta'}`);
+    if (!el) return;
+    if (f === filtro) { el.style.background='rgba(249,115,22,0.15)'; el.style.color='#f97316'; el.style.borderColor='rgba(249,115,22,0.4)'; }
+    else { el.style.background='rgba(255,255,255,0.05)'; el.style.color='var(--text-dim)'; el.style.borderColor='rgba(255,255,255,0.1)'; }
+  });
+  _renderDobleRolTabla();
 }
 
 function hideDobleRolPanel() {

@@ -3055,9 +3055,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-13: DOBLE ROL PANEL ══ -->
   <div class="fuente-panel" id="dobleRolPanel">
-    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-      <button id="dr-btn-dashboard" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" onclick="hideDobleRolPanel()">← Dashboard Principal</button>
-      <button id="dr-btn-ejecutivo" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;">
+        <button id="dr-btn-dashboard" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" onclick="hideDobleRolPanel()">← Dashboard Principal</button>
+        <button id="dr-btn-ejecutivo" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
+      </div>
+      <button onclick="exportDobleRolPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
     </div>
     <div class="fuente-header">
       <div class="fuente-title">🎭 <span>Doble Rol — NS-13</span></div>
@@ -3143,14 +3146,27 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div style="margin-top:14px;">
       <button onclick="abrirConstructorCaso(showDobleRolPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='SEDESOL / Red Solidaria / Gobernación';document.getElementById('ccProveedor').value='Asoc. Jóvenes Metas / CARIBEX S.A.';document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Armar Caso — SEN-INV-2026-012</button>
     </div>
+
+    <!-- ── NS-13 DRILL-DOWN: contratos IAIP de la persona seleccionada ── -->
+    <div id="dr-drilldown" style="display:none;margin-top:20px;padding:14px 16px;background:rgba(249,115,22,0.05);border:1px solid rgba(249,115,22,0.25);border-radius:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div id="dr-drill-title" style="font-size:13px;font-weight:700;color:#f97316;"></div>
+        <button onclick="drCloseDrilldown()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;">✕ Cerrar</button>
+      </div>
+      <div id="dr-drill-body" style="font-size:11px;color:var(--text-dim);">Cargando…</div>
+    </div>
+
   </div>
 
   <!-- ══ NS-14: CPC INHABILITADO PANEL ══ -->
   <div class="fuente-panel" id="cpcInhabPanel">
-    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-      <button style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;" onclick="hideCpcInhabPanel()">← Dashboard Principal</button>
-      <button style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
-      <a href="https://oncae.gob.hn/wp-content/uploads/2026/03/LISTADO-CPC-INHABILITADOS-DICIEMBRE-2025.pdf" target="_blank" style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;text-decoration:none;">📄 PDF Fuente ONCAE</a>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;" onclick="hideCpcInhabPanel()">← Dashboard Principal</button>
+        <button style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
+        <a href="https://oncae.gob.hn/wp-content/uploads/2026/03/LISTADO-CPC-INHABILITADOS-DICIEMBRE-2025.pdf" target="_blank" style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;text-decoration:none;">🔗 Fuente ONCAE</a>
+      </div>
+      <button onclick="exportCpcInhabPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
     </div>
     <div class="fuente-header">
       <div class="fuente-title">🚫 <span>CPC Inhabilitado — NS-14</span></div>
@@ -3195,7 +3211,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ RANKING RIESGO INSTITUCIONAL PANEL (B3) ══ -->
   <div class="fuente-panel" id="entityRankingPanel">
-    <button class="fuente-back" onclick="hideEntityRankingPanel()">← Portal</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <button class="fuente-back" style="margin-bottom:0;" onclick="hideEntityRankingPanel()">← Portal</button>
+      <button onclick="exportNSPanelPDF('entityRankingPanel','Ranking Riesgo Institucional')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
+    </div>
     <div class="fuente-header">
       <div class="fuente-title">🏛️ <span>Ranking Riesgo Institucional</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Score compuesto: críticas×5 + altas×2 + medias×0.5 / total contratos · Top 50 entidades</div>
@@ -3350,7 +3369,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ REDES CORPORATIVAS PANEL (B4) ══ -->
   <div class="fuente-panel" id="redesCorporativasPanel">
-    <button class="fuente-back" onclick="hideRedesCorporativasPanel()">← Panel Ejecutivo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <button class="fuente-back" style="margin-bottom:0;" onclick="hideRedesCorporativasPanel()">← Panel Ejecutivo</button>
+      <button onclick="exportNSPanelPDF('redesCorporativasPanel','Redes Corporativas — Clusters de Empresas')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
+    </div>
     <div class="fuente-header">
       <div class="fuente-title">🕸️ <span>Redes Corporativas</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Clusters de empresas que comparten token de nombre en la misma entidad — señal de fraccionamiento coordinado o evasión de umbrales</div>
@@ -10010,7 +10032,7 @@ function _renderDobleRolTabla() {
     const sevBorder = r.mismo_organismo ? 'rgba(255,61,87,0.3)' : 'rgba(249,115,22,0.3)';
     const inst_emp = (r.instituciones_empleador || '').split(' | ')[0];
     const inst_cnt = (r.instituciones_contratante || '').split(' | ')[0];
-    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2?'background:rgba(255,255,255,0.02)':''}">
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2?'background:rgba(255,255,255,0.02)':''};cursor:pointer;transition:background .12s;" onclick="drShowDrilldown(${i})" onmouseover="this.style.background='rgba(249,115,22,0.08)'" onmouseout="this.style.background='${i%2?'rgba(255,255,255,0.02)':'transparent'}'">
       <td style="padding:7px 10px;color:var(--text-dim);font-size:10px;font-family:'JetBrains Mono',monospace;">${r.id_num}</td>
       <td style="padding:7px 10px;">
         <div style="font-weight:600;font-size:11px;">${r.nombre_empleado || '—'}</div>
@@ -10033,6 +10055,170 @@ function filtrarDobleRol(filtro) {
     else { el.style.background='rgba(255,255,255,0.05)'; el.style.color='var(--text-dim)'; el.style.borderColor='rgba(255,255,255,0.1)'; }
   });
   _renderDobleRolTabla();
+}
+
+// NS-13 Drill-down: muestra contratos IAIP de la persona seleccionada
+async function drShowDrilldown(rowIdx) {
+  const rows = _drFiltro === 'TODOS' ? _drData : (_drData||[]).filter(r => r.severidad === _drFiltro);
+  const r = rows[rowIdx];
+  if (!r) return;
+  const el = document.getElementById('dr-drilldown');
+  const titleEl = document.getElementById('dr-drill-title');
+  const bodyEl = document.getElementById('dr-drill-body');
+  if (!el || !titleEl || !bodyEl) return;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  titleEl.textContent = `🎭 ${r.nombre_empleado || r.id_num} — Registros IAIP`;
+  bodyEl.innerHTML = '<div style="color:var(--text-dim);padding:8px;">Cargando registros IAIP…</div>';
+  try {
+    const { data, error } = await db
+      .from('iaip_providers')
+      .select('nombre_completo, institution_name, doc_year, numero_identificacion')
+      .eq('numero_identificacion', r.id_num)
+      .order('doc_year', { ascending: false })
+      .limit(50);
+    if (error || !data || !data.length) {
+      bodyEl.innerHTML = `<div style="color:var(--text-dim);font-size:11px;padding:8px;">Sin registros en iaip_providers para RTN ${r.id_num}.<br>Los ${r.contratos_iaip} contratos fueron detectados vía cruce de identidades.</div>`;
+      return;
+    }
+    // Group by nombre_completo → institutions + years
+    const grouped = {};
+    data.forEach(d => {
+      const n = (d.nombre_completo||'').trim().toUpperCase();
+      if (!grouped[n]) grouped[n] = { instituciones: new Set(), años: new Set() };
+      if (d.institution_name) grouped[n].instituciones.add(d.institution_name);
+      if (d.doc_year) grouped[n].años.add(d.doc_year);
+    });
+    const sevC = r.mismo_organismo ? '#ff3d57' : '#f97316';
+    bodyEl.innerHTML = `
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        <span style="background:rgba(249,115,22,0.1);color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:6px;padding:3px 10px;font-size:10px;">RTN: ${r.id_num}</span>
+        <span style="background:rgba(249,115,22,0.1);color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:6px;padding:3px 10px;font-size:10px;">${r.contratos_iaip} contratos IAIP</span>
+        <span style="background:${r.mismo_organismo?'rgba(255,61,87,0.1)':'rgba(249,115,22,0.1)'};color:${sevC};border:1px solid ${sevC}44;border-radius:6px;padding:3px 10px;font-size:10px;">${r.severidad}${r.mismo_organismo?' · Mismo Organismo':''}</span>
+      </div>
+      <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Nombres encontrados en registros IAIP</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        ${Object.keys(grouped).map(nombre => {
+          const g = grouped[nombre];
+          const insts = [...g.instituciones].slice(0,3).join(', ');
+          const años = [...g.años].sort().join(', ');
+          return `<div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:10px 14px;min-width:260px;max-width:360px;">
+            <div style="font-size:11px;font-weight:700;color:#f97316;margin-bottom:4px;">${nombre}</div>
+            ${insts?`<div style="font-size:10px;color:var(--text-dim);margin-bottom:2px;">🏛️ ${insts}</div>`:''}
+            ${años?`<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;">📅 ${años}</div>`:''}
+            <button onclick="abrirConstructorCaso(showDobleRolPanel);setTimeout(()=>{document.getElementById('ccProveedor').value='${nombre.replace(/'/g,"\\'")}';document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';ccAnalizar();},250)"
+              style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Armar Caso</button>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } catch(e) {
+    bodyEl.innerHTML = `<div style="color:var(--red);font-size:11px;padding:8px;">Error: ${e.message}</div>`;
+  }
+}
+
+function drCloseDrilldown() {
+  const el = document.getElementById('dr-drilldown');
+  if (el) el.style.display = 'none';
+}
+
+function exportDobleRolPDF() {
+  if (!_drData || !_drData.length) { alert('Sin datos NS-13. Abre el panel primero.'); return; }
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const ts = new Date().toLocaleDateString('es-HN', {year:'numeric',month:'long',day:'numeric'});
+  const rows = _drData;
+  const nCritica = rows.filter(r => r.mismo_organismo).length;
+  const nAlta = rows.filter(r => !r.mismo_organismo).length;
+  const totalCttos = rows.reduce((s,r) => s + (r.contratos_iaip||0), 0);
+  const tableRows = rows.map((r,i) => {
+    const c = r.mismo_organismo ? '#dc2626' : '#ea580c';
+    const inst_emp = (r.instituciones_empleador||'').split(' | ')[0];
+    const inst_cnt = (r.instituciones_contratante||'').split(' | ')[0];
+    return `<tr style="${i%2?'background:#f9fafb':''}">
+      <td style="padding:6px 8px;font-size:10px;color:#666;">${esc(r.id_num)}</td>
+      <td style="padding:6px 8px;font-weight:600;">${esc(r.nombre_empleado||'—')}${r.nombre_proveedor!==r.nombre_empleado?`<br><span style="color:#ea580c;font-size:10px;">${esc(r.nombre_proveedor||'')}</span>`:''}</td>
+      <td style="padding:6px 8px;">${esc(inst_emp)}</td>
+      <td style="padding:6px 8px;color:#1d4ed8;">${esc(inst_cnt)}</td>
+      <td style="padding:6px 8px;text-align:center;font-family:monospace;">${r.contratos_iaip||0}</td>
+      <td style="padding:6px 8px;text-align:center;"><span style="background:${c}18;color:${c};border:1px solid ${c}44;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;">${esc(r.severidad)}</span></td>
+    </tr>`;
+  }).join('');
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>NS-13 Doble Rol — Sentinel AI</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
+    h1{font-size:18px;margin-bottom:4px;} .meta{font-size:11px;color:#666;margin-bottom:20px;}
+    .kpis{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+    .kpi{border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;min-width:110px;}
+    .kpi-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em;}
+    .kpi-val{font-size:22px;font-weight:700;}
+    table{width:100%;border-collapse:collapse;font-size:11px;}
+    th{background:#0a1628 !important;color:#fff !important;padding:7px 8px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
+    td{border-bottom:1px solid #e5e7eb;color:#111;}
+    .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
+    .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
+    @media print{.print-btn{display:none!important;} body{padding:14px;}}
+  </style></head><body>
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  <h1>🎭 NS-13 — Doble Rol</h1>
+  <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: IAIP + SEFIN 2019–2026</div>
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-lbl">CRÍTICA (mismo organismo)</div><div class="kpi-val" style="color:#dc2626;">${nCritica}</div></div>
+    <div class="kpi"><div class="kpi-lbl">ALTA (distinto organismo)</div><div class="kpi-val" style="color:#ea580c;">${nAlta}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Total detectados</div><div class="kpi-val" style="color:#0bc;">${rows.length}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Contratos IAIP</div><div class="kpi-val" style="color:#0bc;">${totalCttos}</div></div>
+  </div>
+  <table><thead><tr>
+    <th>RTN/ID</th><th>Nombre / Proveedor</th><th>Institución Empleadora</th><th>Institución Contratante</th><th style="text-align:center;">Cttos</th><th style="text-align:center;">Severidad</th>
+  </tr></thead><tbody>${tableRows}</tbody></table>
+  <div class="footer"><span>NS-13 Doble Rol — Sentinel AI</span><span>app.sentinelai-hn.com · Confidencial</span></div>
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 600);
+}
+
+function exportCpcInhabPDF() {
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const ts = new Date().toLocaleDateString('es-HN', {year:'numeric',month:'long',day:'numeric'});
+  const data = typeof CPC_INHABILITADOS_HND !== 'undefined' ? CPC_INHABILITADOS_HND : [];
+  if (!data.length) { alert('Lista CPC no disponible.'); return; }
+  const tableRows = data.map((item, i) => {
+    const parts = (item.full || item).split(' — ');
+    const nombre = parts[0] || item.full || item;
+    const details = parts[1] || '';
+    return `<tr style="${i%2?'background:#f9fafb':''}">
+      <td style="padding:6px 8px;text-align:center;color:#888;">${i+1}</td>
+      <td style="padding:6px 8px;font-weight:600;">${esc(nombre)}</td>
+      <td style="padding:6px 8px;color:#666;">${esc(details)}</td>
+    </tr>`;
+  }).join('');
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>NS-14 CPC Inhabilitados — Sentinel AI</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
+    h1{font-size:18px;margin-bottom:4px;} .meta{font-size:11px;color:#666;margin-bottom:20px;}
+    .kpi{display:inline-block;border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;min-width:110px;margin-bottom:20px;}
+    .kpi-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em;}
+    .kpi-val{font-size:22px;font-weight:700;color:#dc2626;}
+    table{width:100%;border-collapse:collapse;font-size:11px;}
+    th{background:#0a1628 !important;color:#fff !important;padding:7px 8px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
+    td{border-bottom:1px solid #e5e7eb;color:#111;}
+    .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
+    .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
+    @media print{.print-btn{display:none!important;} body{padding:14px;}}
+  </style></head><body>
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  <h1>🚫 NS-14 — CPC Inhabilitados</h1>
+  <div class="meta">Sentinel AI — Fuente: ONCAE · Listado CPC Inhabilitados Dic-2025 · Generado: ${ts}</div>
+  <div class="kpi"><div class="kpi-lbl">CPC Inhabilitados</div><div class="kpi-val">${data.length}</div></div>
+  <table><thead><tr><th>#</th><th>Nombre</th><th>Detalle</th></tr></thead><tbody>${tableRows}</tbody></table>
+  <div class="footer"><span>NS-14 CPC Inhabilitado — Sentinel AI</span><span>app.sentinelai-hn.com · Confidencial · Fuente: ONCAE</span></div>
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 600);
 }
 
 function hideDobleRolPanel() {

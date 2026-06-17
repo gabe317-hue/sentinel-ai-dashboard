@@ -13297,6 +13297,20 @@ async function generarMemoPGR(folio, entidad) {
     const { data: invData } = await db.from('investigaciones')
       .select('*').eq('folio', folio).single();
 
+    // 1B. Buscar contratos IAIP del sujeto (NS-13 / Doble Rol) si tiene RTN
+    const _rtnMatch = (invData?.proveedor||'').match(/\(ID:\s*(\d{13,14})\)/i) || (invData?.proveedor||'').match(/\b(\d{13})\b/);
+    const _sujRTN = _rtnMatch ? _rtnMatch[1] : null;
+    let iaipSujetoRows = [];
+    let iaipSujetoNombre = invData?.proveedor || '';
+    if (_sujRTN) {
+      const { data: iaipD } = await db.from('iaip_providers').select('*')
+        .eq('numero_identificacion', _sujRTN).order('fecha_contratacion', { ascending: false }).limit(100);
+      if (iaipD && iaipD.length) {
+        iaipSujetoNombre = iaipD[0].nombre_completo || iaipSujetoNombre;
+        iaipSujetoRows = iaipD;
+      }
+    }
+
     // 2. Filtrar alertas CRÍTICAS de la entidad desde allAlerts (ya cargado)
     const _normEnt = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9\s]/g,'').trim();
     const entQN = _normEnt(entidad);
@@ -13636,6 +13650,43 @@ ${sorted.length > 0 ? `<!-- ── ANEXO A ── -->
   ${anexoRows}
 </table>
 ${sorted.length > 25 ? `<p style="font-size:9pt;color:#555;font-style:italic;margin:12px 0;padding:10px 14px;background:#f5f5f0;border-left:3px solid #c0392b;border-radius:0 4px 4px 0;">📋 Este anexo incluye los <strong>25 contratos de mayor monto</strong> (Pareto). El listado completo de <strong>${sorted.length} contratos</strong> está disponible como documento separado — use el botón <strong>"📋 Lista"</strong> en la sección <em>Investigaciones Activas</em> del dashboard Sentinel AI.</p>` : ''}` : ''}
+
+${iaipSujetoRows.length > 0 ? `
+<div class="page-break"></div>
+<h2>Anexo B — Contratos del Sujeto Investigado (Fuente: Portal IAIP)</h2>
+<div style="background:#f3e8ff;border:2px solid #9333ea;border-radius:6px;padding:10px 14px;margin:10px 0 14px 0;font-family:Arial,sans-serif;font-size:9.5pt;color:#581c87;">
+  <strong>NS-13 — Doble Rol Empleado/Proveedor</strong> · Los siguientes contratos corresponden al sujeto investigado
+  <strong>${iaipSujetoNombre}</strong> (RTN: <code>${_sujRTN}</code>) según el Portal Único de Transparencia IAIP.
+  Este sujeto aparece simultáneamente como empleado y proveedor de la institución, lo que configura un indicador de posible conflicto de interés.
+  Los montos no están disponibles en fuente IAIP — solicitar a SEFIN/ONCAE para cuantificación.
+</div>
+<table style="font-size:9pt;">
+  <tr>
+    <th style="width:25px;">#</th>
+    <th>Nombre Registrado</th>
+    <th>Institución</th>
+    <th>No. Contrato</th>
+    <th style="text-align:center;">Fecha Inicio</th>
+    <th style="text-align:center;">Fecha Fin Est.</th>
+    <th style="text-align:center;">Año/Mes Doc.</th>
+  </tr>
+  ${iaipSujetoRows.map((r,i) => {
+    const fmtD = d => d ? String(d).substring(0,10) : '—';
+    return `<tr style="background:${i%2===0?'#faf5ff':'#fff'};">
+      <td style="padding:5px 8px;font-size:9px;color:#666;">${i+1}</td>
+      <td style="padding:5px 8px;font-size:9px;font-weight:600;color:#581c87;">${r.nombre_completo||'—'}</td>
+      <td style="padding:5px 8px;font-size:9px;">${r.institution_name||'—'}</td>
+      <td style="padding:5px 8px;font-size:9px;font-family:monospace;">${r.numero_contrato||'—'}</td>
+      <td style="padding:5px 8px;font-size:9px;text-align:center;">${fmtD(r.fecha_contratacion)}</td>
+      <td style="padding:5px 8px;font-size:9px;text-align:center;">${fmtD(r.fecha_fin_estimada)}</td>
+      <td style="padding:5px 8px;font-size:9px;text-align:center;">${r.doc_year||''}/${r.doc_month||''}</td>
+    </tr>`;
+  }).join('')}
+</table>
+<p style="font-size:9pt;color:#555;font-style:italic;margin:10px 0;padding:8px 12px;background:#f5f0ff;border-left:3px solid #9333ea;border-radius:0 4px 4px 0;">
+  Fuente primaria: <strong>portalunico.iaip.gob.hn</strong> — documentos de contratación publicados por la institución.
+  Verificación adicional disponible en: <em>portalunico.iaip.gob.hn/450/13/</em> (Compras SEFIN).
+</p>` : ''}
 
 <div class="footer">
   <div><strong>Sentinel-AI</strong> · SentinelAI Intelligence<br>Sistema de Análisis de Riesgo en Contratación Pública</div>

@@ -19159,6 +19159,13 @@ async function ccConfirmarGuardar() {
       contratos_count: d.vendorContratos?.length ?? null,
       monto_total:     d.vendorContratos?.reduce((s,c)=>s+(c.monto||0),0) ?? null,
     };
+    // Verificar duplicado (mismo proveedor + entidad)
+    const { data: existing } = await db.from('expedientes')
+      .select('id, nombre').eq('entidad', d.entidad).eq('proveedor', d.proveedor).limit(1);
+    if (existing && existing.length > 0) {
+      const sobreescribir = confirm(`Ya existe un expediente para este proveedor/entidad:\n"${existing[0].nombre}"\n\n¿Guardar de todas formas como nuevo expediente?`);
+      if (!sobreescribir) { btn.disabled = false; btn.innerHTML = '💾 Confirmar Guardar'; return; }
+    }
     const { error } = await db.from('expedientes').insert([payload]);
     if (error) throw new Error(error.message);
     document.getElementById('ccGuardarModal').style.display = 'none';

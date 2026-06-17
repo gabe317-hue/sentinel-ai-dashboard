@@ -171,15 +171,42 @@
     --purple:   #a855f7;
   }
 
+  #hub-admin-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #hub-admin-overlay.open { display: flex; }
+
   #hub-admin-wrap {
     width: 100%;
     max-width: 960px;
-    background: rgba(255,255,255,0.03);
+    max-height: 85vh;
+    overflow-y: auto;
+    background: #0d1829;
     border: 1px solid #1c2d4a;
     border-radius: 14px;
     padding: 28px 28px 32px;
-    margin-bottom: 28px;
+    position: relative;
   }
+
+  #hub-admin-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #556080;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  #hub-admin-close:hover { color: #e8eaf0; }
 
   .alert-table { width:100%; border-collapse:collapse; }
   .alert-table th {
@@ -306,7 +333,10 @@
 
 </div>
 
-<div id="hub-admin-wrap" style="display:none;">
+<div id="hub-admin-overlay" onclick="handleOverlayClick(event)">
+<div id="hub-admin-wrap">
+
+  <button id="hub-admin-close" onclick="toggleAdminPanel()">✕</button>
 
   <!-- Header -->
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
@@ -394,6 +424,7 @@
   </div>
 
 </div><!-- /hub-admin-wrap -->
+</div><!-- /hub-admin-overlay -->
 
 <div class="footer">SentinelAI Intelligence LLC · Uso exclusivo interno · No compartir</div>
 
@@ -547,12 +578,15 @@ async function pedEliminar(id, proveedor) {
 }
 
 function toggleAdminPanel() {
-  const wrap  = document.getElementById('hub-admin-wrap');
-  const arrow = document.getElementById('admin-card-arrow');
-  const open  = wrap.style.display === 'none';
-  wrap.style.display = open ? 'block' : 'none';
-  arrow.textContent  = open ? '↑' : '↓';
+  const overlay = document.getElementById('hub-admin-overlay');
+  const open = !overlay.classList.contains('open');
+  overlay.classList.toggle('open', open);
+  document.getElementById('admin-card-arrow').textContent = open ? '✕' : '↓';
   if (open) { admLoadUsuarios(); pedCargar(); }
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('hub-admin-overlay')) toggleAdminPanel();
 }
 </script>
 

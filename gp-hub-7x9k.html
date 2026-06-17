@@ -245,6 +245,13 @@
     <span class="card-arrow">↗</span>
   </a>
 
+  <div class="card admin" onclick="toggleAdminPanel()" style="cursor:pointer;">
+    <span class="card-icon">⚙️</span>
+    <span class="card-name">Panel Admin</span>
+    <span class="card-desc">Gestión usuarios demo · Proveedores excluidos</span>
+    <span class="card-arrow" id="admin-card-arrow">↓</span>
+  </div>
+
   <div class="card github" style="gap:14px;">
     <span class="card-name" style="font-size:14px;">🐙 GitHub</span>
     <a href="https://github.com/gabe317-hue/sentinel-ai-dashboard" target="_blank"
@@ -299,9 +306,7 @@
 
 </div>
 
-<div class="section-label" style="max-width:960px;width:100%;">Panel de Administración</div>
-
-<div id="hub-admin-wrap">
+<div id="hub-admin-wrap" style="display:none;">
 
   <!-- Header -->
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
@@ -541,10 +546,14 @@ async function pedEliminar(id, proveedor) {
   pedCargar();
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  admLoadUsuarios();
-  pedCargar();
-});
+function toggleAdminPanel() {
+  const wrap  = document.getElementById('hub-admin-wrap');
+  const arrow = document.getElementById('admin-card-arrow');
+  const open  = wrap.style.display === 'none';
+  wrap.style.display = open ? 'block' : 'none';
+  arrow.textContent  = open ? '↑' : '↓';
+  if (open) { admLoadUsuarios(); pedCargar(); }
+}
 </script>
 
 </body>

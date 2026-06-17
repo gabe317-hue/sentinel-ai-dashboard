@@ -13230,7 +13230,7 @@ async function seleccionarInvParaMemo() {
   try {
     const { data: rawData } = await db.from('investigaciones')
       .select('folio,entidad,monto,estado')
-      .in('estado', ['Activa','Nuevo','Referida'])
+      .in('estado', ['Activa','Nuevo','Referida','Borrador'])
       .order('id', { ascending: false });
 
     // Excluir casos sin monto ONCAE/SEFIN (ej: casos IAIP-only como 015)

@@ -4368,9 +4368,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div id="vistaEjecutiva" style="display:none;">
 
     <!-- Back button -->
-    <div style="margin-bottom:16px;display:flex;gap:12px;align-items:center;">
-      <button onclick="document.body.classList.remove('modo-demo');hideAllPanels()" style="background:none;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);padding:0;display:inline-flex;align-items:center;gap:6px;transition:color .15s;" onmouseover="this.style.color='var(--electric)'" onmouseout="this.style.color='var(--text-dim)'">← Dashboard</button>
-      <button id="ve-back-pe" onclick="volverAPanelEjecutivo()" style="display:none;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);padding:4px 12px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.2)'" onmouseout="this.style.background='rgba(0,200,255,0.1)'">← Panel Ejecutivo</button>
+    <div style="margin-bottom:16px;display:flex;gap:12px;align-items:center;justify-content:space-between;">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button onclick="document.body.classList.remove('modo-demo');hideAllPanels()" style="background:none;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);padding:0;display:inline-flex;align-items:center;gap:6px;transition:color .15s;" onmouseover="this.style.color='var(--electric)'" onmouseout="this.style.color='var(--text-dim)'">← Dashboard</button>
+        <button id="ve-back-pe" onclick="volverAPanelEjecutivo()" style="display:none;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);padding:4px 12px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.2)'" onmouseout="this.style.background='rgba(0,200,255,0.1)'">← Panel Ejecutivo</button>
+      </div>
+      <button onclick="exportVistaEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
     </div>
 
     <!-- Ticker bar — live data feed (inside Vista Ejecutiva) -->
@@ -5747,7 +5750,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ TSC PANEL ══ -->
   <div class="fuente-panel" id="tscPanel">
-    <button class="fuente-back" onclick="hideTSCPanel()">← Portal</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
+      <button class="fuente-back" style="margin-bottom:0;" onclick="hideTSCPanel()">← Portal</button>
+      <button onclick="exportNSPanelPDF('tscPanel','Informes TSC — Tribunal Superior de Cuentas')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
+    </div>
     <div class="fuente-header">
       <div class="fuente-title">⚖️ <span>Informes de Auditoría — TSC</span></div>
       <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
@@ -10172,6 +10178,60 @@ function exportDobleRolPDF() {
     <th>RTN/ID</th><th>Nombre / Proveedor</th><th>Institución Empleadora</th><th>Institución Contratante</th><th style="text-align:center;">Cttos</th><th style="text-align:center;">Severidad</th>
   </tr></thead><tbody>${tableRows}</tbody></table>
   <div class="footer"><span>NS-13 Doble Rol — Sentinel AI</span><span>app.sentinelai-hn.com · Confidencial</span></div>
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 600);
+}
+
+function exportVistaEjecutivaPDF() {
+  const g = id => (document.getElementById(id)||{}).textContent || '—';
+  const ts = new Date().toLocaleDateString('es-HN', {year:'numeric',month:'long',day:'numeric'});
+  const kpis = [
+    { lbl:'Contratos Críticos', val: g('exec-criticos'), sub: g('exec-criticos-monto'), color:'#ff3d57' },
+    { lbl:'Riesgo Alto', val: g('exec-altos'), sub: g('exec-altos-monto'), color:'#f97316' },
+    { lbl:'Total Monitoreados', val: g('exec-total'), sub: g('exec-total-monto'), color:'#00c8ff' },
+    { lbl:'Riesgo Sobrepresupuesto', val: g('exec-sobrecosto'), sub: g('exec-sobrecosto-monto'), color:'#f97316' },
+    { lbl:'Investigaciones Activas', val: g('exec-inv-activas-count'), sub: 'casos SEN-INV', color:'#a78bfa' },
+    { lbl:'Candidatos Detectados', val: g('exec-candidatos-val'), sub: '≥3 patrones · ≥L 10M', color:'#00c8ff' },
+    { lbl:'Lista Negra (Engel)', val: g('exec-engel'), sub: 'EE.UU. · Engel', color:'#ff3d57' },
+    { lbl:'Lista OFAC-SDN', val: g('exec-ofac'), sub: 'EE.UU. · OFAC-SDN', color:'#ff3d57' },
+  ];
+  const kpiHtml = kpis.map(k => `
+    <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;min-width:160px;flex:1;">
+      <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">${k.lbl}</div>
+      <div style="font-size:26px;font-weight:700;color:${k.color};">${k.val}</div>
+      <div style="font-size:10px;color:#999;margin-top:2px;">${k.sub}</div>
+    </div>`).join('');
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Vista Ejecutiva — Sentinel AI</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
+    h1{font-size:18px;margin-bottom:4px;} .meta{font-size:11px;color:#666;margin-bottom:20px;}
+    .risk-box{background:#fff5f5;border:2px solid #fecaca;border-radius:10px;padding:18px 22px;margin-bottom:24px;}
+    .risk-lbl{font-size:11px;color:#dc2626;text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+    .risk-val{font-size:32px;font-weight:800;color:#dc2626;margin:4px 0;}
+    .risk-sub{display:flex;gap:32px;margin-top:8px;font-size:11px;color:#666;}
+    .kpi-grid{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;}
+    .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
+    .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
+    @media print{.print-btn{display:none!important;} body{padding:14px;}}
+  </style></head><body>
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+  <h1>📈 Vista Ejecutiva — Sentinel AI</h1>
+  <div class="meta">Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE + IAIP 2019–2026</div>
+  <div class="risk-box">
+    <div class="risk-lbl">⚠ Contratos de Alto Riesgo — Sistema Sentinel</div>
+    <div class="risk-val">${g('exec-risk-total')}</div>
+    <div class="risk-sub">
+      <span>🔴 Críticos: <strong>${g('exec-risk-critica')}</strong> · ${g('exec-risk-critica-cnt')}</span>
+      <span>🟠 Altos: <strong>${g('exec-risk-alta')}</strong> · ${g('exec-risk-alta-cnt')}</span>
+      <span>${g('exec-risk-budget')}</span>
+    </div>
+  </div>
+  <div class="kpi-grid">${kpiHtml}</div>
+  <div class="footer"><span>Vista Ejecutiva — Sentinel AI</span><span>app.sentinelai-hn.com · Confidencial</span></div>
   </body></html>`);
   w.document.close();
   w.focus();

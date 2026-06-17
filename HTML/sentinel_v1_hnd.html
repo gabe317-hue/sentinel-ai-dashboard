@@ -18144,6 +18144,10 @@ function ccAnalizar() {
     alert(`No se encontró la entidad "${entidad}" en la base de datos.\nPrueba con el nombre completo (ej. "Empresa Nacional de Energía Eléctrica" en lugar de "ENEE").`); return;
   }
   if (!vendorContratos.length) {
+    // Fallback IAIP: si el proveedor tiene RTN "(ID: XXXXX)" y no aparece en SIGEF → buscar en iaip_providers
+    const rtnMatch = proveedor.match(/\(ID:\s*(\d{13,14})\)/i) || proveedor.match(/\b(\d{13})\b/);
+    const rtn = rtnMatch ? rtnMatch[1] : null;
+    if (!vendorGlobal.length && rtn) { ccAnalizarIAIP(entidad, proveedor, rtn, esquema); return; }
     // Show which entities this vendor DOES appear in
     const entidadesDelVendor = [...new Set(vendorGlobal.map(a=>a.entity_name))].slice(0,5);
     const sugerencia = entidadesDelVendor.length
@@ -18161,6 +18165,52 @@ function ccAnalizar() {
   const vendorVariants = [...new Set(vendorContratos.map(a => a.proveedor_nombre).filter(Boolean))];
   _ccData = { entidad, proveedor, esquema, entityContratos, vendorContratos, vendorGlobal, concentracion, timeline, patrones, score, gaps, vendorFromDesc: _ccVendorFromDesc, vendorVariants };
   ccRenderResultados();
+}
+
+async function ccAnalizarIAIP(entidad, proveedor, rtn, esquema) {
+  showToast('Buscando en fuente IAIP (NS-13)…', 'ok');
+  const { data, error } = await db.from('iaip_providers')
+    .select('*').eq('numero_identificacion', rtn)
+    .order('fecha_contratacion', { ascending: false }).limit(100);
+  if (error || !data || !data.length) {
+    alert(`"${proveedor}" no aparece en la base de datos SEFIN ni en el Portal IAIP.`); return;
+  }
+  // Mapear a formato allAlerts para reutilizar renderizado
+  const iaipContracts = data.map((r, i) => ({
+    id: 'iaip_' + i,
+    entity_name: r.institution_name || entidad,
+    proveedor_nombre: r.nombre_completo || proveedor,
+    description: r.numero_contrato ? `Contrato ${r.numero_contrato}` : `Contrato IAIP ${r.doc_year||''} ${r.doc_month||''}`,
+    monto: 0,
+    fecha_contrato: r.fecha_contratacion ? String(r.fecha_contratacion).substring(0,10) : null,
+    created_at: r.fecha_contratacion,
+    patterns: ['DOBLE_ROL_EMPLEADO_PROVEEDOR'],
+    severity: 'CRITICA',
+    _iaip: true, _doc_year: r.doc_year, _doc_month: r.doc_month, _file_id: r.file_id
+  }));
+  const vendorContratos = iaipContracts;
+  const entityContratos = iaipContracts;
+  const vendorGlobal    = iaipContracts;
+  const concentracion   = { vendorMonto:0, entityMonto:0, vendorCount: vendorContratos.length, entityCount: iaipContracts.length, cntPct:100, mntPct:0, uniqueVendors:1 };
+  const timeline        = ccCalcTimeline(vendorContratos);
+  const patrones        = ccCalcPatrones(vendorContratos);
+  const score           = ccCalcScore(vendorContratos, vendorGlobal, concentracion, timeline, patrones);
+  const gaps            = ccCalcGaps(esquema);
+  const vendorVariants  = [...new Set(iaipContracts.map(a=>a.proveedor_nombre).filter(Boolean))];
+  _ccData = { entidad, proveedor, esquema, entityContratos, vendorContratos, vendorGlobal,
+    concentracion, timeline, patrones, score, gaps, vendorFromDesc: false, vendorVariants, _iaipMode: true, _rtn: rtn };
+  ccRenderResultados();
+  // Banner IAIP al tope
+  setTimeout(() => {
+    const box = document.getElementById('ccResultados');
+    if (box && !box.querySelector('.cc-iaip-banner')) {
+      const b = document.createElement('div');
+      b.className = 'cc-iaip-banner';
+      b.style.cssText = 'background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.35);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:rgba(200,160,255,0.95);font-family:inherit;';
+      b.innerHTML = `🔍 <strong>Fuente: Portal IAIP — NS-13 Doble Rol</strong> · Este proveedor no aparece en SEFIN SIGEF. Los <strong>${vendorContratos.length}</strong> contratos provienen de <em>iaip_providers</em> (Portal Único de Transparencia). RTN: <code style="color:#c084fc;">${rtn}</code>. Montos no disponibles.`;
+      box.prepend(b);
+    }
+  }, 80);
 }
 
 function ccCalcConcentracion(entityContratos, vendorContratos) {

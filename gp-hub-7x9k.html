@@ -159,6 +159,51 @@
     .title { font-size: 20px; }
     .card { padding: 18px 14px; }
   }
+
+  /* ── Admin Panel ─────────────────────────────────────────── */
+  :root {
+    --electric: #4a90d9;
+    --text:     #e8eaf0;
+    --text-dim: #556080;
+    --green:    #10b981;
+    --red:      #ef4444;
+    --amber:    #f59e0b;
+    --purple:   #a855f7;
+  }
+
+  #hub-admin-wrap {
+    width: 100%;
+    max-width: 960px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #1c2d4a;
+    border-radius: 14px;
+    padding: 28px 28px 32px;
+    margin-bottom: 28px;
+  }
+
+  .alert-table { width:100%; border-collapse:collapse; }
+  .alert-table th {
+    font-size:11px; letter-spacing:.06em; color:#556080;
+    text-align:left; padding:7px 10px;
+    border-bottom:1px solid rgba(255,255,255,0.07);
+  }
+  .alert-table td {
+    padding:9px 10px;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+    vertical-align:middle;
+  }
+
+  .adm-input {
+    width:100%;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:6px;
+    padding:8px 10px;
+    color:var(--text);
+    font-size:13px;
+    font-family:inherit;
+    box-sizing:border-box;
+  }
 </style>
 </head>
 <body>
@@ -254,7 +299,253 @@
 
 </div>
 
+<div class="section-label" style="max-width:960px;width:100%;">Panel de Administración</div>
+
+<div id="hub-admin-wrap">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+    <span style="font-size:22px;">⚙️</span>
+    <div>
+      <div style="font-size:16px;font-weight:700;color:var(--electric);letter-spacing:.04em;">Panel de Administración</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-top:2px;">Gestión de usuarios demo — solo visible para administradores</div>
+    </div>
+  </div>
+
+  <!-- Crear nuevo usuario -->
+  <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:20px;margin-bottom:28px;">
+    <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;margin-bottom:14px;">➕ NUEVO USUARIO DEMO</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px 130px auto;gap:10px;align-items:end;">
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">CORREO</div>
+        <input id="adm-email" type="email" placeholder="usuario@pgr.hn" class="adm-input">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">CONTRASEÑA</div>
+        <input id="adm-pw" type="text" placeholder="Pass2026!" class="adm-input">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">NOMBRE</div>
+        <input id="adm-name" type="text" placeholder="Juan Pérez / PGR" class="adm-input">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">EXPIRA</div>
+        <input id="adm-expira" type="date" class="adm-input">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">ROL</div>
+        <select id="adm-role" class="adm-input">
+          <option value="demo">👁 Demo</option>
+          <option value="analista">🔍 Analista</option>
+          <option value="client-admin">🏢 Admin Org</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">ORG (opcional)</div>
+        <input id="adm-org" type="text" placeholder="pgr / tsc" class="adm-input">
+      </div>
+      <button onclick="admCrearUsuario()"
+        style="background:var(--electric);color:#000;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
+        Crear
+      </button>
+    </div>
+    <div id="adm-create-status" style="font-size:12px;margin-top:10px;min-height:16px;"></div>
+  </div>
+
+  <!-- Tabla de usuarios demo -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;">USUARIOS DEMO ACTIVOS</div>
+    <button onclick="admLoadUsuarios()" style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 12px;color:var(--text-dim);font-size:12px;cursor:pointer;">↺ Actualizar</button>
+  </div>
+  <div id="adm-table-wrap">
+    <div style="color:var(--text-dim);font-size:13px;padding:20px 0;">Cargando usuarios…</div>
+  </div>
+
+  <!-- Proveedores Excluidos -->
+  <div style="margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,0.08);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <span style="font-size:16px;">🚫</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;">PROVEEDORES EXCLUIDOS — ERROR DE DATOS</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">Se excluyen de alertas semanales, reportes y auto-investigador</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:end;margin-bottom:16px;">
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">NOMBRE PROVEEDOR</div>
+        <input id="ped-proveedor" type="text" placeholder="NOMBRE EN MAYÚSCULAS" class="adm-input">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.05em;">RAZÓN</div>
+        <input id="ped-razon" type="text" placeholder="Ej: Error de captura ONCAE — monto imposible" class="adm-input">
+      </div>
+      <button onclick="pedAgregar()"
+        style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:var(--red);border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
+        + Excluir
+      </button>
+    </div>
+    <div id="ped-status" style="font-size:12px;margin-bottom:12px;min-height:16px;"></div>
+    <div id="ped-list"><div style="color:var(--text-dim);font-size:13px;">Cargando…</div></div>
+  </div>
+
+</div><!-- /hub-admin-wrap -->
+
 <div class="footer">SentinelAI Intelligence LLC · Uso exclusivo interno · No compartir</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmZwZWlnd3RodG9rcXNhcnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzM5MjksImV4cCI6MjA4OTAwOTkyOX0.L0PseYDJV41A1OWzlO0zrth_EJzJCcp5qz8bA8dFl9k';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function admLoadUsuarios() {
+  const wrap = document.getElementById('adm-table-wrap');
+  wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Cargando…</div>';
+  try {
+    const { data, error } = await db.from('sentinel_demo_access').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Sin usuarios demo registrados.</div>';
+      return;
+    }
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    let rows = data.map(u => {
+      const exp = new Date(u.expira + 'T00:00:00');
+      const expirado = exp < hoy;
+      const statusColor = !u.activo ? 'var(--text-dim)' : expirado ? 'var(--red)' : 'var(--green)';
+      const statusTxt   = !u.activo ? '⏸ Inactivo' : expirado ? '⏰ Expirado' : '✅ Activo';
+      const rolBadge = u.role === 'analista'
+        ? '<span style="color:#a855f7;font-size:11px;">🔍 Analista</span>'
+        : u.role === 'client-admin'
+          ? '<span style="color:#10b981;font-size:11px;">🏢 Admin Org</span>'
+          : '<span style="color:#f59e0b;font-size:11px;">👁 Demo</span>';
+      const orgTxt = u.org ? `<span style="font-size:11px;color:#10b981;">${u.org}</span>` : '<span style="color:var(--text-dim);font-size:11px;">—</span>';
+      return `<tr>
+        <td style="font-family:monospace;font-size:12px;">${u.email}</td>
+        <td style="font-size:12px;">${u.name}</td>
+        <td style="font-family:monospace;font-size:12px;">${u.password}</td>
+        <td style="font-size:12px;">${u.expira}</td>
+        <td>${rolBadge}</td>
+        <td>${orgTxt}</td>
+        <td style="font-size:12px;color:${statusColor};">${statusTxt}</td>
+        <td style="white-space:nowrap;">
+          <button onclick="admExtenderExpira(${u.id},'${u.expira}')"
+            style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#818cf8;border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;margin-right:4px;">+7d</button>
+          <button onclick="admToggleActivo(${u.id},${u.activo})"
+            style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;margin-right:4px;">${u.activo ? 'Desactivar' : 'Activar'}</button>
+          <button onclick="admEliminar(${u.id},'${u.email}')"
+            style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:var(--red);border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;">Eliminar</button>
+        </td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = `<table class="alert-table"><thead><tr>
+      <th>Correo</th><th>Nombre</th><th>Contraseña</th><th>Expira</th><th>Rol</th><th>Org</th><th>Estado</th><th>Acciones</th>
+    </tr></thead><tbody>${rows}</tbody></table>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:10px;opacity:0.6;">ⓘ Contraseña visible solo en canal seguro.</div>`;
+  } catch(e) {
+    wrap.innerHTML = `<div style="color:var(--red);font-size:13px;">Error: ${e.message}</div>`;
+  }
+}
+
+async function admCrearUsuario() {
+  const email  = document.getElementById('adm-email').value.trim().toLowerCase();
+  const pw     = document.getElementById('adm-pw').value.trim();
+  const name   = document.getElementById('adm-name').value.trim();
+  const expira = document.getElementById('adm-expira').value;
+  const role   = document.getElementById('adm-role').value;
+  const org    = (document.getElementById('adm-org').value || '').trim().toLowerCase() || null;
+  const statusEl = document.getElementById('adm-create-status');
+  if (!email || !pw || !name || !expira) {
+    statusEl.style.color = 'var(--amber)'; statusEl.textContent = '⚠ Todos los campos son requeridos.'; return;
+  }
+  if (role === 'client-admin' && !org) {
+    statusEl.style.color = 'var(--amber)'; statusEl.textContent = '⚠ El rol Admin Org requiere organización.'; return;
+  }
+  statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
+  try {
+    const { error } = await db.from('sentinel_demo_access').insert([{ email, password: pw, name, expira, activo: true, role, org }]);
+    if (error) throw error;
+    statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ Usuario ${email} creado.`;
+    ['adm-email','adm-pw','adm-name','adm-expira','adm-org'].forEach(id => document.getElementById(id).value = '');
+    admLoadUsuarios();
+  } catch(e) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = e.code === '23505' ? '❌ Ese correo ya existe.' : `❌ Error: ${e.message}`;
+  }
+}
+
+async function admExtenderExpira(id, expiraActual) {
+  const exp = new Date(expiraActual + 'T00:00:00');
+  exp.setDate(exp.getDate() + 7);
+  const { error } = await db.from('sentinel_demo_access').update({ expira: exp.toISOString().slice(0,10) }).eq('id', id);
+  if (error) { alert('Error: ' + error.message); return; }
+  admLoadUsuarios();
+}
+
+async function admToggleActivo(id, estadoActual) {
+  const { error } = await db.from('sentinel_demo_access').update({ activo: !estadoActual }).eq('id', id);
+  if (error) { alert('Error: ' + error.message); return; }
+  admLoadUsuarios();
+}
+
+async function admEliminar(id, email) {
+  if (!confirm(`¿Eliminar acceso demo de ${email}?`)) return;
+  const { error } = await db.from('sentinel_demo_access').delete().eq('id', id);
+  if (error) { alert('Error: ' + error.message); return; }
+  admLoadUsuarios();
+}
+
+async function pedCargar() {
+  const listEl = document.getElementById('ped-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="color:var(--text-dim);font-size:13px;">Cargando…</div>';
+  try {
+    const { data, error } = await db.from('proveedores_error_datos').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) { listEl.innerHTML = '<div style="color:var(--text-dim);font-size:13px;">Sin proveedores excluidos.</div>'; return; }
+    listEl.innerHTML = `<table class="alert-table"><thead><tr><th>Proveedor</th><th>Razón</th><th>Agregado</th><th></th></tr></thead>
+    <tbody>${data.map(r => `<tr>
+      <td style="font-family:monospace;font-size:12px;color:var(--red);">${r.proveedor}</td>
+      <td style="font-size:12px;color:var(--text-dim);">${r.razon||'—'}</td>
+      <td style="font-size:11px;color:var(--text-dim);">${r.created_at ? new Date(r.created_at).toLocaleDateString('es-HN') : '—'}</td>
+      <td><button onclick="pedEliminar(${r.id},'${r.proveedor.replace(/'/g,"\\'")}')"
+        style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:var(--red);border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;">Quitar</button></td>
+    </tr>`).join('')}</tbody></table>`;
+  } catch(e) {
+    listEl.innerHTML = `<div style="color:var(--red);font-size:13px;">Error: ${e.message}</div>`;
+  }
+}
+
+async function pedAgregar() {
+  const proveedor = document.getElementById('ped-proveedor').value.trim().toUpperCase();
+  const razon     = document.getElementById('ped-razon').value.trim();
+  const statusEl  = document.getElementById('ped-status');
+  if (!proveedor) { statusEl.style.color = 'var(--amber)'; statusEl.textContent = '⚠ Ingresa el nombre del proveedor.'; return; }
+  statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
+  try {
+    const { error } = await db.from('proveedores_error_datos').insert([{ proveedor, razon: razon || 'Error de datos' }]);
+    if (error) throw error;
+    statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ ${proveedor} excluido.`;
+    document.getElementById('ped-proveedor').value = '';
+    document.getElementById('ped-razon').value = '';
+    pedCargar();
+  } catch(e) {
+    statusEl.style.color = 'var(--red)'; statusEl.textContent = `❌ Error: ${e.message}`;
+  }
+}
+
+async function pedEliminar(id, proveedor) {
+  if (!confirm(`¿Quitar "${proveedor}" de la lista?`)) return;
+  const { error } = await db.from('proveedores_error_datos').delete().eq('id', id);
+  if (error) { alert('Error: ' + error.message); return; }
+  pedCargar();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  admLoadUsuarios();
+  pedCargar();
+});
+</script>
 
 </body>
 </html>

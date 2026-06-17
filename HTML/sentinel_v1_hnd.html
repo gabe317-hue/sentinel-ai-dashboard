@@ -10149,7 +10149,7 @@ function exportDobleRolPDF() {
     </tr>`;
   }).join('');
   const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  const html_dr = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>NS-13 Doble Rol — Sentinel AI</title>
   <style>
     body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
@@ -10161,11 +10161,9 @@ function exportDobleRolPDF() {
     table{width:100%;border-collapse:collapse;font-size:11px;}
     th{background:#0a1628 !important;color:#fff !important;padding:7px 8px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
     td{border-bottom:1px solid #e5e7eb;color:#111;}
-    .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
-    @media print{.print-btn{display:none!important;} body{padding:14px;}}
+    @media print{body{padding:14px;}}
   </style></head><body>
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
   <h1>🎭 NS-13 — Doble Rol</h1>
   <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: IAIP + SEFIN 2019–2026</div>
   <div class="kpis">
@@ -10178,10 +10176,10 @@ function exportDobleRolPDF() {
     <th>RTN/ID</th><th>Nombre / Proveedor</th><th>Institución Empleadora</th><th>Institución Contratante</th><th style="text-align:center;">Cttos</th><th style="text-align:center;">Severidad</th>
   </tr></thead><tbody>${tableRows}</tbody></table>
   <div class="footer"><span>NS-13 Doble Rol — Sentinel AI</span><span>app.sentinelai-hn.com · Confidencial</span></div>
-  </body></html>`);
+  </body></html>`;
+  w.document.write(addPrintBtn(html_dr));
   w.document.close();
   w.focus();
-  setTimeout(() => w.print(), 600);
 }
 
 function exportVistaEjecutivaPDF() {
@@ -10204,7 +10202,7 @@ function exportVistaEjecutivaPDF() {
       <div style="font-size:10px;color:#999;margin-top:2px;">${k.sub}</div>
     </div>`).join('');
   const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  const html_ve = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Vista Ejecutiva — Sentinel AI</title>
   <style>
     body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
@@ -10214,11 +10212,9 @@ function exportVistaEjecutivaPDF() {
     .risk-val{font-size:32px;font-weight:800;color:#dc2626;margin:4px 0;}
     .risk-sub{display:flex;gap:32px;margin-top:8px;font-size:11px;color:#666;}
     .kpi-grid{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;}
-    .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
-    @media print{.print-btn{display:none!important;} body{padding:14px;}}
+    @media print{body{padding:14px;}}
   </style></head><body>
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
   <h1>📈 Vista Ejecutiva — Sentinel AI</h1>
   <div class="meta">Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE + IAIP 2019–2026</div>
   <div class="risk-box">
@@ -10232,10 +10228,10 @@ function exportVistaEjecutivaPDF() {
   </div>
   <div class="kpi-grid">${kpiHtml}</div>
   <div class="footer"><span>Vista Ejecutiva — Sentinel AI</span><span>app.sentinelai-hn.com · Confidencial</span></div>
-  </body></html>`);
+  </body></html>`;
+  w.document.write(addPrintBtn(html_ve));
   w.document.close();
   w.focus();
-  setTimeout(() => w.print(), 600);
 }
 
 function exportCpcInhabPDF() {
@@ -10254,7 +10250,7 @@ function exportCpcInhabPDF() {
     </tr>`;
   }).join('');
   const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  const html_cpc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>NS-14 CPC Inhabilitados — Sentinel AI</title>
   <style>
     body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
@@ -10265,20 +10261,18 @@ function exportCpcInhabPDF() {
     table{width:100%;border-collapse:collapse;font-size:11px;}
     th{background:#0a1628 !important;color:#fff !important;padding:7px 8px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
     td{border-bottom:1px solid #e5e7eb;color:#111;}
-    .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
-    @media print{.print-btn{display:none!important;} body{padding:14px;}}
+    @media print{body{padding:14px;}}
   </style></head><body>
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
   <h1>🚫 NS-14 — CPC Inhabilitados</h1>
   <div class="meta">Sentinel AI — Fuente: ONCAE · Listado CPC Inhabilitados Dic-2025 · Generado: ${ts}</div>
   <div class="kpi"><div class="kpi-lbl">CPC Inhabilitados</div><div class="kpi-val">${data.length}</div></div>
   <table><thead><tr><th>#</th><th>Nombre</th><th>Detalle</th></tr></thead><tbody>${tableRows}</tbody></table>
   <div class="footer"><span>NS-14 CPC Inhabilitado — Sentinel AI</span><span>app.sentinelai-hn.com · Confidencial · Fuente: ONCAE</span></div>
-  </body></html>`);
+  </body></html>`;
+  w.document.write(addPrintBtn(html_cpc));
   w.document.close();
   w.focus();
-  setTimeout(() => w.print(), 600);
 }
 
 function hideDobleRolPanel() {
@@ -12079,7 +12073,7 @@ function exportNSPanelPDF(panelId, title) {
   }
 
   const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>${esc(title)} — Sentinel AI</title>
   <style>
     body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
@@ -12089,21 +12083,19 @@ function exportNSPanelPDF(panelId, title) {
     th{background:#0a1628 !important;color:#fff !important;padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
     td{padding:6px 10px;border-bottom:1px solid #e5e7eb;color:#111;}
     tr:nth-child(even) td{background:#f9fafb;}
-    .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
-    @media print{.print-btn{display:none!important;} body{padding:14px;}}
+    @media print{body{padding:14px;}}
   </style></head><body>
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
   <h1>📊 ${esc(title)}</h1>
   <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE 2019–2026</div>
   ${statsHtml}
   ${tablesHtml || '<p style="color:#888;">Sin datos de tabla disponibles en este momento.</p>'}
   ${extraHtml}
   <div class="footer"><span>${esc(title)}</span><span>Sentinel AI · app.sentinelai-hn.com · Confidencial</span></div>
-  </body></html>`);
+  </body></html>`;
+  w.document.write(addPrintBtn(html));
   w.document.close();
   w.focus();
-  setTimeout(() => w.print(), 600);
 }
 
 function exportFraccionamientoPDF() {
@@ -12127,7 +12119,7 @@ function exportFraccionamientoPDF() {
     </tr>`;
   }).join('');
   const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  const html_frac = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Detección de Fraccionamiento — Sentinel AI</title>
   <style>
     body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
@@ -12140,11 +12132,9 @@ function exportFraccionamientoPDF() {
     table{width:100%;border-collapse:collapse;font-size:11px;}
     th{background:#0a1628 !important;color:#fff !important;padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
     td{border-bottom:1px solid #e5e7eb;color:#111;}
-    .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
-    @media print{.print-btn{display:none!important;} body{padding:14px;}}
+    @media print{body{padding:14px;}}
   </style></head><body>
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
   <h1>✂️ Detección de Fraccionamiento</h1>
   <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE 2019–2026</div>
   <div class="kpis">
@@ -12157,10 +12147,10 @@ function exportFraccionamientoPDF() {
     <th>Proveedor</th><th>Entidad</th><th>Año</th><th style="text-align:center;">Contratos</th><th style="text-align:right;">Monto</th><th style="text-align:center;">Severidad</th>
   </tr></thead><tbody>${rows}</tbody></table>
   <div class="footer"><span>Detección de Fraccionamiento — NS Sentinel AI</span><span>app.sentinelai-hn.com · Confidencial</span></div>
-  </body></html>`);
+  </body></html>`;
+  w.document.write(addPrintBtn(html_frac));
   w.document.close();
   w.focus();
-  setTimeout(() => w.print(), 600);
 }
 
 function exportSectorSummaryPDF() {
@@ -28951,9 +28941,8 @@ function idGenerarReportePDF() {
 </html>`;
 
   const w = window.open('', '_blank', 'width=900,height=700');
-  w.document.write(html);
+  w.document.write(addPrintBtn(html));
   w.document.close();
-  setTimeout(() => w.print(), 600);
 }
 
 async function idLoadKPI() {

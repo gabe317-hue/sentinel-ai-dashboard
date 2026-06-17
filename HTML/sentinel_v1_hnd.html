@@ -13245,7 +13245,8 @@ async function seleccionarInvParaMemo() {
     // (sin .in() exacto — los nombres difieren entre tablas, se hace match fuzzy en JS)
     const { data: critData } = await db.from('alerts')
       .select('entity_name')
-      .in('severity', ['Crítica', 'CRÍTICA']);
+      .in('severity', ['Crítica', 'CRÍTICA'])
+      .limit(2000);
 
     // Normalizar nombres para match fuzzy
     const _normE = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9\s]/g,'').trim();

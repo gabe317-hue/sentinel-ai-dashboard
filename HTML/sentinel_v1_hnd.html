@@ -13329,6 +13329,13 @@ async function generarMemoPGR(folio, entidad) {
     const criticas = alerts.filter(a => gNormSev(a.severidad||a.severity)==='critica');
     const sorted = criticas.sort((a,b) => (parseFloat(b.monto)||0) - (parseFloat(a.monto)||0));
 
+    // Bloquear memo si no hay alertas CRÍTICAS
+    if (sorted.length === 0) {
+      if (btn) { btn.textContent = '📄 Memo PGR'; btn.disabled = false; }
+      alert(`Sin alertas CRÍTICAS para "${entidad}".\n\nEsta investigación solo tiene alertas de severidad MEDIA/ALTA. El Memorándum al PGR requiere al menos una alerta CRÍTICA.\n\nUse el expediente PDF generado por Sentinel para este caso.`);
+      return;
+    }
+
     // 3. Calcular métricas
     const totalMonto = sorted.reduce((s,a) => s + (parseFloat(a.monto)||0), 0);
     const fmtL = v => v >= 1e9 ? 'L ' + (v/1e9).toFixed(2) + 'B' : v >= 1e6 ? 'L ' + (v/1e6).toFixed(1) + 'M' : 'L ' + v.toLocaleString('es-HN');

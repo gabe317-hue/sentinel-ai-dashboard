@@ -25400,6 +25400,37 @@ const INVESTIGATIONS_EXEC = [
       const p = (a.proveedor_nombre||'').toUpperCase();
       return e.includes('CONDEPOR') || e.includes('DEPORTES') || p.includes('BANRURAL');
     }
+  },
+  {
+    id: 'inv-014', folio: 'SEN-INV-2026-014', estado: 'Activa',
+    titulo: 'SEFIN — Consultor con Doble Rol: Empleado y Proveedor Simultáneo',
+    entidad: 'Secretaría de Estado en los Despachos de Finanzas (SEFIN)',
+    actores: ['CLAUBEL MALDONADO MOLINA (ID: 0801196701844)'],
+    patrones: ['DOBLE_ROL_EMPLEADO_PROVEEDOR', 'CONTRATACION_MISMO_ORGANISMO', 'CONFLICTO_INTERES'],
+    hallazgo: 'Claubel Maldonado Molina aparece simultáneamente como empleado activo de SEFIN (planilla RRHH) y como proveedor contratado por la misma institución. Se identificaron 35 contratos IAIP entre 2021 y 2026, incluyendo contratos activos CO-003-2026 y CO-004-2026 (feb 2026). Identidad verificada: 0801196701844. Fuente primaria: Compras_GA_Abril2026.xlsx publicado en Portal Único de Transparencia IAIP (portalunico.iaip.gob.hn/450/8/). Patrón NS-13 Doble Rol — severidad CRÍTICA por tratarse del mismo organismo contratante y empleador.',
+    recomendacion: 'Verificar si existe dispensa o autorización formal de SEFIN para contratación de empleados activos. Solicitar expediente de cada contrato CO-SEFIN-2021 a CO-004-2026. Referir a TSC para auditoría de conflicto de interés. Cruzar con declaración jurada de probidad presentada por Maldonado Molina.',
+    filtro: a => {
+      const p = (a.proveedor_nombre||'').toUpperCase();
+      return p.includes('CLAUBEL') || p.includes('MALDONADO MOLINA');
+    }
+  },
+  {
+    id: 'inv-015', folio: 'SEN-INV-2026-015', estado: 'Activa',
+    titulo: 'Alcaldía La Unión — Captura Institucional: 6 Proveedores son Empleados Municipales',
+    entidad: 'Alcaldía Municipal de La Unión, Copán',
+    actores: ['INVERSIONES RUIZ TABORA (0401198102246)', 'INVERSIONES MORENO (0412199100062)', 'VARIEDADES TETO (0406197600177)', 'IMSTALER (0408198200055)', 'INVERSIONES FAMDOSA (0406197700306)', 'AGROPECUARIA Y FERRETERIA CHINCHILLA (0401200101106)'],
+    patrones: ['DOBLE_ROL_EMPLEADO_PROVEEDOR', 'CAPTURA_INSTITUCIONAL', 'CONTRATACION_MISMO_ORGANISMO', 'RED_PROVEEDORES_RELACIONADOS'],
+    hallazgo: 'Seis proveedores distintos de la Alcaldía Municipal de La Unión comparten el mismo RTN que empleados registrados en la planilla municipal. Los 6 casos son de severidad CRÍTICA (mismo organismo). En conjunto suman 52 contratos IAIP activos entre 2021 y 2025. El patrón no es un caso aislado sino captura sistémica: la misma alcaldía adjudicó contratos a empleados activos bajo distintos nombres comerciales. Contratos más recientes: VARIEDADES TETO (dic 2025, 10 contratos 2025), IMSTALER (oct 2025, 7 contratos 2025), INVERSIONES MORENO (oct 2025). Fuente: Portal Único de Transparencia IAIP — Alcaldía Municipal de La Unión.',
+    recomendacion: 'Solicitar a la Alcaldía de La Unión el expediente de contratación de cada uno de los 6 proveedores. Verificar en planilla municipal si los titulares del RTN siguen activos como empleados. Referir a TSC y MP para investigación de red de conflictos de interés a nivel municipal. Caso prioritario para demostración de capacidad analítica Sentinel a nivel municipal.',
+    filtro: a => {
+      const e = (a.entity_name||'').toUpperCase();
+      const p = (a.proveedor_nombre||'').toUpperCase();
+      return (e.includes('LA UNION') || e.includes('LA UNIÓN')) && (
+        p.includes('RUIZ TABORA') || p.includes('INVERSIONES MORENO') ||
+        p.includes('VARIEDADES TETO') || p.includes('IMSTALER') ||
+        p.includes('FAMDOSA') || p.includes('CHINCHILLA')
+      );
+    }
   }
 ];
 

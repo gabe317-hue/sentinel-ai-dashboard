@@ -13234,10 +13234,35 @@ async function seleccionarInvParaMemo() {
       .order('id', { ascending: false });
 
     // Excluir casos sin monto ONCAE/SEFIN (ej: casos IAIP-only como 015)
-    const data = (rawData || []).filter(r => r.monto && Number(r.monto) > 0);
+    const withMonto = (rawData || []).filter(r => r.monto && Number(r.monto) > 0);
 
-    if (!data || data.length === 0) {
+    if (!withMonto.length) {
       alert('No hay investigaciones activas con datos ONCAE/SEFIN para generar memorándum.');
+      return;
+    }
+
+    // Segunda query: contar alertas CRÍTICAS reales por entidad
+    const entidades = [...new Set(withMonto.map(r => r.entidad).filter(Boolean))];
+    const { data: critData } = await db.from('alerts')
+      .select('entity_name, severity')
+      .in('entity_name', entidades);
+
+    // Construir mapa entidad → count CRÍTICAS
+    const _normE = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9\s]/g,'').trim();
+    const critMap = {};
+    (critData || []).forEach(a => {
+      if ((a.severity||'').toUpperCase() === 'CRITICA' || (a.severity||'').toUpperCase() === 'CRÍTICA') {
+        const k = _normE(a.entity_name);
+        critMap[k] = (critMap[k] || 0) + 1;
+      }
+    });
+
+    // Solo mostrar investigaciones con al menos 1 alerta CRÍTICA confirmada en DB
+    const data = withMonto.filter(r => (critMap[_normE(r.entidad)] || 0) > 0)
+      .map(r => ({ ...r, _nCriticas: critMap[_normE(r.entidad)] || 0 }));
+
+    if (!data.length) {
+      alert('Ninguna investigación activa tiene alertas CRÍTICAS confirmadas en la base de datos.');
       return;
     }
 
@@ -13277,6 +13302,7 @@ async function seleccionarInvParaMemo() {
                 <div style="font-size:12px;font-weight:600;color:#fff;">${r.entidad||'Sin entidad'}</div>
               </div>
               ${r.monto ? `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);white-space:nowrap;">${fmtL(r.monto)}</div>` : ''}
+              <div style="background:rgba(255,61,87,0.15);color:var(--red);font-size:10px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;white-space:nowrap;" title="Alertas CRÍTICAS confirmadas en DB">${r._nCriticas} CRÍTICA${r._nCriticas!==1?'S':''}</div>
               <div style="background:rgba(255,255,255,0.06);color:${estadoCol[r.estado]||'var(--text-dim)'};font-size:10px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;white-space:nowrap;">${r.estado}</div>
               <div style="color:var(--red);font-size:14px;">›</div>
             </button>`).join('')}

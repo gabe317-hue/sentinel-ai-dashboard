@@ -13249,15 +13249,16 @@ async function seleccionarInvParaMemo() {
 
     // Normalizar nombres para match fuzzy
     const _normE = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9\s]/g,'').trim();
+    // Limpiar nombre de investigación: cortar sufijos descriptivos (— / + / |) antes de normalizar
+    const _cleanEnt = s => (s||'').split(/\s*[—+|]\s*/)[0].trim();
     const critNorm = (critData || []).map(a => _normE(a.entity_name));
 
     // Para cada investigación, contar cuántas CRÍTICAS matchean por nombre fuzzy
     const _matchCnt = (entidad) => {
-      const en = _normE(entidad);
-      const words = en.split(/\s+/).filter(w => w.length > 3).slice(0, 3);
+      const en = _normE(_cleanEnt(entidad));
+      const words = en.split(/\s+/).filter(w => w.length > 4).slice(0, 2);
       return critNorm.filter(ce =>
         ce === en ||
-        ce.includes(en) || en.includes(ce) ||
         (words.length >= 2 && words.every(w => ce.includes(w)))
       ).length;
     };

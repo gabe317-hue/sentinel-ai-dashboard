@@ -5682,12 +5682,13 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ FRACCIONAMIENTO PANEL ══ -->
   <div class="fuente-panel" id="fraccionamientoPanel">
-    <button class="fuente-back" onclick="hideFraccionamientoPanel()">← Contratos</button>
-    <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div>
-        <div class="fuente-title">✂️ <span>Detección de Fraccionamiento</span></div>
-        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Proveedores con múltiples contratos directos/compras menores a la misma entidad · posible evasión de licitación</div>
-      </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <button class="fuente-back" style="margin-bottom:0;" onclick="hideFraccionamientoPanel()">← Contratos</button>
+      <button onclick="exportFraccionamientoPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
+    </div>
+    <div class="fuente-header">
+      <div class="fuente-title">✂️ <span>Detección de Fraccionamiento</span></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Proveedores con múltiples contratos directos/compras menores a la misma entidad · posible evasión de licitación</div>
     </div>
     <!-- Stats row -->
     <div class="fuente-stats-row" style="margin-bottom:16px;">
@@ -11767,9 +11768,17 @@ function exportNSPanelPDF(panelId, title) {
   const tables = panel.querySelectorAll('table');
   let tablesHtml = '';
   tables.forEach(t => {
-    // Skip hidden tables
     if (t.closest('[style*="display:none"]') || t.closest('[style*="display: none"]')) return;
-    tablesHtml += '<div style="margin-bottom:24px;overflow-x:auto;">' + t.outerHTML + '</div>';
+    // Clone and strip CSS vars from th/td inline styles so PDF renders correctly
+    const clone = t.cloneNode(true);
+    clone.querySelectorAll('th').forEach(th => {
+      th.style.background = '#0a1628';
+      th.style.color = '#ffffff';
+    });
+    clone.querySelectorAll('td').forEach(td => {
+      if (td.style.color && td.style.color.includes('var(')) td.style.color = '#111111';
+    });
+    tablesHtml += '<div style="margin-bottom:24px;overflow-x:auto;">' + clone.outerHTML + '</div>';
   });
 
   // Extract stat cards (divs with large numbers)
@@ -11787,6 +11796,42 @@ function exportNSPanelPDF(panelId, title) {
   });
   statsHtml += '</div>';
 
+  // For Operador Invisible: capture the div-based trend chart
+  let extraHtml = '';
+  if (panelId === 'operadorInvisiblePanel') {
+    const trendWrap = document.getElementById('oi-trend-wrap');
+    const trendLabels = document.getElementById('oi-trend-labels');
+    if (trendWrap && trendLabels) {
+      const bars = document.getElementById('oi-trend-bars');
+      let barsHtml = '';
+      if (bars) {
+        // Clone bars, replace CSS vars with resolved values
+        const bClone = bars.cloneNode(true);
+        bClone.querySelectorAll('div').forEach(d => {
+          if (d.style.background && d.style.background.includes('var(')) d.style.background = '#ff3d57';
+        });
+        barsHtml = bClone.outerHTML;
+      }
+      let lblsHtml = '';
+      if (trendLabels) {
+        const lClone = trendLabels.cloneNode(true);
+        lClone.querySelectorAll('div').forEach(d => {
+          if (d.style.color && d.style.color.includes('var(--text-dim)')) d.style.color = '#666';
+          if (d.style.color && d.style.color.includes('var(--text)')) d.style.color = '#111';
+        });
+        lblsHtml = lClone.outerHTML;
+      }
+      extraHtml = `<div style="margin-top:24px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#555;margin-bottom:10px;">TENDENCIA ANUAL — CONTRATOS SIN MONTO REPORTADO</div>
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;">
+          <div style="display:flex;align-items:flex-end;gap:6px;height:80px;">${barsHtml ? barsHtml.replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '') : ''}</div>
+          <div style="display:flex;gap:6px;margin-top:6px;">${lblsHtml ? lblsHtml.replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '') : ''}</div>
+        </div>
+        <div style="font-size:10px;color:#aaa;margin-top:6px;">Fuente: SEFIN + ONCAE · Contratos con monto NULL o L0 por año fiscal</div>
+      </div>`;
+    }
+  }
+
   const w = window.open('', '_blank');
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>${esc(title)} — Sentinel AI</title>
@@ -11795,8 +11840,8 @@ function exportNSPanelPDF(panelId, title) {
     h1{font-size:18px;margin-bottom:4px;}
     .meta{font-size:11px;color:#666;margin-bottom:20px;}
     table{width:100%;border-collapse:collapse;font-size:11px;}
-    th{background:#0a1628;color:#fff;padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
-    td{padding:6px 10px;border-bottom:1px solid #e5e7eb;}
+    th{background:#0a1628 !important;color:#fff !important;padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
+    td{padding:6px 10px;border-bottom:1px solid #e5e7eb;color:#111;}
     tr:nth-child(even) td{background:#f9fafb;}
     .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
@@ -11807,7 +11852,65 @@ function exportNSPanelPDF(panelId, title) {
   <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE 2019–2026</div>
   ${statsHtml}
   ${tablesHtml || '<p style="color:#888;">Sin datos de tabla disponibles en este momento.</p>'}
+  ${extraHtml}
   <div class="footer"><span>${esc(title)}</span><span>Sentinel AI · app.sentinelai-hn.com · Confidencial</span></div>
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 600);
+}
+
+function exportFraccionamientoPDF() {
+  if (!gFracData || !gFracData.length) { alert('Sin datos de fraccionamiento. Abre el panel primero.'); return; }
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const ts = new Date().toLocaleDateString('es-HN', {year:'numeric',month:'long',day:'numeric'});
+  const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
+  const sevColor = { 'CRÍTICA':'#dc2626', 'ALTA':'#ea580c', 'MEDIA':'#ca8a04' };
+  const nCritica = gFracData.filter(r=>r.severidad==='CRÍTICA').length;
+  const nAlta    = gFracData.filter(r=>r.severidad==='ALTA').length;
+  const montoTotal = gFracData.reduce((s,r)=>s+Number(r.monto_total_lps||0),0);
+  const rows = gFracData.map((r,i) => {
+    const c = sevColor[r.severidad]||'#555';
+    return `<tr style="${i%2===0?'':'background:#f9fafb'}">
+      <td style="padding:7px 10px;font-weight:600;">${esc(r.proveedor_nombre||'—')}</td>
+      <td style="padding:7px 10px;">${esc(r.entidad||'—')}</td>
+      <td style="padding:7px 10px;text-align:center;">${esc(String(r.anio||'—'))}</td>
+      <td style="padding:7px 10px;text-align:center;">${r.num_contratos||0}</td>
+      <td style="padding:7px 10px;text-align:right;font-family:monospace;">${fmtL(r.monto_total_lps)}</td>
+      <td style="padding:7px 10px;text-align:center;"><span style="background:${c}20;color:${c};border:1px solid ${c}44;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">${esc(r.severidad||'—')}</span></td>
+    </tr>`;
+  }).join('');
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Detección de Fraccionamiento — Sentinel AI</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
+    h1{font-size:18px;margin-bottom:4px;}
+    .meta{font-size:11px;color:#666;margin-bottom:20px;}
+    .kpis{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+    .kpi{border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;min-width:110px;}
+    .kpi-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em;}
+    .kpi-val{font-size:22px;font-weight:700;color:#dc2626;}
+    table{width:100%;border-collapse:collapse;font-size:11px;}
+    th{background:#0a1628 !important;color:#fff !important;padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
+    td{border-bottom:1px solid #e5e7eb;color:#111;}
+    .print-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#0bc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;}
+    .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
+    @media print{.print-btn{display:none!important;} body{padding:14px;}}
+  </style></head><body>
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  <h1>✂️ Detección de Fraccionamiento</h1>
+  <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE 2019–2026</div>
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-lbl">Casos Críticos</div><div class="kpi-val" style="color:#dc2626;">${nCritica}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Casos Altos</div><div class="kpi-val" style="color:#ea580c;">${nAlta}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Total Detectados</div><div class="kpi-val" style="color:#0bc;">${gFracData.length}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Monto Total</div><div class="kpi-val" style="color:#dc2626;font-size:16px;">${fmtL(montoTotal)}</div></div>
+  </div>
+  <table><thead><tr>
+    <th>Proveedor</th><th>Entidad</th><th>Año</th><th style="text-align:center;">Contratos</th><th style="text-align:right;">Monto</th><th style="text-align:center;">Severidad</th>
+  </tr></thead><tbody>${rows}</tbody></table>
+  <div class="footer"><span>Detección de Fraccionamiento — NS Sentinel AI</span><span>app.sentinelai-hn.com · Confidencial</span></div>
   </body></html>`);
   w.document.close();
   w.focus();

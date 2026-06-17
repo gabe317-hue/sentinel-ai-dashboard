@@ -13228,13 +13228,16 @@ async function seleccionarInvParaMemo() {
     renderTop5().catch(() => {}); // silencioso — no bloquea el flujo del memo
   }
   try {
-    const { data } = await db.from('investigaciones')
+    const { data: rawData } = await db.from('investigaciones')
       .select('folio,entidad,monto,estado')
       .in('estado', ['Activa','Nuevo','Referida'])
       .order('id', { ascending: false });
 
+    // Excluir casos sin monto ONCAE/SEFIN (ej: casos IAIP-only como 015)
+    const data = (rawData || []).filter(r => r.monto && Number(r.monto) > 0);
+
     if (!data || data.length === 0) {
-      alert('No hay investigaciones activas para generar memorándum.');
+      alert('No hay investigaciones activas con datos ONCAE/SEFIN para generar memorándum.');
       return;
     }
 

@@ -231,6 +231,137 @@
     font-family:inherit;
     box-sizing:border-box;
   }
+
+  /* ── Investigación cards ───────────────────────────────────────── */
+  .card.alertas    { border-top: 2px solid #00e5ff; }
+  .card.alertas:hover { border-color: #00e5ff; }
+  .card.expediente { border-top: 2px solid #f59e0b; }
+  .card.expediente:hover { border-color: #f59e0b; }
+
+  /* ── Investigación overlay ──────────────────────────────────────── */
+  #hub-inv-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 1002;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+    overflow-y: auto;
+  }
+  #hub-inv-overlay.open { display: flex; }
+  #hub-inv-wrap {
+    width: 100%;
+    max-width: 980px;
+    background: #0d1829;
+    border: 1px solid #1c2d4a;
+    border-radius: 14px;
+    padding: 28px 28px 36px;
+    position: relative;
+    margin: auto;
+  }
+  #hub-inv-close {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; color: #556080;
+    font-size: 20px; cursor: pointer; line-height: 1;
+  }
+  #hub-inv-close:hover { color: #e8eaf0; }
+
+  .inv-tab-bar { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid #1c2d4a; }
+  .inv-tab {
+    background: none; border: none; border-bottom: 2px solid transparent;
+    color: #556080; font-size: 13px; font-weight: 600; letter-spacing: .04em;
+    padding: 8px 18px 10px; cursor: pointer; font-family: inherit;
+    margin-bottom: -1px; transition: color .2s, border-color .2s;
+  }
+  .inv-tab:hover { color: #e8eaf0; }
+  .inv-tab.active { color: #00e5ff; border-bottom-color: #00e5ff; }
+
+  /* Shared inner vars for inv overlay */
+  #hub-inv-wrap {
+    --acc: #00e5ff;
+    --sur: #0e1a2e;
+    --sur2: #0a1220;
+    --bdr: #1c2d4a;
+    --dgr: #ef4444;
+    --wrn: #f59e0b;
+  }
+
+  /* Filters bar */
+  .inv-filters { display:flex; gap:.8rem; margin-bottom:1.2rem; flex-wrap:wrap; align-items:center; }
+  .inv-filters select, .inv-filters input {
+    background: #0e1a2e; border: 1px solid #1c2d4a; border-radius: 6px;
+    color: #e8eaf0; font-size: .8rem; padding: 8px 12px; outline: none; font-family: inherit;
+  }
+  .inv-filters select:focus, .inv-filters input:focus { border-color: #00e5ff; }
+
+  /* Alertas table */
+  .inv-table { width:100%; border-collapse:collapse; }
+  .inv-table th {
+    font-size:11px; letter-spacing:.06em; color:#556080;
+    text-align:left; padding:7px 10px;
+    border-bottom:1px solid rgba(255,255,255,0.07);
+  }
+  .inv-table td {
+    padding:9px 10px;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+    vertical-align:middle;
+  }
+  .sev-pill { display:inline-flex;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px; }
+  .sev-critica { background:rgba(255,23,68,.12);color:#ef4444;border:1px solid rgba(255,23,68,.3); }
+  .sev-alta    { background:rgba(255,214,0,.1);color:#f59e0b;border:1px solid rgba(255,214,0,.3); }
+  .sev-media   { background:rgba(0,229,255,.07);color:#00e5ff;border:1px solid rgba(0,229,255,.2); }
+  .sev-baja    { background:rgba(107,127,163,.1);color:#556080;border:1px solid rgba(107,127,163,.2); }
+  .inv-score-pill { display:inline-flex;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:20px; }
+  .score-high  { background:rgba(255,23,68,.12);color:#ef4444;border:1px solid rgba(255,23,68,.3); }
+  .score-mid   { background:rgba(255,214,0,.1);color:#f59e0b;border:1px solid rgba(255,214,0,.3); }
+  .score-low   { background:rgba(107,127,163,.1);color:#556080;border:1px solid rgba(107,127,163,.2); }
+  .pattern-chip { display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.64rem;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.15);color:#556080;padding:2px 7px;border-radius:10px;margin:2px 2px 0 0; }
+  .alert-det { display:none;background:#080f1e;border-top:1px solid #1c2d4a;padding:1.2rem 1.5rem; }
+  .alert-det.open { display:block; }
+  .alert-det-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.8rem;margin-bottom:1rem; }
+  .adf { background:#0a1220;border:1px solid #1c2d4a;border-radius:6px;padding:.7rem .9rem; }
+  .adf label { display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.7px;color:#556080;margin-bottom:.3rem; }
+  .adf span { font-size:.82rem;color:#fff;font-family:'IBM Plex Mono',monospace; }
+  .btn-det { background:none;border:1px solid #1c2d4a;color:#556080;font-size:.72rem;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:inherit;transition:all .2s; }
+  .btn-det:hover { border-color:#00e5ff;color:#00e5ff; }
+  .inv-checklist { background:#0a1220;border:1px solid rgba(255,214,0,.2);border-radius:8px;padding:1rem 1.2rem;margin-bottom:1rem; }
+  .inv-checklist h4 { font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:#f59e0b;margin-bottom:.7rem;font-family:'IBM Plex Mono',monospace; }
+  .chk-item { display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.5rem;font-size:.8rem;color:#e8eaf0; }
+  .chk-item input[type=checkbox] { margin-top:2px;accent-color:#00e5ff;width:14px;height:14px;flex-shrink:0; }
+  .btn-open-dpc { background:linear-gradient(135deg,#00e5ff,#0091ea);color:#000;font-family:inherit;font-weight:700;font-size:.82rem;padding:9px 20px;border:none;border-radius:7px;cursor:pointer;transition:all .2s;margin-top:.5rem; }
+  .btn-open-dpc:hover { opacity:.88; }
+
+  /* DPC Form */
+  .dpc-card { background:#0e1a2e;border:1px solid #1c2d4a;border-radius:12px;padding:2rem; }
+  .dpc-card h3 { font-size:.95rem;color:#fff;font-weight:600;margin-bottom:.3rem; }
+  .dpc-card p { font-size:.78rem;color:#556080;margin-bottom:1.5rem; }
+  .dpc-sec { font-size:.68rem;text-transform:uppercase;letter-spacing:1.5px;color:#00e5ff;margin:1.5rem 0 .7rem;font-family:'IBM Plex Mono',monospace; }
+  .dpc-row { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem; }
+  .dpc-f { display:flex;flex-direction:column;gap:.35rem; }
+  .dpc-f.full { grid-column:1/-1; }
+  .dpc-f label { font-size:.7rem;text-transform:uppercase;letter-spacing:.6px;color:#556080; }
+  .dpc-f input,.dpc-f select,.dpc-f textarea { background:#080f1e;border:1px solid #1c2d4a;border-radius:6px;color:#e8eaf0;font-family:inherit;font-size:.85rem;padding:9px 12px;outline:none;transition:border-color .2s; }
+  .dpc-f input:focus,.dpc-f select:focus,.dpc-f textarea:focus { border-color:#00e5ff; }
+  .dpc-f select option { background:#0a1220; }
+  .dpc-f textarea { resize:vertical;min-height:80px;line-height:1.6; }
+  .sig-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.5rem;margin-bottom:1rem; }
+  .sig-chk { display:flex;align-items:center;gap:.5rem;background:#080f1e;border:1px solid #1c2d4a;border-radius:6px;padding:.5rem .8rem;font-size:.78rem;color:#e8eaf0;cursor:pointer;transition:border-color .2s; }
+  .sig-chk:hover { border-color:#00e5ff; }
+  .sig-chk input { accent-color:#00e5ff; }
+  .dpc-prompt-out { background:#080f1e;border:1px solid rgba(0,229,255,.25);border-radius:8px;padding:1.2rem;font-family:'IBM Plex Mono',monospace;font-size:.74rem;color:#a8c7d8;line-height:1.7;white-space:pre-wrap;max-height:320px;overflow-y:auto;margin-top:1rem;display:none; }
+  .btn-gen { background:linear-gradient(135deg,#ff6b35,#ff1744);color:#fff;font-family:inherit;font-weight:700;font-size:.85rem;padding:11px 28px;border:none;border-radius:7px;cursor:pointer;transition:all .2s;margin-top:1.2rem; }
+  .btn-gen:hover { opacity:.88; }
+  .btn-copy-p { background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.3);color:#00e5ff;font-family:inherit;font-size:.78rem;padding:8px 18px;border-radius:6px;cursor:pointer;transition:all .2s;margin-left:.7rem; }
+  .btn-copy-p:hover { background:rgba(0,229,255,.15); }
+  .prompt-acts { display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-top:.8rem; }
+
+  /* Toast */
+  .hub-toast { position:fixed;bottom:2rem;right:2rem;background:#0a1220;border:1px solid #1c2d4a;border-radius:8px;padding:.8rem 1.2rem;font-size:.82rem;color:#e8eaf0;z-index:2000;transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none; }
+  .hub-toast.show { transform:translateY(0);opacity:1; }
+  .hub-toast.success { border-color:rgba(16,185,129,.4);color:#10b981; }
+  .hub-toast.error { border-color:rgba(239,68,68,.4);color:#ef4444; }
 </style>
 </head>
 <body>
@@ -291,6 +422,25 @@
        onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
       <span>📁</span><span>sentinelai-hn</span><span style="margin-left:auto;color:#253550;">↗</span>
     </a>
+  </div>
+
+</div>
+
+<div class="section-label">Investigación</div>
+<div class="grid">
+
+  <div class="card alertas" onclick="openInvPanel('alertas')" style="cursor:pointer;">
+    <span class="card-icon">⚡</span>
+    <span class="card-name">Alertas Sentinel</span>
+    <span class="card-desc">Revisión de alertas DB · Checklist R#30</span>
+    <span class="card-arrow">↓</span>
+  </div>
+
+  <div class="card expediente" onclick="openInvPanel('dpc')" style="cursor:pointer;">
+    <span class="card-icon">📋</span>
+    <span class="card-name">Iniciar Expediente</span>
+    <span class="card-desc">Generador de prompt DPC · Cowork</span>
+    <span class="card-arrow">↓</span>
   </div>
 
 </div>
@@ -425,6 +575,162 @@
 
 </div><!-- /hub-admin-wrap -->
 </div><!-- /hub-admin-overlay -->
+
+<!-- INVESTIGACIÓN OVERLAY -->
+<div id="hub-inv-overlay" onclick="if(event.target===this)closeInvPanel()">
+<div id="hub-inv-wrap">
+
+  <button id="hub-inv-close" onclick="closeInvPanel()">✕</button>
+
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+    <span id="inv-title-icon" style="font-size:22px;">⚡</span>
+    <div>
+      <div id="inv-title-text" style="font-size:16px;font-weight:700;color:#00e5ff;letter-spacing:.04em;">Alertas Sentinel</div>
+      <div style="font-size:12px;color:#556080;margin-top:2px;">Solo uso interno · Sentinel Intelligence</div>
+    </div>
+  </div>
+
+  <div class="inv-tab-bar">
+    <button class="inv-tab active" id="inv-btn-alertas" onclick="switchInvTab('alertas',this)">⚡ Alertas Sentinel</button>
+    <button class="inv-tab" id="inv-btn-dpc" onclick="switchInvTab('dpc',this)">📋 Iniciar Expediente</button>
+  </div>
+
+  <!-- ALERTAS -->
+  <div id="inv-tab-alertas">
+    <div class="inv-filters">
+      <select id="inv-fa-sev" onchange="invLoadAlertas()">
+        <option value="">— Toda severidad —</option>
+        <option value="CRITICA">CRÍTICA</option>
+        <option value="ALTA">ALTA</option>
+        <option value="MEDIA">MEDIA</option>
+      </select>
+      <input id="inv-fa-q" type="text" placeholder="Buscar proveedor o entidad…" oninput="invDebounceAlertas()" style="min-width:220px;">
+      <div style="flex:1;"></div>
+      <span id="inv-alerta-count" style="font-size:.75rem;color:#556080;"></span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="inv-table">
+        <thead><tr>
+          <th>Proveedor</th><th>Entidad</th><th>Severidad</th><th>Score</th><th>Monto (L)</th><th>Señales</th><th>Fecha</th><th></th>
+        </tr></thead>
+        <tbody id="inv-alertas-tbody"><tr><td colspan="8" style="text-align:center;padding:2rem;color:#556080;">Cargando alertas…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DPC FORM -->
+  <div id="inv-tab-dpc" style="display:none;">
+    <div class="dpc-card">
+      <h3>Iniciar Expediente DPC</h3>
+      <p>Completa los campos. Al finalizar, genera el prompt de Cowork y pégalo en una sesión nueva para que Claude produzca el expediente .docx completo.</p>
+
+      <div class="dpc-sec">01 — Identificación</div>
+      <div class="dpc-row">
+        <div class="dpc-f">
+          <label>Origen de detección</label>
+          <select id="inv-dpc-origen">
+            <option value="sentinel">⚡ Alertas Sentinel (DB)</option>
+            <option value="denuncia">📩 DENUNCIA-HN</option>
+            <option value="engel">🌐 Lista Engel / OFAC</option>
+            <option value="manual">✏️ Investigación manual</option>
+          </select>
+        </div>
+        <div class="dpc-f">
+          <label>Año del expediente</label>
+          <select id="inv-dpc-anio">
+            <option>2024</option><option>2025</option><option selected>2026</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="dpc-sec">02 — Proveedor</div>
+      <div class="dpc-row">
+        <div class="dpc-f full">
+          <label>Nombre del proveedor (como aparece en ONCAE/SEFIN)</label>
+          <input type="text" id="inv-dpc-proveedor" placeholder="Ej. CONSULTORES CONSTRUCTORES DEL CID SANTOS, S. DE R. L.">
+        </div>
+      </div>
+      <div class="dpc-row">
+        <div class="dpc-f">
+          <label>RTN (si disponible)</label>
+          <input type="text" id="inv-dpc-rtn" placeholder="Ej. 02099009238718">
+        </div>
+        <div class="dpc-f">
+          <label>Monto total estimado (L)</label>
+          <input type="text" id="inv-dpc-monto" placeholder="Ej. 75,120,000">
+        </div>
+      </div>
+
+      <div class="dpc-sec">03 — Entidad(es) contratante(s)</div>
+      <div class="dpc-row">
+        <div class="dpc-f full">
+          <label>Entidades involucradas (separadas por coma)</label>
+          <input type="text" id="inv-dpc-entidades" placeholder="Ej. SIT, FHIS, SESAL">
+        </div>
+      </div>
+
+      <div class="dpc-sec">04 — Señales activas (NS)</div>
+      <div class="sig-grid">
+        <label class="sig-chk"><input type="checkbox" value="NS-11 Identidad Duplicada"> NS-11 Identidad Duplicada</label>
+        <label class="sig-chk"><input type="checkbox" value="NS-9 Fraccionamiento"> NS-9 Fraccionamiento</label>
+        <label class="sig-chk"><input type="checkbox" value="NS-Contratación Directa"> NS-Contratación Directa</label>
+        <label class="sig-chk"><input type="checkbox" value="NS-Período Urgente"> NS-Período Urgente</label>
+        <label class="sig-chk"><input type="checkbox" value="NS-Período Mínimo"> NS-Período Mínimo</label>
+        <label class="sig-chk"><input type="checkbox" value="NS-Compra Emergencia"> NS-Compra Emergencia</label>
+        <label class="sig-chk"><input type="checkbox" value="NS-Proveedor Sin Historial"> NS-Proveedor Sin Historial</label>
+        <label class="sig-chk"><input type="checkbox" value="NS-Internacional (Engel/OFAC)"> NS-Internacional (Engel/OFAC)</label>
+      </div>
+      <div class="dpc-row">
+        <div class="dpc-f">
+          <label>Risk Score máximo detectado</label>
+          <input type="text" id="inv-dpc-score" placeholder="Ej. 6.00 / 10.00">
+        </div>
+        <div class="dpc-f">
+          <label>Clasificación</label>
+          <select id="inv-dpc-clasificacion">
+            <option>CRÍTICA</option><option>ALTA</option><option>MEDIA</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="dpc-sec">05 — Hallazgo principal</div>
+      <div class="dpc-row">
+        <div class="dpc-f full">
+          <label>Describe el hallazgo en 2–4 oraciones</label>
+          <textarea id="inv-dpc-hallazgo" rows="4" placeholder="Ej. Sentinel detectó que el mismo RTN opera bajo 4 variantes de nombre en ONCAE…"></textarea>
+        </div>
+      </div>
+
+      <div class="dpc-sec">06 — Contexto adicional (opcional)</div>
+      <div class="dpc-row">
+        <div class="dpc-f full">
+          <label>Antecedentes, prensa, auditorías TSC, vínculos internacionales</label>
+          <textarea id="inv-dpc-contexto" rows="3" placeholder="Ej. TSC auditó en 2018 (LPR.043). Criterio.hn publicó en agosto 2025…"></textarea>
+        </div>
+      </div>
+
+      <div class="dpc-sec">07 — Checklist Regla #30 (antes de abrir expediente)</div>
+      <div class="inv-checklist">
+        <h4>Verificación obligatoria</h4>
+        <label class="chk-item"><input type="checkbox" id="inv-chk30-1"> <span>Montos confirmados y filtrados por entidad correcta en la DB</span></label>
+        <label class="chk-item"><input type="checkbox" id="inv-chk30-2"> <span>El patrón es estadísticamente anómalo vs. baseline del sector/período</span></label>
+        <label class="chk-item"><input type="checkbox" id="inv-chk30-3"> <span>No existe explicación legítima simple (emergencia real documentada, obra pública verificable, etc.)</span></label>
+      </div>
+
+      <button class="btn-gen" onclick="invGenerarPromptDPC()">Generar Prompt de Cowork →</button>
+
+      <div id="inv-dpc-prompt-output" class="dpc-prompt-out"></div>
+      <div id="inv-dpc-prompt-actions" class="prompt-acts" style="display:none;">
+        <button class="btn-copy-p" onclick="invCopiarPromptDPC()">⧉ Copiar prompt</button>
+        <span style="font-size:.75rem;color:#556080;">→ Pega esto en una sesión nueva de Cowork</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /hub-inv-wrap -->
+</div><!-- /hub-inv-overlay -->
+
+<div class="hub-toast" id="hub-toast"></div>
 
 <div class="footer">SentinelAI Intelligence LLC · Uso exclusivo interno · No compartir</div>
 
@@ -575,6 +881,207 @@ async function pedEliminar(id, proveedor) {
   const { error } = await db.from('proveedores_error_datos').delete().eq('id', id);
   if (error) { alert('Error: ' + error.message); return; }
   pedCargar();
+}
+
+// ── Hub Toast ─────────────────────────────────────────────────────────────────
+function hubToast(msg, type='') {
+  const t = document.getElementById('hub-toast');
+  t.textContent = msg;
+  t.className = `hub-toast ${type} show`;
+  setTimeout(() => t.className = 'hub-toast', 3000);
+}
+
+// ── Investigación panel ───────────────────────────────────────────────────────
+function openInvPanel(tab) {
+  document.getElementById('hub-inv-overlay').classList.add('open');
+  switchInvTab(tab, document.getElementById('inv-btn-' + tab));
+  if (tab === 'alertas') invLoadAlertas();
+}
+
+function closeInvPanel() {
+  document.getElementById('hub-inv-overlay').classList.remove('open');
+}
+
+function switchInvTab(id, btn) {
+  document.querySelectorAll('.inv-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('inv-tab-alertas').style.display = id === 'alertas' ? '' : 'none';
+  document.getElementById('inv-tab-dpc').style.display = id === 'dpc' ? '' : 'none';
+  const icons = { alertas: '⚡', dpc: '📋' };
+  const titles = { alertas: 'Alertas Sentinel', dpc: 'Iniciar Expediente DPC' };
+  document.getElementById('inv-title-icon').textContent = icons[id];
+  document.getElementById('inv-title-text').textContent = titles[id];
+}
+
+// ── Alertas ───────────────────────────────────────────────────────────────────
+let invAlertaDebounce = null;
+function invDebounceAlertas() {
+  clearTimeout(invAlertaDebounce);
+  invAlertaDebounce = setTimeout(invLoadAlertas, 350);
+}
+
+async function invLoadAlertas() {
+  const sev = document.getElementById('inv-fa-sev').value;
+  const q   = document.getElementById('inv-fa-q').value.trim();
+  const tbody = document.getElementById('inv-alertas-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#556080;">Cargando…</td></tr>';
+
+  let query = db.from('alerts')
+    .select('id,proveedor_nombre,entidad,severity,risk_score,monto_contrato,patterns,fecha_contrato,contract_id,tipo_contratacion,source', { count: 'exact' })
+    .order('risk_score', { ascending: false })
+    .limit(50);
+
+  if (sev) query = query.eq('severity', sev);
+  if (q)   query = query.or(`proveedor_nombre.ilike.%${q}%,entidad.ilike.%${q}%`);
+
+  const { data, count, error } = await query;
+  document.getElementById('inv-alerta-count').textContent = count != null ? `${count} alertas` : '';
+
+  if (error || !data || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#556080;">Sin alertas encontradas.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((a, i) => invAlertaRowHtml(a, i)).join('');
+}
+
+function invAlertaRowHtml(a, i) {
+  const sev = (a.severity || '').toUpperCase();
+  const sevClass = sev==='CRITICA'?'sev-critica':sev==='ALTA'?'sev-alta':sev==='MEDIA'?'sev-media':'sev-baja';
+  const score = parseFloat(a.risk_score || 0).toFixed(2);
+  const monto = a.monto_contrato ? `L ${Number(a.monto_contrato).toLocaleString('es-HN')}` : '—';
+  const fecha = a.fecha_contrato ? a.fecha_contrato.slice(0,10) : '—';
+  const patterns = Array.isArray(a.patterns) ? a.patterns : (a.patterns ? a.patterns.replace(/[{}"]/g,'').split(',') : []);
+  const chips = patterns.map(p => `<span class="pattern-chip">${p.trim()}</span>`).join('');
+
+  const detail = `<tr id="inv-adet-${i}" style="display:none;">
+    <td colspan="8" style="padding:0;">
+      <div class="alert-det open" id="inv-adetail-${i}">
+        <div class="alert-det-grid">
+          <div class="adf"><label>Contract ID</label><span>${a.contract_id || '—'}</span></div>
+          <div class="adf"><label>Tipo contratación</label><span>${a.tipo_contratacion || '—'}</span></div>
+          <div class="adf"><label>Fuente</label><span>${a.source || '—'}</span></div>
+          <div class="adf"><label>Monto contrato</label><span>${monto}</span></div>
+        </div>
+        <div class="inv-checklist">
+          <h4>Checklist Regla #30 — antes de abrir expediente</h4>
+          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-1"> <span>Montos confirmados y filtrados por esta entidad en la DB</span></label>
+          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-2"> <span>Patrón anómalo vs. baseline del sector / período</span></label>
+          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-3"> <span>Sin explicación legítima simple (emergencia documentada, obra verificable, etc.)</span></label>
+        </div>
+        <button class="btn-open-dpc" onclick="invPrefillDPC(${JSON.stringify(a).replace(/"/g,'&quot;')},${i})">
+          📋 Abrir como Expediente DPC →
+        </button>
+      </div>
+    </td>
+  </tr>`;
+
+  return `<tr style="cursor:pointer;" onclick="invToggleAlertDetail(${i})">
+    <td style="font-size:.82rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.proveedor_nombre || '—'}</td>
+    <td style="font-size:.78rem;color:#556080;">${a.entidad || '—'}</td>
+    <td><span class="sev-pill ${sevClass}">${sev}</span></td>
+    <td><span class="inv-score-pill ${parseFloat(score)>=5?'score-high':parseFloat(score)>=3?'score-mid':'score-low'}">${score}</span></td>
+    <td style="font-family:'IBM Plex Mono',monospace;font-size:.78rem;">${monto}</td>
+    <td>${chips}</td>
+    <td style="font-size:.75rem;color:#556080;">${fecha}</td>
+    <td><button class="btn-det" onclick="event.stopPropagation();invToggleAlertDetail(${i})">Revisar ↓</button></td>
+  </tr>${detail}`;
+}
+
+function invToggleAlertDetail(i) {
+  const row = document.getElementById(`inv-adet-${i}`);
+  if (!row) return;
+  row.style.display = row.style.display === 'none' ? '' : 'none';
+}
+
+function invPrefillDPC(alert, i) {
+  if (!document.getElementById(`inv-chk-${i}-1`)?.checked ||
+      !document.getElementById(`inv-chk-${i}-2`)?.checked ||
+      !document.getElementById(`inv-chk-${i}-3`)?.checked) {
+    hubToast('Completa el checklist Regla #30 antes de abrir expediente', 'error');
+    return;
+  }
+  switchInvTab('dpc', document.getElementById('inv-btn-dpc'));
+  document.getElementById('inv-dpc-proveedor').value = alert.proveedor_nombre || '';
+  document.getElementById('inv-dpc-entidades').value = alert.entidad || '';
+  document.getElementById('inv-dpc-monto').value = alert.monto_contrato ? Number(alert.monto_contrato).toLocaleString('es-HN') : '';
+  document.getElementById('inv-dpc-score').value = parseFloat(alert.risk_score||0).toFixed(2) + ' / 10.00';
+  document.getElementById('inv-dpc-clasificacion').value = (alert.severity||'CRITICA').toUpperCase() === 'CRITICA' ? 'CRÍTICA' : alert.severity;
+  document.getElementById('inv-dpc-origen').value = 'sentinel';
+  const patterns = Array.isArray(alert.patterns) ? alert.patterns : (alert.patterns ? alert.patterns.replace(/[{}"]/g,'').split(',') : []);
+  document.querySelectorAll('.sig-chk input').forEach(cb => {
+    const val = cb.value.toLowerCase();
+    cb.checked = patterns.some(p => p.toLowerCase().includes('direct') && val.includes('directa')) ||
+                 patterns.some(p => p.toLowerCase().includes('urgente') && val.includes('urgente')) ||
+                 patterns.some(p => p.toLowerCase().includes('minimo') && val.includes('mínimo')) ||
+                 patterns.some(p => p.toLowerCase().includes('emergencia') && val.includes('emergencia')) ||
+                 patterns.some(p => p.toLowerCase().includes('fraccionamiento') && val.includes('fraccionamiento'));
+  });
+  hubToast('✓ Datos pre-cargados desde alerta Sentinel', 'success');
+}
+
+// ── Expediente DPC — Prompt generator ────────────────────────────────────────
+function invGenerarPromptDPC() {
+  const origen    = document.getElementById('inv-dpc-origen');
+  const origenTxt = origen.options[origen.selectedIndex].text;
+  const proveedor = document.getElementById('inv-dpc-proveedor').value.trim();
+  const rtn       = document.getElementById('inv-dpc-rtn').value.trim();
+  const monto     = document.getElementById('inv-dpc-monto').value.trim();
+  const entidades = document.getElementById('inv-dpc-entidades').value.trim();
+  const score     = document.getElementById('inv-dpc-score').value.trim();
+  const clas      = document.getElementById('inv-dpc-clasificacion').value;
+  const anio      = document.getElementById('inv-dpc-anio').value;
+  const hallazgo  = document.getElementById('inv-dpc-hallazgo').value.trim();
+  const contexto  = document.getElementById('inv-dpc-contexto').value.trim();
+  const senales   = Array.from(document.querySelectorAll('.sig-chk input:checked')).map(c => c.value).join(' · ');
+
+  if (!proveedor || !entidades || !hallazgo) {
+    hubToast('Completa proveedor, entidades y hallazgo antes de generar', 'error');
+    return;
+  }
+  if (!document.getElementById('inv-chk30-1').checked ||
+      !document.getElementById('inv-chk30-2').checked ||
+      !document.getElementById('inv-chk30-3').checked) {
+    hubToast('Completa el checklist Regla #30 antes de generar', 'error');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('es-HN',{day:'2-digit',month:'long',year:'numeric'});
+  const prompt = `Continúo el proyecto Sentinel-AI. Necesito que generes un expediente DPC completo como .docx con los siguientes datos reales verificados:
+
+EXPEDIENTE: SEN-INV-${anio}-DPC-[SIGUIENTE NÚMERO]
+FECHA: ${today}
+CLASIFICACIÓN: ${clas}
+ORIGEN DE DETECCIÓN: ${origenTxt}
+
+PROVEEDOR: ${proveedor}${rtn ? `\nRTN: ${rtn}` : ''}
+ENTIDADES: ${entidades}
+MONTO TOTAL ESTIMADO: L ${monto}
+SEÑALES NS ACTIVAS: ${senales || '(ver hallazgo)'}
+RISK SCORE: ${score || '—'}
+
+HALLAZGO PRINCIPAL:
+${hallazgo}
+${contexto ? `\nCONTEXTO ADICIONAL:\n${contexto}` : ''}
+
+INSTRUCCIONES:
+- Usa Enfoque 2 (Sentinel Estricto): solo datos verificables en la DB / fuentes públicas
+- Incluye sección de Cronología de Detección con fecha de alerta Sentinel
+- Usa lenguaje no acusatorio (Regla #29): "indicadores de posible irregularidad", no "fraude"
+- Aplica fix_spanish.py al finalizar (Regla #32)
+- Guarda en: REPORTES SENTINEL/Reportes Investigacion/
+- Versión: v1.0 · ${today}`;
+
+  const out = document.getElementById('inv-dpc-prompt-output');
+  out.textContent = prompt;
+  out.style.display = 'block';
+  document.getElementById('inv-dpc-prompt-actions').style.display = 'flex';
+  hubToast('✓ Prompt generado', 'success');
+  out.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function invCopiarPromptDPC() {
+  const text = document.getElementById('inv-dpc-prompt-output').textContent;
+  navigator.clipboard.writeText(text).then(() => hubToast('✓ Copiado al portapapeles', 'success'));
 }
 
 function toggleAdminPanel() {

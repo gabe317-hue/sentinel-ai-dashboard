@@ -357,6 +357,33 @@
   .btn-copy-p:hover { background:rgba(0,229,255,.15); }
   .prompt-acts { display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-top:.8rem; }
 
+  /* Tooltip */
+  .tip {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 15px; height: 15px; border-radius: 50%;
+    background: rgba(0,229,255,.1); border: 1px solid rgba(0,229,255,.25);
+    color: #00e5ff; font-size: 10px; font-weight: 700; line-height: 1;
+    cursor: help; margin-left: 6px; flex-shrink: 0; position: relative;
+  }
+  .tip::after {
+    content: attr(data-tip);
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%; transform: translateX(-50%);
+    background: #0a1628;
+    border: 1px solid rgba(0,229,255,.25);
+    border-radius: 7px;
+    padding: 8px 12px;
+    font-size: 11px; line-height: 1.5;
+    color: #a8c7d8;
+    white-space: normal; width: 240px;
+    text-align: left; font-weight: 400;
+    z-index: 9999;
+    pointer-events: none;
+  }
+  .tip:hover::after { display: block; }
+
   /* Toast */
   .hub-toast { position:fixed;bottom:2rem;right:2rem;background:#0a1220;border:1px solid #1c2d4a;border-radius:8px;padding:.8rem 1.2rem;font-size:.82rem;color:#e8eaf0;z-index:2000;transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none; }
   .hub-toast.show { transform:translateY(0);opacity:1; }
@@ -712,9 +739,9 @@
       <div class="dpc-sec">07 — Checklist Regla #30 (antes de abrir expediente)</div>
       <div class="inv-checklist">
         <h4>Verificación obligatoria</h4>
-        <label class="chk-item"><input type="checkbox" id="inv-chk30-1"> <span>Montos confirmados y filtrados por entidad correcta en la DB</span></label>
-        <label class="chk-item"><input type="checkbox" id="inv-chk30-2"> <span>El patrón es estadísticamente anómalo vs. baseline del sector/período</span></label>
-        <label class="chk-item"><input type="checkbox" id="inv-chk30-3"> <span>No existe explicación legítima simple (emergencia real documentada, obra pública verificable, etc.)</span></label>
+        <label class="chk-item"><input type="checkbox" id="inv-chk30-1"> <span>Montos confirmados y filtrados por entidad correcta en la DB</span><span class="tip" data-tip="Busca el proveedor en el Portal → filtra por esta entidad específica. Confirma que el monto corresponde a esta entidad, no a un agregado global del proveedor.">i</span></label>
+        <label class="chk-item"><input type="checkbox" id="inv-chk30-2"> <span>El patrón es estadísticamente anómalo vs. baseline del sector/período</span><span class="tip" data-tip="Compara con otros contratos de la misma entidad en el mismo período. Ej: L 75M en un día es anómalo en cualquier entidad. Un contrato directo de L 2M en SESAL puede ser normal.">i</span></label>
+        <label class="chk-item"><input type="checkbox" id="inv-chk30-3"> <span>No existe explicación legítima simple (emergencia real documentada, obra pública verificable, etc.)</span><span class="tip" data-tip="¿Declararon emergencia ese mes? ¿Es obra verificable en territorio? ¿El proveedor tiene historial previo con esta entidad? Si no hay respuesta obvia, procede.">i</span></label>
       </div>
 
       <button class="btn-gen" onclick="invGenerarPromptDPC()">Generar Prompt de Cowork →</button>

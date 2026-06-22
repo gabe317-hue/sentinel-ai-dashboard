@@ -964,7 +964,7 @@ async function invLoadAlertas() {
 
   if (sev) query = query.eq('severity', sev);
   if (q)   query = query.or(`proveedor_nombre.ilike.%${q}%,entidad.ilike.%${q}%`);
-  if (document.getElementById('inv-fa-minmonto')?.checked) query = query.gte('monto_contrato', 100000);
+  if (document.getElementById('inv-fa-minmonto')?.checked) query = query.or('monto_contrato.gte.100000,monto_contrato.is.null');
 
   const { data, count, error } = await query;
   document.getElementById('inv-alerta-count').textContent = count != null ? `${count} alertas` : '';

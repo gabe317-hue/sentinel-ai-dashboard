@@ -5832,7 +5832,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div>
         <div class="fuente-title">🏛️ <span>Riesgo por Sector Institucional</span></div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-          Concentración de riesgo por sector de gobierno — basado en los 40,175 contratos monitoreados
+          Concentración de riesgo por sector de gobierno — basado en los 40,175 contratos con alertas activas
         </div>
       </div>
       <button onclick="exportSectorSummaryPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;">📄 PDF</button>
@@ -5911,7 +5911,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div>
         <div class="fuente-title">📅 <span>Cronología de Alertas</span></div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-          Distribución cronológica de contratos monitoreados — por mes y severidad
+          Distribución cronológica de contratos con alertas activas — por mes y severidad
         </div>
       </div>
       <button onclick="exportTimelineSummaryPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;">📄 PDF</button>
@@ -6433,7 +6433,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span>Entidades de Alto Riesgo — CNA / UFERCO / ASJ</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Funcionarios, empresas y fundaciones señaladas por CNA, UFERCO y Ministerio Público de Honduras (2022–2026). Cruza contra contratos monitoreados activos.
+        Funcionarios, empresas y fundaciones señaladas por CNA, UFERCO y Ministerio Público de Honduras (2022–2026). Cruza contra contratos con alertas activas.
       </div>
       <div style="margin-top:14px;">
         <button class="pdf-btn" onclick="exportRedFlagPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);">📄 PDF Red Flags</button>
@@ -6869,7 +6869,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span>Reportes Investigativos</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Genera reportes PDF desde los datos en vivo del dashboard · <span id="reportes-bd-count">cargando…</span> contratos monitoreados
+        Genera reportes PDF desde los datos en vivo del dashboard · <span id="reportes-bd-count">cargando…</span> contratos con alertas activas
       </div>
     </div>
 
@@ -14334,7 +14334,7 @@ function renderTlSummary() {
   const domPct = filtered.length > 0 ? (dom.v/filtered.length*100).toFixed(1) : 0;
 
   const lines = [
-    `Período <em>${dateStart} – ${dateEnd}</em>, <em>${filtered.length.toLocaleString()}</em> contratos monitoreados.`,
+    `Período <em>${dateStart} – ${dateEnd}</em>, <em>${filtered.length.toLocaleString()}</em> contratos con alertas activas.`,
     peakKey ? `Mayor actividad en <em>${fmtMon(peakKey)}</em> con <em>${monthMap[peakKey]}</em> contratos.` : '',
     (topEnt && !entityFilter) ? `<em>${topEnt}</em> concentra el <em>${topEntPct}%</em> del monto total.` : '',
     `Severidad predominante: <em>${dom.n}</em> (<em>${dom.v}</em> contratos, <em>${domPct}%</em>).`,
@@ -17368,7 +17368,7 @@ function generarBriefingEjecutivo() {
   <span class="conf">CONFIDENCIAL</span>
   <h1>SENTINEL-AI HONDURAS</h1>
   <div class="sub">Briefing Ejecutivo — Top 20 Contratos de Mayor Riesgo por Valor</div>
-  <div class="meta">Generado: ${fechaStr} a las ${horaStr} · Base: ${(allAlerts||[]).length.toLocaleString('es-HN')} contratos monitoreados</div>
+  <div class="meta">Generado: ${fechaStr} a las ${horaStr} · Base: ${(allAlerts||[]).length.toLocaleString('es-HN')} contratos con alertas activas</div>
   <div class="kpi-bar">
     <div class="kpi"><div class="kpi-val">20</div><div class="kpi-lbl">Contratos</div></div>
     <div class="kpi"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">Monto Expuesto</div></div>
@@ -17832,7 +17832,7 @@ function ipExportarExcelCore() {
     ['Clasificación', 'CONFIDENCIAL — Uso institucional exclusivo'],
     [''],
     ['INDICADORES DE RIESGO', ''],
-    ['Total contratos monitoreados', todosContratos.length],
+    ['Total contratos con alertas activas', todosContratos.length],
     ['Contratos CRÍTICA', criticos.length],
     ['Contratos RIESGO ALTO', altos.length],
     ['Total contratos en alto riesgo', contratos.length],
@@ -19805,7 +19805,7 @@ function poUpdateIndicators() {
     document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
     const displayTotal = window._bdTotalCount || data.length;
     document.getElementById('po-ind-total').textContent = displayTotal.toLocaleString('es-HN');
-    document.getElementById('po-db-badge').textContent  = displayTotal.toLocaleString('es-HN') + ' contratos monitoreados';
+    document.getElementById('po-db-badge').textContent  = displayTotal.toLocaleString('es-HN') + ' contratos con alertas activas';
 
     // Delta counter — compara contra último conteo guardado
     try {
@@ -23255,7 +23255,7 @@ function renderEjecutiva() {
   document.getElementById('exec-sobrecosto').textContent     = sobrecosto.length.toLocaleString();
   document.getElementById('exec-sobrecosto-monto').textContent = fmtL(sumMonto(sobrecosto));
   // exec-status-val reemplazado por exec-inv-activas-count (ver loadInvestigacionesDB)
-  document.getElementById('execSubtitle').textContent        = `${alerts.length.toLocaleString()} contratos monitoreados · 2019–2026 · ${new Date().toLocaleDateString('es-HN')}`;
+  document.getElementById('execSubtitle').textContent        = `${alerts.length.toLocaleString()} contratos con alertas activas · 2019–2026 · ${new Date().toLocaleDateString('es-HN')}`;
 
   // ── P2: Top 5 Entidades por riesgo ──
   const entMap = {};
@@ -23569,7 +23569,7 @@ function renderRedFlagPanel() {
   document.getElementById('rf-stat-criticos').textContent  = totalCriticos.toLocaleString() || '—';
 
   if (activeActors.length === 0) {
-    body.innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">Sin coincidencias detectadas. Las entidades de riesgo no aparecen en los contratos monitoreados actuales.</div>';
+    body.innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">Sin coincidencias detectadas. Las entidades de riesgo no aparecen en los contratos con alertas activas.</div>';
     return;
   }
 
@@ -23820,7 +23820,7 @@ function renderEngelPanel() {
   document.getElementById('engel-stat-criticos').textContent = totalCriticos.toLocaleString() || '—';
 
   if (activeActors.length === 0) {
-    document.getElementById('engelBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">Sin coincidencias detectadas en los contratos monitoreados.</div>';
+    document.getElementById('engelBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">Sin coincidencias detectadas en los contratos con alertas activas.</div>';
     return;
   }
 
@@ -24311,7 +24311,7 @@ function exportRedFlagPDF() {
     <div style="padding:40px;text-align:center;color:#888;border:1px solid #fecaca;border-radius:8px;background:#fff5f5;">
       <div style="font-size:24px;margin-bottom:12px;">✅</div>
       <div style="font-weight:600;">Sin coincidencias detectadas</div>
-      <div style="font-size:11px;margin-top:6px;">Ninguna entidad de la lista aparece como proveedor en los contratos monitoreados actuales.</div>
+      <div style="font-size:11px;margin-top:6px;">Ninguna entidad de la lista aparece como proveedor en los contratos con alertas activas.</div>
     </div>` : actorRows;
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
@@ -24339,7 +24339,7 @@ function exportRedFlagPDF() {
       <div style="text-align:right;font-size:10px;opacity:.8;">
         <div style="font-size:13px;font-weight:700;opacity:1;">${folio}</div>
         <div style="margin-top:4px;">${ds}</div>
-        <div style="margin-top:2px;">Base: ${(window.allAlerts||[]).length.toLocaleString()} contratos monitoreados</div>
+        <div style="margin-top:2px;">Base: ${(window.allAlerts||[]).length.toLocaleString()} contratos con alertas activas</div>
       </div>
     </div>
   </div>
@@ -24554,7 +24554,7 @@ function exportOcdsCrossRefPDF() {
       <div style="text-align:right;font-size:10px;opacity:.85;">
         <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
         <div style="margin-top:3px;">${ds}</div>
-        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos monitoreados</div>
+        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos con alertas activas</div>
       </div>
     </div>
   </div>
@@ -25049,7 +25049,7 @@ function exportCruceASimilaresPDF() {
       <div style="text-align:right;font-size:10px;opacity:.85;">
         <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
         <div style="margin-top:3px;">${ds}</div>
-        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos monitoreados</div>
+        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos con alertas activas</div>
       </div>
     </div>
   </div>
@@ -26216,7 +26216,7 @@ function exportReporteOncaeCriticaPDF() {
       <div style="text-align:right;font-size:10px;opacity:.85;">
         <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
         <div style="margin-top:3px;">${ds}</div>
-        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos monitoreados</div>
+        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos con alertas activas</div>
       </div>
     </div>
   </div>
@@ -26322,7 +26322,7 @@ function exportReporteSefinCriticaPDF() {
       <div style="text-align:right;font-size:10px;opacity:.85;">
         <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
         <div style="margin-top:3px;">${ds}</div>
-        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos monitoreados</div>
+        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos con alertas activas</div>
       </div>
     </div>
   </div>
@@ -26441,7 +26441,7 @@ function exportReporteParetoPDF() {
       <div style="text-align:right;font-size:10px;opacity:.85;">
         <div style="font-size:12px;font-weight:700;opacity:1;">${folio}</div>
         <div style="margin-top:3px;">${ds}</div>
-        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos monitoreados</div>
+        <div style="margin-top:2px;">Base: ${all.length.toLocaleString()} contratos con alertas activas</div>
       </div>
     </div>
   </div>

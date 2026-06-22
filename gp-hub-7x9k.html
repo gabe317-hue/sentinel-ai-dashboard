@@ -632,6 +632,10 @@
         <option value="MEDIA">MEDIA</option>
       </select>
       <input id="inv-fa-q" type="text" placeholder="Buscar proveedor o entidad…" oninput="invDebounceAlertas()" style="min-width:220px;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:.8rem;color:#a0b4d0;cursor:pointer;white-space:nowrap;">
+        <input type="checkbox" id="inv-fa-minmonto" checked onchange="invLoadAlertas()">
+        Ocultar &lt; L 100K
+      </label>
       <div style="flex:1;"></div>
       <span id="inv-alerta-count" style="font-size:.75rem;color:#556080;"></span>
     </div>
@@ -960,6 +964,7 @@ async function invLoadAlertas() {
 
   if (sev) query = query.eq('severity', sev);
   if (q)   query = query.or(`proveedor_nombre.ilike.%${q}%,entidad.ilike.%${q}%`);
+  if (document.getElementById('inv-fa-minmonto')?.checked) query = query.gte('monto_contrato', 100000);
 
   const { data, count, error } = await query;
   document.getElementById('inv-alerta-count').textContent = count != null ? `${count} alertas` : '';
@@ -986,7 +991,7 @@ function invAlertaRowHtml(a, i) {
         <div class="alert-det-grid">
           <div class="adf"><label>Contract ID</label><span>${a.contract_id || '—'}</span></div>
           <div class="adf"><label>Tipo contratación</label><span>${a.tipo_contratacion || '—'}</span></div>
-          <div class="adf"><label>Fuente</label><span>${a.source || '—'}</span></div>
+          <div class="adf"><label title="Fuente de datos: ONCAE (Portal de Compras Públicas) o IAIP (Ley de Transparencia)">Fuente ℹ️</label><span>${a.source || 'Sin clasificar'}</span></div>
           <div class="adf"><label>Monto contrato</label><span>${monto}</span></div>
         </div>
         <div class="inv-checklist">

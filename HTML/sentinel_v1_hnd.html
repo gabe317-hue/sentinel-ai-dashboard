@@ -28640,6 +28640,7 @@ function _hideCacheBanner() {
 // También actualiza la URL en el browser al navegar entre paneles.
 const _PANEL_MAP = {
   'portal':      () => showPortal(),
+  'ejecutivo':   () => selectPanel('ejecutivo'),
   'ejecutiva':   () => showVistaEjecutiva(),
   'seguimiento': () => showSeguimientoPanel(),
   'monopolio':   () => showMonopolioPanel(),

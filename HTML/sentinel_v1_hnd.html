@@ -28905,8 +28905,6 @@ async function consLoadKPI() {
     if (el) el.textContent = criticas;
     const sub = document.getElementById('exec-cons-sub');
     if (sub) sub.textContent = 'entidades CRÍTICAS';
-    // Pre-cache for panel
-    if (!gConsData.length && data) gConsData = data;
   } catch(e) { /* silencioso — KPI no crítico */ }
 }
 // ══ FIN NS-10 ════════════════════════════════════════════════════════════════

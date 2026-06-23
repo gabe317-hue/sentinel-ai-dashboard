@@ -7618,7 +7618,7 @@ function render() {
     : 'L —';
   const fmtPct = (n, total) => total > 0 ? (n / total * 100).toFixed(1) + '% del total' : '— %';
 
-  document.getElementById('cnt-total').textContent         = allAlerts.length;
+  document.getElementById('cnt-total').textContent         = (window._bdTotalCount || allAlerts.length).toLocaleString('es-HN');
   document.getElementById('cnt-critica').textContent       = c.critica;
   document.getElementById('cnt-alta').textContent          = c.alta;
   document.getElementById('cnt-media').textContent         = c.media;

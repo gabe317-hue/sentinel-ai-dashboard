@@ -756,10 +756,10 @@
 
       <div class="dpc-sec">07 — Checklist Regla #30 (antes de abrir expediente)</div>
       <div class="inv-checklist">
-        <h4>Verificación obligatoria</h4>
-        <label class="chk-item"><input type="checkbox" id="inv-chk30-1"> <span>Montos confirmados y filtrados por entidad correcta en la DB</span><span class="tip" data-tip="Busca el proveedor en el Portal → filtra por esta entidad específica. Confirma que el monto corresponde a esta entidad, no a un agregado global del proveedor.">i</span></label>
-        <label class="chk-item"><input type="checkbox" id="inv-chk30-2"> <span>El patrón es estadísticamente anómalo vs. baseline del sector/período</span><span class="tip" data-tip="Compara con otros contratos de la misma entidad en el mismo período. Ej: L 75M en un día es anómalo en cualquier entidad. Un contrato directo de L 2M en SESAL puede ser normal.">i</span></label>
-        <label class="chk-item"><input type="checkbox" id="inv-chk30-3"> <span>No existe explicación legítima simple (emergencia real documentada, obra pública verificable, etc.)</span><span class="tip" data-tip="¿Declararon emergencia ese mes? ¿Es obra verificable en territorio? ¿El proveedor tiene historial previo con esta entidad? Si no hay respuesta obvia, procede.">i</span></label>
+        <h4 id="inv-chk30-header">Verificación obligatoria</h4>
+        <label class="chk-item" id="inv-chk30-1-label"><input type="checkbox" id="inv-chk30-1"> <span>Montos confirmados y filtrados por entidad correcta en la DB</span><span id="inv-chk30-1-badge"></span><span class="tip" data-tip="Busca el proveedor en el Portal → filtra por esta entidad específica. Confirma que el monto corresponde a esta entidad, no a un agregado global del proveedor.">i</span></label>
+        <label class="chk-item" id="inv-chk30-2-label"><input type="checkbox" id="inv-chk30-2"> <span>El patrón es estadísticamente anómalo vs. baseline del sector/período</span><span id="inv-chk30-2-badge"></span><span class="tip" data-tip="Compara con otros contratos de la misma entidad en el mismo período. Ej: L 75M en un día es anómalo en cualquier entidad. Un contrato directo de L 2M en SESAL puede ser normal.">i</span></label>
+        <label class="chk-item chk-manual-item" id="inv-chk30-3-label"><input type="checkbox" id="inv-chk30-3"> <span>No existe explicación legítima simple (emergencia real documentada, obra pública verificable, etc.)</span><span id="inv-chk30-3-badge" class="chk-manual-badge">⚠ Juicio analista</span><span class="tip" data-tip="¿Declararon emergencia ese mes? ¿Es obra verificable en territorio? ¿El proveedor tiene historial previo con esta entidad? Si no hay respuesta obvia, procede.">i</span></label>
       </div>
 
       <button class="btn-gen" onclick="invGenerarPromptDPC()">Generar Prompt de Cowork →</button>
@@ -1013,13 +1013,18 @@ function invAlertaRowHtml(a, i) {
           const chk1Badge = chk1Auto ? `<span class="chk-auto-badge">L ${Number(a.monto_contrato).toLocaleString('es-HN')} · DB ✓</span>` : '';
           const chk2Auto = parseFloat(a.risk_score || 0) >= 3;
           const chk2Badge = chk2Auto ? `<span class="chk-auto-badge">Score ${parseFloat(a.risk_score).toFixed(1)} · ${sev} ✓</span>` : '';
+          const hasEmergency = patterns.some(p => { const pl=p.toLowerCase(); return pl.includes('emergencia')||pl.includes('directa')||pl.includes('urgente'); });
+          const emergencyTags = hasEmergency ? patterns.filter(p => { const pl=p.toLowerCase(); return pl.includes('emergencia')||pl.includes('directa')||pl.includes('urgente'); }).map(p=>p.replace(/[{}"]/g,'').trim()).join(' · ') : '';
+          const chk3Badge = hasEmergency
+            ? `<span class="chk-manual-badge" title="Sentinel detectó esta señal. Verificar si la emergencia/contratación directa fue real y documentada en Gaceta Oficial.">⚠ ${emergencyTags} — verificar Gaceta</span>`
+            : `<span style="margin-left:auto;font-size:.68rem;color:#94a3b8;font-family:'IBM Plex Mono',monospace;background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.2);border-radius:4px;padding:1px 7px;white-space:nowrap;flex-shrink:0;">Sin señal emergencia/directa</span>`;
           const autoCount = (chk1Auto?1:0) + (chk2Auto?1:0);
           const subtitle = autoCount > 0 ? ` <span style="color:#10b981;font-weight:400;text-transform:none;letter-spacing:0;">(${autoCount}/3 auto-validados por Sentinel)</span>` : '';
           return `<div class="inv-checklist">
           <h4>Checklist Regla #30${subtitle}</h4>
           <label class="chk-item${chk1Auto?' chk-auto':''}"><input type="checkbox" id="inv-chk-${i}-1"${chk1Auto?' checked disabled':''}> <span>Montos confirmados y filtrados por esta entidad en la DB</span>${chk1Badge}<span class="tip" data-tip="Busca el proveedor en el Portal → filtra por esta entidad específica. Confirma que el monto corresponde a esta entidad, no a un agregado global del proveedor.">i</span></label>
           <label class="chk-item${chk2Auto?' chk-auto':''}"><input type="checkbox" id="inv-chk-${i}-2"${chk2Auto?' checked disabled':''}> <span>Patrón anómalo vs. baseline del sector / período</span>${chk2Badge}<span class="tip" data-tip="Compara con otros contratos de la misma entidad en el mismo período. Ej: L 75M en un día es anómalo en cualquier entidad. Un contrato directo de L 2M en SESAL puede ser normal.">i</span></label>
-          <label class="chk-item chk-manual-item"><input type="checkbox" id="inv-chk-${i}-3"> <span>Sin explicación legítima simple (emergencia documentada, obra verificable, etc.)</span><span class="chk-manual-badge">⚠ Juicio analista</span><span class="tip" data-tip="¿Declararon emergencia ese mes? ¿Es obra verificable en territorio? ¿El proveedor tiene historial previo con esta entidad? Si no hay respuesta obvia, procede.">i</span></label>
+          <label class="chk-item chk-manual-item"><input type="checkbox" id="inv-chk-${i}-3"> <span>Sin explicación legítima simple (emergencia documentada, obra verificable, etc.)</span>${chk3Badge}<span class="tip" data-tip="¿Declararon emergencia ese mes? ¿Es obra verificable en territorio? ¿El proveedor tiene historial previo con esta entidad? Si no hay respuesta obvia, procede.">i</span></label>
         </div>`;
         })()}
         <button class="btn-open-dpc" onclick="invPrefillDPC(${JSON.stringify(a).replace(/"/g,'&quot;')},${i})">
@@ -1072,6 +1077,52 @@ function invPrefillDPC(alert, i) {
                  patterns.some(p => p.toLowerCase().includes('emergencia') && val.includes('emergencia')) ||
                  patterns.some(p => p.toLowerCase().includes('fraccionamiento') && val.includes('fraccionamiento'));
   });
+
+  // ── Auto-validar Checklist Regla #30 en formulario DPC ─────────────────────
+  // Ítem 1: monto confirmado desde DB
+  const el1 = document.getElementById('inv-chk30-1');
+  const lbl1 = document.getElementById('inv-chk30-1-label');
+  const badge1 = document.getElementById('inv-chk30-1-badge');
+  if (el1 && (alert.monto_contrato || 0) > 0) {
+    el1.checked = true; el1.disabled = true;
+    if (lbl1) lbl1.classList.add('chk-auto');
+    if (badge1) { badge1.className = 'chk-auto-badge'; badge1.textContent = `L ${Number(alert.monto_contrato).toLocaleString('es-HN')} · DB ✓`; }
+  }
+  // Ítem 2: patrón anómalo validado por risk score
+  const el2 = document.getElementById('inv-chk30-2');
+  const lbl2 = document.getElementById('inv-chk30-2-label');
+  const badge2 = document.getElementById('inv-chk30-2-badge');
+  const score2 = parseFloat(alert.risk_score || 0);
+  if (el2 && score2 >= 3) {
+    el2.checked = true; el2.disabled = true;
+    if (lbl2) lbl2.classList.add('chk-auto');
+    if (badge2) { badge2.className = 'chk-auto-badge'; badge2.textContent = `Score ${score2.toFixed(1)} · ${(alert.severity||'').toUpperCase()} ✓`; }
+  }
+  // Ítem 3: contexto de emergencia/directa desde patrones Sentinel
+  const badge3 = document.getElementById('inv-chk30-3-badge');
+  const hasEmergency = patterns.some(p => {
+    const pl = p.toLowerCase();
+    return pl.includes('emergencia') || pl.includes('directa') || pl.includes('urgente');
+  });
+  if (badge3) {
+    if (hasEmergency) {
+      const matchedTags = patterns.filter(p => { const pl=p.toLowerCase(); return pl.includes('emergencia')||pl.includes('directa')||pl.includes('urgente'); })
+                                  .map(p => p.replace(/[{}"]/g,'').trim()).join(' · ');
+      badge3.className = 'chk-manual-badge';
+      badge3.textContent = `⚠ ${matchedTags} — verificar Gaceta`;
+      badge3.title = 'Sentinel detectó esta señal. Confirmar si la emergencia/contratación directa fue real y documentada en Gaceta Oficial.';
+    } else {
+      badge3.className = 'chk-auto-badge';
+      badge3.style.color = '#94a3b8';
+      badge3.style.background = 'rgba(148,163,184,.1)';
+      badge3.style.borderColor = 'rgba(148,163,184,.2)';
+      badge3.textContent = 'Sin señal emergencia/directa';
+    }
+  }
+  // Actualizar header con conteo
+  const hdr = document.getElementById('inv-chk30-header');
+  if (hdr) hdr.innerHTML = `Verificación obligatoria <span style="color:#10b981;font-weight:400;text-transform:none;letter-spacing:0;">(2/3 auto-validados por Sentinel)</span>`;
+
   hubToast('✓ Datos pre-cargados desde alerta Sentinel', 'success');
 }
 

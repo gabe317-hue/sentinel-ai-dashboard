@@ -634,6 +634,7 @@
   <div class="inv-tab-bar">
     <button class="inv-tab active" id="inv-btn-alertas" onclick="switchInvTab('alertas',this)">⚡ Alertas Sentinel</button>
     <button class="inv-tab" id="inv-btn-dpc" onclick="switchInvTab('dpc',this)">📋 Iniciar Expediente</button>
+    <button class="inv-tab" id="inv-btn-expedientes" onclick="switchInvTab('expedientes',this)">📂 Expedientes</button>
   </div>
 
   <!-- ALERTAS -->
@@ -769,6 +770,35 @@
         <button class="btn-copy-p" onclick="invCopiarPromptDPC()">⧉ Copiar prompt</button>
         <span style="font-size:.75rem;color:#556080;">→ Pega esto en una sesión nueva de Cowork</span>
       </div>
+    </div>
+  </div>
+
+  <!-- EXPEDIENTES -->
+  <div id="inv-tab-expedientes" style="display:none;">
+    <div class="inv-filters">
+      <select id="exp-f-estado" onchange="expLoadExpedientes()">
+        <option value="">— Todo estado —</option>
+        <option value="Activo">Activo</option>
+        <option value="Archivado">Archivado</option>
+        <option value="Cerrado">Cerrado</option>
+      </select>
+      <select id="exp-f-tipo" onchange="expLoadExpedientes()">
+        <option value="">— Todo tipo —</option>
+        <option value="DPC">DPC</option>
+        <option value="CC">Constructor de Caso</option>
+        <option value="MANUAL">Manual</option>
+      </select>
+      <input id="exp-f-q" type="text" placeholder="Buscar folio, proveedor…" oninput="expDebounce()" style="min-width:200px;">
+      <div style="flex:1;"></div>
+      <span id="exp-count" style="font-size:.75rem;color:#556080;"></span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="inv-table">
+        <thead><tr>
+          <th>Folio</th><th>Proveedor</th><th>Entidad</th><th>Tipo</th><th>Clasif.</th><th>Estado</th><th>Fecha</th><th style="text-align:center;">Acciones</th>
+        </tr></thead>
+        <tbody id="exp-tbody"><tr><td colspan="8" style="text-align:center;padding:2rem;color:#556080;">Cargando expedientes…</td></tr></tbody>
+      </table>
     </div>
   </div>
 
@@ -952,10 +982,12 @@ function switchInvTab(id, btn) {
   if (btn) btn.classList.add('active');
   document.getElementById('inv-tab-alertas').style.display = id === 'alertas' ? '' : 'none';
   document.getElementById('inv-tab-dpc').style.display = id === 'dpc' ? '' : 'none';
-  const icons = { alertas: '⚡', dpc: '📋' };
-  const titles = { alertas: 'Alertas Sentinel', dpc: 'Iniciar Expediente DPC' };
-  document.getElementById('inv-title-icon').textContent = icons[id];
-  document.getElementById('inv-title-text').textContent = titles[id];
+  document.getElementById('inv-tab-expedientes').style.display = id === 'expedientes' ? '' : 'none';
+  const icons  = { alertas: '⚡', dpc: '📋', expedientes: '📂' };
+  const titles = { alertas: 'Alertas Sentinel', dpc: 'Iniciar Expediente DPC', expedientes: 'Mis Expedientes' };
+  document.getElementById('inv-title-icon').textContent = icons[id] || '📂';
+  document.getElementById('inv-title-text').textContent = titles[id] || '';
+  if (id === 'expedientes') expLoadExpedientes();
 }
 
 // ── Alertas ───────────────────────────────────────────────────────────────────
@@ -1201,6 +1233,103 @@ function toggleAdminPanel() {
 
 function handleOverlayClick(e) {
   if (e.target === document.getElementById('hub-admin-overlay')) toggleAdminPanel();
+}
+
+// ── Expedientes ───────────────────────────────────────────────────────────────
+const STORAGE_URL = 'https://yxvfpeigwthtokqsarvs.supabase.co/storage/v1/object/sign/expedientes-docx/';
+let expDebTimer = null;
+function expDebounce() { clearTimeout(expDebTimer); expDebTimer = setTimeout(expLoadExpedientes, 350); }
+
+async function expLoadExpedientes() {
+  const tbody = document.getElementById('exp-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#556080;">Cargando…</td></tr>';
+
+  const estado = document.getElementById('exp-f-estado').value;
+  const tipo   = document.getElementById('exp-f-tipo').value;
+  const q      = (document.getElementById('exp-f-q').value || '').trim().toLowerCase();
+
+  let query = db.from('expedientes_master')
+    .select('id,folio,proveedor,entidad,tipo,clasificacion,estado,docx_path,fecha_creacion')
+    .order('fecha_creacion', { ascending: false });
+  if (estado) query = query.eq('estado', estado);
+  if (tipo) {
+    const tipoVal = tipo === 'Constructor de Caso' ? 'CC' : tipo;
+    query = query.eq('tipo', tipoVal);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="8" style="color:#f87171;padding:1rem;">${error.message}</td></tr>`;
+    return;
+  }
+
+  let rows = data || [];
+  if (q) rows = rows.filter(r =>
+    (r.folio||'').toLowerCase().includes(q) ||
+    (r.proveedor||'').toLowerCase().includes(q) ||
+    (r.entidad||'').toLowerCase().includes(q)
+  );
+
+  document.getElementById('exp-count').textContent = `${rows.length} expediente${rows.length !== 1 ? 's' : ''}`;
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#556080;">Sin resultados</td></tr>';
+    return;
+  }
+
+  const CLASIF_COLOR = { CRITICA: '#f87171', ALTA: '#fb923c', MEDIA: '#fbbf24', BAJA: '#4ade80' };
+  const TIPO_LABEL   = { DPC: 'DPC', CC: 'Constructor', MANUAL: 'Manual' };
+  const ESTADO_COLOR = { Activo: '#4ade80', Archivado: '#94a3b8', Cerrado: '#556080' };
+
+  tbody.innerHTML = rows.map(r => {
+    const fecha = r.fecha_creacion ? new Date(r.fecha_creacion).toLocaleDateString('es-HN') : '—';
+    const cc = CLASIF_COLOR[r.clasificacion] || '#94a3b8';
+    const ec = ESTADO_COLOR[r.estado] || '#94a3b8';
+    return `<tr>
+      <td><span style="font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:#00e5ff;">${r.folio}</span></td>
+      <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.proveedor||''}">${r.proveedor||'—'}</td>
+      <td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.entidad||''}">${r.entidad||'—'}</td>
+      <td><span style="font-size:.72rem;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);padding:2px 7px;border-radius:4px;color:#a0d8ef;">${TIPO_LABEL[r.tipo]||r.tipo}</span></td>
+      <td><span style="font-size:.72rem;color:${cc};font-weight:600;">${r.clasificacion}</span></td>
+      <td><span style="font-size:.72rem;color:${ec};">${r.estado}</span></td>
+      <td style="font-size:.78rem;color:#556080;">${fecha}</td>
+      <td style="text-align:center;white-space:nowrap;">
+        ${r.docx_path ? `<button onclick="expDescargar('${r.id}','${r.docx_path}')" title="Descargar" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:2px 5px;" >📥</button>` : ''}
+        <button onclick="expArchivar('${r.id}','${r.folio}','${r.estado}')" title="${r.estado==='Archivado'?'Reactivar':'Archivar'}" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:2px 5px;">${r.estado==='Archivado'?'♻️':'📦'}</button>
+        <button onclick="expEliminar('${r.id}','${r.folio}','${r.docx_path||''}')" title="Eliminar" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:2px 5px;">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function expDescargar(id, path) {
+  try {
+    const { data, error } = await db.storage.from('expedientes-docx').createSignedUrl(path, 60);
+    if (error) throw error;
+    const a = document.createElement('a');
+    a.href = data.signedUrl;
+    a.download = path.split('/').pop();
+    a.click();
+  } catch(e) { hubToast('Error al generar URL: ' + e.message, 'error'); }
+}
+
+async function expArchivar(id, folio, estadoActual) {
+  const nuevoEstado = estadoActual === 'Archivado' ? 'Activo' : 'Archivado';
+  const { error } = await db.from('expedientes_master').update({ estado: nuevoEstado }).eq('id', id);
+  if (error) { hubToast('Error: ' + error.message, 'error'); return; }
+  hubToast(`${folio} → ${nuevoEstado}`, 'success');
+  expLoadExpedientes();
+}
+
+async function expEliminar(id, folio, docxPath) {
+  if (!confirm(`¿Eliminar permanentemente ${folio}?\n\nEsta acción no se puede deshacer.`)) return;
+  if (docxPath) {
+    await db.storage.from('expedientes-docx').remove([docxPath]);
+  }
+  const { error } = await db.from('expedientes_master').delete().eq('id', id);
+  if (error) { hubToast('Error: ' + error.message, 'error'); return; }
+  hubToast(`${folio} eliminado`, 'success');
+  expLoadExpedientes();
 }
 </script>
 

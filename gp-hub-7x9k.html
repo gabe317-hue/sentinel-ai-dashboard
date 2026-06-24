@@ -1005,9 +1005,9 @@ function invAlertaRowHtml(a, i) {
         </div>
         <div class="inv-checklist">
           <h4>Checklist Regla #30 — antes de abrir expediente</h4>
-          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-1"> <span>Montos confirmados y filtrados por esta entidad en la DB</span></label>
-          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-2"> <span>Patrón anómalo vs. baseline del sector / período</span></label>
-          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-3"> <span>Sin explicación legítima simple (emergencia documentada, obra verificable, etc.)</span></label>
+          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-1"> <span>Montos confirmados y filtrados por esta entidad en la DB</span><span class="tip" data-tip="Busca el proveedor en el Portal → filtra por esta entidad específica. Confirma que el monto corresponde a esta entidad, no a un agregado global del proveedor.">i</span></label>
+          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-2"> <span>Patrón anómalo vs. baseline del sector / período</span><span class="tip" data-tip="Compara con otros contratos de la misma entidad en el mismo período. Ej: L 75M en un día es anómalo en cualquier entidad. Un contrato directo de L 2M en SESAL puede ser normal.">i</span></label>
+          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-3"> <span>Sin explicación legítima simple (emergencia documentada, obra verificable, etc.)</span><span class="tip" data-tip="¿Declararon emergencia ese mes? ¿Es obra verificable en territorio? ¿El proveedor tiene historial previo con esta entidad? Si no hay respuesta obvia, procede.">i</span></label>
         </div>
         <button class="btn-open-dpc" onclick="invPrefillDPC(${JSON.stringify(a).replace(/"/g,'&quot;')},${i})">
           📋 Abrir como Expediente DPC →

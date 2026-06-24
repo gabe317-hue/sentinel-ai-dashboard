@@ -4759,6 +4759,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="stat-value" id="cnt-total">—</div>
       <div class="stat-label">Total Contratos</div>
       <div class="stat-monto" id="cnt-monto-total">L —</div>
+      <div id="cnt-total-note" style="display:none;font-size:9px;opacity:0.45;margin-top:3px;letter-spacing:0.02em;">▸ <span id="cnt-monitored"></span> monitoreados · <span id="cnt-excluded"></span> excluidos (errores de datos)</div>
     </div>
     <div class="stat-card s-critica" title="Puntaje ≥ 9 — Múltiples patrones + monto alto. Referir a PGR.">
       <div class="stat-value" id="cnt-critica">—</div>
@@ -7622,6 +7623,15 @@ function render() {
   const fmtPct = (n, total) => total > 0 ? (n / total * 100).toFixed(1) + '% del total' : '— %';
 
   document.getElementById('cnt-total').textContent         = (window._bdTotalCount || allAlerts.length).toLocaleString('es-HN');
+  { const bdTotal = window._bdTotalCount || 0; const monitored = allAlerts.length; const excluded = bdTotal - monitored;
+    if (bdTotal > 0 && excluded > 0) {
+      const note = document.getElementById('cnt-total-note');
+      if (note) { note.style.display = 'block';
+        document.getElementById('cnt-monitored').textContent = monitored.toLocaleString('es-HN');
+        document.getElementById('cnt-excluded').textContent  = excluded.toLocaleString('es-HN');
+      }
+    }
+  }
   document.getElementById('cnt-critica').textContent       = c.critica;
   document.getElementById('cnt-alta').textContent          = c.alta;
   document.getElementById('cnt-media').textContent         = c.media;

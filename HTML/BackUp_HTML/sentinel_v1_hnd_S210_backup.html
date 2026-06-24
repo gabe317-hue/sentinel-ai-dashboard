@@ -6475,9 +6475,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- ENGEL SECTION -->
     <div style="margin-top:22px;">
       <div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--purple);text-transform:uppercase;padding:0 2px 8px;border-bottom:1px solid rgba(168,85,247,0.2);margin-bottom:12px;">🇺🇸 Lista Engel — Depto. de Estado EE.UU.</div>
-      <div style="font-size:11px;color:var(--text-dim);background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;">
-        ℹ️ <strong style="color:var(--purple);">Metodología:</strong> Sentinel identifica contratos donde el nombre del proveedor coincide con el actor señalado o con personas que comparten sus apellidos (familiares registrados como proveedores del Estado). Esta coincidencia es un indicador de posible conflicto de interés bajo la Ley RENACER — no una conclusión jurídica.
-      </div>
       <div id="engelSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:0 0 6px;padding:14px 18px;background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.2);border-radius:10px;">
         <div><span style="font-size:11px;color:var(--muted);">ACTORES EN LISTA</span><br><span id="engel-stat-actores" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
         <div><span style="font-size:11px;color:var(--muted);">CONTRATOS VINCULADOS</span><br><span id="engel-stat-contratos" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
@@ -23906,9 +23903,6 @@ function renderEngelPanel() {
           ${alerts.length>50?`<tr><td colspan="5" style="padding:10px 12px;text-align:center;color:var(--muted);font-size:11px;">… y ${alerts.length-50} contratos más</td></tr>`:''}
         </tbody>
       </table>
-      <div style="padding:8px 14px;font-size:10px;color:var(--muted);border-top:1px solid var(--border);background:rgba(255,255,255,0.02);">
-        ⚠️ <strong>L. —</strong> indica contrato sin monto registrado. Los contratos del portal IAIP (prefijo <code style="color:var(--text-dim);">IAIP-</code>) no incluyen montos en formato estructurado — requieren análisis de documentos PDF individuales (Fase 2).
-      </div>
     </div>`;
   });
   document.getElementById('engelBody').innerHTML = html;

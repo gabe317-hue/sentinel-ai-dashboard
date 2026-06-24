@@ -330,6 +330,11 @@
   .inv-checklist h4 { font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:#f59e0b;margin-bottom:.7rem;font-family:'IBM Plex Mono',monospace; }
   .chk-item { display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.5rem;font-size:.8rem;color:#e8eaf0; }
   .chk-item input[type=checkbox] { margin-top:2px;accent-color:#00e5ff;width:14px;height:14px;flex-shrink:0; }
+  .chk-auto { opacity:.75; }
+  .chk-auto input[type=checkbox]:disabled { cursor:default;accent-color:#10b981; }
+  .chk-auto-badge { margin-left:auto;font-size:.68rem;color:#10b981;font-family:'IBM Plex Mono',monospace;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:4px;padding:1px 7px;white-space:nowrap;flex-shrink:0; }
+  .chk-manual-badge { margin-left:auto;font-size:.68rem;color:#f59e0b;font-family:'IBM Plex Mono',monospace;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:4px;padding:1px 7px;white-space:nowrap;flex-shrink:0; }
+  .chk-manual-item { color:#fff;font-weight:600; }
   .btn-open-dpc { background:linear-gradient(135deg,#00e5ff,#0091ea);color:#000;font-family:inherit;font-weight:700;font-size:.82rem;padding:9px 20px;border:none;border-radius:7px;cursor:pointer;transition:all .2s;margin-top:.5rem; }
   .btn-open-dpc:hover { opacity:.88; }
 
@@ -1003,12 +1008,20 @@ function invAlertaRowHtml(a, i) {
           <div class="adf"><label title="Fuente de datos: ONCAE (Portal de Compras Públicas) o IAIP (Ley de Transparencia)">Fuente ℹ️</label><span>${a.source || 'Sin clasificar'}</span></div>
           <div class="adf"><label>Monto contrato</label><span>${monto}</span></div>
         </div>
-        <div class="inv-checklist">
-          <h4>Checklist Regla #30 — antes de abrir expediente</h4>
-          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-1"> <span>Montos confirmados y filtrados por esta entidad en la DB</span><span class="tip" data-tip="Busca el proveedor en el Portal → filtra por esta entidad específica. Confirma que el monto corresponde a esta entidad, no a un agregado global del proveedor.">i</span></label>
-          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-2"> <span>Patrón anómalo vs. baseline del sector / período</span><span class="tip" data-tip="Compara con otros contratos de la misma entidad en el mismo período. Ej: L 75M en un día es anómalo en cualquier entidad. Un contrato directo de L 2M en SESAL puede ser normal.">i</span></label>
-          <label class="chk-item"><input type="checkbox" id="inv-chk-${i}-3"> <span>Sin explicación legítima simple (emergencia documentada, obra verificable, etc.)</span><span class="tip" data-tip="¿Declararon emergencia ese mes? ¿Es obra verificable en territorio? ¿El proveedor tiene historial previo con esta entidad? Si no hay respuesta obvia, procede.">i</span></label>
-        </div>
+        ${(()=>{
+          const chk1Auto = (a.monto_contrato || 0) > 0;
+          const chk1Badge = chk1Auto ? `<span class="chk-auto-badge">L ${Number(a.monto_contrato).toLocaleString('es-HN')} · DB ✓</span>` : '';
+          const chk2Auto = parseFloat(a.risk_score || 0) >= 3;
+          const chk2Badge = chk2Auto ? `<span class="chk-auto-badge">Score ${parseFloat(a.risk_score).toFixed(1)} · ${sev} ✓</span>` : '';
+          const autoCount = (chk1Auto?1:0) + (chk2Auto?1:0);
+          const subtitle = autoCount > 0 ? ` <span style="color:#10b981;font-weight:400;text-transform:none;letter-spacing:0;">(${autoCount}/3 auto-validados por Sentinel)</span>` : '';
+          return `<div class="inv-checklist">
+          <h4>Checklist Regla #30${subtitle}</h4>
+          <label class="chk-item${chk1Auto?' chk-auto':''}"><input type="checkbox" id="inv-chk-${i}-1"${chk1Auto?' checked disabled':''}> <span>Montos confirmados y filtrados por esta entidad en la DB</span>${chk1Badge}<span class="tip" data-tip="Busca el proveedor en el Portal → filtra por esta entidad específica. Confirma que el monto corresponde a esta entidad, no a un agregado global del proveedor.">i</span></label>
+          <label class="chk-item${chk2Auto?' chk-auto':''}"><input type="checkbox" id="inv-chk-${i}-2"${chk2Auto?' checked disabled':''}> <span>Patrón anómalo vs. baseline del sector / período</span>${chk2Badge}<span class="tip" data-tip="Compara con otros contratos de la misma entidad en el mismo período. Ej: L 75M en un día es anómalo en cualquier entidad. Un contrato directo de L 2M en SESAL puede ser normal.">i</span></label>
+          <label class="chk-item chk-manual-item"><input type="checkbox" id="inv-chk-${i}-3"> <span>Sin explicación legítima simple (emergencia documentada, obra verificable, etc.)</span><span class="chk-manual-badge">⚠ Juicio analista</span><span class="tip" data-tip="¿Declararon emergencia ese mes? ¿Es obra verificable en territorio? ¿El proveedor tiene historial previo con esta entidad? Si no hay respuesta obvia, procede.">i</span></label>
+        </div>`;
+        })()}
         <button class="btn-open-dpc" onclick="invPrefillDPC(${JSON.stringify(a).replace(/"/g,'&quot;')},${i})">
           📋 Abrir como Expediente DPC →
         </button>
@@ -1035,10 +1048,12 @@ function invToggleAlertDetail(i) {
 }
 
 function invPrefillDPC(alert, i) {
-  if (!document.getElementById(`inv-chk-${i}-1`)?.checked ||
-      !document.getElementById(`inv-chk-${i}-2`)?.checked ||
-      !document.getElementById(`inv-chk-${i}-3`)?.checked) {
-    hubToast('Completa el checklist Regla #30 antes de abrir expediente', 'error');
+  const chk1 = document.getElementById(`inv-chk-${i}-1`)?.checked;
+  const chk2 = document.getElementById(`inv-chk-${i}-2`)?.checked;
+  const chk3 = document.getElementById(`inv-chk-${i}-3`)?.checked;
+  if (!chk1 || !chk2 || !chk3) {
+    const msg = !chk3 ? '⚠ Confirma que no existe explicación legítima simple (ítem 3)' : 'Completa el checklist Regla #30 antes de abrir expediente';
+    hubToast(msg, 'error');
     return;
   }
   switchInvTab('dpc', document.getElementById('inv-btn-dpc'));

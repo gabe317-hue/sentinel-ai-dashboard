@@ -19261,8 +19261,40 @@ async function ccConfirmarGuardar() {
       const sobreescribir = confirm(`Ya existe un expediente para este proveedor/entidad:\n"${existing[0].nombre}"\n\n¿Guardar de todas formas como nuevo expediente?`);
       if (!sobreescribir) { btn.disabled = false; btn.innerHTML = '💾 Confirmar Guardar'; return; }
     }
-    const { error } = await db.from('expedientes').insert([payload]);
+    const { data: insData, error } = await db.from('expedientes').insert([payload]).select('id');
     if (error) throw new Error(error.message);
+    const ccId = insData?.[0]?.id ?? null;
+
+    // ── Sync a expedientes_master ─────────────────────────────────────────
+    try {
+      const year = new Date().getFullYear();
+      const { data: folios } = await db.from('expedientes_master')
+        .select('folio').like('folio', `SEN-INV-${year}-%`);
+      const nums = (folios || []).map(f => {
+        const m = f.folio.match(/SEN-INV-\d{4}-(\d+)$/);
+        return m ? parseInt(m[1]) : 0;
+      });
+      const nextNum = Math.max(0, ...nums) + 1;
+      const folio = `SEN-INV-${year}-${String(nextNum).padStart(3,'0')}`;
+      const masterPayload = {
+        folio,
+        tipo:          'CC',
+        proveedor:     d.proveedor,
+        entidad:       d.entidad,
+        monto:         payload.monto_total,
+        clasificacion: 'ALTA',
+        score:         payload.score_total,
+        senales:       d.esquema ? [d.esquema] : [],
+        hallazgo:      notas || nombre,
+        estado:        'Activo',
+        cc_id:         ccId,
+      };
+      await db.from('expedientes_master').insert([masterPayload]);
+    } catch(masterErr) {
+      console.warn('expedientes_master sync (non-fatal):', masterErr.message);
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
     document.getElementById('ccGuardarModal').style.display = 'none';
     alert(`✅ Expediente "${nombre}" guardado correctamente.`);
   } catch(e) {

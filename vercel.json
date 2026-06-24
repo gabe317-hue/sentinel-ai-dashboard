@@ -2,7 +2,8 @@
   "rewrites": [
     { "source": "/sentinel_v1_hnd.html", "destination": "/HTML/sentinel_v1_hnd.html" },
     { "source": "/mvp.html", "destination": "/HTML/mvp.html" },
-    { "source": "/demo.html", "destination": "/HTML/demo.html" }
+    { "source": "/demo.html", "destination": "/HTML/demo.html" },
+    { "source": "/analytics.html", "destination": "/HTML/analytics.html" }
   ],
   "headers": [
     {

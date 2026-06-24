@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel AI · Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:       #0a0a0f;
+    --surface:  #111118;
+    --border:   rgba(255,255,255,0.07);
+    --text:     #e2e8f0;
+    --muted:    rgba(226,232,240,0.45);
+    --electric: #00e5ff;
+    --red:      #ef4444;
+    --amber:    #f59e0b;
+    --green:    #22c55e;
+    --purple:   #a855f7;
+    --blue:     #3b82f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--electric); box-shadow: 0 0 8px var(--electric); }
+  .header h1 { font-size: 18px; font-weight: 700; letter-spacing: .04em; color: var(--electric); }
+  .header-sub { font-size: 11px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+  .back-btn {
+    font-size: 12px; color: var(--muted); text-decoration: none;
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px;
+    transition: color .2s, border-color .2s;
+  }
+  .back-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+  #last-updated { font-size: 10px; color: var(--muted); }
+
+  /* ── Loading overlay ── */
+  #loading {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 999; gap: 16px;
+  }
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid var(--border);
+    border-top-color: var(--electric); border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { font-size: 13px; color: var(--muted); }
+
+  /* ── Grid ── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+  }
+  .chart-card.full-width { grid-column: 1 / -1; }
+  .chart-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .chart-subtitle {
+    font-size: 12px; color: var(--text);
+    margin-bottom: 16px;
+  }
+  .chart-insight {
+    font-size: 10px; color: var(--muted);
+    margin-top: 12px; padding-top: 10px;
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  .chart-insight b { color: var(--electric); }
+  canvas { max-height: 320px; }
+
+  /* ── Stat chips ── */
+  .stat-row {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .stat-chip { display: flex; flex-direction: column; gap: 2px; }
+  .stat-chip .val { font-size: 20px; font-weight: 700; font-family: monospace; }
+  .stat-chip .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p id="loading-msg">Cargando datos analíticos…</p>
+</div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-dot"></div>
+    <div>
+      <h1>SENTINEL AI · ANALYTICS</h1>
+      <div class="header-sub">Inteligencia propietaria · Solo datos SEFIN + ONCAE</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span id="last-updated"></span>
+    <a class="back-btn" href="/gp-hub-7x9k.html">← Hub</a>
+  </div>
+</div>
+
+<div class="charts-grid" id="charts-grid" style="display:none;">
+
+  <!-- 1. Spike temporal -->
+  <div class="chart-card full-width">
+    <div class="chart-title">Chart 01 · Spike Temporal</div>
+    <div class="chart-subtitle">Volumen de contratos + monto mensual 2019–2026</div>
+    <canvas id="chart-spike"></canvas>
+    <div class="chart-insight" id="insight-spike">Cargando…</div>
+  </div>
+
+  <!-- 2. Concentración por entidad -->
+  <div class="chart-card">
+    <div class="chart-title">Chart 02 · Concentración por Entidad</div>
+    <div class="chart-subtitle">Top 25 instituciones por monto total</div>
+    <canvas id="chart-entidad"></canvas>
+    <div class="chart-insight" id="insight-entidad">Cargando…</div>
+  </div>
+
+  <!-- 3. Distribución de montos -->
+  <div class="chart-card">
+    <div class="chart-title">Chart 03 · Distribución de Montos</div>
+    <div class="chart-subtitle">Contratos por rango de monto (Lempiras)</div>
+    <canvas id="chart-dist"></canvas>
+    <div class="chart-insight" id="insight-dist">Cargando…</div>
+  </div>
+
+  <!-- 4. Evolución de severidad -->
+  <div class="chart-card full-width">
+    <div class="chart-title">Chart 04 · Evolución de Severidad</div>
+    <div class="chart-subtitle">Críticas / Altas / Medias por trimestre</div>
+    <canvas id="chart-sev"></canvas>
+    <div class="chart-insight" id="insight-sev">Cargando…</div>
+  </div>
+
+  <!-- 5. Heatmap NS × Entidad -->
+  <div class="chart-card full-width">
+    <div class="chart-title">Chart 05 · Mapa de Calor — Señales NS × Entidad</div>
+    <div class="chart-subtitle">Top 15 entidades × tipo de patrón (contratos con alerta)</div>
+    <canvas id="chart-heatmap" style="max-height:400px;"></canvas>
+    <div class="chart-insight" id="insight-heatmap">Cargando…</div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmZwZWlnd3RodG9rcXNhcnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzM5MjksImV4cCI6MjA4OTAwOTkyOX0.L0PseYDJV41A1OWzlO0zrth_EJzJCcp5qz8bA8dFl9k';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+Chart.defaults.color = 'rgba(226,232,240,0.55)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+Chart.defaults.font.size = 11;
+
+const fmtL = n => {
+  if (!n) return 'L 0';
+  if (n >= 1e9) return `L ${(n/1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `L ${(n/1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `L ${(n/1e3).toFixed(0)}K`;
+  return `L ${n.toFixed(0)}`;
+};
+
+function setLoading(msg) {
+  document.getElementById('loading-msg').textContent = msg;
+}
+
+// ── Chart 1: Spike Temporal ───────────────────────────────────────────────────
+async function buildSpike() {
+  setLoading('Cargando datos temporales…');
+  const { data, error } = await db.rpc('get_analytics_spike_temporal');
+  if (error || !data) return;
+
+  const labels   = data.map(d => d.mes);
+  const contratos = data.map(d => Number(d.contratos));
+  const montos   = data.map(d => Number(d.monto) / 1e6);
+
+  new Chart(document.getElementById('chart-spike'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Contratos',
+          data: contratos,
+          backgroundColor: 'rgba(0,229,255,0.25)',
+          borderColor: 'rgba(0,229,255,0.7)',
+          borderWidth: 1,
+          yAxisID: 'y',
+          order: 2,
+        },
+        {
+          label: 'Monto (M Lps)',
+          data: montos,
+          type: 'line',
+          borderColor: '#f59e0b',
+          backgroundColor: 'rgba(245,158,11,0.1)',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: true,
+          yAxisID: 'y2',
+          order: 1,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'top' }, tooltip: {
+        callbacks: {
+          label: ctx => ctx.datasetIndex === 1
+            ? ` L ${ctx.raw.toFixed(1)}M`
+            : ` ${ctx.raw.toLocaleString()} contratos`
+        }
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { maxTicksLimit: 24, maxRotation: 45 } },
+        y:  { grid: { color: 'rgba(255,255,255,0.04)' }, title: { display: true, text: 'Contratos' } },
+        y2: { position: 'right', grid: { display: false }, title: { display: true, text: 'Monto (M Lps)' } }
+      }
+    }
+  });
+
+  // Detectar spike: mes con mayor volumen
+  const maxIdx = contratos.indexOf(Math.max(...contratos));
+  const maxMontoIdx = montos.indexOf(Math.max(...montos));
+  const q4months = labels.filter(l => l.endsWith('-10') || l.endsWith('-11') || l.endsWith('-12'));
+  const q4data = q4months.map(m => contratos[labels.indexOf(m)]);
+  const q4avg = q4data.length ? q4data.reduce((a,b)=>a+b,0)/q4data.length : 0;
+  const totalAvg = contratos.reduce((a,b)=>a+b,0)/contratos.length;
+  const q4ratio = totalAvg > 0 ? (q4avg/totalAvg).toFixed(1) : '—';
+  document.getElementById('insight-spike').innerHTML =
+    `<b>Pico de volumen:</b> ${labels[maxIdx]} (${contratos[maxIdx].toLocaleString()} contratos) &nbsp;·&nbsp; ` +
+    `<b>Pico de monto:</b> ${labels[maxMontoIdx]} (L ${montos[maxMontoIdx].toFixed(0)}M) &nbsp;·&nbsp; ` +
+    `<b>Ratio Q4 vs promedio:</b> ${q4ratio}x — ` +
+    (parseFloat(q4ratio) > 1.2 ? '⚠️ patrón de ejecución presupuestaria acelerada en Q4 detectado' : '✅ sin spike Q4 significativo');
+}
+
+// ── Chart 2: Concentración por entidad ───────────────────────────────────────
+async function buildEntidad() {
+  setLoading('Cargando concentración por entidad…');
+  const { data, error } = await db.rpc('get_analytics_concentracion_entidad');
+  if (error || !data) return;
+
+  const labels = data.map(d => d.entidad.length > 30 ? d.entidad.slice(0,30)+'…' : d.entidad);
+  const montos = data.map(d => Number(d.monto) / 1e6);
+  const criticas = data.map(d => Number(d.criticas));
+  const pctCritica = data.map((d,i) => d.contratos > 0 ? ((d.criticas/d.contratos)*100).toFixed(1) : 0);
+
+  // Color bars by % crítica
+  const colors = pctCritica.map(p => {
+    const pn = parseFloat(p);
+    if (pn > 5)  return 'rgba(239,68,68,0.7)';
+    if (pn > 2)  return 'rgba(245,158,11,0.7)';
+    return 'rgba(0,229,255,0.5)';
+  });
+
+  new Chart(document.getElementById('chart-entidad'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Monto Total (M Lps)',
+        data: montos,
+        backgroundColor: colors,
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const i = ctx.dataIndex;
+              return [
+                ` L ${ctx.raw.toFixed(1)}M`,
+                ` ${data[i].contratos} contratos`,
+                ` ${pctCritica[i]}% críticas`
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, title: { display: true, text: 'Monto (M Lps)' } },
+        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+
+  const topEnt = data[0];
+  const total = montos.reduce((a,b)=>a+b,0);
+  const top5pct = (montos.slice(0,5).reduce((a,b)=>a+b,0)/total*100).toFixed(0);
+  document.getElementById('insight-entidad').innerHTML =
+    `<b>Top institución:</b> ${topEnt.entidad} — L ${(Number(topEnt.monto)/1e6).toFixed(0)}M &nbsp;·&nbsp; ` +
+    `<b>Concentración:</b> Top 5 entidades = ${top5pct}% del monto total &nbsp;·&nbsp; ` +
+    `<span style="color:#ef4444">🔴 rojo</span> = >5% críticas, <span style="color:#f59e0b">🟡 amarillo</span> = 2–5%, <span style="color:#00e5ff">🔵 azul</span> = <2%`;
+}
+
+// ── Chart 3: Distribución de montos ──────────────────────────────────────────
+async function buildDist() {
+  setLoading('Calculando distribución de montos…');
+  const { data, error } = await db.rpc('get_analytics_distribucion_montos');
+  if (error || !data) return;
+
+  const labels   = data.map(d => d.rango);
+  const contratos = data.map(d => Number(d.contratos));
+
+  // Highlight umbral zone (250K-500K = bucket 4, justo debajo del umbral Compra Menor ~500K)
+  const colors = data.map(d => {
+    if (d.rango === '250K–500K') return 'rgba(245,158,11,0.8)';
+    if (d.rango === '100K–250K') return 'rgba(245,158,11,0.4)';
+    return 'rgba(0,229,255,0.4)';
+  });
+
+  new Chart(document.getElementById('chart-dist'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Contratos',
+        data: contratos,
+        backgroundColor: colors,
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw.toLocaleString()} contratos` } },
+        annotation: {}
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, title: { display: true, text: 'Contratos' } }
+      }
+    }
+  });
+
+  const umbralBucket = data.find(d => d.rango === '250K–500K');
+  const totalContratos = contratos.reduce((a,b)=>a+b,0);
+  const umbralPct = umbralBucket ? (Number(umbralBucket.contratos)/totalContratos*100).toFixed(1) : 0;
+  document.getElementById('insight-dist').innerHTML =
+    `<b style="color:#f59e0b">⚠️ Zona umbral (250K–500K):</b> ${umbralPct}% de todos los contratos — ` +
+    (parseFloat(umbralPct) > 15
+      ? 'concentración elevada justo debajo del umbral de licitación pública. Posible NS-5 sistémico.'
+      : 'sin concentración anómala en zona umbral.');
+}
+
+// ── Chart 4: Evolución de severidad ──────────────────────────────────────────
+async function buildSeveridad() {
+  setLoading('Cargando evolución de severidad…');
+  const { data, error } = await db.rpc('get_analytics_evolucion_severidad');
+  if (error || !data) return;
+
+  const labels  = data.map(d => d.trimestre);
+  const critica = data.map(d => Number(d.critica));
+  const alta    = data.map(d => Number(d.alta));
+  const media   = data.map(d => Number(d.media));
+
+  new Chart(document.getElementById('chart-sev'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Crítica', data: critica, backgroundColor: 'rgba(239,68,68,0.75)', stack: 'sev' },
+        { label: 'Alta',    data: alta,    backgroundColor: 'rgba(245,158,11,0.65)', stack: 'sev' },
+        { label: 'Media',   data: media,   backgroundColor: 'rgba(59,130,246,0.45)', stack: 'sev' },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        x: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { maxTicksLimit: 20 } },
+        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+
+  // Detect trend: compare last 4 quarters vs first 4 quarters crítica rate
+  if (critica.length >= 8) {
+    const recentAvg = critica.slice(-4).reduce((a,b)=>a+b,0)/4;
+    const baseAvg   = critica.slice(0,4).reduce((a,b)=>a+b,0)/4;
+    const trend = baseAvg > 0 ? ((recentAvg - baseAvg)/baseAvg*100).toFixed(0) : 0;
+    document.getElementById('insight-sev').innerHTML =
+      `<b>Tendencia críticas (últimos 4 trimestres vs. primeros 4):</b> ` +
+      (parseInt(trend) > 20  ? `<span style="color:#ef4444">⬆ +${trend}% — escalada de riesgo significativa</span>` :
+       parseInt(trend) < -20 ? `<span style="color:#22c55e">⬇ ${trend}% — reducción de riesgo</span>` :
+       `<span style="color:#f59e0b">→ ${trend > 0 ? '+':''}${trend}% — estable</span>`);
+  }
+}
+
+// ── Chart 5: Heatmap NS × Entidad ─────────────────────────────────────────────
+async function buildHeatmap() {
+  setLoading('Construyendo mapa de calor…');
+  const { data, error } = await db.rpc('get_analytics_ns_heatmap');
+  if (error || !data) return;
+
+  // Build matrix: entidades (rows) × patrones (cols)
+  const entidades = [...new Set(data.map(d => d.entidad))];
+  const patrones  = [...new Set(data.map(d => d.patron))].filter(p => p !== 'Otro');
+
+  // Build lookup
+  const lookup = {};
+  data.forEach(d => { lookup[`${d.entidad}||${d.patron}`] = Number(d.contratos); });
+
+  // Find max for color scaling
+  const vals = data.map(d => Number(d.contratos));
+  const maxVal = Math.max(...vals);
+
+  // Build datasets: one per pattern (stacked grouped bar = heatmap approximation)
+  const COLORS = {
+    'Fraccionamiento': 'rgba(239,68,68,0.7)',
+    'Compra Directa':  'rgba(245,158,11,0.7)',
+    'Umbral Evadido':  'rgba(168,85,247,0.7)',
+    'Debut Anómalo':   'rgba(0,229,255,0.6)',
+    'Monogamia':       'rgba(34,197,94,0.6)',
+    'Emergencia':      'rgba(239,68,68,0.4)',
+    'Sin Historial':   'rgba(100,116,139,0.6)',
+  };
+
+  const shortNames = entidades.map(e => e.length > 28 ? e.slice(0,28)+'…' : e);
+
+  new Chart(document.getElementById('chart-heatmap'), {
+    type: 'bar',
+    data: {
+      labels: shortNames,
+      datasets: patrones.map(p => ({
+        label: p,
+        data: entidades.map(e => lookup[`${e}||${p}`] || 0),
+        backgroundColor: COLORS[p] || 'rgba(100,116,139,0.5)',
+        stack: 'ns',
+      }))
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
+        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, title: { display: true, text: 'Contratos con alerta' } }
+      }
+    }
+  });
+
+  const topEnt = entidades[0];
+  const topEntTotal = patrones.reduce((s,p) => s + (lookup[`${topEnt}||${p}`]||0), 0);
+  document.getElementById('insight-heatmap').innerHTML =
+    `<b>Institución con más señales NS:</b> ${topEnt} (${topEntTotal} contratos con patrón). ` +
+    `Entidades con barras anchas en <span style="color:#ef4444">Fraccionamiento</span> o <span style="color:#f59e0b">Compra Directa</span> indican dependencia sistemática de modalidades de menor control.`;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    await buildSpike();
+    await buildEntidad();
+    await buildDist();
+    await buildSeveridad();
+    await buildHeatmap();
+
+    document.getElementById('last-updated').textContent =
+      'Actualizado: ' + new Date().toLocaleString('es-HN', { dateStyle: 'medium', timeStyle: 'short' });
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('charts-grid').style.display = 'grid';
+  } catch(e) {
+    document.getElementById('loading-msg').textContent = 'Error cargando datos: ' + e.message;
+  }
+}
+
+init();
+</script>
+</body>
+</html>

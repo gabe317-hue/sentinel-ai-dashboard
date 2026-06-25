@@ -190,14 +190,6 @@
     <div class="chart-insight" id="insight-sankey">Cargando…</div>
   </div>
 
-  <!-- 9. Perfil de Riesgo Institucional vs. Baseline -->
-  <div class="chart-card full-width">
-    <div class="chart-title">Chart 09 · Perfil de Riesgo Institucional vs. Baseline Nacional</div>
-    <div class="chart-subtitle">Top 4 instituciones de mayor riesgo · 7 dimensiones · Barras grises = promedio nacional</div>
-    <canvas id="chart-risk" style="max-height:380px;"></canvas>
-    <div class="chart-insight" id="insight-risk">Cargando…</div>
-  </div>
-
 </div>
 <div class="sankey-tooltip" id="sankey-tooltip"></div>
 
@@ -639,84 +631,6 @@ async function buildSankey() {
     `<span style="color:#f59e0b">⚠️ Grosor del flujo = monto. Rojo = concentración ≥80%, Naranja = ≥50%</span>`;
 }
 
-// ── Chart 9: Perfil de Riesgo Institucional vs. Baseline ─────────────────────
-async function buildRiskProfile() {
-  setLoading('Calculando perfiles de riesgo institucional…');
-  const { data, error } = await db.rpc('get_analytics_risk_profile');
-  if (error || !data || !data.length) return;
-
-  const DIMS = [
-    { key: 'pct_contratacion_directa', label: 'Ctr. Directa' },
-    { key: 'pct_periodo_minimo',       label: 'Período Mín.' },
-    { key: 'pct_fraccionamiento',      label: 'Fraccionamiento' },
-    { key: 'pct_periodo_urgente',      label: 'Prd. Urgente' },
-    { key: 'pct_compra_menor',         label: 'Compra Menor' },
-    { key: 'pct_fuera_giro',           label: 'Fuera de Giro' },
-    { key: 'pct_critica',              label: '% Crítica' },
-  ];
-
-  const COLORS = [
-    { bg: 'rgba(226,232,240,0.18)', border: 'rgba(226,232,240,0.5)' },
-    { bg: 'rgba(239,68,68,0.70)',   border: 'rgba(239,68,68,1)' },
-    { bg: 'rgba(245,158,11,0.70)',  border: 'rgba(245,158,11,1)' },
-    { bg: 'rgba(168,85,247,0.70)',  border: 'rgba(168,85,247,1)' },
-    { bg: 'rgba(0,229,255,0.55)',   border: 'rgba(0,229,255,1)' },
-  ];
-
-  const datasets = data.map((row, i) => ({
-    label: row.ent.length > 38 ? row.ent.slice(0, 38) + '…' : row.ent,
-    data: DIMS.map(d => parseFloat(row[d.key]) || 0),
-    backgroundColor: (COLORS[i] || COLORS[4]).bg,
-    borderColor:     (COLORS[i] || COLORS[4]).border,
-    borderWidth: i === 0 ? 2 : 1,
-  }));
-
-  new Chart(document.getElementById('chart-risk'), {
-    type: 'bar',
-    data: { labels: DIMS.map(d => d.label), datasets },
-    options: {
-      responsive: true,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { position: 'top' },
-        tooltip: {
-          callbacks: {
-            label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`
-          }
-        }
-      },
-      scales: {
-        x: { grid: { color: 'rgba(255,255,255,0.04)' } },
-        y: {
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          title: { display: true, text: '% de contratos con esa característica' },
-          max: 100
-        }
-      }
-    }
-  });
-
-  // Insight: mayor desviación de baseline
-  const baseline = data[0];
-  let maxDev = 0; let maxDimLabel = ''; let maxEntName = '';
-  data.slice(1).forEach(row => {
-    DIMS.forEach(d => {
-      const dev = parseFloat(row[d.key]) - parseFloat(baseline[d.key]);
-      if (dev > maxDev) { maxDev = dev; maxDimLabel = d.label; maxEntName = row.ent; }
-    });
-  });
-  const topEnt = data[1];
-  const critRatio = parseFloat(baseline.pct_critica) > 0
-    ? (parseFloat(topEnt.pct_critica) / parseFloat(baseline.pct_critica)).toFixed(0)
-    : '—';
-  document.getElementById('insight-risk').innerHTML =
-    `<b>Mayor desviación del baseline:</b> ${maxEntName.split(',')[0]} · <b>${maxDimLabel}</b> — ` +
-    `<b style="color:#ef4444">+${maxDev.toFixed(1)}pp sobre la media nacional</b> &nbsp;·&nbsp; ` +
-    `<b>Mayor % Crítica:</b> ${topEnt.ent.length > 40 ? topEnt.ent.slice(0,40)+'…' : topEnt.ent} ` +
-    `(<b style="color:#ef4444">${topEnt.pct_critica}%</b> vs. ${baseline.pct_critica}% baseline — ${critRatio}x el promedio nacional) &nbsp;·&nbsp; ` +
-    `Barras grises = BASELINE NACIONAL (${Number(baseline.total_contratos).toLocaleString()} contratos)`;
-}
-
 // ── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
   try {
@@ -726,7 +640,6 @@ async function init() {
     await buildSeveridad();
     await buildHeatmap();
     await buildSankey();
-    await buildRiskProfile();
 
     document.getElementById('last-updated').textContent =
       'Actualizado: ' + new Date().toLocaleString('es-HN', { dateStyle: 'medium', timeStyle: 'short' });

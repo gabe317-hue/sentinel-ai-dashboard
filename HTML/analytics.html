@@ -190,6 +190,14 @@
     <div class="chart-insight" id="insight-sankey">Cargando…</div>
   </div>
 
+  <!-- 8. Concentración de Proveedores por Entidad -->
+  <div class="chart-card full-width">
+    <div class="chart-title">Chart 08 · Concentración de Proveedores — Top 10 Entidades</div>
+    <div class="chart-subtitle">% del gasto institucional por proveedor · Proveedor #1 (rojo) = mayor concentración</div>
+    <canvas id="chart-vendor" style="max-height:380px;"></canvas>
+    <div class="chart-insight" id="insight-vendor">Cargando…</div>
+  </div>
+
   <!-- 9. Perfil de Riesgo Institucional vs. Baseline -->
   <div class="chart-card full-width">
     <div class="chart-title">Chart 09 · Perfil de Riesgo Institucional vs. Baseline Nacional</div>
@@ -639,6 +647,85 @@ async function buildSankey() {
     `<span style="color:#f59e0b">⚠️ Grosor del flujo = monto. Rojo = concentración ≥80%, Naranja = ≥50%</span>`;
 }
 
+// ── Chart 8: Concentración de Proveedores ────────────────────────────────────
+async function buildVendorConcentration() {
+  setLoading('Calculando concentración de proveedores…');
+  const { data, error } = await db.rpc('get_analytics_vendor_concentration');
+  if (error || !data || !data.length) return;
+
+  // Build entity list (preserving order from RPC = desc monto)
+  const entities = [...new Set(data.map(d => d.entidad))];
+  const shortNames = entities.map(e => e.length > 28 ? e.slice(0, 28) + '…' : e);
+
+  // Slot config
+  const SLOTS = [
+    { slot: 1, label: 'Proveedor #1', bg: 'rgba(239,68,68,0.75)',  border: 'rgba(239,68,68,1)' },
+    { slot: 2, label: 'Proveedor #2', bg: 'rgba(245,158,11,0.70)', border: 'rgba(245,158,11,1)' },
+    { slot: 3, label: 'Proveedor #3', bg: 'rgba(168,85,247,0.65)', border: 'rgba(168,85,247,1)' },
+    { slot: 4, label: 'Resto',        bg: 'rgba(100,116,139,0.35)', border: 'rgba(100,116,139,0.6)' },
+  ];
+
+  // Lookup: entidad||slot → {pct, label}
+  const lookup = {};
+  data.forEach(d => { lookup[`${d.entidad}||${d.vendor_slot}`] = { pct: parseFloat(d.pct_monto) || 0, label: d.proveedor_label }; });
+
+  const datasets = SLOTS.map(s => ({
+    label: s.label,
+    data: entities.map(e => (lookup[`${e}||${s.slot}`] || {}).pct || 0),
+    backgroundColor: s.bg,
+    borderColor: s.border,
+    borderWidth: 1,
+    stack: 'vendors',
+  }));
+
+  new Chart(document.getElementById('chart-vendor'), {
+    type: 'bar',
+    data: { labels: shortNames, datasets },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const ent = entities[ctx.dataIndex];
+              const slot = SLOTS[ctx.datasetIndex].slot;
+              const info = lookup[`${ent}||${slot}`];
+              if (!info || info.pct === 0) return null;
+              const name = info.label === 'Resto' ? 'Resto de proveedores' : info.label;
+              return ` ${name}: ${info.pct.toFixed(1)}%`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 35 } },
+        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' },
+             title: { display: true, text: '% del gasto institucional' }, max: 100 }
+      }
+    }
+  });
+
+  // Insight: entidad con mayor concentración en proveedor #1
+  let maxConc = 0; let maxEnt = ''; let maxVendor = '';
+  entities.forEach(e => {
+    const info = lookup[`${e}||1`];
+    if (info && info.pct > maxConc) { maxConc = info.pct; maxEnt = e; maxVendor = info.label; }
+  });
+  // Entidad con menor concentración (top vendor)
+  let minConc = 100; let minEnt = '';
+  entities.forEach(e => {
+    const info = lookup[`${e}||1`];
+    if (info && info.pct < minConc) { minConc = info.pct; minEnt = e; }
+  });
+  document.getElementById('insight-vendor').innerHTML =
+    `<b>Mayor concentración:</b> ${maxEnt.length > 45 ? maxEnt.slice(0,45)+'…' : maxEnt} — ` +
+    `<b style="color:#ef4444">${maxConc.toFixed(1)}% en un solo proveedor</b> (${maxVendor}) &nbsp;·&nbsp; ` +
+    `<b>Menor concentración:</b> ${minEnt.length > 40 ? minEnt.slice(0,40)+'…' : minEnt} — top vendor = ${minConc.toFixed(1)}% &nbsp;·&nbsp; ` +
+    `<span style="color:#f59e0b">⚠️ Concentración >40% en proveedor único → posible NS-12 Monopolio</span> · RILMAC excluido (error de datos)`;
+}
+
 // ── Chart 9: Perfil de Riesgo Institucional vs. Baseline ─────────────────────
 async function buildRiskProfile() {
   setLoading('Calculando perfiles de riesgo institucional…');
@@ -726,6 +813,7 @@ async function init() {
     await buildSeveridad();
     await buildHeatmap();
     await buildSankey();
+    await buildVendorConcentration();
     await buildRiskProfile();
 
     document.getElementById('last-updated').textContent =

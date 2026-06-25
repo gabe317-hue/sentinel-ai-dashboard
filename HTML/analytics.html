@@ -6,6 +6,8 @@
 <title>Sentinel AI · Analytics</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-sankey/0.12.3/d3-sankey.min.js"></script>
 <style>
   :root {
     --bg:       #0a0a0f;
@@ -96,6 +98,17 @@
   .chart-insight b { color: var(--electric); }
   canvas { max-height: 320px; }
 
+  /* ── Sankey ── */
+  #sankey-container { width: 100%; overflow-x: auto; }
+  #sankey-container svg { display: block; }
+  .sankey-tooltip {
+    position: fixed; pointer-events: none;
+    background: rgba(10,10,20,0.95); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px; padding: 8px 12px; font-size: 11px;
+    color: var(--text); z-index: 999; max-width: 260px;
+    display: none; line-height: 1.6;
+  }
+
   /* ── Stat chips ── */
   .stat-row {
     display: flex; gap: 20px; flex-wrap: wrap;
@@ -169,7 +182,16 @@
     <div class="chart-insight" id="insight-heatmap">Cargando…</div>
   </div>
 
+  <!-- 6. Sankey Flujo de Fondos -->
+  <div class="chart-card full-width">
+    <div class="chart-title">Chart 06 · Flujo de Fondos — Entidad → Proveedor</div>
+    <div class="chart-subtitle">Top 10 instituciones · Top 5 proveedores por institución · Grosor = monto total (Lps)</div>
+    <div id="sankey-container"></div>
+    <div class="chart-insight" id="insight-sankey">Cargando…</div>
+  </div>
+
 </div>
+<div class="sankey-tooltip" id="sankey-tooltip"></div>
 
 <script>
 const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
@@ -483,6 +505,130 @@ async function buildHeatmap() {
     `Entidades con barras anchas en <span style="color:#ef4444">Fraccionamiento</span> o <span style="color:#f59e0b">Compra Directa</span> indican dependencia sistemática de modalidades de menor control.`;
 }
 
+// ── Chart 6: Sankey Flujo de Fondos ──────────────────────────────────────────
+async function buildSankey() {
+  setLoading('Construyendo diagrama de flujo de fondos…');
+  const { data, error } = await db.rpc('get_analytics_sankey_flujo');
+  if (error || !data || !data.length) return;
+
+  const ENTITY_PALETTE = [
+    '#00e5ff','#a855f7','#f59e0b','#22c55e','#3b82f6',
+    '#ef4444','#ec4899','#14b8a6','#f97316','#8b5cf6'
+  ];
+
+  // Build unique node lists preserving order
+  const entidades = [...new Set(data.map(d => d.entidad))];
+  // Providers may appear in multiple entities; suffix with entity to keep distinct flows
+  const nodeNames = [
+    ...entidades,
+    ...data.map(d => `${d.proveedor_nombre}||${d.entidad}`)
+  ];
+
+  // Node index lookup
+  const nodeIndex = {};
+  nodeNames.forEach((n, i) => nodeIndex[n] = i);
+
+  const nodes = nodeNames.map((n, i) => {
+    const isEntity = i < entidades.length;
+    const entIdx   = isEntity ? i : entidades.indexOf(data.find(d => `${d.proveedor_nombre}||${d.entidad}` === n)?.entidad);
+    return { name: n, isEntity, color: ENTITY_PALETTE[entIdx % ENTITY_PALETTE.length] };
+  });
+
+  const links = data.map(d => {
+    const srcIdx = nodeIndex[d.entidad];
+    const tgtIdx = nodeIndex[`${d.proveedor_nombre}||${d.entidad}`];
+    const pct    = parseFloat(d.pct_entidad);
+    const linkColor = pct >= 80 ? '#ef4444' : pct >= 50 ? '#f59e0b' : ENTITY_PALETTE[entidades.indexOf(d.entidad) % ENTITY_PALETTE.length];
+    return {
+      source: srcIdx, target: tgtIdx,
+      value: parseFloat(d.total_monto),
+      pct, contratos: d.num_contratos,
+      proveedor: d.proveedor_nombre, entidad: d.entidad,
+      color: linkColor
+    };
+  });
+
+  // Layout
+  const W = Math.max(document.getElementById('sankey-container').clientWidth, 800);
+  const H = Math.max(entidades.length * 55, 520);
+  const MARGIN = { top: 10, right: 220, bottom: 10, left: 200 };
+
+  const sankey = d3.sankey()
+    .nodeId(d => d.name)
+    .nodeWidth(14)
+    .nodePadding(10)
+    .extent([[MARGIN.left, MARGIN.top], [W - MARGIN.right, H - MARGIN.bottom]]);
+
+  const graph = sankey({ nodes: nodes.map(d => ({...d})), links: links.map(d => ({...d})) });
+
+  const svg = d3.select('#sankey-container').append('svg')
+    .attr('width', W).attr('height', H);
+
+  const tip = document.getElementById('sankey-tooltip');
+
+  // Links
+  svg.append('g').selectAll('path')
+    .data(graph.links)
+    .join('path')
+      .attr('d', d3.sankeyLinkHorizontal())
+      .attr('stroke', d => d.color)
+      .attr('stroke-width', d => Math.max(1, d.width))
+      .attr('fill', 'none')
+      .attr('opacity', 0.35)
+      .on('mouseenter', function(event, d) {
+        d3.select(this).attr('opacity', 0.7);
+        tip.style.display = 'block';
+        tip.innerHTML =
+          `<b style="color:${d.color}">${d.entidad.length > 40 ? d.entidad.slice(0,40)+'…' : d.entidad}</b><br>` +
+          `→ ${d.proveedor.length > 45 ? d.proveedor.slice(0,45)+'…' : d.proveedor}<br>` +
+          `<b>${fmtL(d.value)}</b> · ${d.contratos} contratos<br>` +
+          `<span style="color:${d.pct >= 80 ? '#ef4444' : d.pct >= 50 ? '#f59e0b' : '#22c55e'}">${d.pct}% del gasto de la entidad</span>`;
+      })
+      .on('mousemove', event => {
+        tip.style.left = (event.clientX + 14) + 'px';
+        tip.style.top  = (event.clientY - 10) + 'px';
+      })
+      .on('mouseleave', function() {
+        d3.select(this).attr('opacity', 0.35);
+        tip.style.display = 'none';
+      });
+
+  // Nodes
+  const nodeG = svg.append('g').selectAll('rect')
+    .data(graph.nodes)
+    .join('rect')
+      .attr('x', d => d.x0).attr('y', d => d.y0)
+      .attr('width', d => d.x1 - d.x0)
+      .attr('height', d => Math.max(1, d.y1 - d.y0))
+      .attr('fill', d => d.color)
+      .attr('rx', 2);
+
+  // Labels
+  svg.append('g').selectAll('text')
+    .data(graph.nodes)
+    .join('text')
+      .attr('x', d => d.isEntity ? d.x0 - 6 : d.x1 + 6)
+      .attr('y', d => (d.y0 + d.y1) / 2)
+      .attr('dy', '0.35em')
+      .attr('text-anchor', d => d.isEntity ? 'end' : 'start')
+      .attr('font-size', 10)
+      .attr('font-family', 'Inter, system-ui, sans-serif')
+      .attr('fill', 'rgba(226,232,240,0.75)')
+      .text(d => {
+        const raw = d.isEntity ? d.name : d.name.split('||')[0];
+        return raw.length > 38 ? raw.slice(0, 38) + '…' : raw;
+      });
+
+  // Insight
+  const topLink = [...data].sort((a,b) => parseFloat(b.pct_entidad) - parseFloat(a.pct_entidad))[0];
+  const redLinks = data.filter(d => parseFloat(d.pct_entidad) >= 80).length;
+  document.getElementById('insight-sankey').innerHTML =
+    `<b>Mayor concentración:</b> ${topLink.entidad.split(',')[0]} → ${topLink.proveedor_nombre.split(' S.')[0]} · ` +
+    `<b style="color:#ef4444">${topLink.pct_entidad}% del gasto</b> (${fmtL(parseFloat(topLink.total_monto))}) &nbsp;·&nbsp; ` +
+    `<span style="color:#ef4444">🔴 ${redLinks} flujos</span> con concentración ≥80% · ` +
+    `<span style="color:#f59e0b">⚠️ Grosor del flujo = monto. Rojo = concentración ≥80%, Naranja = ≥50%</span>`;
+}
+
 // ── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
   try {
@@ -491,6 +637,7 @@ async function init() {
     await buildDist();
     await buildSeveridad();
     await buildHeatmap();
+    await buildSankey();
 
     document.getElementById('last-updated').textContent =
       'Actualizado: ' + new Date().toLocaleString('es-HN', { dateStyle: 'medium', timeStyle: 'short' });

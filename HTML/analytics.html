@@ -554,12 +554,14 @@ async function buildSankey() {
   const MARGIN = { top: 10, right: 220, bottom: 10, left: 200 };
 
   const sankey = d3.sankey()
-    .nodeId(d => d.name)
     .nodeWidth(14)
     .nodePadding(10)
     .extent([[MARGIN.left, MARGIN.top], [W - MARGIN.right, H - MARGIN.bottom]]);
 
-  const graph = sankey({ nodes: nodes.map(d => ({...d})), links: links.map(d => ({...d})) });
+  const graph = sankey({
+    nodes: nodes.map(d => ({ ...d })),
+    links: links.filter(d => d.value > 0).map(d => ({ ...d }))
+  });
 
   const svg = d3.select('#sankey-container').append('svg')
     .attr('width', W).attr('height', H);

@@ -190,6 +190,14 @@
     <div class="chart-insight" id="insight-sankey">Cargando…</div>
   </div>
 
+  <!-- 7. Trayectoria Acumulada — Top 5 Proveedores CRÍTICA -->
+  <div class="chart-card full-width">
+    <div class="chart-title">Chart 07 · Trayectoria de Gasto Acumulado — Top 5 Proveedores CRÍTICA</div>
+    <div class="chart-subtitle">Gasto acumulado 2019–2026 · Escalones verticales = contratos nuevos · Período plano = inactividad</div>
+    <canvas id="chart-surge" style="max-height:360px;"></canvas>
+    <div class="chart-insight" id="insight-surge">Cargando…</div>
+  </div>
+
   <!-- 8. Concentración de Proveedores por Entidad -->
   <div class="chart-card full-width">
     <div class="chart-title">Chart 08 · Concentración de Proveedores — Top 10 Entidades</div>
@@ -647,6 +655,110 @@ async function buildSankey() {
     `<span style="color:#f59e0b">⚠️ Grosor del flujo = monto. Rojo = concentración ≥80%, Naranja = ≥50%</span>`;
 }
 
+// ── Chart 7: Trayectoria de Gasto Acumulado ──────────────────────────────────
+async function buildSurgeTrajectory() {
+  setLoading('Calculando trayectorias de gasto acumulado…');
+  const { data, error } = await db.rpc('get_analytics_surge_trajectory');
+  if (error || !data || !data.length) return;
+
+  // Build complete monthly timeline from first to last month in data
+  const allMeses = [...new Set(data.map(d => d.mes))].sort();
+  const mesMin = allMeses[0];
+  const mesMax = allMeses[allMeses.length - 1];
+
+  // Generate full timeline (fill gaps)
+  const timeline = [];
+  let [y, m] = mesMin.split('-').map(Number);
+  const [yEnd, mEnd] = mesMax.split('-').map(Number);
+  while (y < yEnd || (y === yEnd && m <= mEnd)) {
+    timeline.push(`${y}-${String(m).padStart(2,'0')}`);
+    m++; if (m > 12) { m = 1; y++; }
+  }
+
+  // Group data by vendor
+  const vendors = [...new Set(data.map(d => d.proveedor_nombre))];
+  const monthlyByVendor = {};
+  vendors.forEach(v => { monthlyByVendor[v] = {}; });
+  data.forEach(d => { monthlyByVendor[d.proveedor_nombre][d.mes] = parseFloat(d.monto_mensual); });
+
+  // Build cumulative series
+  const COLORS = ['#00e5ff','#ef4444','#f59e0b','#22c55e','#a855f7'];
+  const datasets = vendors.map((v, i) => {
+    let cum = 0;
+    const cumData = timeline.map(mes => {
+      cum += (monthlyByVendor[v][mes] || 0);
+      return cum / 1e6;  // in Millions Lps
+    });
+    const shortName = v.length > 35 ? v.slice(0, 35) + '…' : v;
+    return {
+      label: shortName,
+      data: cumData,
+      borderColor: COLORS[i % COLORS.length],
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      stepped: 'before',
+      tension: 0,
+    };
+  });
+
+  // X axis: show only quarterly labels to avoid clutter
+  const quarterlyLabels = timeline.map(m => m.endsWith('-01') || m.endsWith('-04') || m.endsWith('-07') || m.endsWith('-10') ? m : '');
+
+  new Chart(document.getElementById('chart-surge'), {
+    type: 'line',
+    data: { labels: timeline, datasets },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+          callbacks: {
+            title: ctx => ctx[0].label,
+            label: ctx => ` ${ctx.dataset.label}: L ${ctx.raw.toFixed(1)}M acumulado`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: {
+            maxRotation: 45,
+            callback: (val, idx) => quarterlyLabels[idx] || null,
+            font: { size: 10 }
+          }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          title: { display: true, text: 'Gasto acumulado (M Lps)' }
+        }
+      }
+    }
+  });
+
+  // Insight: vendor with biggest single-month jump
+  let maxJump = 0; let maxJumpVendor = ''; let maxJumpMes = '';
+  data.forEach(d => {
+    if (parseFloat(d.monto_mensual) > maxJump) {
+      maxJump = parseFloat(d.monto_mensual);
+      maxJumpVendor = d.proveedor_nombre;
+      maxJumpMes = d.mes;
+    }
+  });
+  // Vendor with most total
+  const totals = vendors.map(v => ({
+    v, total: Object.values(monthlyByVendor[v]).reduce((a,b)=>a+b,0)
+  })).sort((a,b) => b.total - a.total);
+
+  document.getElementById('insight-surge').innerHTML =
+    `<b>Mayor escalón individual:</b> ${maxJumpVendor.split(' S.')[0]} — ` +
+    `<b style="color:#ef4444">L ${(maxJump/1e6).toFixed(1)}M en ${maxJumpMes}</b> &nbsp;·&nbsp; ` +
+    `<b>Mayor gasto acumulado:</b> ${totals[0].v.split(',')[0].split(' S.')[0]} — L ${(totals[0].total/1e6).toFixed(1)}M &nbsp;·&nbsp; ` +
+    `<span style="color:#f59e0b">⚠️ Escalón vertical abrupto = señal NS-6 (Surge Reciente). Período plano prolongado seguido de spike = patrón de alerta.</span>`;
+}
+
 // ── Chart 8: Concentración de Proveedores ────────────────────────────────────
 async function buildVendorConcentration() {
   setLoading('Calculando concentración de proveedores…');
@@ -813,6 +925,7 @@ async function init() {
     await buildSeveridad();
     await buildHeatmap();
     await buildSankey();
+    await buildSurgeTrajectory();
     await buildVendorConcentration();
     await buildRiskProfile();
 

@@ -273,7 +273,10 @@
   <div id="drill-panel">
     <div class="drill-header">
       <h2 id="drill-title">Cargando…</h2>
-      <button id="drill-close" onclick="closeDrilldown()">✕</button>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span class="print-chart-btn" style="position:static;opacity:.7;" title="Imprimir" onclick="printDrilldown()">🖨️</span>
+        <button id="drill-close" onclick="closeDrilldown()">✕</button>
+      </div>
     </div>
     <div id="drill-body">
       <div class="stat-row" id="drill-stats"></div>
@@ -534,6 +537,76 @@ async function openEntidadDrilldown(entidadName) {
 
 function closeDrilldown() {
   document.getElementById('drill-overlay').style.display = 'none';
+}
+
+// Reemplaza variables CSS del tema oscuro por colores legibles en fondo blanco
+function printSafeHtml(html) {
+  return (html || '')
+    .replace(/var\(--red\)/g, '#ef4444')
+    .replace(/var\(--amber\)/g, '#f59e0b')
+    .replace(/var\(--green\)/g, '#22c55e')
+    .replace(/var\(--purple\)/g, '#a855f7')
+    .replace(/var\(--blue\)/g, '#3b82f6')
+    .replace(/var\(--electric\)/g, '#0891b2')
+    .replace(/var\(--text\)/g, '#1a1a1a')
+    .replace(/var\(--muted\)/g, '#666666');
+}
+
+// Imprime el modal de drill-down completo (stats + 2 charts + tabla) sobre fondo blanco
+function printDrilldown() {
+  const title = document.getElementById('drill-title').textContent;
+  const statsHtml = printSafeHtml(document.getElementById('drill-stats').innerHTML);
+  const tableHtml = printSafeHtml(document.getElementById('drill-criticos-table').outerHTML);
+
+  const origColor = Chart.defaults.color;
+  const origBorder = Chart.defaults.borderColor;
+  Chart.defaults.color = '#333333';
+  Chart.defaults.borderColor = 'rgba(0,0,0,0.08)';
+
+  let trendImg = '';
+  if (drillTrendChart) { drillTrendChart.update('none'); trendImg = drillTrendChart.toBase64Image('image/png', 1); }
+  let senalesImg = '';
+  let senalesEmptyMsg = '';
+  if (drillSenalesChart) { drillSenalesChart.update('none'); senalesImg = drillSenalesChart.toBase64Image('image/png', 1); }
+  else {
+    const emptyEl = document.getElementById('drill-senales-empty');
+    senalesEmptyMsg = emptyEl ? emptyEl.textContent : 'Sin señales NS registradas para esta entidad.';
+  }
+
+  Chart.defaults.color = origColor;
+  Chart.defaults.borderColor = origBorder;
+  if (drillTrendChart)   drillTrendChart.update('none');
+  if (drillSenalesChart) drillSenalesChart.update('none');
+
+  const w = window.open('', '_blank');
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title} — Sentinel-AI</title>
+  <style>
+    body{background:#fff;color:#1a1a1a;font-family:Arial,sans-serif;padding:30px 40px;}
+    h3{font-size:12px;text-transform:uppercase;color:#888;margin:22px 0 8px 0;letter-spacing:.05em;}
+    .stat-row{display:flex;gap:28px;margin:14px 0 22px 0;}
+    .stat-chip{display:flex;flex-direction:column;gap:2px;}
+    .stat-chip .val{font-size:20px;font-weight:700;font-family:monospace;}
+    .stat-chip .lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em;}
+    .drill-table{width:100%;border-collapse:collapse;font-size:11px;}
+    .drill-table th{padding:6px 8px;text-align:left;color:#888;font-size:9px;text-transform:uppercase;border-bottom:1px solid #ccc;}
+    .drill-table td{padding:6px 8px;border-bottom:1px solid #eee;}
+    .drill-table td.num{text-align:right;font-family:monospace;}
+  </style>
+  </head>
+  <body>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#888;">Sentinel-AI · Analytics · Detalle por Entidad</div>
+    <h1 style="font-size:18px;margin:4px 0 6px 0;">${title}</h1>
+    <div class="stat-row">${statsHtml}</div>
+    <h3>Tendencia Mensual — Monto Contratado</h3>
+    ${trendImg ? `<img src="${trendImg}" style="max-width:100%;">` : ''}
+    <h3>Señales NS Activas</h3>
+    ${senalesImg ? `<img src="${senalesImg}" style="max-width:100%;">` : `<div style="font-size:11px;color:#666;">${senalesEmptyMsg}</div>`}
+    <h3>Contratos de Mayor Riesgo — Alta / Crítica</h3>
+    ${tableHtml}
+  </body></html>`;
+  w.document.write(addPrintBtn(html));
+  w.document.close();
+  w.focus();
 }
 document.getElementById('drill-overlay').addEventListener('click', (e) => {
   if (e.target.id === 'drill-overlay') closeDrilldown();

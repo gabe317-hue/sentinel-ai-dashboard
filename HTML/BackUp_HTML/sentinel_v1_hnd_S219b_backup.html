@@ -6814,20 +6814,14 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <option value="">Todos los patrones</option>
           <option value="FRACCIONAMIENTO">Fraccionamiento</option>
           <option value="FRACCIONAMIENTO_ONCAE">Fraccionamiento ONCAE</option>
-          <option value="CONTRATACION_DIRECTA">Contratación Directa</option>
-          <option value="COMPRA_MENOR">Compra Menor</option>
-          <option value="PERIODO_MINIMO">Período Mínimo</option>
-          <option value="PERIODO_URGENTE">Período Urgente</option>
-          <option value="LICITACION_PRIVADA">Licitación Privada</option>
+          <option value="COMPRA_MENOR_RECURRENTE">Compra Menor Recurrente</option>
+          <option value="CONCENTRACION_PROVEEDOR">Concentración Proveedor</option>
           <option value="PROVEEDOR_FUERA_DE_GIRO">Fuera de Giro</option>
-          <option value="ALTO_MONTO">Alto Monto</option>
-          <option value="PROVEEDOR_SIN_HISTORIAL">Sin Historial</option>
+          <option value="CD_ALTO_MONTO">CD Alto Monto</option>
+          <option value="SIN_HISTORIAL_PROVEEDOR">Sin Historial</option>
           <option value="SOBRECOSTO">Sobrepresupuesto</option>
+          <option value="CLUSTER_CD">Cluster CD</option>
         </select>
-        <!-- S219: se eliminaron "Concentración Proveedor" (CONCENTRACION_PROVEEDOR) y
-             "Cluster CD" (CLUSTER_CD) — 0 coincidencias reales en la columna patterns,
-             sin dato de respaldo. NS-12 Monopolio vive en mv_monopolio_proveedor, no aquí. -->
-        <div style="font-size:9px;color:var(--text-dim);margin-top:4px;">Corregido S219: 5 de 9 opciones no coincidían con ningún dato real — ahora todas verificadas contra la columna patterns.</div>
       </div>
       <div style="flex:1;min-width:150px;">
         <label style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.04em;display:block;margin-bottom:5px;">SEVERIDAD</label>

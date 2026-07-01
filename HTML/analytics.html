@@ -191,7 +191,7 @@
   <div class="chart-card">
     <div class="chart-title">Chart 02 · Concentración por Entidad</div>
     <div class="chart-subtitle">Top 25 instituciones por monto total <span class="clickable-hint">💡 click para ver detalle</span></div>
-    <canvas id="chart-entidad"></canvas>
+    <canvas id="chart-entidad" style="max-height:640px;"></canvas>
     <div class="chart-insight" id="insight-entidad">Cargando…</div>
   </div>
 
@@ -546,6 +546,7 @@ async function buildEntidad() {
     options: {
       indexAxis: 'y',
       responsive: true,
+      maintainAspectRatio: false,
       onClick: (evt, elements) => {
         if (elements.length) openEntidadDrilldown(fullNames02[elements[0].index]);
       },
@@ -570,7 +571,7 @@ async function buildEntidad() {
       },
       scales: {
         x: { grid: { color: 'rgba(255,255,255,0.04)' }, title: { display: true, text: 'Monto (M Lps)' } },
-        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        y: { grid: { display: false }, ticks: { font: { size: 10 }, autoSkip: false } }
       }
     }
   });

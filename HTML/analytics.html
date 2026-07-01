@@ -313,15 +313,22 @@ function setLoading(msg) {
 let drillTrendChart = null;
 let drillSenalesChart = null;
 
+// S219: paleta corregida contra vocabulario real de la columna patterns
 const SENAL_COLORS = {
-  'Fraccionamiento': 'rgba(239,68,68,0.7)',
-  'Compra Directa':  'rgba(245,158,11,0.7)',
-  'Umbral Evadido':  'rgba(168,85,247,0.7)',
-  'Debut Anómalo':   'rgba(0,229,255,0.6)',
-  'Monogamia':       'rgba(34,197,94,0.6)',
-  'Emergencia':      'rgba(239,68,68,0.4)',
-  'Sin Historial':   'rgba(100,116,139,0.6)',
-  'Otro':            'rgba(100,116,139,0.4)',
+  'Fraccionamiento':      'rgba(239,68,68,0.7)',
+  'Adjudicación Directa': 'rgba(234,88,12,0.7)',
+  'Contratación Directa': 'rgba(245,158,11,0.7)',
+  'Período Mínimo':       'rgba(168,85,247,0.7)',
+  'Período Urgente':      'rgba(236,72,153,0.7)',
+  'Compra Menor':         'rgba(0,229,255,0.6)',
+  'Licitación Privada':   'rgba(59,130,246,0.6)',
+  'Concurso Privado':     'rgba(20,184,166,0.6)',
+  'Fuera de Giro':        'rgba(34,197,94,0.6)',
+  'Sin Historial':        'rgba(100,116,139,0.6)',
+  'Emergencia':           'rgba(239,68,68,0.4)',
+  'Alto Monto':           'rgba(250,204,21,0.7)',
+  'Sobrecosto':           'rgba(244,63,94,0.7)',
+  'Otro':                 'rgba(100,116,139,0.4)',
 };
 
 async function openEntidadDrilldown(entidadName) {
@@ -688,15 +695,22 @@ async function buildHeatmap() {
   const vals = data.map(d => Number(d.contratos));
   const maxVal = Math.max(...vals);
 
-  // Build datasets: one per pattern (stacked grouped bar = heatmap approximation)
+  // Build datasets: one por patrón (stacked grouped bar = heatmap approximation)
+  // S219: paleta corregida contra vocabulario real de la columna patterns
   const COLORS = {
-    'Fraccionamiento': 'rgba(239,68,68,0.7)',
-    'Compra Directa':  'rgba(245,158,11,0.7)',
-    'Umbral Evadido':  'rgba(168,85,247,0.7)',
-    'Debut Anómalo':   'rgba(0,229,255,0.6)',
-    'Monogamia':       'rgba(34,197,94,0.6)',
-    'Emergencia':      'rgba(239,68,68,0.4)',
-    'Sin Historial':   'rgba(100,116,139,0.6)',
+    'Fraccionamiento':      'rgba(239,68,68,0.7)',
+    'Adjudicación Directa': 'rgba(234,88,12,0.7)',
+    'Contratación Directa': 'rgba(245,158,11,0.7)',
+    'Período Mínimo':       'rgba(168,85,247,0.7)',
+    'Período Urgente':      'rgba(236,72,153,0.7)',
+    'Compra Menor':         'rgba(0,229,255,0.6)',
+    'Licitación Privada':   'rgba(59,130,246,0.6)',
+    'Concurso Privado':     'rgba(20,184,166,0.6)',
+    'Fuera de Giro':        'rgba(34,197,94,0.6)',
+    'Sin Historial':        'rgba(100,116,139,0.6)',
+    'Emergencia':           'rgba(239,68,68,0.4)',
+    'Alto Monto':           'rgba(250,204,21,0.7)',
+    'Sobrecosto':           'rgba(244,63,94,0.7)',
   };
 
   const shortNames = entidades.map(e => e.length > 28 ? e.slice(0,28)+'…' : e);
@@ -732,7 +746,7 @@ async function buildHeatmap() {
   const topEntTotal = patrones.reduce((s,p) => s + (lookup[`${topEnt}||${p}`]||0), 0);
   document.getElementById('insight-heatmap').innerHTML =
     `<b>Institución con más señales NS:</b> ${topEnt} (${topEntTotal} contratos con patrón). ` +
-    `Entidades con barras anchas en <span style="color:#ef4444">Fraccionamiento</span> o <span style="color:#f59e0b">Compra Directa</span> indican dependencia sistemática de modalidades de menor control.`;
+    `Entidades con barras anchas en <span style="color:#ef4444">Fraccionamiento</span> o <span style="color:#f59e0b">Contratación Directa</span> indican dependencia sistemática de modalidades de menor control.`;
 }
 
 // ── Chart 6: Sankey Flujo de Fondos ──────────────────────────────────────────

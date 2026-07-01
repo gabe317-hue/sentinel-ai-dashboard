@@ -275,10 +275,10 @@
       </div>
 
       <div class="drill-section">
-        <div class="drill-section-title">Contratos Críticos (Top 20 por monto)</div>
+        <div class="drill-section-title">Contratos de Mayor Riesgo — Alta / Crítica (Top 20 por monto)</div>
         <div style="max-height:280px;overflow-y:auto;">
           <table class="drill-table" id="drill-criticos-table">
-            <thead><tr><th>Proveedor</th><th>Fecha</th><th>Monto</th><th>Patrón</th></tr></thead>
+            <thead><tr><th>Sev.</th><th>Proveedor</th><th>Fecha</th><th>Monto</th><th>Patrón</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -356,6 +356,7 @@ async function openEntidadDrilldown(entidadName) {
     <div class="stat-chip"><div class="val">${fmtL(Number(r.total_monto||0))}</div><div class="lbl">Monto Total</div></div>
     <div class="stat-chip"><div class="val">${(r.total_contratos||0).toLocaleString()}</div><div class="lbl">Contratos</div></div>
     <div class="stat-chip"><div class="val" style="color:${(r.total_criticas||0) > 0 ? 'var(--red)' : 'var(--text)'}">${r.total_criticas||0}</div><div class="lbl">Críticas</div></div>
+    <div class="stat-chip"><div class="val" style="color:${(r.total_alta||0) > 0 ? '#f59e0b' : 'var(--text)'}">${r.total_alta||0}</div><div class="lbl">Alta</div></div>
   `;
 
   // Tendencia mensual
@@ -418,10 +419,11 @@ async function openEntidadDrilldown(entidadName) {
   // Contratos críticos
   const crit = data.criticos || [];
   if (!crit.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);">Sin contratos críticos registrados.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);">Sin contratos de alta/crítica severidad registrados.</td></tr>';
   } else {
     tbody.innerHTML = crit.map(c => `
       <tr>
+        <td><span style="font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;background:${c.severity==='CRÍTICA'?'rgba(239,68,68,0.2);color:#ef4444':'rgba(245,158,11,0.2);color:#f59e0b'};">${c.severity==='CRÍTICA'?'CRIT':'ALTA'}</span></td>
         <td>${(c.proveedor_nombre||'—').slice(0,45)}</td>
         <td>${c.fecha_contrato || '—'}</td>
         <td class="num">${fmtL(Number(c.monto_contrato||0))}</td>

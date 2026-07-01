@@ -117,43 +117,6 @@
   .stat-chip { display: flex; flex-direction: column; gap: 2px; }
   .stat-chip .val { font-size: 20px; font-weight: 700; font-family: monospace; }
   .stat-chip .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-
-  /* ── Drill-down modal (S219) ── */
-  #drill-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-    display: none; align-items: flex-start; justify-content: center;
-    z-index: 1000; padding: 40px 20px; overflow-y: auto;
-  }
-  #drill-panel {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 24px; max-width: 900px; width: 100%;
-    margin-bottom: 40px;
-  }
-  #drill-panel .drill-header {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
-  }
-  #drill-panel h2 { font-size: 16px; color: var(--electric); line-height: 1.3; max-width: 760px; }
-  #drill-close {
-    background: none; border: 1px solid var(--border); color: var(--muted);
-    border-radius: 6px; width: 30px; height: 30px; cursor: pointer; font-size: 14px;
-    flex-shrink: 0;
-  }
-  #drill-close:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
-  #drill-body { min-height: 120px; }
-  .drill-section { margin-bottom: 22px; }
-  .drill-section-title {
-    font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 10px;
-  }
-  .drill-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  .drill-table th {
-    text-align: left; color: var(--muted); font-weight: 600; padding: 6px 8px;
-    border-bottom: 1px solid var(--border); font-size: 10px; text-transform: uppercase;
-  }
-  .drill-table td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
-  .drill-table td.num { text-align: right; font-family: monospace; }
-  .clickable-hint { font-size: 9px; color: var(--muted); font-style: italic; margin-left: 8px; }
 </style>
 </head>
 <body>
@@ -190,7 +153,7 @@
   <!-- 2. Concentración por entidad -->
   <div class="chart-card">
     <div class="chart-title">Chart 02 · Concentración por Entidad</div>
-    <div class="chart-subtitle">Top 25 instituciones por monto total <span class="clickable-hint">💡 click para ver detalle</span></div>
+    <div class="chart-subtitle">Top 25 instituciones por monto total</div>
     <canvas id="chart-entidad"></canvas>
     <div class="chart-insight" id="insight-entidad">Cargando…</div>
   </div>
@@ -214,7 +177,7 @@
   <!-- 5. Heatmap NS × Entidad -->
   <div class="chart-card full-width">
     <div class="chart-title">Chart 05 · Mapa de Calor — Señales NS × Entidad</div>
-    <div class="chart-subtitle">Top 15 entidades × tipo de patrón (contratos con alerta) <span class="clickable-hint">💡 click para ver detalle</span></div>
+    <div class="chart-subtitle">Top 15 entidades × tipo de patrón (contratos con alerta)</div>
     <canvas id="chart-heatmap" style="max-height:400px;"></canvas>
     <div class="chart-insight" id="insight-heatmap">Cargando…</div>
   </div>
@@ -222,7 +185,7 @@
   <!-- 6. Sankey Flujo de Fondos -->
   <div class="chart-card full-width">
     <div class="chart-title">Chart 06 · Flujo de Fondos — Entidad → Proveedor</div>
-    <div class="chart-subtitle">Top 10 instituciones · Top 5 proveedores por institución · Grosor = monto total (Lps) <span class="clickable-hint">💡 click en nodo de institución para ver detalle</span></div>
+    <div class="chart-subtitle">Top 10 instituciones · Top 5 proveedores por institución · Grosor = monto total (Lps)</div>
     <div id="sankey-container"></div>
     <div class="chart-insight" id="insight-sankey">Cargando…</div>
   </div>
@@ -238,7 +201,7 @@
   <!-- 8. Concentración de Proveedores por Entidad -->
   <div class="chart-card full-width">
     <div class="chart-title">Chart 08 · Concentración de Proveedores — Top 10 Entidades</div>
-    <div class="chart-subtitle">% del gasto institucional por proveedor · Proveedor #1 (rojo) = mayor concentración <span class="clickable-hint">💡 click para ver detalle</span></div>
+    <div class="chart-subtitle">% del gasto institucional por proveedor · Proveedor #1 (rojo) = mayor concentración</div>
     <canvas id="chart-vendor" style="max-height:380px;"></canvas>
     <div class="chart-insight" id="insight-vendor">Cargando…</div>
   </div>
@@ -246,46 +209,13 @@
   <!-- 9. Perfil de Riesgo Institucional vs. Baseline -->
   <div class="chart-card full-width">
     <div class="chart-title">Chart 09 · Perfil de Riesgo Institucional vs. Baseline Nacional</div>
-    <div class="chart-subtitle">Top 4 instituciones de mayor riesgo · 7 dimensiones · Barras grises = promedio nacional <span class="clickable-hint">💡 click en barra de institución para ver detalle</span></div>
+    <div class="chart-subtitle">Top 4 instituciones de mayor riesgo · 7 dimensiones · Barras grises = promedio nacional</div>
     <canvas id="chart-risk" style="max-height:380px;"></canvas>
     <div class="chart-insight" id="insight-risk">Cargando…</div>
   </div>
 
 </div>
 <div class="sankey-tooltip" id="sankey-tooltip"></div>
-
-<!-- Drill-down modal (S219) -->
-<div id="drill-overlay">
-  <div id="drill-panel">
-    <div class="drill-header">
-      <h2 id="drill-title">Cargando…</h2>
-      <button id="drill-close" onclick="closeDrilldown()">✕</button>
-    </div>
-    <div id="drill-body">
-      <div class="stat-row" id="drill-stats"></div>
-
-      <div class="drill-section">
-        <div class="drill-section-title">Tendencia Mensual — Monto Contratado</div>
-        <canvas id="drill-trend-chart" style="max-height:220px;"></canvas>
-      </div>
-
-      <div class="drill-section">
-        <div class="drill-section-title">Señales NS Activas</div>
-        <canvas id="drill-senales-chart" style="max-height:180px;"></canvas>
-      </div>
-
-      <div class="drill-section">
-        <div class="drill-section-title">Contratos Críticos (Top 20 por monto)</div>
-        <div style="max-height:280px;overflow-y:auto;">
-          <table class="drill-table" id="drill-criticos-table">
-            <thead><tr><th>Proveedor</th><th>Fecha</th><th>Monto</th><th>Patrón</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
 const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
@@ -308,128 +238,6 @@ const fmtL = n => {
 function setLoading(msg) {
   document.getElementById('loading-msg').textContent = msg;
 }
-
-// ── Drill-down por entidad (S219) ────────────────────────────────────────────
-let drillTrendChart = null;
-let drillSenalesChart = null;
-
-const SENAL_COLORS = {
-  'Fraccionamiento': 'rgba(239,68,68,0.7)',
-  'Compra Directa':  'rgba(245,158,11,0.7)',
-  'Umbral Evadido':  'rgba(168,85,247,0.7)',
-  'Debut Anómalo':   'rgba(0,229,255,0.6)',
-  'Monogamia':       'rgba(34,197,94,0.6)',
-  'Emergencia':      'rgba(239,68,68,0.4)',
-  'Sin Historial':   'rgba(100,116,139,0.6)',
-  'Otro':            'rgba(100,116,139,0.4)',
-};
-
-async function openEntidadDrilldown(entidadName) {
-  if (!entidadName) return;
-  const overlay = document.getElementById('drill-overlay');
-  const title   = document.getElementById('drill-title');
-  const stats   = document.getElementById('drill-stats');
-  const tbody   = document.querySelector('#drill-criticos-table tbody');
-
-  overlay.style.display = 'flex';
-  title.textContent = entidadName;
-  stats.innerHTML = '<span style="font-size:11px;color:var(--muted);">Cargando detalle…</span>';
-  tbody.innerHTML = '';
-  if (drillTrendChart)   { drillTrendChart.destroy();   drillTrendChart = null; }
-  if (drillSenalesChart) { drillSenalesChart.destroy(); drillSenalesChart = null; }
-
-  const { data, error } = await db.rpc('get_analytics_entidad_detalle', { p_entidad: entidadName });
-  if (error || !data) {
-    stats.innerHTML = '<span style="color:var(--red);">Error cargando detalle.</span>';
-    return;
-  }
-
-  const r = data.resumen || {};
-  stats.innerHTML = `
-    <div class="stat-chip"><div class="val">${fmtL(Number(r.total_monto||0))}</div><div class="lbl">Monto Total</div></div>
-    <div class="stat-chip"><div class="val">${(r.total_contratos||0).toLocaleString()}</div><div class="lbl">Contratos</div></div>
-    <div class="stat-chip"><div class="val" style="color:${(r.total_criticas||0) > 0 ? 'var(--red)' : 'var(--text)'}">${r.total_criticas||0}</div><div class="lbl">Críticas</div></div>
-  `;
-
-  // Tendencia mensual
-  const tend = data.tendencia || [];
-  drillTrendChart = new Chart(document.getElementById('drill-trend-chart'), {
-    type: 'line',
-    data: {
-      labels: tend.map(d => d.mes),
-      datasets: [{
-        data: tend.map(d => Number(d.monto)/1e6),
-        borderColor: '#00e5ff', backgroundColor: 'rgba(0,229,255,0.1)',
-        borderWidth: 2, pointRadius: 0, tension: 0.25, fill: true,
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false }, tooltip: {
-        callbacks: { label: ctx => ` L ${ctx.raw.toFixed(1)}M` }
-      }},
-      scales: {
-        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { maxTicksLimit: 14, maxRotation: 45, font: { size: 9 } } },
-        y: { grid: { color: 'rgba(255,255,255,0.04)' }, title: { display: true, text: 'M Lps', font: { size: 9 } } }
-      }
-    }
-  });
-
-  // Señales NS
-  const sen = (data.senales || []).filter(s => s.patron !== 'Otro');
-  drillSenalesChart = new Chart(document.getElementById('drill-senales-chart'), {
-    type: 'bar',
-    data: {
-      labels: sen.map(s => s.patron),
-      datasets: [{
-        data: sen.map(s => Number(s.contratos)),
-        backgroundColor: sen.map(s => SENAL_COLORS[s.patron] || SENAL_COLORS['Otro']),
-        borderWidth: 0,
-      }]
-    },
-    options: {
-      indexAxis: 'y', responsive: true,
-      plugins: { legend: { display: false }, tooltip: {
-        callbacks: { label: ctx => ` ${ctx.raw} contratos` }
-      }},
-      scales: {
-        x: { grid: { color: 'rgba(255,255,255,0.04)' } },
-        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
-      }
-    }
-  });
-  if (!sen.length) {
-    document.getElementById('drill-senales-chart').style.display = 'none';
-    document.querySelector('#drill-senales-chart').insertAdjacentHTML('afterend',
-      '<div id="drill-senales-empty" style="font-size:11px;color:var(--muted);">Sin señales NS registradas para esta entidad.</div>');
-  } else {
-    document.getElementById('drill-senales-chart').style.display = 'block';
-    const prevEmpty = document.getElementById('drill-senales-empty');
-    if (prevEmpty) prevEmpty.remove();
-  }
-
-  // Contratos críticos
-  const crit = data.criticos || [];
-  if (!crit.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);">Sin contratos críticos registrados.</td></tr>';
-  } else {
-    tbody.innerHTML = crit.map(c => `
-      <tr>
-        <td>${(c.proveedor_nombre||'—').slice(0,45)}</td>
-        <td>${c.fecha_contrato || '—'}</td>
-        <td class="num">${fmtL(Number(c.monto_contrato||0))}</td>
-        <td style="font-size:10px;color:var(--muted);">${(c.patterns||'—').slice(0,40)}</td>
-      </tr>
-    `).join('');
-  }
-}
-
-function closeDrilldown() {
-  document.getElementById('drill-overlay').style.display = 'none';
-}
-document.getElementById('drill-overlay').addEventListener('click', (e) => {
-  if (e.target.id === 'drill-overlay') closeDrilldown();
-});
 
 // ── Chart 1: Spike Temporal ───────────────────────────────────────────────────
 async function buildSpike() {
@@ -510,7 +318,6 @@ async function buildEntidad() {
   if (error || !data) return;
 
   const labels = data.map(d => d.entidad.length > 30 ? d.entidad.slice(0,30)+'…' : d.entidad);
-  const fullNames02 = data.map(d => d.entidad);
   const montos = data.map(d => Number(d.monto) / 1e6);
   const criticas = data.map(d => Number(d.criticas));
   const pctCritica = data.map((d,i) => d.contratos > 0 ? ((d.criticas/d.contratos)*100).toFixed(1) : 0);
@@ -537,12 +344,6 @@ async function buildEntidad() {
     options: {
       indexAxis: 'y',
       responsive: true,
-      onClick: (evt, elements) => {
-        if (elements.length) openEntidadDrilldown(fullNames02[elements[0].index]);
-      },
-      onHover: (evt, elements) => {
-        evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
-      },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -552,8 +353,7 @@ async function buildEntidad() {
               return [
                 ` L ${ctx.raw.toFixed(1)}M`,
                 ` ${data[i].contratos} contratos`,
-                ` ${pctCritica[i]}% críticas`,
-                ` 💡 Click para ver detalle`
+                ` ${pctCritica[i]}% críticas`
               ];
             }
           }
@@ -714,12 +514,6 @@ async function buildHeatmap() {
     },
     options: {
       responsive: true,
-      onClick: (evt, elements) => {
-        if (elements.length) openEntidadDrilldown(entidades[elements[0].index]);
-      },
-      onHover: (evt, elements) => {
-        evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
-      },
       plugins: { legend: { position: 'top' } },
       scales: {
         x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } },
@@ -833,9 +627,7 @@ async function buildSankey() {
       .attr('width', d => d.x1 - d.x0)
       .attr('height', d => Math.max(1, d.y1 - d.y0))
       .attr('fill', d => d.color)
-      .attr('rx', 2)
-      .style('cursor', d => d.isEntity ? 'pointer' : 'default')
-      .on('click', (event, d) => { if (d.isEntity) openEntidadDrilldown(d.name); });
+      .attr('rx', 2);
 
   // Labels
   svg.append('g').selectAll('text')
@@ -848,8 +640,6 @@ async function buildSankey() {
       .attr('font-size', 10)
       .attr('font-family', 'Inter, system-ui, sans-serif')
       .attr('fill', 'rgba(226,232,240,0.75)')
-      .style('cursor', d => d.isEntity ? 'pointer' : 'default')
-      .on('click', (event, d) => { if (d.isEntity) openEntidadDrilldown(d.name); })
       .text(d => {
         const raw = d.isEntity ? d.name : d.name.split('||')[0];
         return raw.length > 38 ? raw.slice(0, 38) + '…' : raw;
@@ -1006,12 +796,6 @@ async function buildVendorConcentration() {
     options: {
       responsive: true,
       interaction: { mode: 'index', intersect: false },
-      onClick: (evt, elements) => {
-        if (elements.length) openEntidadDrilldown(entities[elements[0].index]);
-      },
-      onHover: (evt, elements) => {
-        evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
-      },
       plugins: {
         legend: { position: 'top' },
         tooltip: {
@@ -1092,21 +876,11 @@ async function buildRiskProfile() {
     options: {
       responsive: true,
       interaction: { mode: 'index', intersect: false },
-      onClick: (evt, elements) => {
-        if (!elements.length) return;
-        const di = elements[0].datasetIndex;
-        if (di === 0) return; // dataset 0 = baseline nacional, no drill-down
-        openEntidadDrilldown(data[di].ent);
-      },
-      onHover: (evt, elements) => {
-        const di = elements.length ? elements[0].datasetIndex : -1;
-        evt.native.target.style.cursor = (elements.length && di !== 0) ? 'pointer' : 'default';
-      },
       plugins: {
         legend: { position: 'top' },
         tooltip: {
           callbacks: {
-            label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%` + (ctx.datasetIndex !== 0 ? ' · 💡 Click para detalle' : '')
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`
           }
         }
       },

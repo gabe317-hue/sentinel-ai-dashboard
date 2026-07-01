@@ -154,6 +154,11 @@
   .drill-table td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .drill-table td.num { text-align: right; font-family: monospace; }
   .clickable-hint { font-size: 9px; color: var(--muted); font-style: italic; margin-left: 8px; }
+  .print-chart-btn {
+    position: absolute; top: 16px; right: 18px;
+    cursor: pointer; font-size: 13px; opacity: .5; transition: opacity .15s;
+  }
+  .print-chart-btn:hover { opacity: 1; }
 </style>
 </head>
 <body>
@@ -181,6 +186,7 @@
 
   <!-- 1. Spike temporal -->
   <div class="chart-card full-width">
+    <span class="print-chart-btn" title="Imprimir" onclick="printChartCard('chart-spike','Chart 01 · Spike Temporal','insight-spike')">🖨️</span>
     <div class="chart-title">Chart 01 · Spike Temporal</div>
     <div class="chart-subtitle">Volumen de contratos + monto mensual 2019–2026</div>
     <canvas id="chart-spike"></canvas>
@@ -189,6 +195,7 @@
 
   <!-- 2. Concentración por entidad -->
   <div class="chart-card">
+    <span class="print-chart-btn" title="Imprimir" onclick="printChartCard('chart-entidad','Chart 02 · Concentración por Entidad','insight-entidad')">🖨️</span>
     <div class="chart-title">Chart 02 · Concentración por Entidad</div>
     <div class="chart-subtitle">Top 25 instituciones por monto total <span class="clickable-hint">💡 click para ver detalle</span></div>
     <canvas id="chart-entidad" style="max-height:640px;"></canvas>
@@ -197,6 +204,7 @@
 
   <!-- 3. Distribución de montos -->
   <div class="chart-card">
+    <span class="print-chart-btn" title="Imprimir" onclick="printChartCard('chart-dist','Chart 03 · Distribución de Montos','insight-dist')">🖨️</span>
     <div class="chart-title">Chart 03 · Distribución de Montos</div>
     <div class="chart-subtitle">Contratos por rango de monto (Lempiras)</div>
     <canvas id="chart-dist"></canvas>
@@ -205,6 +213,7 @@
 
   <!-- 4. Evolución de severidad -->
   <div class="chart-card full-width">
+    <span class="print-chart-btn" title="Imprimir" onclick="printChartCard('chart-sev','Chart 04 · Evolución de Severidad','insight-sev')">🖨️</span>
     <div class="chart-title">Chart 04 · Evolución de Severidad</div>
     <div class="chart-subtitle">Críticas / Altas / Medias por trimestre</div>
     <canvas id="chart-sev"></canvas>
@@ -213,6 +222,7 @@
 
   <!-- 5. Heatmap NS × Entidad -->
   <div class="chart-card full-width">
+    <span class="print-chart-btn" title="Imprimir" onclick="printChartCard('chart-heatmap','Chart 05 · Mapa de Calor — Señales NS × Entidad','insight-heatmap')">🖨️</span>
     <div class="chart-title">Chart 05 · Mapa de Calor — Señales NS × Entidad</div>
     <div class="chart-subtitle">Top 15 entidades × tipo de patrón (contratos con alerta) <span class="clickable-hint">💡 click para ver detalle</span></div>
     <canvas id="chart-heatmap" style="max-height:400px;"></canvas>
@@ -221,6 +231,7 @@
 
   <!-- 6. Sankey Flujo de Fondos -->
   <div class="chart-card full-width">
+    <span class="print-chart-btn" title="Imprimir" onclick="printSankeyChart('Chart 06 · Flujo de Fondos — Entidad → Proveedor','insight-sankey')">🖨️</span>
     <div class="chart-title">Chart 06 · Flujo de Fondos — Entidad → Proveedor</div>
     <div class="chart-subtitle">Top 10 instituciones · Top 5 proveedores por institución · Grosor = monto total (Lps) <span class="clickable-hint">💡 click en nodo de institución para ver detalle</span></div>
     <div id="sankey-container"></div>
@@ -229,6 +240,7 @@
 
   <!-- 7. Trayectoria Acumulada — Top 5 Proveedores CRÍTICA -->
   <div class="chart-card full-width">
+    <span class="print-chart-btn" title="Imprimir" onclick="printChartCard('chart-surge','Chart 07 · Trayectoria de Gasto Acumulado','insight-surge')">🖨️</span>
     <div class="chart-title">Chart 07 · Trayectoria de Gasto Acumulado — Top 5 Proveedores CRÍTICA</div>
     <div class="chart-subtitle">Gasto acumulado 2019–2026 · Escalones verticales = contratos nuevos · Período plano = inactividad</div>
     <canvas id="chart-surge" style="max-height:360px;"></canvas>
@@ -237,6 +249,7 @@
 
   <!-- 8. Concentración de Proveedores por Entidad -->
   <div class="chart-card full-width">
+    <span class="print-chart-btn" title="Imprimir" onclick="printChartCard('chart-vendor','Chart 08 · Concentración de Proveedores','insight-vendor')">🖨️</span>
     <div class="chart-title">Chart 08 · Concentración de Proveedores — Top 10 Entidades</div>
     <div class="chart-subtitle">% del gasto institucional por proveedor · Proveedor #1 (rojo) = mayor concentración <span class="clickable-hint">💡 click para ver detalle</span></div>
     <canvas id="chart-vendor" style="max-height:380px;"></canvas>
@@ -245,6 +258,7 @@
 
   <!-- 9. Perfil de Riesgo Institucional vs. Baseline -->
   <div class="chart-card full-width">
+    <span class="print-chart-btn" title="Imprimir" onclick="printChartCard('chart-risk','Chart 09 · Perfil de Riesgo Institucional','insight-risk')">🖨️</span>
     <div class="chart-title">Chart 09 · Perfil de Riesgo Institucional vs. Baseline Nacional</div>
     <div class="chart-subtitle">Top 4 instituciones de mayor riesgo · 7 dimensiones · Barras grises = promedio nacional <span class="clickable-hint">💡 click en barra de institución para ver detalle</span></div>
     <canvas id="chart-risk" style="max-height:380px;"></canvas>
@@ -296,6 +310,91 @@ Chart.defaults.color = 'rgba(226,232,240,0.55)';
 Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
 Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
 Chart.defaults.font.size = 11;
+
+// ── Registro global de charts (para poder imprimirlos individualmente) ──────
+const CHART_REGISTRY = {};
+
+// S219: mismo patrón de exportación que sentinel_v1_hnd.html (addPrintBtn)
+function addPrintBtn(html) {
+  html = html.replace(/<button[^>]*onclick="window\.print\(\)"[^>]*>[\s\S]*?<\/button>/g, '');
+  const printCss = '<style>@media print { .no-print { display: none !important; } }</style>';
+  const btn = '<button class="no-print" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:#1a56db;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;"><span>🖨️</span> Imprimir / Guardar como PDF</button>';
+  const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
+  const disclaimer = `<div style="margin-top:40px;padding:16px 20px;border-top:2px solid #dc2626;background:#fff8f8;font-family:Arial,sans-serif;font-size:10px;color:#555;line-height:1.6;">
+    <div style="font-weight:700;color:#dc2626;font-size:11px;letter-spacing:.05em;margin-bottom:6px;">⚠ AVISO LEGAL — DOCUMENTO CONFIDENCIAL</div>
+    <p style="margin:0 0 6px 0;">Este documento ha sido generado por <strong>SENTINEL-AI</strong>, sistema de análisis de riesgo en contratación pública de Honduras, con base en registros públicos de la Secretaría de Finanzas (SEFIN) y la Oficina Normativa de Contratación y Adquisiciones del Estado (ONCAE). Los datos comprenden el período 2019–2026.</p>
+    <p style="margin:0 0 6px 0;"><strong>Los hallazgos contenidos en este reporte son indicadores estadísticos de riesgo — no constituyen prueba de irregularidad, fraude o responsabilidad penal o administrativa.</strong> La presencia de un contrato o proveedor en este análisis no implica determinación de culpabilidad. Los datos de fuente pueden contener errores de captura, duplicados o registros incompletos que afecten los montos reportados.</p>
+    <p style="margin:0 0 6px 0;">Toda acción formal — incluyendo investigación administrativa, referido a autoridad competente o apertura de proceso penal — requiere verificación independiente por la autoridad correspondiente conforme a la Ley de Contratación del Estado (Decreto 74-2001) y demás normativa aplicable. SENTINEL-AI no es un órgano jurisdiccional ni emite resoluciones vinculantes.</p>
+    <p style="margin:0;">Documento generado el <strong>${ts}</strong> · Uso restringido a destinatarios autorizados · Prohibida su reproducción o divulgación sin autorización expresa de SentinelAI Intelligence.</p>
+  </div>`;
+  if (html.includes('</head>')) {
+    html = html.replace('</head>', printCss + '\n</head>');
+  } else {
+    html = printCss + html;
+  }
+  if (html.includes('</body>')) {
+    html = html.replace('</body>', disclaimer + '\n' + btn + '\n</body>');
+  } else {
+    html = html + disclaimer + btn;
+  }
+  return html;
+}
+
+// Imprime un chart individual (Chart.js) sobre fondo blanco
+function printChartCard(canvasId, title, insightId) {
+  const chart = CHART_REGISTRY[canvasId];
+  if (!chart) return;
+
+  // Redibujar temporalmente con colores legibles en fondo blanco
+  const origColor = Chart.defaults.color;
+  const origBorder = Chart.defaults.borderColor;
+  Chart.defaults.color = '#333333';
+  Chart.defaults.borderColor = 'rgba(0,0,0,0.08)';
+  chart.update('none');
+  const imgData = chart.toBase64Image('image/png', 1);
+  Chart.defaults.color = origColor;
+  Chart.defaults.borderColor = origBorder;
+  chart.update('none');
+
+  const insightEl = insightId ? document.getElementById(insightId) : null;
+  const insightHtml = insightEl ? insightEl.innerHTML : '';
+
+  const w = window.open('', '_blank');
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title} — Sentinel-AI</title></head>
+  <body style="background:#fff;color:#1a1a1a;font-family:Arial,sans-serif;padding:30px 40px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#888;">Sentinel-AI · Analytics</div>
+    <h1 style="font-size:17px;margin:4px 0 20px 0;">${title}</h1>
+    <img src="${imgData}" style="max-width:100%;">
+    <div style="font-size:11px;color:#444;margin-top:16px;line-height:1.6;">${insightHtml}</div>
+  </body></html>`;
+  w.document.write(addPrintBtn(html));
+  w.document.close();
+  w.focus();
+}
+
+// Imprime el Sankey (SVG, no Chart.js) sobre fondo blanco
+function printSankeyChart(title, insightId) {
+  const svgEl = document.querySelector('#sankey-container svg');
+  if (!svgEl) return;
+  const clone = svgEl.cloneNode(true);
+  clone.style.background = '#fff';
+  const svgHtml = clone.outerHTML;
+
+  const insightEl = insightId ? document.getElementById(insightId) : null;
+  const insightHtml = insightEl ? insightEl.innerHTML : '';
+
+  const w = window.open('', '_blank');
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title} — Sentinel-AI</title></head>
+  <body style="background:#fff;color:#1a1a1a;font-family:Arial,sans-serif;padding:30px 40px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#888;">Sentinel-AI · Analytics</div>
+    <h1 style="font-size:17px;margin:4px 0 20px 0;">${title}</h1>
+    ${svgHtml}
+    <div style="font-size:11px;color:#444;margin-top:16px;line-height:1.6;">${insightHtml}</div>
+  </body></html>`;
+  w.document.write(addPrintBtn(html));
+  w.document.close();
+  w.focus();
+}
 
 const fmtL = n => {
   if (!n) return 'L 0';
@@ -450,7 +549,7 @@ async function buildSpike() {
   const contratos = data.map(d => Number(d.contratos));
   const montos   = data.map(d => Number(d.monto) / 1e6);
 
-  new Chart(document.getElementById('chart-spike'), {
+  CHART_REGISTRY['chart-spike'] = new Chart(document.getElementById('chart-spike'), {
     type: 'bar',
     data: {
       labels,
@@ -532,7 +631,7 @@ async function buildEntidad() {
     return 'rgba(0,229,255,0.5)';
   });
 
-  new Chart(document.getElementById('chart-entidad'), {
+  CHART_REGISTRY['chart-entidad'] = new Chart(document.getElementById('chart-entidad'), {
     type: 'bar',
     data: {
       labels,
@@ -601,7 +700,7 @@ async function buildDist() {
     return 'rgba(0,229,255,0.4)';
   });
 
-  new Chart(document.getElementById('chart-dist'), {
+  CHART_REGISTRY['chart-dist'] = new Chart(document.getElementById('chart-dist'), {
     type: 'bar',
     data: {
       labels,
@@ -647,7 +746,7 @@ async function buildSeveridad() {
   const alta    = data.map(d => Number(d.alta));
   const media   = data.map(d => Number(d.media));
 
-  new Chart(document.getElementById('chart-sev'), {
+  CHART_REGISTRY['chart-sev'] = new Chart(document.getElementById('chart-sev'), {
     type: 'bar',
     data: {
       labels,
@@ -718,7 +817,7 @@ async function buildHeatmap() {
 
   const shortNames = entidades.map(e => e.length > 28 ? e.slice(0,28)+'…' : e);
 
-  new Chart(document.getElementById('chart-heatmap'), {
+  CHART_REGISTRY['chart-heatmap'] = new Chart(document.getElementById('chart-heatmap'), {
     type: 'bar',
     data: {
       labels: shortNames,
@@ -933,7 +1032,7 @@ async function buildSurgeTrajectory() {
   // X axis: show only quarterly labels to avoid clutter
   const quarterlyLabels = timeline.map(m => m.endsWith('-01') || m.endsWith('-04') || m.endsWith('-07') || m.endsWith('-10') ? m : '');
 
-  new Chart(document.getElementById('chart-surge'), {
+  CHART_REGISTRY['chart-surge'] = new Chart(document.getElementById('chart-surge'), {
     type: 'line',
     data: { labels: timeline, datasets },
     options: {
@@ -1017,7 +1116,7 @@ async function buildVendorConcentration() {
     stack: 'vendors',
   }));
 
-  new Chart(document.getElementById('chart-vendor'), {
+  CHART_REGISTRY['chart-vendor'] = new Chart(document.getElementById('chart-vendor'), {
     type: 'bar',
     data: { labels: shortNames, datasets },
     options: {
@@ -1103,7 +1202,7 @@ async function buildRiskProfile() {
     borderWidth: i === 0 ? 2 : 1,
   }));
 
-  new Chart(document.getElementById('chart-risk'), {
+  CHART_REGISTRY['chart-risk'] = new Chart(document.getElementById('chart-risk'), {
     type: 'bar',
     data: { labels: DIMS.map(d => d.label), datasets },
     options: {

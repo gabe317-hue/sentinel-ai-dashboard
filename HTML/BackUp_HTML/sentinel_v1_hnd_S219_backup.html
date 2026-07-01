@@ -13046,7 +13046,7 @@ async function verificarContraSEFIN() {
     }
 
     const s = sefin[0];
-    const presupuesto = Number(s.vigente || s.aprobado || 0); // S219: vigente refleja reformulaciones (ej. abr 2026); aprobado queda fijo desde enero
+    const presupuesto = Number(s.aprobado || 0);
     const procurement = Number(s.ejecucion_procurement || 0);
     const ratio = presupuesto > 0 ? (monto / presupuesto) : null;
 

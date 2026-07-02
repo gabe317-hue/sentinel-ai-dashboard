@@ -7296,9 +7296,6 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // ════════════════════════════════════════════════════════════
 const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmZwZWlnd3RodG9rcXNhcnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzM5MjksImV4cCI6MjA4OTAwOTkyOX0.L0PseYDJV41A1OWzlO0zrth_EJzJCcp5qz8bA8dFl9k';
-// S221: secreto compartido con la función server-side otorgar-acceso-demo.
-// Mitigación de contención (ver CLAUDE_state.md P — no reemplaza migración a Supabase Auth real).
-const DEMO_ACCESS_SECRET = 'RqGHwy1Pc-wZd_XJyhLAO_6Xoxup2iAN';
 
 // ════════════════════════════════════════════════════════════
 // SUPABASE CLIENT INIT
@@ -21195,13 +21192,8 @@ async function admCrearUsuario() {
   }
   statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
   try {
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/otorgar-acceso-demo`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, password: pw, name, expira, role, org, secret: DEMO_ACCESS_SECRET })
-    });
-    const result = await resp.json();
-    if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }
+    const { error } = await db.from('sentinel_demo_access').insert([{ email, password: pw, name, expira, activo: true, role, org }]);
+    if (error) throw error;
     statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ Usuario ${email} creado correctamente.`;
     document.getElementById('adm-email').value = '';
     document.getElementById('adm-pw').value = '';
@@ -21405,13 +21397,10 @@ async function caCrearUsuario() {
   }
   statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
   try {
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/otorgar-acceso-demo`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, password: pw, name, expira, role, org: currentUser.org, secret: DEMO_ACCESS_SECRET })
-    });
-    const result = await resp.json();
-    if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }
+    const { error } = await db.from('sentinel_demo_access').insert([{
+      email, password: pw, name, expira, activo: true, role, org: currentUser.org
+    }]);
+    if (error) throw error;
     statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ Usuario ${email} creado correctamente.`;
     document.getElementById('ca-email').value = '';
     document.getElementById('ca-pw').value = '';

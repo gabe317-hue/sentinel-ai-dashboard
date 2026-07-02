@@ -21178,6 +21178,19 @@ async function admLoadUsuarios() {
   }
 }
 
+// S221: helper compartido — todas las escrituras a sentinel_demo_access pasan
+// por la función server-side otorgar-acceso-demo (ver DEMO_ACCESS_SECRET arriba).
+async function _demoAccessCall(payload) {
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/otorgar-acceso-demo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify({ ...payload, secret: DEMO_ACCESS_SECRET })
+  });
+  const result = await resp.json();
+  if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }
+  return result;
+}
+
 async function admCrearUsuario() {
   const email  = document.getElementById('adm-email').value.trim().toLowerCase();
   const pw     = document.getElementById('adm-pw').value.trim();
@@ -21219,21 +21232,21 @@ async function admExtenderExpira(id, expiraActual) {
   const exp = new Date(expiraActual + 'T00:00:00');
   exp.setDate(exp.getDate() + 7);
   const nuevaExpira = exp.toISOString().slice(0, 10);
-  const { error } = await db.from('sentinel_demo_access').update({ expira: nuevaExpira }).eq('id', id);
-  if (error) { alert('Error al extender: ' + error.message); return; }
+  try { await _demoAccessCall({ action: 'update_expira', id, expira: nuevaExpira }); }
+  catch(e) { alert('Error al extender: ' + e.message); return; }
   admLoadUsuarios();
 }
 
 async function admToggleActivo(id, estadoActual) {
-  const { error } = await db.from('sentinel_demo_access').update({ activo: !estadoActual }).eq('id', id);
-  if (error) { alert('Error: ' + error.message); return; }
+  try { await _demoAccessCall({ action: 'toggle_activo', id, activo: !estadoActual }); }
+  catch(e) { alert('Error: ' + e.message); return; }
   admLoadUsuarios();
 }
 
 async function admEliminar(id, email) {
   if (!confirm(`¿Eliminar acceso demo de ${email}? Esta acción no se puede deshacer.`)) return;
-  const { error } = await db.from('sentinel_demo_access').delete().eq('id', id);
-  if (error) { alert('Error al eliminar: ' + error.message); return; }
+  try { await _demoAccessCall({ action: 'delete', id }); }
+  catch(e) { alert('Error al eliminar: ' + e.message); return; }
   admLoadUsuarios();
 }
 
@@ -21428,21 +21441,21 @@ async function caExtenderExpira(id, expiraActual) {
   const exp = new Date(expiraActual + 'T00:00:00');
   exp.setDate(exp.getDate() + 7);
   const nuevaExpira = exp.toISOString().slice(0, 10);
-  const { error } = await db.from('sentinel_demo_access').update({ expira: nuevaExpira }).eq('id', id).eq('org', currentUser.org);
-  if (error) { alert('Error al extender: ' + error.message); return; }
+  try { await _demoAccessCall({ action: 'update_expira', id, expira: nuevaExpira, org: currentUser.org }); }
+  catch(e) { alert('Error al extender: ' + e.message); return; }
   caLoadUsuarios();
 }
 
 async function caToggleActivo(id, estadoActual) {
-  const { error } = await db.from('sentinel_demo_access').update({ activo: !estadoActual }).eq('id', id).eq('org', currentUser.org);
-  if (error) { alert('Error: ' + error.message); return; }
+  try { await _demoAccessCall({ action: 'toggle_activo', id, activo: !estadoActual, org: currentUser.org }); }
+  catch(e) { alert('Error: ' + e.message); return; }
   caLoadUsuarios();
 }
 
 async function caEliminar(id, email) {
   if (!confirm(`¿Eliminar acceso de ${email}? Esta acción no se puede deshacer.`)) return;
-  const { error } = await db.from('sentinel_demo_access').delete().eq('id', id).eq('org', currentUser.org);
-  if (error) { alert('Error al eliminar: ' + error.message); return; }
+  try { await _demoAccessCall({ action: 'delete', id, org: currentUser.org }); }
+  catch(e) { alert('Error al eliminar: ' + e.message); return; }
   caLoadUsuarios();
 }
 

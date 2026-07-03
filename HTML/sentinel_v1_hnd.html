@@ -7012,13 +7012,13 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;">
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:12px;">Fuentes Activas</div>
-        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--green);">4</div>
-        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">SEFIN · ONCAE · RNP · CNA</div>
+        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--green);" id="dbe-fuentes-count">—</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;" id="dbe-fuentes-sub">Cargando...</div>
       </div>
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:12px;">Edge Functions</div>
-        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--electric);">3</div>
-        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;">ingest-sefin · ingest-oncae · monitor</div>
+        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--electric);" id="dbe-fns-count">—</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:6px;" id="dbe-fns-sub">Cargando...</div>
       </div>
       <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:12px;">Cobertura</div>
@@ -23124,6 +23124,17 @@ function showDashboardEjecutivo() {
   const now = new Date();
   document.getElementById('dbe-gen-date').textContent =
     'Generado: ' + now.toLocaleDateString('es-HN') + ' ' + now.toLocaleTimeString('es-HN', {hour:'2-digit',minute:'2-digit'});
+
+  // S224 QA — "Fuentes Activas: 4 (SEFIN·ONCAE·RNP·CNA)" y "Edge Functions: 3" estaban fijos
+  // desde el diseño original de este panel. RNP está "En integración" (pendiente) en el panel
+  // Fuentes de Datos, y CNA nunca fue una fuente real. Fuentes activas reales (verificadas S223):
+  // SEFIN, ONCAE, OFAC, Lista Engel, SIAFI2, TSC, IAIP = 7.
+  const FUENTES_ACTIVAS = ['SEFIN','ONCAE','OFAC','Engel','SIAFI2','TSC','IAIP'];
+  document.getElementById('dbe-fuentes-count').textContent = FUENTES_ACTIVAS.length;
+  document.getElementById('dbe-fuentes-sub').textContent = FUENTES_ACTIVAS.join(' · ');
+  document.getElementById('dbe-fns-count').textContent = EDGE_FNS.length;
+  document.getElementById('dbe-fns-sub').textContent = EDGE_FNS.slice(0,3).join(' · ') + ' +' + (EDGE_FNS.length - 3) + ' más';
+
   if (typeof db === 'undefined') return;
 
   const fmtM = v => v >= 1e9 ? 'L ' + (v/1e9).toFixed(1) + 'B' : v >= 1e6 ? 'L ' + (v/1e6).toFixed(0) + 'M' : 'L ' + v.toLocaleString('es-HN');
@@ -28763,12 +28774,18 @@ function exportReporteSESEGUPDF() {
 }
 
 // ─── PANEL SALUD DEL SISTEMA (S152) ──────────────────────────────────────────
+// Lista estática — no existe endpoint client-side para consultar Edge Functions en vivo
+// (requiere Supabase Management API con token, no la anon key). Mantener sincronizada
+// manualmente cada vez que se despliega una función nueva. Verificado contra Supabase S224: 26 activas.
 const EDGE_FNS = [
+  'ingest-sefin','ingest-oncae','cron-oncae','backfill-sefin',
   'alerta-critica','auto-investigador','alerta-vencimiento-expedientes',
   'reporte-semanal','reporte-mensual','digest-borradores',
   'resumen-investigaciones','alerta-sobrepresupuesto','alerta-denuncia',
   'post-ingesta-detector','monitor-red-flags','generar-expediente',
-  'notificacion-instituciones'
+  'notificacion-instituciones','batch-delete-baja','enriquecer-proveedores',
+  'tsc-sync','ingestar-tsc-inhabilitados','descargar-oncae-hc1',
+  'submit-denuncia','check-tracking','denuncia-correlate','otorgar-acceso-demo'
 ];
 
 async function loadSysHealth() {

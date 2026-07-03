@@ -4382,20 +4382,20 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
     <div class="ticker-bar" style="margin-bottom:20px;">
       <div class="ticker-scroll" id="ticker">
-        <span class="ticker-item">Presupuesto Nacional <span class="up tk-presupuesto">— cargando...</span></span>
+        <span class="ticker-item">HonduCompras <span class="up">↑ 3 nuevas anomalías</span></span>
         <span class="ticker-item">SIAFI <span>— Monitoreo activo</span></span>
-        <span class="ticker-item">TSC Auditores <span class="tk-tsc">— cargando...</span></span>
-        <span class="ticker-item">Pérdidas estimadas por corrupción <span>$720M–$1,000M+ anuales · CPI 2025</span></span>
-        <span class="ticker-item">Portal Único IAIP <span class="up tk-iaip">— cargando...</span></span>
+        <span class="ticker-item">TSC Auditores <span class="down">✓ Sin irregularidades</span></span>
+        <span class="ticker-item">RNP <span>— 2.847 entidades registradas</span></span>
+        <span class="ticker-item">Portal Único IAIP <span class="up">↑ 2,456,463 documentos indexados</span></span>
         <span class="ticker-item">ENEE — Pérdidas L46,000M · Caso #2025-0391 <span class="up">↑ Investigación activa</span></span>
-        <span class="ticker-item">CPI 2025: Honduras 22/100 — Posición 157/182</span>
+        <span class="ticker-item">CPI 2025: Honduras 22/100 — Posición 157/182 · Pérdidas estimadas $720M–$1,000M+ anuales</span>
         <span class="ticker-item">Puntaje promedio proveedores: <span>62.4/100</span></span>
-        <span class="ticker-item">Módulo F — Canal Integridad Ciudadana <span class="up tk-denuncias">— cargando...</span></span>
-        <span class="ticker-item">Presupuesto Nacional <span class="up tk-presupuesto">— cargando...</span></span>
+        <span class="ticker-item">Módulo F — Canal Integridad Ciudadana <span class="up">↑ 8 denuncias hoy · 3 alta credibilidad escaladas</span></span>
+        <span class="ticker-item">HonduCompras <span class="up">↑ 3 nuevas anomalías</span></span>
         <span class="ticker-item">SIAFI <span>— Monitoreo activo</span></span>
-        <span class="ticker-item">TSC Auditores <span class="tk-tsc">— cargando...</span></span>
-        <span class="ticker-item">Pérdidas estimadas por corrupción <span>$720M–$1,000M+ anuales · CPI 2025</span></span>
-        <span class="ticker-item">Portal Único IAIP <span class="up tk-iaip">— cargando...</span></span>
+        <span class="ticker-item">TSC Auditores <span class="down">✓ Sin irregularidades</span></span>
+        <span class="ticker-item">RNP <span>— 2.847 entidades registradas</span></span>
+        <span class="ticker-item">Portal Único IAIP <span class="up">↑ 2,456,463 documentos indexados</span></span>
       </div>
     </div>
 
@@ -7511,10 +7511,6 @@ async function loadPresupuestoNacional() {
     if (total <= 0) return;
     window._presupuestoNacionalTotal   = total;
     window._presupuestoNacionalPeriodo = ultimoPeriodo;
-    // S227 — ticker: Presupuesto Nacional en vivo (mismo dato, sin query duplicada)
-    const _tkMontoM = Math.round(total / 1e6).toLocaleString('es-HN');
-    const _tkAnio   = ultimoPeriodo ? String(ultimoPeriodo).slice(0,4) : '';
-    document.querySelectorAll('.tk-presupuesto').forEach(el => el.textContent = `↑ L ${_tkMontoM}M aprobado ${_tkAnio}`);
     render();
     if (typeof renderEjecutiva === 'function' && document.getElementById('vistaEjecutiva')?.style.display === 'block') {
       renderEjecutiva();
@@ -7590,13 +7586,6 @@ async function loadFuentesDatosExtra() {
     }
     if (document.getElementById('src-iaip') && typeof iaipCount === 'number') {
       document.getElementById('src-iaip').textContent = iaipCount.toLocaleString('es-HN') + ' proveedores';
-    }
-    // S227 — ticker: TSC/IAIP en vivo (mismas queries de arriba, sin duplicar)
-    if (typeof tscCount === 'number') {
-      document.querySelectorAll('.tk-tsc').forEach(el => el.textContent = `${tscCount.toLocaleString('es-HN')} informes en base de datos`);
-    }
-    if (typeof iaipCount === 'number') {
-      document.querySelectorAll('.tk-iaip').forEach(el => el.textContent = `↑ ${iaipCount.toLocaleString('es-HN')} proveedores indexados`);
     }
     if (document.getElementById('exec-frac-criticos') && typeof fracCriticos === 'number') {
       document.getElementById('exec-frac-criticos').textContent = fracCriticos.toLocaleString('es-HN');
@@ -27372,11 +27361,6 @@ async function mfLoadBadge() {
       poBadge.style.color = 'var(--red)';
       poBadge.style.borderColor = 'rgba(255,23,68,0.4)';
     }
-    // S227 — ticker: total de denuncias en vivo (1 query extra, head:true = liviana)
-    const { count: totalDenuncias } = await db.from('denuncias').select('*', { count: 'exact', head: true });
-    document.querySelectorAll('.tk-denuncias').forEach(el => {
-      el.textContent = `↑ ${(totalDenuncias || 0).toLocaleString('es-HN')} denuncias recibidas · ${count || 0} alta credibilidad`;
-    });
   } catch(_) {}
 }
 

@@ -2968,9 +2968,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- Filtro severidad -->
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
       <button onclick="idSetFiltro(null)" id="id-f-all" style="background:rgba(0,200,255,0.15);color:var(--electric);border:1px solid rgba(0,200,255,0.4);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">TODOS</button>
-      <button onclick="idSetFiltro('CRÍTICA')" id="id-f-crit" style="background:rgba(255,71,87,0.08);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">CRÍTICA (…)</button>
-      <button onclick="idSetFiltro('ALTA')" id="id-f-alta" style="background:rgba(255,165,2,0.08);color:#ffa502;border:1px solid rgba(255,165,2,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">ALTA (…)</button>
-      <button onclick="idSetFiltro('MEDIA')" id="id-f-media" style="background:rgba(255,211,42,0.08);color:#ffd32a;border:1px solid rgba(255,211,42,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">MEDIA (…)</button>
+      <button onclick="idSetFiltro('CRÍTICA')" id="id-f-crit" style="background:rgba(255,71,87,0.08);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">CRÍTICA (37)</button>
+      <button onclick="idSetFiltro('ALTA')" id="id-f-alta" style="background:rgba(255,165,2,0.08);color:#ffa502;border:1px solid rgba(255,165,2,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">ALTA (80)</button>
+      <button onclick="idSetFiltro('MEDIA')" id="id-f-media" style="background:rgba(255,211,42,0.08);color:#ffd32a;border:1px solid rgba(255,211,42,0.3);border-radius:6px;padding:4px 14px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">MEDIA (246)</button>
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -4462,9 +4462,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- ONCAE CRÍTICA -->
       <div class="exec-card exec-card-red">
         <div class="exec-card-label">ONCAE CRÍTICA (2025–2026)</div>
-        <div class="exec-card-value" style="color:var(--red);" id="exec-oncae-cd-total">—</div>
-        <div class="exec-card-sub" id="exec-oncae-cd-monto">Cargando…</div>
-        <div class="exec-card-note" id="exec-oncae-cd-nota">▸ Contratación directa sin proceso competitivo</div>
+        <div class="exec-card-value" style="color:var(--red);">145</div>
+        <div class="exec-card-sub">L 6,253M — Sin licitación</div>
+        <div class="exec-card-note">▸ 115 en 2025 · 30 en 2026</div>
       </div>
       <!-- Total monitored -->
       <div class="exec-card exec-card-green">
@@ -4509,9 +4509,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- KPI: Contratos Sin Licitación -->
       <div class="exec-card exec-card-orange" onclick="executePlaybookQuery('contratacion-directa')" style="cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor=''">
         <div class="exec-card-label">Contratos Sin Licitación</div>
-        <div class="exec-card-value" id="exec-sin-licit">—</div>
+        <div class="exec-card-value" id="exec-sin-licit">145</div>
         <div class="exec-card-sub">ONCAE directos · 2025–2026</div>
-        <div class="exec-card-note" id="exec-sin-licit-nota">▸ Cargando…</div>
+        <div class="exec-card-note">▸ L 6,253M sin proceso competitivo</div>
       </div>
 
       <!-- KPI: Cobertura Presupuestal -->
@@ -4654,17 +4654,17 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
         <div class="exec-source-name">SEFIN / EDCA</div>
-        <div class="exec-source-val" id="src-sefin">Cargando...</div>
+        <div class="exec-source-val" id="src-sefin">40,175 contratos</div>
       </div>
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
         <div class="exec-source-name">ONCAE / Honducompras</div>
-        <div class="exec-source-val" id="src-oncae">Cargando...</div>
+        <div class="exec-source-val">96,403 contratos · 2019–2026</div>
       </div>
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
         <div class="exec-source-name">OFAC SDN List</div>
-        <div class="exec-source-val" title="Tamaño de la lista publicada por OFAC — referencia externa, no se calcula desde la base de datos de Sentinel">~16,885 entradas (lista externa)</div>
+        <div class="exec-source-val">16,885 entradas</div>
       </div>
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
@@ -4674,27 +4674,27 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
         <div class="exec-source-name">SIAFI2</div>
-        <div class="exec-source-val" id="src-siafi2">Cargando...</div>
+        <div class="exec-source-val">3,071 pagos reales</div>
       </div>
       <div class="exec-source pending">
         <div class="exec-source-dot amber"></div>
         <div class="exec-source-name">Medios de Comunicación</div>
         <div class="exec-source-val">En integración</div>
       </div>
-      <div class="exec-source active" id="src-tsc-wrap">
-        <div class="exec-source-dot green"></div>
+      <div class="exec-source pending">
+        <div class="exec-source-dot amber"></div>
         <div class="exec-source-name">TSC Honduras</div>
-        <div class="exec-source-val" id="src-tsc">Cargando...</div>
+        <div class="exec-source-val">Pendiente datos</div>
       </div>
       <div class="exec-source pending">
         <div class="exec-source-dot amber"></div>
         <div class="exec-source-name">RNP Proveedores</div>
         <div class="exec-source-val">En integración</div>
       </div>
-      <div class="exec-source active" id="src-iaip-wrap">
-        <div class="exec-source-dot green"></div>
+      <div class="exec-source pending">
+        <div class="exec-source-dot amber"></div>
         <div class="exec-source-name">Portal IAIP (api.iaip.gob.hn)</div>
-        <div class="exec-source-val" id="src-iaip">Cargando...</div>
+        <div class="exec-source-val">Endpoint activo · pendiente</div>
       </div>
     </div>
 
@@ -5832,8 +5832,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div>
         <div class="fuente-title">🏛️ <span>Riesgo por Sector Institucional</span></div>
-        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;" id="sec-panel-subtitle">
-          Concentración de riesgo por sector de gobierno — basado en los contratos con alertas activas
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
+          Concentración de riesgo por sector de gobierno — basado en los 40,175 contratos con alertas activas
         </div>
       </div>
       <button onclick="exportSectorSummaryPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;">📄 PDF</button>
@@ -7561,38 +7561,6 @@ async function loadTiposIrregularidad() {
   } catch (e) { console.warn('⚠️ loadTiposIrregularidad:', e.message); }
 }
 
-// ════════════════════════════════════════════════════════════
-// FUENTES DE DATOS EXTRA (S223 QA) — TSC/IAIP/Fraccionamiento críticos
-// Antes: "TSC Honduras: Pendiente datos" y "Portal IAIP: Endpoint activo ·
-// pendiente" mostraban ambas fuentes como no-integradas, aunque ya tienen
-// datos reales en producción. exec-frac-criticos ya mostraba el número
-// correcto (28) pero estaba fijo en HTML — se conecta para que no quede
-// desactualizado cuando mv_fraccionamiento se refresque.
-// Nota: iaip_documents/iaip_contracts/iaip_compras/iaip_payroll son
-// service_role-only (RLS) — no legibles desde el cliente. Se usa
-// iaip_providers (única tabla IAIP con policy anon_read) como proxy del
-// volumen de datos IAIP integrados. Ver agenda P3 (migración Auth) para
-// el resto de estas tablas.
-// ════════════════════════════════════════════════════════════
-async function loadFuentesDatosExtra() {
-  try {
-    const [{ count: tscCount }, { count: iaipCount }, { count: fracCriticos }] = await Promise.all([
-      db.from('tsc_informes').select('*', { count: 'exact', head: true }),
-      db.from('iaip_providers').select('*', { count: 'exact', head: true }),
-      db.from('mv_fraccionamiento').select('*', { count: 'exact', head: true }).eq('severidad', 'CRÍTICA'),
-    ]);
-    if (document.getElementById('src-tsc') && typeof tscCount === 'number') {
-      document.getElementById('src-tsc').textContent = tscCount.toLocaleString('es-HN') + ' informes';
-    }
-    if (document.getElementById('src-iaip') && typeof iaipCount === 'number') {
-      document.getElementById('src-iaip').textContent = iaipCount.toLocaleString('es-HN') + ' proveedores';
-    }
-    if (document.getElementById('exec-frac-criticos') && typeof fracCriticos === 'number') {
-      document.getElementById('exec-frac-criticos').textContent = fracCriticos.toLocaleString('es-HN');
-    }
-  } catch (e) { console.warn('⚠️ loadFuentesDatosExtra:', e.message); }
-}
-
 async function loadAlerts() {
   // S152 — Restaurar caché inmediatamente si existe y es reciente
   const _cached = _getCachedAlerts();
@@ -7706,7 +7674,6 @@ async function loadAlerts() {
     poUpdateIndicators();
     loadPresupuestoNacional();  // S222 — presupuesto nacional en vivo (no bloquea, re-renderiza al llegar)
     loadTiposIrregularidad();   // S222 — widget Tipos de Irregularidad con datos reales (no bloquea)
-    loadFuentesDatosExtra();    // S223 — TSC/IAIP/Fraccionamiento críticos en vivo (no bloquea)
     if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
 
   } catch (err) {
@@ -12635,7 +12602,7 @@ function generarMemorandum() {
   <div style="margin-bottom:12px"><strong>Patrones de riesgo detectados:</strong><div style="margin-top:6px">${patronTags}</div></div>
   <ul class="hlist">
     <li><span class="hi">►</span><span>El contrato ha sido señalado con nivel de riesgo <strong>${d.severity}</strong> por el algoritmo de análisis del Sistema Sentinel, basado en criterios de severidad, monto y patrones de comportamiento irregular en contratación pública.</span></li>
-    <li><span class="hi">►</span><span>Los datos provienen del sistema de monitoreo Sentinel, que integra las fuentes SEFIN, ONCAE e IAIP. El universo de monitoreo comprende ${(window.allAlerts && window.allAlerts.length ? window.allAlerts.length.toLocaleString('es-HN') : '—')} registros de contratos públicos. El análisis es automatizado y debe complementarse con investigación documental.</span></li>
+    <li><span class="hi">►</span><span>Los datos provienen del sistema SEFIN/EDCA. El universo de monitoreo comprende 40,175 registros de contratos públicos. El análisis es automatizado y debe complementarse con investigación documental.</span></li>
     <li><span class="hi">►</span><span>Sentinel detectó patrones estadísticamente anómalos en esta contratación que justifican revisión formal por parte de la autoridad competente.</span></li>
   </ul>
 </div>
@@ -14361,9 +14328,6 @@ function showSectorPanel() {
     document.getElementById('sec-total-contratos').textContent = allAlerts.length.toLocaleString('es-HN');
     document.getElementById('sec-total-critica').textContent   = totalC.toLocaleString('es-HN');
     document.getElementById('sec-total-alta').textContent      = totalA.toLocaleString('es-HN');
-    // S223 QA: subtítulo tenía "40,175" fijo (nunca actualizado) — ahora usa el total en vivo
-    const _secSub = document.getElementById('sec-panel-subtitle');
-    if (_secSub) _secSub.textContent = `Concentración de riesgo por sector de gobierno — basado en los ${allAlerts.length.toLocaleString('es-HN')} contratos con alertas activas`;
 
     renderSectorTable();
   }
@@ -23465,39 +23429,6 @@ function renderEjecutiva() {
   }
   document.getElementById('exec-sobrecosto').textContent     = sobrecosto.length.toLocaleString();
   document.getElementById('exec-sobrecosto-monto').textContent = fmtL(sumMonto(sobrecosto));
-
-  // ── S223 QA: Fuentes de Datos — antes "40,175"/"96,403"/"3,071" fijos, nunca verificados contra DB ──
-  const sefinAlerts = alerts.filter(a => (a.data_source||'').toUpperCase().includes('SEFIN'));
-  const oncaeAlerts = alerts.filter(a => (a.data_source||'').toUpperCase().startsWith('ONCAE'));
-  if (document.getElementById('src-sefin'))  document.getElementById('src-sefin').textContent  = sefinAlerts.length.toLocaleString('es-HN') + ' contratos';
-  if (document.getElementById('src-oncae'))  document.getElementById('src-oncae').textContent  = oncaeAlerts.length.toLocaleString('es-HN') + ' contratos · 2019–2026';
-  const siafiReal = alerts.filter(a => typeof isSiafiReal === 'function' && isSiafiReal(a));
-  if (document.getElementById('src-siafi2')) document.getElementById('src-siafi2').textContent = siafiReal.length.toLocaleString('es-HN') + ' pagos reales';
-
-  // ── S223 QA: ONCAE Contratación Directa CRÍTICA 2025–2026 — antes "145 / L 6,253M / 115 en 2025·30 en 2026" fijo, no reproducible contra DB ──
-  const _anioContrato = a => { const d = a.fecha_contrato ? new Date(a.fecha_contrato) : null; return d && !isNaN(d) ? d.getFullYear() : null; };
-  const cdCritica2526 = alerts.filter(a => {
-    if (!(a.data_source||'').toUpperCase().startsWith('ONCAE')) return false;
-    if (normSevLocal(a.severity) !== 'critica') return false;
-    const anio = _anioContrato(a);
-    if (anio !== 2025 && anio !== 2026) return false;
-    const pat = a.patterns || '';
-    const patStr = Array.isArray(pat) ? pat.join(' ') : String(pat);
-    const tipo = (a.tipo_contratacion || '').toUpperCase();
-    return patStr.includes('CONTRATACION_DIRECTA') || tipo.includes('DIRECTA') || tipo.includes('CD_ALTO');
-  });
-  const cd2025 = cdCritica2526.filter(a => _anioContrato(a) === 2025).length;
-  const cd2026 = cdCritica2526.filter(a => _anioContrato(a) === 2026).length;
-  const cdMonto = sumMonto(cdCritica2526);
-  if (document.getElementById('exec-oncae-cd-total')) {
-    document.getElementById('exec-oncae-cd-total').textContent = cdCritica2526.length.toLocaleString('es-HN');
-    document.getElementById('exec-oncae-cd-monto').textContent = fmtL(cdMonto) + ' — Sin licitación';
-    document.getElementById('exec-oncae-cd-nota').textContent  = `▸ ${cd2025} en 2025 · ${cd2026} en 2026`;
-  }
-  if (document.getElementById('exec-sin-licit')) {
-    document.getElementById('exec-sin-licit').textContent      = cdCritica2526.length.toLocaleString('es-HN');
-    document.getElementById('exec-sin-licit-nota').textContent = `▸ ${fmtL(cdMonto)} sin proceso competitivo`;
-  }
   // exec-status-val reemplazado por exec-inv-activas-count (ver loadInvestigacionesDB)
   document.getElementById('execSubtitle').textContent        = `${alerts.length.toLocaleString()} contratos con alertas activas · 2019–2026 · ${new Date().toLocaleDateString('es-HN')}`;
 

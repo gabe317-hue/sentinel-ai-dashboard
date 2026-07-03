@@ -6261,7 +6261,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <!-- ═══════════════════ MÓDULO F — CANAL DE INTEGRIDAD CIUDADANA ════════════════════ -->
   <div class="fuente-panel" id="moduloFPanel">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <button class="fuente-back" style="margin-bottom:0;" onclick="hideModuloFPanel()">← Contratos</button>
+      <button class="fuente-back" style="margin-bottom:0;" onclick="volverModuloFAPortal()">← Portal</button>
       <div style="display:flex;gap:8px;">
         <button onclick="mfExportarPDF()" style="background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-dim)'">↓ Exportar PDF</button>
         <button onclick="mfAbrirNuevaDenuncia()" style="background:rgba(168,85,247,0.15);color:var(--purple);border:1px solid rgba(168,85,247,0.35);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;">+ Nueva Denuncia</button>
@@ -27396,6 +27396,18 @@ function hideModuloFPanel() {
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
   document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
   document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
+}
+
+// S227 — Back button de Módulo F ahora regresa a Portal (pedido de Gabe),
+// no a Contratos. Cierra el panel directo (Regla #11 — nunca via hideModuloFPanel(),
+// que activa nav-contratos) y abre Portal.
+function volverModuloFAPortal() {
+  document.getElementById('moduloFPanel').classList.remove('open');
+  document.getElementById('nav-modulof').classList.remove('active');
+  document.querySelector('.stats-grid') && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+  showPortal();
 }
 
 function mfAbrirNuevaDenuncia() {

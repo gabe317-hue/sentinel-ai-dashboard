@@ -3081,7 +3081,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
       <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.15);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
         <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Exp. Manuales</div>
-        <div id="dr-stat-expmanual" style="font-size:22px;font-weight:700;color:#f97316;">—</div>
+        <div style="font-size:22px;font-weight:700;color:#f97316;">1</div>
       </div>
     </div>
     <!-- Filtros NS-13 -->
@@ -3175,7 +3175,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
       <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
         <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">CPC Inhabilitados</div>
-        <div id="cpc-stat-total" style="font-size:22px;font-weight:700;color:#ef4444;">—</div>
+        <div style="font-size:22px;font-weight:700;color:#ef4444;">157</div>
       </div>
       <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
         <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Actualización</div>
@@ -10160,19 +10160,6 @@ async function showDobleRolPanel() {
   const execEl = document.getElementById('exec-dr-personas');
   if (execEl) execEl.textContent = total;
   _renderDobleRolTabla();
-  _loadDrExpManuales(); // S224 QA — "Exp. Manuales" estaba fijo en "1", ahora en vivo
-}
-
-async function _loadDrExpManuales() {
-  const el = document.getElementById('dr-stat-expmanual');
-  if (!el) return;
-  try {
-    const { count, error } = await db.from('expedientes')
-      .select('id', { count: 'exact', head: true })
-      .or('esquema.ilike.%DOBLE_ROL%,esquema.eq.NS-13');
-    if (error) throw error;
-    el.textContent = count ?? '—';
-  } catch(e) { el.textContent = '—'; }
 }
 
 function _renderDobleRolTabla() {
@@ -10296,8 +10283,7 @@ function exportDobleRolPDF() {
       <td style="padding:6px 8px;text-align:center;"><span style="background:${c}18;color:${c};border:1px solid ${c}44;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;">${esc(r.severidad)}</span></td>
     </tr>`;
   }).join('');
-  const w = window.open('', '_blank', 'width=1100,height=800');
-  if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  const w = window.open('', '_blank');
   const html_dr = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>NS-13 Doble Rol — Sentinel AI</title>
   <style>
@@ -10328,7 +10314,7 @@ function exportDobleRolPDF() {
   </body></html>`;
   w.document.write(addPrintBtn(html_dr));
   w.document.close();
-  w.addEventListener('load', () => w.focus());
+  w.focus();
 }
 
 function exportVistaEjecutivaPDF() {
@@ -10398,8 +10384,7 @@ function exportCpcInhabPDF() {
       <td style="padding:6px 8px;color:#666;">${esc(details)}</td>
     </tr>`;
   }).join('');
-  const w = window.open('', '_blank', 'width=1100,height=800');
-  if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  const w = window.open('', '_blank');
   const html_cpc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>NS-14 CPC Inhabilitados — Sentinel AI</title>
   <style>
@@ -10422,7 +10407,7 @@ function exportCpcInhabPDF() {
   </body></html>`;
   w.document.write(addPrintBtn(html_cpc));
   w.document.close();
-  w.addEventListener('load', () => w.focus());
+  w.focus();
 }
 
 function hideDobleRolPanel() {
@@ -10436,8 +10421,6 @@ function hideDobleRolPanel() {
 function showCpcInhabPanel() {
   _closeAllFuentePanels();
   document.getElementById('cpcInhabPanel').classList.add('open');
-  const totEl = document.getElementById('cpc-stat-total');
-  if (totEl) totEl.textContent = CPC_INHABILITADOS_HND.length; // S224 QA — antes fijo en "157"
   _renderCpcInhabLista(CPC_INHABILITADOS_HND);
 }
 function hideCpcInhabPanel() {
@@ -12174,19 +12157,11 @@ function exportNSPanelPDF(panelId, title) {
   });
 
   // Extract stat cards (divs with large numbers)
-  // Dos patrones de DOM en uso: (a) wrapper .fuente-stat con hijos .fuente-stat-val/.fuente-stat-lbl
-  // (b) div de valor con id="xxx-stat-yyy" (hoja, sin hijos) precedido por su label como hermano anterior
-  const stats = panel.querySelectorAll('.fuente-stat, [id*="-stat-"]');
+  const stats = panel.querySelectorAll('.fuente-stat, [id$="-stat-critica"], [id$="-stat-total"], [id$="-stat-monto"]');
   let statsHtml = '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">';
   stats.forEach(s => {
-    let val, lbl;
-    if (s.classList.contains('fuente-stat')) {
-      val = s.querySelector('.fuente-stat-val, [style*="font-size:22px"], [style*="font-size: 22px"]');
-      lbl = s.querySelector('.fuente-stat-lbl, [style*="text-transform:uppercase"], [style*="letter-spacing"]');
-    } else {
-      val = s;
-      lbl = s.previousElementSibling;
-    }
+    const val = s.querySelector('.fuente-stat-val, [style*="font-size:22px"], [style*="font-size: 22px"]');
+    const lbl = s.querySelector('.fuente-stat-lbl, [style*="text-transform:uppercase"], [style*="letter-spacing"]');
     if (val && lbl) {
       statsHtml += `<div style="border:1px solid #334;border-radius:8px;padding:10px 16px;min-width:100px;">
         <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.06em;">${esc(lbl.textContent)}</div>
@@ -12232,8 +12207,7 @@ function exportNSPanelPDF(panelId, title) {
     }
   }
 
-  const w = window.open('', '_blank', 'width=1100,height=800');
-  if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  const w = window.open('', '_blank');
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>${esc(title)} — Sentinel AI</title>
   <style>
@@ -12256,7 +12230,7 @@ function exportNSPanelPDF(panelId, title) {
   </body></html>`;
   w.document.write(addPrintBtn(html));
   w.document.close();
-  w.addEventListener('load', () => w.focus());
+  w.focus();
 }
 
 function exportFraccionamientoPDF() {
@@ -12279,8 +12253,7 @@ function exportFraccionamientoPDF() {
       <td style="padding:7px 10px;text-align:center;"><span style="background:${c}20;color:${c};border:1px solid ${c}44;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">${esc(r.severidad||'—')}</span></td>
     </tr>`;
   }).join('');
-  const w = window.open('', '_blank', 'width=1100,height=800');
-  if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  const w = window.open('', '_blank');
   const html_frac = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Detección de Fraccionamiento — Sentinel AI</title>
   <style>
@@ -12312,7 +12285,7 @@ function exportFraccionamientoPDF() {
   </body></html>`;
   w.document.write(addPrintBtn(html_frac));
   w.document.close();
-  w.addEventListener('load', () => w.focus());
+  w.focus();
 }
 
 function exportSectorSummaryPDF() {
@@ -29332,14 +29305,6 @@ function idGenerarReportePDF() {
   const hoy = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
   const folio = 'SEN-NS11-' + rtn.slice(-6) + '-' + new Date().toISOString().slice(0,10).replace(/-/g,'');
 
-  // Severidad real del caso (Regla #28: nunca asumir CRÍTICA por defecto) + flag de acrónimo (Regla #30)
-  const caso = gIdData.find(r => r.rtn === rtn) || {};
-  const severidad = caso.severidad || 'SIN CLASIFICAR';
-  const esAcronimo = !!caso.posible_acronimo;
-  const sevColorMap = { 'CRÍTICA':'#c0392b', 'ALTA':'#e67e22', 'MEDIA':'#d4a017' };
-  const sevColor = sevColorMap[severidad] || '#888';
-  const acronimoHtml = esAcronimo ? `<div class="alerta" style="background:#e8eaf6;border-left-color:#7986cb;">🔎 <b>Nota de verificación:</b> este RTN está marcado como posible variante de nombre o acrónimo legítimo de una misma empresa — revisar antes de tratarlo como suplantación real (Regla de validación NS-11).</div>` : '';
-
   const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -29348,37 +29313,36 @@ function idGenerarReportePDF() {
 <style>
   @page { margin: 2cm; }
   body { font-family: Arial, sans-serif; font-size: 12px; color: #1a1a2e; line-height: 1.5; }
-  .header { border-bottom: 3px solid ${sevColor}; padding-bottom: 12px; margin-bottom: 20px; }
-  .header h1 { font-size: 18px; color: ${sevColor}; margin: 0 0 4px; }
+  .header { border-bottom: 3px solid #c0392b; padding-bottom: 12px; margin-bottom: 20px; }
+  .header h1 { font-size: 18px; color: #c0392b; margin: 0 0 4px; }
   .header .sub { font-size: 11px; color: #666; }
   .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #f8f8f8; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 11px; }
   .meta-grid b { color: #333; }
   .alerta { background: #fff3cd; border-left: 4px solid #e67e22; padding: 10px 14px; border-radius: 4px; margin-bottom: 20px; font-size: 11px; }
   table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-  th { background: ${sevColor}; color: #fff; padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  th { background: #c0392b; color: #fff; padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
   td { padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 11px; vertical-align: top; }
   tr:nth-child(even) td { background: #fafafa; }
-  .badge { display:inline-block; background:${sevColor}22; color:${sevColor}; border:1px solid ${sevColor}44; border-radius:10px; padding:1px 8px; font-size:10px; font-weight:700; }
+  .badge { display:inline-block; background:#c0392b22; color:#c0392b; border:1px solid #c0392b44; border-radius:10px; padding:1px 8px; font-size:10px; font-weight:700; }
   .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
   @media print { button { display:none; } }
 </style>
 </head>
 <body>
 <div class="header">
-  <h1>📋 Análisis NS-11 — Posible Identidad Tributaria Duplicada</h1>
-  <div class="sub">Sentinel AI · Sistema de Análisis de Alertas en Contratación Pública</div>
+  <h1>🚨 ALERTA NS-11 — Identidad Tributaria Duplicada</h1>
+  <div class="sub">Sentinel AI · Sistema de Detección de Fraude en Contratación Pública</div>
 </div>
 <div class="meta-grid">
   <div><b>Folio:</b> ${folio}</div>
   <div><b>Fecha:</b> ${hoy}</div>
   <div><b>RTN investigado:</b> ${rtn}</div>
-  <div><b>Señal:</b> <span class="badge">NS-11 ${severidad}</span></div>
+  <div><b>Señal:</b> <span class="badge">NS-11 CRÍTICA</span></div>
   <div><b>Nombres distintos:</b> ${nombres.length}</div>
   <div><b>Fuente:</b> Portal IAIP — iaip_providers</div>
 </div>
-${acronimoHtml}
 <div class="alerta">
-  ⚠️ <b>Hallazgo:</b> El RTN <b>${rtn}</b> aparece registrado bajo <b>${nombres.length} nombres de empresa distintos</b> en documentos de adquisiciones publicados por instituciones del Estado hondureño. Esta discrepancia es incompatible con un uso tributario esperado y constituye un indicador de posible suplantación de identidad o uso irregular del RTN — no una determinación jurídica.
+  ⚠️ <b>Hallazgo:</b> El RTN <b>${rtn}</b> aparece registrado bajo <b>${nombres.length} nombres de empresa distintos</b> en documentos de adquisiciones publicados por instituciones del Estado hondureño. Esta discrepancia es incompatible con un registro tributario legítimo y constituye una señal de suplantación de identidad o reutilización fraudulenta de RTN.
 </div>
 <table>
   <thead>
@@ -29407,10 +29371,8 @@ ${acronimoHtml}
 </html>`;
 
   const w = window.open('', '_blank', 'width=900,height=700');
-  if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
   w.document.write(addPrintBtn(html));
   w.document.close();
-  w.addEventListener('load', () => w.focus());
 }
 
 async function idLoadKPI() {

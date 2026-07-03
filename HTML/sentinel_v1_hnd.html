@@ -19897,18 +19897,22 @@ function updateConsultasMetrics(all) {
   const criticos = all.filter(a => normSev(a.severity||a.severidad) === 'critica');
   const monto = criticos.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
   const fmtM = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(1) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(0) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+  // S222: unificado con el conteo usado en poUpdateIndicators()/populateGlobalSobrecostos()
+  // (contratos con SEFIN o patrón SOBRECOSTO) — antes contaba instituciones con solo el
+  // filtro SEFIN, dando un número distinto ("—") al resto del dashboard ("39 casos").
   const sobre = all.filter(a => {
     const mc = Number(a.monto_contrato||0);
     const budget = Number(a.budget_amount||0);
-    return mc > 0 && budget > mc * 1.15;
+    const hasSEFIN = mc > 0 && budget > mc * 1.15;
+    const hasPattern = a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SOBRECOSTO'));
+    return hasSEFIN || hasPattern;
   });
-  const sobreInst = new Set(sobre.map(a => a.entity_name||a.entidad).filter(Boolean)).size;
   const elC = document.getElementById('exec-m-criticos');
   const elM = document.getElementById('exec-m-monto');
   const elS = document.getElementById('exec-m-sobre');
   if (elC) elC.textContent = criticos.length.toLocaleString('es-HN');
   if (elM) elM.textContent = fmtM(monto);
-  if (elS) elS.textContent = sobreInst > 0 ? sobreInst + ' inst.' : '—';
+  if (elS) elS.textContent = sobre.length > 0 ? sobre.length.toLocaleString('es-HN') : '—';
   // Actualizar contadores de BD en reportes/dashboard
   const totalStr = (window._bdTotalCount || all.length).toLocaleString('es-HN');
   const dbeCont = document.getElementById('dbe-contratos');

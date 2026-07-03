@@ -4081,7 +4081,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             <span class="po-item-icon">🎯</span><span class="po-item-label">Concentración</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showGlobalSobrecostos)">
-            <span class="po-item-icon">💰</span><span class="po-item-label">Sobrepresupuestos</span><span class="po-item-tag tag-n" id="po-tag-sobrecosto">— casos</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">💰</span><span class="po-item-label">Sobrepresupuestos</span><span class="po-item-tag tag-n">43 casos</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showPhase4Detection)">
             <span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span>
@@ -19857,8 +19857,6 @@ function poUpdateIndicators() {
     document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
     document.getElementById('po-ind-intl').textContent  = (engel + ofac).toLocaleString('es-HN');
     document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
-    const poTagSob = document.getElementById('po-tag-sobrecosto');
-    if (poTagSob) poTagSob.textContent = sob.toLocaleString('es-HN') + ' casos';
     const displayTotal = window._bdTotalCount || data.length;
     document.getElementById('po-ind-total').textContent = displayTotal.toLocaleString('es-HN');
     document.getElementById('po-db-badge').textContent  = displayTotal.toLocaleString('es-HN') + ' contratos con alertas activas';
@@ -25423,10 +25421,9 @@ const PLAYBOOK_QUERIES = [
         const budget = Number(a.budget_amount||0);
         return mc > 0 && budget > mc * 1.15;
       });
-      // S222: budget_amount ahora solo se asigna a contratos del mismo año fiscal
-      // que el período SEFIN analizado (fix ingest-sefin v26) — ya no mezcla años pasados.
+      // Detectar años con datos PIEP disponibles
       const añosPIEP = [...new Set(sobre.map(a => (a.fecha_contrato||'').slice(0,4)).filter(y => y >= '2019'))].sort();
-      const rangoAños = añosPIEP.length > 0 ? (añosPIEP[0] === añosPIEP[añosPIEP.length-1] ? añosPIEP[0] : añosPIEP[0] + '–' + añosPIEP[añosPIEP.length-1]) : 'año en curso';
+      const rangoAños = añosPIEP.length > 0 ? (añosPIEP[0] === añosPIEP[añosPIEP.length-1] ? añosPIEP[0] : añosPIEP[0] + '–' + añosPIEP[añosPIEP.length-1]) : 'datos disponibles';
       const instMap = {};
       sobre.forEach(a => {
         const inst = a.entity_name || a.entidad || '—';
@@ -25445,7 +25442,7 @@ const PLAYBOOK_QUERIES = [
           ratio: (d.maxRatio * 100).toFixed(0) + '%'
         }));
       if (!filas.length) return { titulo: 'Instituciones Sobrepresupuesto — SEFIN PIEP', filas: [], cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'],
-        nota: 'Sin instituciones con sobrepresupuesto en el año fiscal en curso. La comparación solo aplica a contratos del mismo año que el período SEFIN analizado — no se atribuyen contratos de años anteriores al ritmo de gasto actual.' };
+        nota: 'Sin instituciones sobrepresupuesto detectadas con los datos PIEP disponibles. Esta consulta requiere el cruce SEFIN budget_amount × monto_contrato ONCAE. Cobertura limitada a instituciones presentes en ambas fuentes.' };
       return { titulo: `Instituciones Sobrepresupuesto — SEFIN PIEP ${rangoAños}`, filas, cols: ['#','Institución','Contratos','Monto','Ritmo Máx.'],
         nota: `Período presupuestario: SEFIN PIEP ${rangoAños}. Ritmo Máx. = presupuesto PIEP asignado / monto contratado ONCAE — valores >100% indican que el presupuesto supera el monto contratado por más del 15%. Solo instituciones con datos disponibles en ambas fuentes (SEFIN PIEP + ONCAE) aparecen. Cobertura parcial.` };
     }

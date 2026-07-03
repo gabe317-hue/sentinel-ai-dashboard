@@ -6958,27 +6958,28 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
           <span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;">Tipos de Irregularidad</span>
         </div>
-        <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+        <div style="padding:20px;display:flex;flex-direction:column;gap:12px;" id="ti-wrap">
           <div>
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Fraccionamiento de contratos</span><span style="font-family:'JetBrains Mono',monospace;color:var(--red)">31%</span></div>
-            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:31%;height:100%;background:var(--red);border-radius:3px;"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Fraccionamiento de contratos</span><span style="font-family:'JetBrains Mono',monospace;color:var(--red)" id="ti-fracc-val">—</span></div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div id="ti-fracc-bar" style="width:0%;height:100%;background:var(--red);border-radius:3px;transition:width .4s;"></div></div>
           </div>
           <div>
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Empresa baja actividad RTN</span><span style="font-family:'JetBrains Mono',monospace;color:var(--amber)">24%</span></div>
-            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:24%;height:100%;background:var(--amber);border-radius:3px;"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Empresa baja actividad RTN</span><span style="font-family:'JetBrains Mono',monospace;color:var(--amber)" id="ti-hist-val">—</span></div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div id="ti-hist-bar" style="width:0%;height:100%;background:var(--amber);border-radius:3px;transition:width .4s;"></div></div>
           </div>
           <div>
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Precios inflados (&gt;150% mercado)</span><span style="font-family:'JetBrains Mono',monospace;color:var(--amber)">19%</span></div>
-            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:19%;height:100%;background:var(--amber);border-radius:3px;"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Precios inflados (pagado &gt;15% sobre contratado)</span><span style="font-family:'JetBrains Mono',monospace;color:var(--amber)" id="ti-sobrecosto-val">—</span></div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div id="ti-sobrecosto-bar" style="width:0%;height:100%;background:var(--amber);border-radius:3px;transition:width .4s;"></div></div>
           </div>
           <div>
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Conflicto de interés documentado</span><span style="font-family:'JetBrains Mono',monospace;color:var(--electric)">14%</span></div>
-            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:14%;height:100%;background:var(--electric);border-radius:3px;"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Conflicto de interés documentado (NS-13 Doble Rol)</span><span style="font-family:'JetBrains Mono',monospace;color:var(--electric)" id="ti-conflicto-val">—</span></div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div id="ti-conflicto-bar" style="width:0%;height:100%;background:var(--electric);border-radius:3px;transition:width .4s;"></div></div>
           </div>
           <div>
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Sobrepresupuesto institucional</span><span style="font-family:'JetBrains Mono',monospace;color:var(--text-dim)">12%</span></div>
-            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div style="width:12%;height:100%;background:var(--text-dim);border-radius:3px;"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Sobrepresupuesto institucional (año fiscal actual)</span><span style="font-family:'JetBrains Mono',monospace;color:var(--text-dim)" id="ti-sobre-val">—</span></div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div id="ti-sobre-bar" style="width:0%;height:100%;background:var(--text-dim);border-radius:3px;transition:width .4s;"></div></div>
           </div>
+          <div style="font-size:9px;color:var(--text-dim);opacity:.6;margin-top:2px;">Barras a escala relativa (mayor conteo = 100%) · conteos reales, no porcentaje del total — los universos de datos difieren (ONCAE/SEFIN vs. IAIP)</div>
         </div>
       </div>
     </div>
@@ -7517,6 +7518,49 @@ async function loadPresupuestoNacional() {
   } catch (e) { console.warn('⚠️ loadPresupuestoNacional:', e.message); }
 }
 
+// ════════════════════════════════════════════════════════════
+// TIPOS DE IRREGULARIDAD — widget con datos reales (S222)
+// Antes: 5 barras con porcentajes fijos e inventados (31/24/19/14/12%), nunca
+// conectadas a la base de datos. Ahora: conteos reales. No se expresan como
+// "% del total" porque los universos de datos no son comparables entre sí
+// (4 señales viven en `alerts` ONCAE/SEFIN, el conflicto de interés vive en
+// `mv_doble_rol` con datos IAIP) — se usa escala relativa (mayor conteo=100%).
+// ════════════════════════════════════════════════════════════
+async function loadTiposIrregularidad() {
+  try {
+    if (!window.allAlerts || !window.allAlerts.length) return;
+    const pats = a => (a.patterns || '');
+    const fracc      = allAlerts.filter(a => /FRACCIONAMIENTO/i.test(pats(a))).length;
+    const hist        = allAlerts.filter(a => /SIN_HISTORIAL/i.test(pats(a))).length;
+    const sobrecosto  = allAlerts.filter(a => /SOBRECOSTO/i.test(pats(a))).length;
+    const sobrePresu  = allAlerts.filter(a => {
+      const mc = Number(a.monto_contrato || 0), budget = Number(a.budget_amount || 0);
+      return mc > 0 && budget > mc * 1.15;
+    }).length;
+    let conflicto = 0;
+    try {
+      // Mismo RPC que usa el panel NS-13 (Regla: reusar patrón probado, no leer la MV directo — RLS)
+      const { data: dobleRolData } = await db.rpc('get_doble_rol');
+      conflicto = Array.isArray(dobleRolData) ? dobleRolData.length : 0;
+    } catch (_) {}
+
+    const items = [
+      { id: 'ti-fracc',      count: fracc,      unidad: 'contratos' },
+      { id: 'ti-hist',       count: hist,       unidad: 'contratos' },
+      { id: 'ti-sobrecosto', count: sobrecosto, unidad: 'contratos' },
+      { id: 'ti-conflicto',  count: conflicto,  unidad: 'casos' },
+      { id: 'ti-sobre',      count: sobrePresu, unidad: 'contratos' },
+    ];
+    const maxCount = Math.max(...items.map(i => i.count), 1);
+    items.forEach(i => {
+      const valEl = document.getElementById(i.id + '-val');
+      const barEl = document.getElementById(i.id + '-bar');
+      if (valEl) valEl.textContent = i.count.toLocaleString('es-HN') + ' ' + i.unidad;
+      if (barEl) barEl.style.width = Math.round((i.count / maxCount) * 100) + '%';
+    });
+  } catch (e) { console.warn('⚠️ loadTiposIrregularidad:', e.message); }
+}
+
 async function loadAlerts() {
   // S152 — Restaurar caché inmediatamente si existe y es reciente
   const _cached = _getCachedAlerts();
@@ -7628,7 +7672,8 @@ async function loadAlerts() {
     _hideCacheBanner();     // S152 — ocultar banner de caché
     buildNewVendorIndex();  // S152 — detectar proveedores nuevos <90 días
     poUpdateIndicators();
-    loadPresupuestoNacional(); // S222 — presupuesto nacional en vivo (no bloquea, re-renderiza al llegar)
+    loadPresupuestoNacional();  // S222 — presupuesto nacional en vivo (no bloquea, re-renderiza al llegar)
+    loadTiposIrregularidad();   // S222 — widget Tipos de Irregularidad con datos reales (no bloquea)
     if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
 
   } catch (err) {

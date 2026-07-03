@@ -4517,8 +4517,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- KPI: Cobertura Presupuestal -->
       <div class="exec-card exec-card-green">
         <div class="exec-card-label">Cobertura Presupuestal</div>
-        <div class="exec-card-value" style="color:var(--green);" id="exec-cobertura">9.7%</div>
-        <div class="exec-card-sub">del Presupuesto Gral. 2024 (L 309B)</div>
+        <div class="exec-card-value" style="color:var(--green);" id="exec-cobertura">—</div>
+        <div class="exec-card-sub" id="exec-cobertura-sub">Cargando presupuesto nacional…</div>
         <div class="exec-card-note">▸ Contratos monitoreados vs total nación</div>
       </div>
 
@@ -6685,18 +6685,18 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
           <div>
             <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:5px;">Período (YYYYMM)</label>
-            <input id="sefinPeriodoInput" type="text" value="202603" placeholder="ej. 202603"
+            <input id="sefinPeriodoInput" type="text" value="202604" placeholder="ej. 202604"
               style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,171,0,0.3);background:rgba(255,171,0,0.05);color:var(--text);font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;"
               onfocus="this.style.borderColor='var(--amber)'" onblur="this.style.borderColor='rgba(255,171,0,0.3)'">
           </div>
           <div style="display:flex;flex-direction:column;justify-content:flex-end;">
             <div style="font-size:10px;color:var(--text-dim);line-height:1.5;padding:8px;border-radius:6px;background:rgba(255,171,0,0.04);border:1px solid rgba(255,171,0,0.1);">
-              Último disponible: <strong style="color:var(--amber);">202603</strong> (marzo 2026)
+              Último disponible: <strong style="color:var(--amber);">202604</strong> (abril 2026) · 202605 aún no publicado por SEFIN
             </div>
           </div>
         </div>
         <div style="font-size:11px;color:var(--text-dim);line-height:1.6;padding:10px;border-radius:8px;background:rgba(255,171,0,0.04);border:1px solid rgba(255,171,0,0.08);margin-bottom:14px;">
-          ⚠️ Detecta instituciones que gastan más del 115% de su ritmo esperado. Los contratos EDCA de esas instituciones reciben <code style="color:var(--amber);">budget_amount</code> proporcional, activando SOBREPRESUPUESTO en el dashboard.
+          ⚠️ Detecta instituciones que gastan más del 115% de su ritmo esperado. Los contratos EDCA de esas instituciones reciben <code style="color:var(--amber);">budget_amount</code> — desde S222, solo se aplica a contratos del mismo año fiscal del período analizado, activando SOBREPRESUPUESTO en el dashboard.
         </div>
         <button id="sefinRunBtn" onclick="runSEFINIngest()" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--amber),#cc8800);color:#1a0d00;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.04em;transition:opacity .2s;">
           🏦 Actualizar SEFIN SOBREPRESUPUESTO
@@ -7488,6 +7488,35 @@ async function loadReviewCache() {
   } catch(e) { /* silencioso — no bloquear carga de alertas */ }
 }
 
+// ════════════════════════════════════════════════════════════
+// PRESUPUESTO NACIONAL — total en vivo (S222)
+// Antes: constante fija L 309B "aprobado 2024" sin fuente verificable, duplicada
+// en Dashboard Principal y Panel Ejecutivo. Verificado contra fuente externa
+// (infografía SEFIN 2026, Efrain Farach, 2-jul-2026): SUM(aprobado) del período
+// más reciente en sefin_presupuesto = L 444,336M — coincide exacto con el
+// "Presupuesto más alto de la historia" reportado para 2026. Se usa esa fuente
+// en vivo en lugar de un número fijo, para que se actualice sola cada período.
+// ════════════════════════════════════════════════════════════
+async function loadPresupuestoNacional() {
+  try {
+    const { data: periodos } = await db.from('sefin_presupuesto')
+      .select('periodo').order('periodo', { ascending: false }).limit(1);
+    const ultimoPeriodo = periodos?.[0]?.periodo;
+    if (!ultimoPeriodo) return;
+    const { data: rows } = await db.from('sefin_presupuesto')
+      .select('aprobado').eq('periodo', ultimoPeriodo);
+    if (!rows || !rows.length) return;
+    const total = rows.reduce((s, r) => s + (Number(r.aprobado) || 0), 0);
+    if (total <= 0) return;
+    window._presupuestoNacionalTotal   = total;
+    window._presupuestoNacionalPeriodo = ultimoPeriodo;
+    render();
+    if (typeof renderEjecutiva === 'function' && document.getElementById('vistaEjecutiva')?.style.display === 'block') {
+      renderEjecutiva();
+    }
+  } catch (e) { console.warn('⚠️ loadPresupuestoNacional:', e.message); }
+}
+
 async function loadAlerts() {
   // S152 — Restaurar caché inmediatamente si existe y es reciente
   const _cached = _getCachedAlerts();
@@ -7599,6 +7628,7 @@ async function loadAlerts() {
     _hideCacheBanner();     // S152 — ocultar banner de caché
     buildNewVendorIndex();  // S152 — detectar proveedores nuevos <90 días
     poUpdateIndicators();
+    loadPresupuestoNacional(); // S222 — presupuesto nacional en vivo (no bloquea, re-renderiza al llegar)
     if (window.location.hash === '#ejecutiva') { showVistaEjecutiva(); }
 
   } catch (err) {
@@ -7656,17 +7686,22 @@ function render() {
   document.getElementById('cnt-pct-baja').textContent      = fmtPct(m.baja, totalMonto);
 
   // ── Risk Band (P1) — monto alto riesgo ──
-  const PRESUPUESTO_HND = 309_000_000_000; // L 309B — Presupuesto General aprobado Honduras 2024
+  // S222: presupuesto nacional ahora viene en vivo de sefin_presupuesto (loadPresupuestoNacional()),
+  // no de una constante fija sin fuente verificable. Ver nota junto a loadPresupuestoNacional().
+  const PRESUPUESTO_HND = window._presupuestoNacionalTotal || null;
+  const presupuestoAnio = window._presupuestoNacionalPeriodo ? window._presupuestoNacionalPeriodo.slice(0,4) : null;
   const riskMonto = m.critica + m.alta;
-  const riskPct   = riskMonto > 0 ? (riskMonto / PRESUPUESTO_HND * 100).toFixed(2) : null;
+  const riskPct   = (riskMonto > 0 && PRESUPUESTO_HND) ? (riskMonto / PRESUPUESTO_HND * 100).toFixed(2) : null;
   const _rb = id => document.getElementById(id);
   if (_rb('risk-band-total'))       _rb('risk-band-total').textContent       = riskMonto > 0 ? fmtL(riskMonto) : 'L —';
   if (_rb('risk-band-critica'))     _rb('risk-band-critica').textContent     = fmtL(m.critica);
   if (_rb('risk-band-alta'))        _rb('risk-band-alta').textContent        = fmtL(m.alta);
   if (_rb('risk-band-critica-cnt')) _rb('risk-band-critica-cnt').textContent = c.critica.toLocaleString() + ' contratos';
   if (_rb('risk-band-alta-cnt'))    _rb('risk-band-alta-cnt').textContent    = c.alta.toLocaleString() + ' contratos';
-  if (_rb('risk-band-budget') && riskPct) {
-    _rb('risk-band-budget').textContent = `≈ ${riskPct}% del Presupuesto General de la República (L 309B aprobado 2024)`;
+  if (_rb('risk-band-budget')) {
+    _rb('risk-band-budget').textContent = riskPct
+      ? `≈ ${riskPct}% del Presupuesto General de la República (${fmtL(PRESUPUESTO_HND)} aprobado ${presupuestoAnio})`
+      : 'Cargando presupuesto nacional…';
   }
 
   // ── Freshness indicator ──
@@ -23306,8 +23341,11 @@ function renderEjecutiva() {
   const sumMonto = arr => arr.reduce((s,a) => s + (parseFloat(a.monto_contrato)||0), 0);
 
   // ── P1 inside Vista Ejecutiva ──
+  // S222: presupuesto nacional en vivo — ver loadPresupuestoNacional()
+  const presupuestoNacE = window._presupuestoNacionalTotal || null;
+  const presupuestoAnioE = window._presupuestoNacionalPeriodo ? window._presupuestoNacionalPeriodo.slice(0,4) : null;
   const riskMontoE  = sumMonto(criticos) + sumMonto(altos);
-  const riskPctE    = riskMontoE > 0 ? (riskMontoE / 309_000_000_000 * 100).toFixed(2) : null;
+  const riskPctE    = (riskMontoE > 0 && presupuestoNacE) ? (riskMontoE / presupuestoNacE * 100).toFixed(2) : null;
   const fmtLfull = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : 'L —';
   const _re = id => document.getElementById(id);
   if (_re('exec-risk-total'))       _re('exec-risk-total').textContent       = fmtLfull(riskMontoE);
@@ -23315,8 +23353,10 @@ function renderEjecutiva() {
   if (_re('exec-risk-alta'))        _re('exec-risk-alta').textContent        = fmtLfull(sumMonto(altos));
   if (_re('exec-risk-critica-cnt')) _re('exec-risk-critica-cnt').textContent = criticos.length.toLocaleString() + ' contratos';
   if (_re('exec-risk-alta-cnt'))    _re('exec-risk-alta-cnt').textContent    = altos.length.toLocaleString() + ' contratos';
-  if (_re('exec-risk-budget') && riskPctE) {
-    _re('exec-risk-budget').textContent = `≈ ${riskPctE}% del Presupuesto General de la República (L 309B aprobado 2024)`;
+  if (_re('exec-risk-budget')) {
+    _re('exec-risk-budget').textContent = riskPctE
+      ? `≈ ${riskPctE}% del Presupuesto General de la República (${fmtLfull(presupuestoNacE)} aprobado ${presupuestoAnioE})`
+      : 'Cargando presupuesto nacional…';
   }
 
   document.getElementById('exec-criticos').textContent       = criticos.length.toLocaleString();
@@ -23328,7 +23368,16 @@ function renderEjecutiva() {
   const listaNegra = new Set([...ofac.map(a=>a.id), ..._engelMatchedIds]);
   document.getElementById('exec-lista-negra').textContent    = listaNegra.size.toLocaleString();
   document.getElementById('exec-total').textContent          = alerts.length.toLocaleString();
-  document.getElementById('exec-total-monto').textContent    = fmtL(sumMonto(alerts));
+  const totalMontoAlerts = sumMonto(alerts);
+  document.getElementById('exec-total-monto').textContent    = fmtL(totalMontoAlerts);
+  // S222: Cobertura Presupuestal — antes hardcodeada a "9.7%" / "L 309B 2024", nunca se actualizaba.
+  if (presupuestoNacE && totalMontoAlerts > 0) {
+    const coberturaPct = (totalMontoAlerts / presupuestoNacE * 100).toFixed(1);
+    document.getElementById('exec-cobertura').textContent    = `${coberturaPct}%`;
+    document.getElementById('exec-cobertura-sub').textContent = `del Presupuesto Gral. ${presupuestoAnioE} (${fmtLfull(presupuestoNacE)})`;
+  } else {
+    document.getElementById('exec-cobertura-sub').textContent = 'Cargando presupuesto nacional…';
+  }
   document.getElementById('exec-sobrecosto').textContent     = sobrecosto.length.toLocaleString();
   document.getElementById('exec-sobrecosto-monto').textContent = fmtL(sumMonto(sobrecosto));
   // exec-status-val reemplazado por exec-inv-activas-count (ver loadInvestigacionesDB)

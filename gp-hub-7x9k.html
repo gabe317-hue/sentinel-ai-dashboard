@@ -431,7 +431,7 @@
   <a class="card portal" href="https://app.sentinelai-hn.com/analytics.html" target="_blank">
     <span class="card-icon">📈</span>
     <span class="card-name">Analytics</span>
-    <span class="card-desc">5 charts · spike temporal · concentración · heatmap NS</span>
+    <span class="card-desc">9 charts · Sankey · trayectoria · heatmap NS · perfil de riesgo</span>
     <span class="card-arrow">↗</span>
   </a>
 
@@ -821,6 +821,21 @@
 const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmZwZWlnd3RodG9rcXNhcnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzM5MjksImV4cCI6MjA4OTAwOTkyOX0.L0PseYDJV41A1OWzlO0zrth_EJzJCcp5qz8bA8dFl9k';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// S229 — secreto compartido con la función server-side otorgar-acceso-demo (S221).
+// RLS de sentinel_demo_access exige service_role para INSERT/UPDATE/DELETE — la anon key
+// sola no puede escribir. Mismo patrón ya usado en sentinel_v1_hnd.html.
+const DEMO_ACCESS_SECRET = 'RqGHwy1Pc-wZd_XJyhLAO_6Xoxup2iAN';
+
+async function _demoAccessCall(payload) {
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/otorgar-acceso-demo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify({ ...payload, secret: DEMO_ACCESS_SECRET })
+  });
+  const result = await resp.json();
+  if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }
+  return result;
+}
 
 async function admLoadUsuarios() {
   const wrap = document.getElementById('adm-table-wrap');
@@ -887,8 +902,7 @@ async function admCrearUsuario() {
   }
   statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
   try {
-    const { error } = await db.from('sentinel_demo_access').insert([{ email, password: pw, name, expira, activo: true, role, org }]);
-    if (error) throw error;
+    await _demoAccessCall({ action: 'create', email, password: pw, name, expira, role, org });
     statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ Usuario ${email} creado.`;
     ['adm-email','adm-pw','adm-name','adm-expira','adm-org'].forEach(id => document.getElementById(id).value = '');
     admLoadUsuarios();
@@ -901,21 +915,21 @@ async function admCrearUsuario() {
 async function admExtenderExpira(id, expiraActual) {
   const exp = new Date(expiraActual + 'T00:00:00');
   exp.setDate(exp.getDate() + 7);
-  const { error } = await db.from('sentinel_demo_access').update({ expira: exp.toISOString().slice(0,10) }).eq('id', id);
-  if (error) { alert('Error: ' + error.message); return; }
+  try { await _demoAccessCall({ action: 'update_expira', id, expira: exp.toISOString().slice(0,10) }); }
+  catch(e) { alert('Error: ' + e.message); return; }
   admLoadUsuarios();
 }
 
 async function admToggleActivo(id, estadoActual) {
-  const { error } = await db.from('sentinel_demo_access').update({ activo: !estadoActual }).eq('id', id);
-  if (error) { alert('Error: ' + error.message); return; }
+  try { await _demoAccessCall({ action: 'toggle_activo', id, activo: !estadoActual }); }
+  catch(e) { alert('Error: ' + e.message); return; }
   admLoadUsuarios();
 }
 
 async function admEliminar(id, email) {
   if (!confirm(`¿Eliminar acceso demo de ${email}?`)) return;
-  const { error } = await db.from('sentinel_demo_access').delete().eq('id', id);
-  if (error) { alert('Error: ' + error.message); return; }
+  try { await _demoAccessCall({ action: 'delete', id }); }
+  catch(e) { alert('Error: ' + e.message); return; }
   admLoadUsuarios();
 }
 
@@ -1213,7 +1227,7 @@ INSTRUCCIONES:
 - Usa Enfoque 2 (Sentinel Estricto): solo datos verificables en la DB / fuentes públicas
 - Incluye sección de Cronología de Detección con fecha de alerta Sentinel
 - Usa lenguaje no acusatorio (Regla #29): "indicadores de posible irregularidad", no "fraude"
-- Aplica fix_spanish.py al finalizar (Regla #32)
+- Aplica fix_spanish.py al finalizar (regla de acentos en español, CLAUDE_protocol.md)
 - Guarda en: REPORTES SENTINEL/Reportes Investigacion/
 - Versión: v1.0 · ${today}`;
 

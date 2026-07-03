@@ -173,7 +173,7 @@
     <div class="logo-dot"></div>
     <div>
       <h1>SENTINEL AI · ANALYTICS</h1>
-      <div class="header-sub">Inteligencia propietaria · Solo datos SEFIN + ONCAE</div>
+      <div class="header-sub">Inteligencia propietaria · Datos SEFIN + ONCAE + IAIP</div>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:16px;">
@@ -362,7 +362,8 @@ function printChartCard(canvasId, title, insightId) {
   const insightEl = insightId ? document.getElementById(insightId) : null;
   const insightHtml = insightEl ? insightEl.innerHTML : '';
 
-  const w = window.open('', '_blank');
+  const w = window.open('', '_blank', 'width=1100,height=800');
+  if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title} — Sentinel-AI</title></head>
   <body style="background:#fff;color:#1a1a1a;font-family:Arial,sans-serif;padding:30px 40px;">
     <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#888;">Sentinel-AI · Analytics</div>
@@ -372,7 +373,7 @@ function printChartCard(canvasId, title, insightId) {
   </body></html>`;
   w.document.write(addPrintBtn(html));
   w.document.close();
-  w.focus();
+  w.addEventListener('load', () => w.focus());
 }
 
 // Imprime el Sankey (SVG, no Chart.js) sobre fondo blanco
@@ -386,7 +387,8 @@ function printSankeyChart(title, insightId) {
   const insightEl = insightId ? document.getElementById(insightId) : null;
   const insightHtml = insightEl ? insightEl.innerHTML : '';
 
-  const w = window.open('', '_blank');
+  const w = window.open('', '_blank', 'width=1100,height=800');
+  if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title} — Sentinel-AI</title></head>
   <body style="background:#fff;color:#1a1a1a;font-family:Arial,sans-serif;padding:30px 40px;">
     <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#888;">Sentinel-AI · Analytics</div>
@@ -396,7 +398,7 @@ function printSankeyChart(title, insightId) {
   </body></html>`;
   w.document.write(addPrintBtn(html));
   w.document.close();
-  w.focus();
+  w.addEventListener('load', () => w.focus());
 }
 
 const fmtL = n => {
@@ -578,7 +580,8 @@ function printDrilldown() {
   if (drillTrendChart)   drillTrendChart.update('none');
   if (drillSenalesChart) drillSenalesChart.update('none');
 
-  const w = window.open('', '_blank');
+  const w = window.open('', '_blank', 'width=1100,height=800');
+  if (!w) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title} — Sentinel-AI</title>
   <style>
     body{background:#fff;color:#1a1a1a;font-family:Arial,sans-serif;padding:30px 40px;}
@@ -606,7 +609,7 @@ function printDrilldown() {
   </body></html>`;
   w.document.write(addPrintBtn(html));
   w.document.close();
-  w.focus();
+  w.addEventListener('load', () => w.focus());
 }
 document.getElementById('drill-overlay').addEventListener('click', (e) => {
   if (e.target.id === 'drill-overlay') closeDrilldown();

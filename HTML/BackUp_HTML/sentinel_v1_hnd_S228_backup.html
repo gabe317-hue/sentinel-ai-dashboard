@@ -7300,9 +7300,6 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // S221: secreto compartido con la función server-side otorgar-acceso-demo.
 // Mitigación de contención (ver CLAUDE_state.md P — no reemplaza migración a Supabase Auth real).
 const DEMO_ACCESS_SECRET = 'RqGHwy1Pc-wZd_XJyhLAO_6Xoxup2iAN';
-// S228: secreto compartido con la función server-side denuncia-admin (delete/update_estado
-// sobre la tabla denuncias — RLS exige authenticated, la anon key sola no puede escribir).
-const DENUNCIA_ADMIN_SECRET = 'xXHzGdYywAePJymuKkTqVnBAqDmPuJyd';
 
 // ════════════════════════════════════════════════════════════
 // SUPABASE CLIENT INIT
@@ -27162,14 +27159,12 @@ let _mfAllDenuncias = [];
 
 function mfRenderTabla(denuncias) {
   _mfAllDenuncias = denuncias;
-  const total = denuncias.length || 1; // denominador barras de canal (todas, incluye Descartada)
-  // S228 — KPI "Denuncias Recibidas" excluye Descartada (Gabe: no debe contar lo ya descartado)
-  const activas = denuncias.filter(d => d.estado !== 'Descartada');
-  const alta  = activas.filter(d => (d.score_ia||0) >= 75).length;
-  const inv   = activas.filter(d => d.estado === 'En revisión').length;
-  const esc   = activas.filter(d => d.alerta_generada).length;
+  const total = denuncias.length || 1;
+  const alta  = denuncias.filter(d => (d.score_ia||0) >= 75).length;
+  const inv   = denuncias.filter(d => d.estado === 'En revisión').length;
+  const esc   = denuncias.filter(d => d.alerta_generada).length;
 
-  document.getElementById('mf-stat-total').textContent   = activas.length;
+  document.getElementById('mf-stat-total').textContent   = denuncias.length;
   document.getElementById('mf-stat-hoy').textContent     = '↑ +' + alta + ' alta credibilidad';
   document.getElementById('mf-stat-alta').textContent    = alta;
   document.getElementById('mf-stat-inv').textContent     = inv;
@@ -27252,7 +27247,6 @@ function mfAplicarFiltros(limpiar) {
       <td><span style="font-size:10px;background:${estadoBg};color:${estadoColor};border:1px solid ${estadoColor};padding:2px 8px;border-radius:12px;">${d.estado||'Recibida'}</span></td>
       <td style="white-space:nowrap;">
         <button class="btn-mp" style="font-size:10px;padding:3px 10px;" onclick="mfArmarCaso('${d.id}')">⚖️ Armar Caso</button>
-        <button style="font-size:10px;padding:3px 8px;margin-left:4px;background:rgba(255,23,68,0.1);color:var(--red);border:1px solid rgba(255,23,68,0.3);border-radius:6px;cursor:pointer;" onclick="mfEliminarDenuncia('${d.id}','${d.folio||''}')" title="Eliminar denuncia">🗑</button>
       </td>
     </tr>
     <tr id="mf-detail-${d.id}" style="display:none;background:rgba(168,85,247,0.04);">
@@ -27299,36 +27293,13 @@ function mfToggleDetail(id) {
   row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
 }
 
-// S228 — helper: llama la Edge Function denuncia-admin (service_role + secreto).
-// Necesario porque RLS de `denuncias` exige authenticated para UPDATE/DELETE,
-// y el dashboard solo tiene la anon key (sin login real) — ver denuncia-admin/index.ts.
-async function _denunciaAdminCall(payload) {
-  const resp = await fetch(`${SUPABASE_URL}/functions/v1/denuncia-admin`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-    body: JSON.stringify({ ...payload, secret: DENUNCIA_ADMIN_SECRET })
-  });
-  const result = await resp.json();
-  if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); throw err; }
-  return result;
-}
-
 async function mfUpdateEstado(id, estado) {
   try {
-    await _denunciaAdminCall({ action: 'update_estado', id, estado });
+    await db.from('denuncias').update({ estado, actualizado_en: new Date().toISOString() }).eq('id', id);
     // Update local cache
     const d = _mfAllDenuncias.find(x => x.id === id);
     if (d) d.estado = estado;
-  } catch(e) { console.error('mfUpdateEstado error:', e.message); alert('Error al actualizar estado: ' + e.message); }
-}
-
-async function mfEliminarDenuncia(id, folio) {
-  if (!confirm(`¿Eliminar denuncia ${folio || id}? Esta acción no se puede deshacer.`)) return;
-  try {
-    await _denunciaAdminCall({ action: 'delete', id });
-    _mfAllDenuncias = _mfAllDenuncias.filter(d => d.id !== id);
-    mfRenderTabla(_mfAllDenuncias);
-  } catch(e) { alert('Error al eliminar: ' + e.message); }
+  } catch(e) { console.error('mfUpdateEstado error:', e.message); }
 }
 
 function mfArmarCaso(id) {

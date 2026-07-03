@@ -265,15 +265,6 @@
     <div class="chart-insight" id="insight-risk">Cargando…</div>
   </div>
 
-  <!-- 10. Composición de Riesgo por Fuente de Datos -->
-  <div class="chart-card full-width">
-    <span class="print-chart-btn" title="Imprimir" onclick="printChartCard('chart-fuente','Chart 10 · Composición de Riesgo por Fuente de Datos','insight-fuente')">🖨️</span>
-    <div class="chart-title">Chart 10 · Composición de Riesgo por Fuente de Datos</div>
-    <div class="chart-subtitle">% de contratos por severidad — SEFIN vs. ONCAE vs. IAIP</div>
-    <canvas id="chart-fuente" style="max-height:220px;"></canvas>
-    <div class="chart-insight" id="insight-fuente">Cargando…</div>
-  </div>
-
 </div>
 <div class="sankey-tooltip" id="sankey-tooltip"></div>
 
@@ -1343,59 +1334,6 @@ async function buildRiskProfile() {
     `Barras grises = BASELINE NACIONAL (${Number(baseline.total_contratos).toLocaleString()} contratos)`;
 }
 
-// ── Chart 10: Composición de Riesgo por Fuente de Datos ──────────────────────
-async function buildRiesgoFuente() {
-  setLoading('Calculando composición de riesgo por fuente…');
-  const { data, error } = await db.rpc('get_analytics_riesgo_por_fuente');
-  if (error || !data || !data.length) return;
-
-  const fuentes = [...new Set(data.map(d => d.fuente))];
-  const SEV_ORDER = [
-    { key: 'CRÍTICA', label: 'Crítica', bg: 'rgba(239,68,68,0.80)' },
-    { key: 'ALTA',    label: 'Alta',    bg: 'rgba(245,158,11,0.70)' },
-    { key: 'MEDIA',   label: 'Media',   bg: 'rgba(59,130,246,0.45)' },
-  ];
-
-  const lookup = {};
-  data.forEach(d => { lookup[`${d.fuente}||${d.severity}`] = parseFloat(d.pct_de_fuente) || 0; });
-
-  const datasets = SEV_ORDER.map(s => ({
-    label: s.label,
-    data: fuentes.map(f => lookup[`${f}||${s.key}`] || 0),
-    backgroundColor: s.bg,
-    borderWidth: 0,
-    stack: 'fuente',
-  }));
-
-  CHART_REGISTRY['chart-fuente'] = new Chart(document.getElementById('chart-fuente'), {
-    type: 'bar',
-    data: { labels: fuentes, datasets },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      plugins: {
-        legend: { position: 'top' },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%` } }
-      },
-      scales: {
-        x: { stacked: true, max: 100, grid: { color: 'rgba(255,255,255,0.04)' }, title: { display: true, text: '% de contratos de esa fuente' } },
-        y: { stacked: true, grid: { display: false } }
-      }
-    }
-  });
-
-  // Insight: fuente con mayor % crítica
-  const critByFuente = fuentes.map(f => ({ f, pct: lookup[`${f}||CRÍTICA`] || 0 }))
-    .sort((a,b) => b.pct - a.pct);
-  const top = critByFuente[0];
-  const bottom = critByFuente[critByFuente.length - 1];
-  const ratio = bottom.pct > 0 ? (top.pct / bottom.pct).toFixed(1) : '—';
-  document.getElementById('insight-fuente').innerHTML =
-    `<b>Mayor concentración de riesgo:</b> ${top.f} — <b style="color:#ef4444">${top.pct.toFixed(2)}% crítica</b> &nbsp;·&nbsp; ` +
-    `<b>Menor:</b> ${bottom.f} — ${bottom.pct.toFixed(2)}% crítica &nbsp;·&nbsp; ` +
-    `<b>${ratio}x</b> más concentración de riesgo en ${top.f} vs. ${bottom.f} · RILMAC excluido (error de datos)`;
-}
-
 // ── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
   try {
@@ -1408,7 +1346,6 @@ async function init() {
     await buildSurgeTrajectory();
     await buildVendorConcentration();
     await buildRiskProfile();
-    await buildRiesgoFuente();
 
     document.getElementById('last-updated').textContent =
       'Actualizado: ' + new Date().toLocaleString('es-HN', { dateStyle: 'medium', timeStyle: 'short' });

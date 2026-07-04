@@ -20087,13 +20087,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ════════════════════════════════════════════════════════════
-// AUTH — Login / Logout / Session (S233 — Supabase Auth real)
-// Autenticación verificada server-side vía GoTrue (signInWithPassword).
-// Ya no hay contraseñas ni tokens de acceso embebidos en este archivo.
-// Sesión persistida manualmente en sessionStorage (solo los tokens JWT),
-// y restaurada con db.auth.setSession() — mantiene persistSession:false
-// en el cliente (evita el DataCloneError original) sin perder la sesión
-// entre recargas de página.
+// AUTH — Login / Logout / Session
+// Uses sessionStorage to persist across page reloads.
+// Keeps persistSession:false on the db client (DataCloneError fix).
 // ════════════════════════════════════════════════════════════
 let currentUser = null;  // { email, name, initials }
 
@@ -20107,8 +20103,8 @@ const SENTINEL_ADMIN_EMAILS = [
 
 function resolveRole(email) {
   const key = (email||'').toLowerCase().trim();
-  // S233: analista/demo desactivados temporalmente (solo admin en uso hoy).
-  // Reactivar cuando haya cuentas reales de Supabase Auth para esos roles.
+  const u = SENTINEL_USERS[key];
+  if (u && u.role === 'demo') return 'demo';
   return SENTINEL_ADMIN_EMAILS.includes(key) ? 'admin' : 'analista';
 }
 
@@ -20175,7 +20171,7 @@ function setCurrentUser(email, overrides = {}) {
     ? parts[0][0].toUpperCase() + '. ' +
       parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase()
     : prefix.charAt(0).toUpperCase() + prefix.slice(1).toLowerCase();
-  const name = overrides.name || derivedName;
+  const name = overrides.name || (SENTINEL_USERS[email] && SENTINEL_USERS[email].name) || derivedName;
   const initials = name.replace(/[^a-zA-Z ]/g, '').trim().split(' ').map(p => p[0] || '').join('').toUpperCase().slice(0, 2) || prefix[0].toUpperCase();
   const role = overrides.role || resolveRole(email);
   const org  = overrides.org  || null;
@@ -20194,13 +20190,14 @@ function setCurrentUser(email, overrides = {}) {
   try { sessionStorage.setItem('sentinel_user', JSON.stringify(currentUser)); } catch(e){}
 }
 
-// S233: SENTINEL_USERS y el fallback a sentinel_demo_access fueron eliminados —
-// ambos exponían contraseñas en texto plano (una en el HTML público, la otra
-// vía SELECT anon a la tabla). El login ahora se verifica 100% server-side
-// contra Supabase Auth (bcrypt, nunca viaja la contraseña en claro salvo por
-// HTTPS al endpoint de GoTrue). Solo existe hoy la cuenta admin gabe317@gmail.com.
-
-const SENTINEL_SESSION_KEY = 'sentinel_sb_session'; // { access_token, refresh_token }
+// ── Sentinel local credentials (no Supabase Auth required) ──────────────────
+// To change passwords: update the 'pw' values below.
+// Roles: 'admin' = acceso total · 'analista' = vista limitada (sin Ingesta/Auditoría)
+const SENTINEL_USERS = {
+  'gabe317@gmail.com':          { pw: 'Sentinel2026!',  role: 'admin',    name: 'G. Prieto' },
+  'analista@sentinel.hn':       { pw: 'Analista2026!',  role: 'analista', name: 'Analista PGR' },
+  'demo@pgr.hn':                { pw: 'Demo2026!',      role: 'demo',     name: 'Demo PGR',    expira: '2026-05-25' }
+};
 
 async function doLogin() {
   const email    = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -20214,28 +20211,63 @@ async function doLogin() {
   btn.disabled = true;
   btn.textContent = 'Verificando...';
 
-  try {
-    const { data, error } = await db.auth.signInWithPassword({ email, password });
-    if (error || !data?.session || !data?.user) {
+  await new Promise(r => setTimeout(r, 400));
+
+  // ── 1. Check hardcoded SENTINEL_USERS ───────────────────────────────────────
+  const localUser = SENTINEL_USERS[email];
+  if (localUser) {
+    if (localUser.pw !== password) {
       errEl.textContent = '❌ Correo o contraseña incorrectos';
       btn.disabled = false; btn.textContent = 'Ingresar al Sistema'; return;
     }
-
-    // Persistir solo los tokens JWT (no el objeto de sesión completo) para
-    // evitar el DataCloneError que causaba el broadcast interno de supabase-js.
-    try {
-      sessionStorage.setItem(SENTINEL_SESSION_KEY, JSON.stringify({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token
-      }));
-    } catch(e) {}
-
-    const role = resolveRole(data.user.email);
+    if (localUser.expira) {
+      const now = new Date(); now.setHours(0,0,0,0);
+      const exp = new Date(localUser.expira + 'T00:00:00');
+      if (now > exp) {
+        errEl.textContent = '⏰ Acceso de demostración expirado. Contacte a Sentinel.';
+        btn.disabled = false; btn.textContent = 'Ingresar al Sistema'; return;
+      }
+    }
     try { await db.from('alert_audit_log').insert([{ alert_id: null, action: 'LOGIN',
-      new_value: email, user_email: email, user_name: null,
-      notes: `Acceso · rol: ${role} (Supabase Auth) · ${new Date().toISOString()}` }]); } catch(e){}
+      new_value: email, user_email: email, user_name: localUser.name,
+      notes: `Acceso · rol: ${localUser.role} · ${new Date().toISOString()}` }]); } catch(e){}
+    setCurrentUser(email);
+    document.getElementById('loginScreen').classList.add('hidden');
+    showPortal(); await loadAlerts(); startRealtime(); mfLoadBadge();
+    return;
+  }
 
-    setCurrentUser(data.user.email, { role });
+  // ── 2. Fallback: check sentinel_demo_access table (Supabase) ────────────────
+  try {
+    const { data: demoRows, error: demoErr } = await db
+      .from('sentinel_demo_access')
+      .select('email, password, name, expira, activo, role, org')
+      .eq('email', email)
+      .eq('activo', true)
+      .limit(1);
+
+    if (demoErr || !demoRows || demoRows.length === 0) {
+      errEl.textContent = '❌ Correo o contraseña incorrectos';
+      btn.disabled = false; btn.textContent = 'Ingresar al Sistema'; return;
+    }
+    const demoUser = demoRows[0];
+    if (demoUser.password !== password) {
+      errEl.textContent = '❌ Correo o contraseña incorrectos';
+      btn.disabled = false; btn.textContent = 'Ingresar al Sistema'; return;
+    }
+    if (demoUser.expira) {
+      const now = new Date(); now.setHours(0,0,0,0);
+      const exp = new Date(demoUser.expira + 'T00:00:00');
+      if (now > exp) {
+        errEl.textContent = '⏰ Acceso de demostración expirado. Contacte a Sentinel.';
+        btn.disabled = false; btn.textContent = 'Ingresar al Sistema'; return;
+      }
+    }
+    // Log + login as demo user using name from DB
+    try { await db.from('alert_audit_log').insert([{ alert_id: null, action: 'LOGIN',
+      new_value: email, user_email: email, user_name: demoUser.name,
+      notes: `Acceso · rol: ${demoUser.role} (Supabase) · ${new Date().toISOString()}` }]); } catch(e){}
+    setCurrentUser(email, { name: demoUser.name, role: demoUser.role || 'demo', org: demoUser.org || null });
     document.getElementById('loginScreen').classList.add('hidden');
     showPortal(); await loadAlerts(); startRealtime(); mfLoadBadge();
   } catch(e) {
@@ -20272,10 +20304,9 @@ async function dispararNotificacion(fnName, label) {
   }
 }
 
-async function doLogout() {
+function doLogout() {
   if (!confirm('¿Deseas cerrar tu sesión en Sentinel-AI?')) return;
-  try { await db.auth.signOut(); } catch(e) {}
-  try { sessionStorage.removeItem(SENTINEL_SESSION_KEY); } catch(e) {}
+  try { sessionStorage.removeItem('sentinel_user'); } catch(e) {}
   currentUser = null;
   // Show login screen, hide dashboard content
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -20287,34 +20318,21 @@ async function doLogout() {
   allAlerts = [];
 }
 
-// S233: restaura la sesión real de Supabase Auth a partir de los tokens JWT
-// guardados en sessionStorage (persistSession:false en el cliente evita que
-// supabase-js lo haga automáticamente — ver comentario arriba).
-async function checkStoredSession() {
+function checkStoredSession() {
   try {
-    const stored = sessionStorage.getItem(SENTINEL_SESSION_KEY);
-    if (!stored) return false;
-    const { access_token, refresh_token } = JSON.parse(stored);
-    if (!access_token || !refresh_token) return false;
-
-    const { data, error } = await db.auth.setSession({ access_token, refresh_token });
-    if (error || !data?.session || !data?.user) {
-      try { sessionStorage.removeItem(SENTINEL_SESSION_KEY); } catch(e) {}
-      return false;
+    const stored = sessionStorage.getItem('sentinel_user');
+    if (stored) {
+      const u = JSON.parse(stored);
+      if (u && u.email) {
+        currentUser = u;
+        document.getElementById('userAvatar').textContent      = u.initials || '—';
+        document.getElementById('userDisplayName').textContent = u.name    || u.email;
+        document.getElementById('userRole').textContent        = u.email;
+        applyRole(u.role || resolveRole(u.email));
+        document.getElementById('loginScreen').classList.add('hidden');
+        return true;  // session restored
+      }
     }
-
-    // Refrescar tokens (pueden haberse renovado) para la siguiente recarga
-    try {
-      sessionStorage.setItem(SENTINEL_SESSION_KEY, JSON.stringify({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token
-      }));
-    } catch(e) {}
-
-    const role = resolveRole(data.user.email);
-    setCurrentUser(data.user.email, { role });
-    document.getElementById('loginScreen').classList.add('hidden');
-    return true;  // session restored
   } catch(e) {}
   return false;  // no session — show login
 }
@@ -21272,11 +21290,11 @@ async function admLoadUsuarios() {
   const wrap = document.getElementById('adm-table-wrap');
   wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Cargando…</div>';
   try {
-    // S233: la política anon_select_demo_access fue eliminada (exponía
-    // contraseñas en texto plano vía SELECT público) — ahora se lee a
-    // través de otorgar-acceso-demo (service_role + secreto compartido).
-    const result = await _demoAccessCall({ action: 'list' });
-    const data = result.data;
+    const { data, error } = await db
+      .from('sentinel_demo_access')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
     if (!data || data.length === 0) {
       wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Sin usuarios demo registrados.</div>';
       return;
@@ -21506,10 +21524,12 @@ async function caLoadUsuarios() {
   }
   wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Cargando…</div>';
   try {
-    // S233: la política anon_select_demo_access fue eliminada — ahora se lee
-    // a través de otorgar-acceso-demo (service_role + secreto compartido).
-    const result = await _demoAccessCall({ action: 'list', org: currentUser.org });
-    const data = result.data;
+    const { data, error } = await db
+      .from('sentinel_demo_access')
+      .select('*')
+      .eq('org', currentUser.org)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
     if (!data || data.length === 0) {
       wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Sin usuarios registrados en tu organización.</div>';
       return;
@@ -22019,10 +22039,14 @@ tickClock();
 setInterval(tickClock, 1000);
 
 async function init() {
-  // S233: eliminado el auto-login vía #gp7x9k (bypass de contraseña embebido
-  // en el código público — a pedido explícito de Gabe, "hagamos el login seguro").
+  // Auto-login via private hub token (#gp7x9k)
+  if (window.location.hash === '#gp7x9k' && !checkStoredSession()) {
+    setCurrentUser('gabe317@gmail.com');
+    document.getElementById('loginScreen').classList.add('hidden');
+    history.replaceState(null, '', window.location.pathname);
+  }
   // Check for existing session first — if valid, skip login
-  if (await checkStoredSession()) {
+  if (checkStoredSession()) {
     showPortal();
     await Promise.all([loadAlerts(), loadReviewCache()]);
     startRealtime();

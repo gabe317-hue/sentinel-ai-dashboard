@@ -10953,11 +10953,9 @@ function oiRenderEntidades() {
 }
 
 async function oiLoadTrend() {
-  try {
-    const { data, error } = await db.rpc('get_opacity_by_year');
-    if (error || !data) { oiRenderTrendFromAlerts(); return; }
-    oiDrawTrend(data);
-  } catch(_) { oiRenderTrendFromAlerts(); }
+  // S229: 'get_opacity_by_year' no existe en Supabase (RPC eliminado/nunca creado) — siempre
+  // fallaba y caía al fallback. Se quita el intento muerto, se usa el fallback directo.
+  oiRenderTrendFromAlerts();
 }
 
 async function oiRenderTrendFromAlerts() {

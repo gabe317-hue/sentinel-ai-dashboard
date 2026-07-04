@@ -27393,12 +27393,13 @@ async function renderModuloF() {
   const tbody = document.getElementById('mf-triage-tbody');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;font-size:12px;">Cargando...</td></tr>';
   try {
-    // S230 — antes: db.from('denuncias').select('*') directo con anon key.
-    // La policy anon_select_denuncias que esto requería exponía TODAS las
-    // denuncias (incluye email_ciudadano) a cualquiera con la anon key
-    // pública — cerrada por QA de seguridad. Ahora vía denuncia-admin (secreto).
-    const result = await _denunciaAdminCall({ action: 'list', limit: 100 });
-    mfRenderTabla(result.data || []);
+    const { data, error } = await db
+      .from('denuncias')
+      .select('*')
+      .order('creado_en', { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    mfRenderTabla(data || []);
   } catch(e) {
     console.error('Módulo F load error:', e.message);
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red);padding:20px;font-size:12px;">Error cargando denuncias — ' + e.message + '</td></tr>';
@@ -27415,11 +27416,9 @@ function mfAbrirDesdeEjecutivo() {
 
 async function mfLoadBadge() {
   try {
-    // S230 — antes: 2 queries count-only directo con anon key contra `denuncias`.
-    // Migrado a denuncia-admin (secreto) — ver nota en renderModuloF().
-    const result = await _denunciaAdminCall({ action: 'badge_counts' });
-    const count = result.alta ?? 0;
-    const totalDenuncias = result.total ?? 0;
+    const { count } = await db.from('denuncias')
+      .select('*', { count: 'exact', head: true })
+      .gte('score_ia', 75).eq('estado', 'Recibida');
     const chip = document.getElementById('nav-mf-chip');
     if (chip && count > 0) {
       chip.textContent = count;
@@ -27439,9 +27438,10 @@ async function mfLoadBadge() {
       poBadge.style.color = 'var(--red)';
       poBadge.style.borderColor = 'rgba(255,23,68,0.4)';
     }
-    // S227 — ticker: total de denuncias en vivo
+    // S227 — ticker: total de denuncias en vivo (1 query extra, head:true = liviana)
+    const { count: totalDenuncias } = await db.from('denuncias').select('*', { count: 'exact', head: true });
     document.querySelectorAll('.tk-denuncias').forEach(el => {
-      el.textContent = `↑ ${totalDenuncias.toLocaleString('es-HN')} denuncias recibidas · ${count || 0} alta credibilidad`;
+      el.textContent = `↑ ${(totalDenuncias || 0).toLocaleString('es-HN')} denuncias recibidas · ${count || 0} alta credibilidad`;
     });
   } catch(_) {}
 }
@@ -27578,15 +27578,9 @@ async function mfRegistrarDenuncia() {
 }
 
 async function mfExportarPDF() {
-  // S230 — antes: db.from('denuncias').select('*') directo con anon key.
-  // Migrado a denuncia-admin (secreto) — ver nota en renderModuloF().
-  let result;
-  try {
-    result = await _denunciaAdminCall({ action: 'list', limit: 50 });
-  } catch(e) {
-    alert('Error cargando datos: ' + e.message); return;
-  }
-  const denuncias = result.data || [];
+  const { data, error } = await db.from('denuncias').select('*').order('creado_en', { ascending: false }).limit(50);
+  if (error) { alert('Error cargando datos: ' + error.message); return; }
+  const denuncias = data || [];
   // Normalizar campos para el PDF (score_ia → score, folio → id)
   denuncias.forEach(d => { d.score = d.score_ia; d.id = d.folio; });
   const total  = denuncias.length;

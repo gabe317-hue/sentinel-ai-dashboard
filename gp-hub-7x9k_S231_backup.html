@@ -821,19 +821,6 @@
 const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmZwZWlnd3RodG9rcXNhcnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzM5MjksImV4cCI6MjA4OTAwOTkyOX0.L0PseYDJV41A1OWzlO0zrth_EJzJCcp5qz8bA8dFl9k';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-// S231: secreto compartido con la función server-side casos-admin — mismo patrón que
-// sentinel_v1_hnd.html (P4, ver CLAUDE_state.md). Usado para archivar/eliminar expedientes_master.
-const CASOS_ADMIN_SECRET = 'Kj4nWpQz9RstV2xLbMdF7yEcTuAgHo1i';
-async function _casosAdminCall(payload) {
-  const resp = await fetch(`${SUPABASE_URL}/functions/v1/casos-admin`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-    body: JSON.stringify({ ...payload, secret: CASOS_ADMIN_SECRET })
-  });
-  const result = await resp.json();
-  if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }
-  return result;
-}
 // S229 — secreto compartido con la función server-side otorgar-acceso-demo (S221).
 // RLS de sentinel_demo_access exige service_role para INSERT/UPDATE/DELETE — la anon key
 // sola no puede escribir. Mismo patrón ya usado en sentinel_v1_hnd.html.
@@ -1349,8 +1336,8 @@ async function expDescargar(id, path) {
 
 async function expArchivar(id, folio, estadoActual) {
   const nuevoEstado = estadoActual === 'Archivado' ? 'Activo' : 'Archivado';
-  try { await _casosAdminCall({ action: 'expm_update', id, estado: nuevoEstado }); }
-  catch(e) { hubToast('Error: ' + e.message, 'error'); return; }
+  const { error } = await db.from('expedientes_master').update({ estado: nuevoEstado }).eq('id', id);
+  if (error) { hubToast('Error: ' + error.message, 'error'); return; }
   hubToast(`${folio} → ${nuevoEstado}`, 'success');
   expLoadExpedientes();
 }
@@ -1360,8 +1347,8 @@ async function expEliminar(id, folio, docxPath) {
   if (docxPath) {
     await db.storage.from('expedientes-docx').remove([docxPath]);
   }
-  try { await _casosAdminCall({ action: 'expm_delete', id }); }
-  catch(e) { hubToast('Error: ' + e.message, 'error'); return; }
+  const { error } = await db.from('expedientes_master').delete().eq('id', id);
+  if (error) { hubToast('Error: ' + error.message, 'error'); return; }
   hubToast(`${folio} eliminado`, 'success');
   expLoadExpedientes();
 }

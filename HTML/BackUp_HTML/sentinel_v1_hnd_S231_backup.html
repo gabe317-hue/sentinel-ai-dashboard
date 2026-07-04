@@ -7303,10 +7303,6 @@ const DEMO_ACCESS_SECRET = 'RqGHwy1Pc-wZd_XJyhLAO_6Xoxup2iAN';
 // S228: secreto compartido con la función server-side denuncia-admin (delete/update_estado
 // sobre la tabla denuncias — RLS exige authenticated, la anon key sola no puede escribir).
 const DENUNCIA_ADMIN_SECRET = 'xXHzGdYywAePJymuKkTqVnBAqDmPuJyd';
-// S231: secreto compartido con la función server-side casos-admin (insert/update/delete sobre
-// expedientes, expedientes_master, investigaciones + insert de audit_log — mismo patrón de
-// contención P4, policies anon de escritura eliminadas en estas 4 tablas).
-const CASOS_ADMIN_SECRET = 'Kj4nWpQz9RstV2xLbMdF7yEcTuAgHo1i';
 
 // ════════════════════════════════════════════════════════════
 // SUPABASE CLIENT INIT
@@ -11186,7 +11182,8 @@ async function segGuardar(id) {
   const ok  = document.getElementById(`seg-ok-${id}`);
   if (btn) btn.textContent = '…';
   try {
-    await _casosAdminCall({ action: 'exp_update', id, estado, prioridad, responsable, fecha_limite });
+    const { error } = await db.from('expedientes').update({ estado, prioridad, responsable, fecha_limite }).eq('id', id);
+    if (error) throw error;
     // Actualizar local cache
     const rec = _segData.find(r => r.id === id);
     if (rec) { rec.estado = estado; rec.prioridad = prioridad; rec.responsable = responsable; rec.fecha_limite = fecha_limite; }
@@ -12730,7 +12727,7 @@ function generarMemorandum() {
       try {
         const nextFolio = await _generarSiguienteFolio();
         const fmtMonto = v => isNaN(Number(v)) ? 0 : Number(String(v).replace(/[^0-9.]/g,''));
-        await _casosAdminCall({ action: 'inv_insert', record: {
+        await db.from('investigaciones').insert({
           folio:            nextFolio,
           proveedor:        d.vendor || '—',
           entidad:          d.entity || '—',
@@ -12740,7 +12737,7 @@ function generarMemorandum() {
           destino_referido: destino,
           notas:            `Referido desde candidatos Sentinel. Folio memorándum: ${folio}.`,
           origen:           'sentinel'
-        }});
+        });
         showToast(`✅ Caso registrado como ${nextFolio} — aparecerá en Investigaciones`, 'ok');
         loadInvestigacionesDB(); // refrescar lista
       } catch(e) {
@@ -13262,8 +13259,8 @@ async function aprobarDesdeModal() {
   if (!_borradorActual) return;
   const folio = _borradorActual.folio;
   if (!confirm(`¿Aprobar ${folio} como investigación activa?\n\nAsegúrate de haber verificado el monto contra fuente SEFIN/ONCAE.`)) return;
-  try { await _casosAdminCall({ action: 'inv_update', folio, estado: 'Activa' }); }
-  catch(e) { alert('Error: ' + e.message); return; }
+  const { error } = await db.from('investigaciones').update({ estado: 'Activa' }).eq('folio', folio);
+  if (error) { alert('Error: ' + error.message); return; }
   closeBorradorDetalle();
   await Promise.all([loadBorradoresAuto(), loadInvestigacionesDB()]);
 }
@@ -13273,8 +13270,8 @@ async function descartarDesdeModal() {
   const folio = _borradorActual.folio;
   const razon = prompt(`Razón para descartar ${folio}:\n(Dejar en blanco cancela)`);
   if (razon === null || razon.trim() === '') return;
-  try { await _casosAdminCall({ action: 'inv_update', folio, estado: 'Descartado', notas: `[DESCARTADO] ${razon}` }); }
-  catch(e) { alert('Error: ' + e.message); return; }
+  const { error } = await db.from('investigaciones').update({ estado: 'Descartado', notas: `[DESCARTADO] ${razon}` }).eq('folio', folio);
+  if (error) { alert('Error: ' + error.message); return; }
   closeBorradorDetalle();
   await loadBorradoresAuto();
 }
@@ -13352,8 +13349,8 @@ function generarExpedienteBorradorPDF() {
 
 async function aprobarBorrador(folio) {
   if (!confirm(`¿Aprobar ${folio} como investigación activa?\n\nEl caso pasará a la lista de Investigaciones Activas.`)) return;
-  try { await _casosAdminCall({ action: 'inv_update', folio, estado: 'Activa' }); }
-  catch(e) { alert('Error al aprobar: ' + e.message); return; }
+  const { error } = await db.from('investigaciones').update({ estado: 'Activa' }).eq('folio', folio);
+  if (error) { alert('Error al aprobar: ' + error.message); return; }
   await Promise.all([loadBorradoresAuto(), loadInvestigacionesDB()]);
 }
 
@@ -13361,8 +13358,8 @@ async function descartarBorrador(folio, proveedor) {
   const razon = prompt(`Razón para descartar ${folio}\n${proveedor}\n\n(Dejar en blanco para cancelar)`);
   if (razon === null || razon.trim() === '') return;
   const notasVal = `[DESCARTADO] ${razon}`;
-  try { await _casosAdminCall({ action: 'inv_update', folio, estado: 'Descartado', notas: notasVal }); }
-  catch(e) { alert('Error al descartar: ' + e.message); return; }
+  const { error } = await db.from('investigaciones').update({ estado: 'Descartado', notas: notasVal }).eq('folio', folio);
+  if (error) { alert('Error al descartar: ' + error.message); return; }
   await loadBorradoresAuto();
 }
 
@@ -13391,7 +13388,8 @@ async function changeInvEstado(folio, el) {
 async function setInvEstado(folio, nuevoEstado, drop) {
   if (drop) drop.remove();
   try {
-    await _casosAdminCall({ action: 'inv_update', folio, estado: nuevoEstado });
+    const { error } = await db.from('investigaciones').update({ estado: nuevoEstado }).eq('folio', folio);
+    if (error) throw error;
     await loadInvestigacionesDB();
   } catch(e) {
     alert('Error al actualizar estado: ' + e.message);
@@ -19450,8 +19448,9 @@ async function ccConfirmarGuardar() {
       const sobreescribir = confirm(`Ya existe un expediente para este proveedor/entidad:\n"${existing[0].nombre}"\n\n¿Guardar de todas formas como nuevo expediente?`);
       if (!sobreescribir) { btn.disabled = false; btn.innerHTML = '💾 Confirmar Guardar'; return; }
     }
-    const insResult = await _casosAdminCall({ action: 'exp_insert', record: payload });
-    const ccId = insResult?.id ?? null;
+    const { data: insData, error } = await db.from('expedientes').insert([payload]).select('id');
+    if (error) throw new Error(error.message);
+    const ccId = insData?.[0]?.id ?? null;
 
     // ── Sync a expedientes_master ─────────────────────────────────────────
     try {
@@ -19477,7 +19476,7 @@ async function ccConfirmarGuardar() {
         estado:        'Activo',
         cc_id:         ccId,
       };
-      await _casosAdminCall({ action: 'expm_insert', record: masterPayload });
+      await db.from('expedientes_master').insert([masterPayload]);
     } catch(masterErr) {
       console.warn('expedientes_master sync (non-fatal):', masterErr.message);
     }
@@ -19545,8 +19544,8 @@ function ccCargarExpediente(exp) {
 
 async function ccEliminarExpediente(id) {
   if (!confirm('¿Eliminar este expediente? Esta acción no se puede deshacer.')) return;
-  try { await _casosAdminCall({ action: 'exp_delete', id }); }
-  catch(e) { alert('Error al eliminar: ' + e.message); return; }
+  const { error } = await db.from('expedientes').delete().eq('id', id);
+  if (error) { alert('Error al eliminar: ' + error.message); return; }
   ccMisExpedientes(); // refrescar lista
 }
 
@@ -21365,18 +21364,6 @@ async function _demoAccessCall(payload) {
   return result;
 }
 
-// S231 — helper para casos-admin (expedientes/expedientes_master/investigaciones/audit_log)
-async function _casosAdminCall(payload) {
-  const resp = await fetch(`${SUPABASE_URL}/functions/v1/casos-admin`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-    body: JSON.stringify({ ...payload, secret: CASOS_ADMIN_SECRET })
-  });
-  const result = await resp.json();
-  if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }
-  return result;
-}
-
 async function admCrearUsuario() {
   const email  = document.getElementById('adm-email').value.trim().toLowerCase();
   const pw     = document.getElementById('adm-pw').value.trim();
@@ -21654,7 +21641,7 @@ let _auditDataCache = { events: [], total: 0, hoy: 0, exportaciones: 0 };
 // Helper: insertar evento en audit_log desde el cliente
 async function logAuditEvent(accion, objeto, eventType = 'sistema', usuario = 'Usuario', fuente = 'Cliente Web') {
   try {
-    await _casosAdminCall({ action: 'audit_insert', usuario, fuente, accion, objeto, event_type: eventType, ip: '10.0.1.1' });
+    await db.from('audit_log').insert({ usuario, fuente, accion, objeto, event_type: eventType, ip: '10.0.1.1' });
   } catch(e) { console.warn('logAuditEvent:', e.message); }
 }
 

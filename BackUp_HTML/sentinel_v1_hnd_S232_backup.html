@@ -28179,7 +28179,7 @@ async function runIngest() {
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'apikey': SUPABASE_ANON_KEY,
       },
-      body: JSON.stringify({ year, secret: CASOS_ADMIN_SECRET }),
+      body: JSON.stringify({ year }),
     });
 
     setProgress(85);
@@ -28263,7 +28263,7 @@ async function runSEFINIngest() {
   document.getElementById('sefinError').style.display = 'none';
   btn.textContent = '⏳ Procesando SEFIN...';
   try {
-    const url = `${SUPABASE_URL}/functions/v1/ingest-sefin?periodo=${periodo}&secret=${encodeURIComponent(CASOS_ADMIN_SECRET)}`;
+    const url = `${SUPABASE_URL}/functions/v1/ingest-sefin?periodo=${periodo}`;
     const res = await fetch(url, { headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY } });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);

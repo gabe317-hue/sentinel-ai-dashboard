@@ -1338,9 +1338,10 @@ async function expLoadExpedientes() {
 
 async function expDescargar(id, path) {
   try {
-    const result = await _casosAdminCall({ action: 'exp_storage_signed_url', path });
+    const { data, error } = await db.storage.from('expedientes-docx').createSignedUrl(path, 60);
+    if (error) throw error;
     const a = document.createElement('a');
-    a.href = result.signedUrl;
+    a.href = data.signedUrl;
     a.download = path.split('/').pop();
     a.click();
   } catch(e) { hubToast('Error al generar URL: ' + e.message, 'error'); }
@@ -1356,12 +1357,11 @@ async function expArchivar(id, folio, estadoActual) {
 
 async function expEliminar(id, folio, docxPath) {
   if (!confirm(`¿Eliminar permanentemente ${folio}?\n\nEsta acción no se puede deshacer.`)) return;
-  try {
-    if (docxPath) {
-      await _casosAdminCall({ action: 'exp_storage_delete', path: docxPath });
-    }
-    await _casosAdminCall({ action: 'expm_delete', id });
-  } catch(e) { hubToast('Error: ' + e.message, 'error'); return; }
+  if (docxPath) {
+    await db.storage.from('expedientes-docx').remove([docxPath]);
+  }
+  try { await _casosAdminCall({ action: 'expm_delete', id }); }
+  catch(e) { hubToast('Error: ' + e.message, 'error'); return; }
   hubToast(`${folio} eliminado`, 'success');
   expLoadExpedientes();
 }

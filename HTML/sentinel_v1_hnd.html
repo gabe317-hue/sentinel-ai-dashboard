@@ -23181,7 +23181,7 @@ function showDashboardEjecutivo() {
       db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','ALTA'),
       db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','MEDIA'),
       db.from('alerts').select('severity', {count:'exact', head:true}).eq('severity','BAJA'),
-      db.from('alerts').select('monto_contrato').or('severity.eq.CRÍTICA,severity.eq.CRITICA').limit(2000)
+      db.from('alerts').select('monto_contrato,proveedor_nombre').or('severity.eq.CRÍTICA,severity.eq.CRITICA').limit(2000)
     ]).then(([crit, alta, media, baja, montoRes]) => {
       const sev = {
         'CRÍTICA': crit.count || 0,
@@ -23189,7 +23189,10 @@ function showDashboardEjecutivo() {
         'MEDIA':   media.count || 0,
         'BAJA':    baja.count || 0
       };
-      const montoData = montoRes.data || [];
+      // S229: esta función consulta Supabase directo (no pasa por allAlerts/_applyAlertsFilters,
+      // que ya excluye RILMAC vía ERROR_DATOS_CONTRATOS desde S100) — excluir aquí también.
+      const montoData = (montoRes.data || []).filter(r =>
+        !((r.proveedor_nombre||'').toUpperCase().includes('RILMAC') && Number(r.monto_contrato||0) > 500000000));
       const montoTotal = montoData.reduce((s, r) => s + (parseFloat(r.monto_contrato) || 0), 0);
 
       document.getElementById('dbe-monto').textContent = fmtM(montoTotal);

@@ -10369,7 +10369,7 @@ function exportVistaEjecutivaPDF() {
       <div style="font-size:26px;font-weight:700;color:${k.color};">${k.val}</div>
       <div style="font-size:10px;color:#999;margin-top:2px;">${k.sub}</div>
     </div>`).join('');
-  const w = window.open('', '_blank');
+  const w = window.open('', '_blank', 'width=1100,height=800');
   const html_ve = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Vista Ejecutiva — Sentinel AI</title>
   <style>
@@ -11825,6 +11825,9 @@ function buildSectorData() {
   for (const s of allSectors) map[s.id] = { ...s, contratos:0, critica:0, alta:0, media:0, baja:0, monto:0, entities:{} };
 
   for (const a of allAlerts) {
+    // S229: excluir error de datos ONCAE confirmado (RILMAC, L5.08B mal capturado)
+    const _p = (a.proveedor_nombre || '').toUpperCase();
+    if (_p.includes('RILMAC') && Number(a.monto_contrato || 0) > 500000000) continue;
     const sid = classifyEntity(a.entity_name);
     const s   = map[sid];
     s.contratos++;
@@ -11903,7 +11906,9 @@ function renderSectorDrilldown(sectorId) {
   const normSev_  = v => (v||'baja').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 
   // Get all contracts for this sector
-  const contracts = allAlerts.filter(a => classifyEntity(a.entity_name) === sectorId);
+  // S229: excluir error de datos ONCAE confirmado (RILMAC, L5.08B mal capturado)
+  const contracts = allAlerts.filter(a => classifyEntity(a.entity_name) === sectorId
+    && !((a.proveedor_nombre||'').toUpperCase().includes('RILMAC') && Number(a.monto_contrato||0) > 500000000));
   contracts.sort((a, b) => {
     const sa = normSev_(a.severity), sb = normSev_(b.severity);
     const so = (sevOrder[sa] ?? 3) - (sevOrder[sb] ?? 3);
@@ -20826,7 +20831,9 @@ function fmtUSD(n) {
 }
 
 function renderAnalytics() {
-  const alerts = getAnalyticsAlerts();
+  // S229: excluir error de datos ONCAE confirmado (RILMAC, L5.08B mal capturado) —
+  // afectaba "Exposición Total" y el desglose por patrón de este panel.
+  const alerts = getAnalyticsAlerts().filter(a => !((a.proveedor_nombre||'').toUpperCase().includes('RILMAC') && Number(a.monto_contrato||0) > 500000000));
   const totalAlerts = alerts.length;
   const totalMonto  = alerts.reduce((s, a) => s + Number(a.monto_contrato || 0), 0);
 
@@ -22066,6 +22073,9 @@ function calculateAndDisplayVendorConcentration(alerts) {
     document.getElementById('vc-vendor-list').innerHTML = '<div style="color:var(--text-dim);font-size:12px;">Sin datos disponibles</div>';
     return;
   }
+  // S229: excluir error de datos ONCAE confirmado (RILMAC, L5.08B mal capturado) —
+  // sin esto, RILMAC aparecía como el proveedor #1 nacional por monto, distorsionando HHI/concentración.
+  alerts = alerts.filter(a => !((a.proveedor_nombre||'').toUpperCase().includes('RILMAC') && Number(a.monto_contrato||0) > 500000000));
 
   // Aggregate by vendor
   const vendors = {};
@@ -23463,7 +23473,13 @@ function renderEjecutiva() {
     document.getElementById('execSubtitle').textContent = 'Cargando datos desde Supabase...';
     return;
   }
-  const alerts = window.allAlerts;
+  // S229: excluir error de datos ONCAE confirmado (RILMAC, L5.08B mal capturado \u2014 ver reference_datos_erroneos_db).
+  // Bug encontrado: los KPIs del Panel Ejecutivo (Contratos Cr\u00edticos, Riesgo Alto, Total Monitoreados,
+  // Cobertura Presupuestal, Vista Ejecutiva) sumaban este monto sin corregir.
+  const alerts = window.allAlerts.filter(a => {
+    const p = (a.proveedor_nombre || '').toUpperCase();
+    return !(p.includes('RILMAC') && Number(a.monto_contrato || 0) > 500000000);
+  });
   const normSevLocal = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'');
 
   // Counts by severity

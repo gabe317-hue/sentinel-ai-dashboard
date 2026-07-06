@@ -7484,10 +7484,10 @@ async function _loadRemainingAlertsBackground() {
 
 async function loadReviewCache() {
   // Carga todas las revisiones de alert_reviews en un Map para lookup O(1) en tabla
-  // S234: migrado a casos-admin (ar_cache) — anon_read_alert_reviews eliminada (exponía review_nota vía REST)
   try {
-    const result = await _casosAdminCall({ action: 'ar_cache' });
-    const data = result.data;
+    const { data } = await db
+      .from('alert_reviews')
+      .select('proveedor_nombre, entidad, fecha_contrato, review_status');
     _reviewCache = new Map();
     (data || []).forEach(r => {
       const key = `${r.proveedor_nombre}|${r.entidad}|${r.fecha_contrato}`;
@@ -9761,10 +9761,14 @@ function adpToggleReviewForm() {
 
 async function adpCargarReview(proveedor, entidad, fechaContrato) {
   // Verificar si este contrato ya tiene review registrada
-  // S234: migrado a casos-admin (ar_get) — anon_read_alert_reviews eliminada (exponía review_nota vía REST)
   try {
-    const result = await _casosAdminCall({ action: 'ar_get', proveedor_nombre: proveedor, entidad, fecha_contrato: fechaContrato });
-    const data = result.data;
+    const { data } = await db
+      .from('alert_reviews')
+      .select('review_status, review_categoria, review_nota')
+      .eq('proveedor_nombre', proveedor)
+      .eq('entidad', entidad)
+      .eq('fecha_contrato', fechaContrato)
+      .maybeSingle();
 
     const badge = document.getElementById('adp-review-badge');
     const btn   = document.getElementById('adp-review-btn');
@@ -9813,18 +9817,21 @@ async function adpGuardarReview() {
   btn.textContent = 'Guardando…';
 
   try {
-    // S234: migrado a casos-admin (ar_upsert) — anon nunca tuvo INSERT/UPDATE aquí (botón fallaba en silencio)
-    await _casosAdminCall({ action: 'ar_upsert', record: {
-      proveedor_nombre: proveedor,
-      entidad: entidad,
-      fecha_contrato: fechaISO,
-      monto_contrato: montoNum,
-      review_status: status,
-      review_categoria: categoria,
-      review_nota: nota,
-      reviewed_by: 'sentinel-operador',
-      reviewed_at: new Date().toISOString()
-    }});
+    const { error } = await db
+      .from('alert_reviews')
+      .upsert({
+        proveedor_nombre: proveedor,
+        entidad: entidad,
+        fecha_contrato: fechaISO,
+        monto_contrato: montoNum,
+        review_status: status,
+        review_categoria: categoria,
+        review_nota: nota,
+        reviewed_by: 'sentinel-operador',
+        reviewed_at: new Date().toISOString()
+      }, { onConflict: 'proveedor_nombre,entidad,fecha_contrato' });
+
+    if (error) throw error;
 
     document.getElementById('adp-review-form').classList.remove('open');
     await adpCargarReview(proveedor, entidad, fechaISO);

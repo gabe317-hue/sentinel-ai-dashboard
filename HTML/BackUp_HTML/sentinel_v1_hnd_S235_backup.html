@@ -20248,8 +20248,7 @@ async function dispararNotificacion(fnName, label) {
     const url = `${SUPABASE_URL}/functions/v1/${fnName}`;
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ secret: CASOS_ADMIN_SECRET })
+      headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }
     });
     const ok = res.ok || res.status === 200 || res.status === 202;
     if (statusEl) {

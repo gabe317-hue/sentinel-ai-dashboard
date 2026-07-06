@@ -3057,7 +3057,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div class="fuente-panel" id="dobleRolPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
       <div style="display:flex;gap:8px;">
-        <button id="dr-btn-dashboard" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" onclick="hideDobleRolPanel()">← Portal Principal</button>
+        <button id="dr-btn-dashboard" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" onclick="hideDobleRolPanel()">← Dashboard Principal</button>
         <button id="dr-btn-ejecutivo" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
       </div>
       <button onclick="exportDobleRolPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
@@ -3162,7 +3162,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div class="fuente-panel" id="cpcInhabPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;" onclick="hideCpcInhabPanel()">← Portal Principal</button>
+        <button style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;" onclick="hideCpcInhabPanel()">← Dashboard Principal</button>
         <button style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
         <a href="https://oncae.gob.hn/wp-content/uploads/2026/03/LISTADO-CPC-INHABILITADOS-DICIEMBRE-2025.pdf" target="_blank" style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;text-decoration:none;">🔗 Fuente ONCAE</a>
       </div>
@@ -3953,7 +3953,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
   <div class="nav-footer">
-    <button onclick="showPortal()" style="width:100%;margin-bottom:8px;padding:8px 12px;background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.25);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;" onmouseover="this.style.background='rgba(255,61,87,0.2)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'">⊞ Portal Principal</button>
+    <button onclick="showPortal()" style="width:100%;margin-bottom:8px;padding:8px 12px;background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.25);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;" onmouseover="this.style.background='rgba(255,61,87,0.2)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'">⊞ Dashboard</button>
     <div class="user-card">
       <div class="user-avatar" id="userAvatar">—</div>
       <div class="user-info">
@@ -4040,13 +4040,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
 
       <!-- INVESTIGACIÓN -->
-      <div class="po-card po-red" id="poc-investigacion" onclick="poToggle('investigacion')">
-        <div class="po-card-hd">
+      <div class="po-card po-red" id="poc-investigacion">
+        <div class="po-card-hd" style="cursor:default;">
           <div class="po-card-icon"><span>🔎</span></div>
           <div><div class="po-card-title">Investigación</div><div class="po-card-desc">Casos · Cronología · Escáner</div></div>
-          <div class="po-chevron">▼</div>
         </div>
-        <div class="po-submenu">
+        <div class="po-submenu" style="display:block;">
           <button class="po-item" onclick="abrirConstructorCaso()" style="border-bottom:1px solid rgba(0,200,255,0.15);margin-bottom:4px;">
             <span class="po-item-icon">⚖️</span><span class="po-item-label">Constructor de Caso</span><span class="po-item-tag" style="background:rgba(0,200,255,0.1);color:var(--cyan);border:1px solid rgba(0,200,255,0.25);">NUEVO</span><span class="po-arrow">›</span>
           </button>
@@ -4069,13 +4068,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
 
       <!-- ANÁLISIS -->
-      <div class="po-card po-amber" id="poc-analisis" onclick="poToggle('analisis')">
-        <div class="po-card-hd">
+      <div class="po-card po-amber" id="poc-analisis">
+        <div class="po-card-hd" style="cursor:default;">
           <div class="po-card-icon"><span>📊</span></div>
           <div><div class="po-card-title">Análisis</div><div class="po-card-desc">5 módulos · Riesgo cuantitativo</div></div>
-          <div class="po-chevron">▼</div>
         </div>
-        <div class="po-submenu">
+        <div class="po-submenu" style="display:block;">
           <button class="po-item" onclick="poGo(showAnalyticsPanel)">
             <span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span>
           </button>
@@ -7501,7 +7499,7 @@ async function loadReviewCache() {
 // ════════════════════════════════════════════════════════════
 // PRESUPUESTO NACIONAL — total en vivo (S222)
 // Antes: constante fija L 309B "aprobado 2024" sin fuente verificable, duplicada
-// en Portal Principal y Panel Ejecutivo. Verificado contra fuente externa
+// en Dashboard Principal y Panel Ejecutivo. Verificado contra fuente externa
 // (infografía SEFIN 2026, Efrain Farach, 2-jul-2026): SUM(aprobado) del período
 // más reciente en sefin_presupuesto = L 444,336M — coincide exacto con el
 // "Presupuesto más alto de la historia" reportado para 2026. Se usa esa fuente

@@ -21451,8 +21451,7 @@ async function pedAgregar() {
   if (!proveedor) { statusEl.style.color = 'var(--amber)'; statusEl.textContent = '⚠ Ingresa el nombre del proveedor.'; return; }
   statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
   try {
-    const { error } = await db.from('proveedores_error_datos').insert([{ proveedor, razon: razon || 'Error de datos' }]);
-    if (error) throw error;
+    await _casosAdminCall({ action: 'ped_insert', proveedor, razon: razon || 'Error de datos' });
     statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ ${proveedor} agregado a la lista de exclusión.`;
     document.getElementById('ped-proveedor').value = '';
     document.getElementById('ped-razon').value = '';
@@ -21464,8 +21463,9 @@ async function pedAgregar() {
 
 async function pedEliminar(id, proveedor) {
   if (!confirm(`¿Quitar "${proveedor}" de la lista de exclusión? Volverá a aparecer en los reportes.`)) return;
-  const { error } = await db.from('proveedores_error_datos').delete().eq('id', id);
-  if (error) { alert('Error: ' + error.message); return; }
+  try {
+    await _casosAdminCall({ action: 'ped_delete', id });
+  } catch(e) { alert('Error: ' + e.message); return; }
   pedCargar();
 }
 

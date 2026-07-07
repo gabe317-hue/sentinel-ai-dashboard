@@ -17528,30 +17528,27 @@ function irDesdeEjecutivo(fn) {
   window._fromPanelEjecutivo = true;
   window._fromPortal = false; // P10.2 — mutua exclusión de origen
   document.getElementById('panelEjecutivo').classList.add('hidden');
-  // S241 P10.8: fn() se llama de forma síncrona (sin setTimeout) — el panel
-  // destino (.fuente-panel.open, z-index 999) queda tapado por panelEjecutivo
-  // (z-index 9980) hasta que este se oculta. Con el delay anterior (180ms) quedaba
-  // una ventana muerta donde se veía la vista base de Contratos antes de que
-  // abriera el panel real — ese era el parpadeo reportado en la auditoría P10.
-  try {
-    fn();
-    // Mostrar botón inline en Vista Ejecutiva si aplica
-    const veBk = document.getElementById('ve-back-pe');
-    if (veBk) veBk.style.display = 'inline-flex';
-    // Set the opened panel's back button to return to Panel Ejecutivo
-    // Skip panels that have their own explicit Panel Ejecutivo button (e.g. dobleRolPanel)
-    const openPanel = document.querySelector('.fuente-panel.open');
-    const hasOwnEjecutivoBtn = openPanel && openPanel.querySelector('[data-self-managed]');
-    const bb = !hasOwnEjecutivoBtn && document.querySelector('.fuente-panel.open .fuente-back');
-    if (bb || hasOwnEjecutivoBtn) {
-      if (bb) { bb.textContent = '← Panel Ejecutivo'; bb.onclick = volverAPanelEjecutivo; }
-      // Panel ya tiene botón back inline — no mostrar flotante (duplicado innecesario)
-      document.getElementById('btnVolverEjecutivoFloat').style.display = 'none';
-    } else {
-      // Panel sin fuente-back — mostrar flotante
-      document.getElementById('btnVolverEjecutivoFloat').style.display = 'block';
-    }
-  } catch(e) { console.warn('irDesdeEjecutivo:', e); }
+  setTimeout(() => {
+    try {
+      fn();
+      // Mostrar botón inline en Vista Ejecutiva si aplica
+      const veBk = document.getElementById('ve-back-pe');
+      if (veBk) veBk.style.display = 'inline-flex';
+      // Set the opened panel's back button to return to Panel Ejecutivo
+      // Skip panels that have their own explicit Panel Ejecutivo button (e.g. dobleRolPanel)
+      const openPanel = document.querySelector('.fuente-panel.open');
+      const hasOwnEjecutivoBtn = openPanel && openPanel.querySelector('[data-self-managed]');
+      const bb = !hasOwnEjecutivoBtn && document.querySelector('.fuente-panel.open .fuente-back');
+      if (bb || hasOwnEjecutivoBtn) {
+        if (bb) { bb.textContent = '← Panel Ejecutivo'; bb.onclick = volverAPanelEjecutivo; }
+        // Panel ya tiene botón back inline — no mostrar flotante (duplicado innecesario)
+        document.getElementById('btnVolverEjecutivoFloat').style.display = 'none';
+      } else {
+        // Panel sin fuente-back — mostrar flotante
+        document.getElementById('btnVolverEjecutivoFloat').style.display = 'block';
+      }
+    } catch(e) { console.warn('irDesdeEjecutivo:', e); }
+  }, 180);
 }
 
 function generarBriefingEjecutivo() {
@@ -20031,21 +20028,17 @@ function poGo(fn) {
   window._fromPortal = true;
   window._fromPanelEjecutivo = false;
   hidePortal();
-  // S241 P10.8: fn() se llama de forma síncrona (sin setTimeout) — el panel
-  // destino (.fuente-panel.open, z-index 999) queda tapado por el overlay del
-  // Portal (z-index 10000) mientras este hace su fade de opacidad (0.22s en CSS).
-  // Con el delay anterior (220ms) el panel destino no existía aún durante el fade,
-  // así que se veía la vista base de Contratos de fondo — ese era el parpadeo
-  // reportado en la auditoría P10. Ahora el panel ya está listo detrás del fade.
-  try {
-    fn();
-    // Si el panel abierto tiene su propio botón explícito a Panel Ejecutivo
-    // (ej. dobleRolPanel, cpcInhabPanel — 2 botones de volver, ver P10.3), no tocar.
-    const openPanel = document.querySelector('.fuente-panel.open');
-    const hasOwnEjecutivoBtn = openPanel && openPanel.querySelector('[data-self-managed]');
-    const bb = !hasOwnEjecutivoBtn && openPanel && openPanel.querySelector('.fuente-back');
-    if (bb) { bb.textContent = '← Portal Principal'; bb.onclick = volverAlPortalDesdePanel; }
-  } catch(e) { console.warn('poGo:', e); }
+  setTimeout(() => {
+    try {
+      fn();
+      // Si el panel abierto tiene su propio botón explícito a Panel Ejecutivo
+      // (ej. dobleRolPanel, cpcInhabPanel — 2 botones de volver, ver P10.3), no tocar.
+      const openPanel = document.querySelector('.fuente-panel.open');
+      const hasOwnEjecutivoBtn = openPanel && openPanel.querySelector('[data-self-managed]');
+      const bb = !hasOwnEjecutivoBtn && openPanel && openPanel.querySelector('.fuente-back');
+      if (bb) { bb.textContent = '← Portal Principal'; bb.onclick = volverAlPortalDesdePanel; }
+    } catch(e) { console.warn('poGo:', e); }
+  }, 220);
 }
 
 function volverAlPortalDesdePanel() {

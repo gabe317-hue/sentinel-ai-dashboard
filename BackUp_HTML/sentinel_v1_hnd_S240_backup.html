@@ -301,7 +301,7 @@ body::after {
 .sys-status.error      .status-label { color: var(--red); }
 
 /* Nav */
-.nav { flex: 1; padding: 16px 12px 140px; overflow-y: auto; }
+.nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 .nav-section { margin-bottom: 24px; }
 .nav-section-label {
   font-family: 'JetBrains Mono', monospace;
@@ -368,48 +368,18 @@ body::after {
 .fri-desc { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fri-sev { font-size: 11px; font-weight: 600; }
 
-/* ─── S240 P10.4: menú de usuario persistente ───
-   nav-footer pasa de flujo normal (hijo de .sidebar) a position:fixed con
-   z-index por encima de TODOS los overlays (po-overlay:10000, po-close:10001,
-   fuente-panel.open:999) — visible y funcional desde cualquier pantalla,
-   sin tocar cada uno de los ~40 paneles individualmente (Regla #21). */
-.nav-footer.hidden { display: none; }
 .nav-footer {
-  position: fixed; left: 0; bottom: 0;
-  width: var(--sidebar-w); box-sizing: border-box;
   padding: 14px 12px;
   border-top: 1px solid var(--border);
-  background: rgba(10,22,40,0.97);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
-  z-index: 10010;
+  margin-top: auto;
 }
 .user-card {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 10px; border-radius: 8px;
   background: var(--glass); border: 1px solid var(--border);
   transition: background 0.2s;
-  position: relative; cursor: pointer;
 }
 .user-card:hover { background: var(--glass-hover); }
-.user-menu-chevron {
-  font-size: 10px; color: var(--text-dim); flex-shrink: 0;
-}
-.user-menu-dropdown {
-  display: none; position: absolute; left: 0; bottom: calc(100% + 8px);
-  width: 100%; background: var(--navy-light); border: 1px solid var(--border);
-  border-radius: 10px; padding: 6px; box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
-}
-.user-menu-dropdown.open { display: block; }
-.user-menu-item {
-  display: flex; align-items: center; gap: 8px; width: 100%;
-  padding: 9px 10px; border-radius: 7px; border: none; background: none;
-  color: var(--text-dim); font-family: 'Inter', sans-serif; font-size: 12px;
-  text-align: left; cursor: pointer; transition: all 0.15s;
-}
-.user-menu-item:hover { background: var(--glass-hover); color: var(--text); }
-.user-menu-item.danger { color: var(--red); }
-.user-menu-item.danger:hover { background: var(--red-dim); color: var(--red); }
 .user-avatar {
   width: 34px; height: 34px; border-radius: 50%;
   background: linear-gradient(135deg, #0ea5e9, #00c8ff);
@@ -3973,23 +3943,20 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <a class="nav-item" href="https://sentinelai-hn.com" target="_blank">
         <span class="nav-icon">🏠</span> Inicio
       </a>
+      <button class="nav-item nav-logout" onclick="doLogout()">
+        <span class="nav-icon">🚪</span> Cerrar Sesión
+      </button>
     </div>
   </div>
 
-  <div class="nav-footer hidden" id="navFooter">
+  <div class="nav-footer">
     <button onclick="showPortal()" style="width:100%;margin-bottom:8px;padding:8px 12px;background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.25);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;" onmouseover="this.style.background='rgba(255,61,87,0.2)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'">⊞ Portal Principal</button>
-    <div class="user-card" id="userMenuTrigger" onclick="toggleUserMenu(event)">
+    <div class="user-card">
       <div class="user-avatar" id="userAvatar">—</div>
       <div class="user-info">
         <div class="user-name" id="userDisplayName">—</div>
         <div class="user-role" id="userRole">PGR — Honduras</div>
         <div id="userRoleBadge" style="font-size:10px;margin-top:2px;color:var(--text-dim);font-weight:600;"></div>
-      </div>
-      <span class="user-menu-chevron">▾</span>
-      <div class="user-menu-dropdown" id="userMenuDropdown">
-        <button class="user-menu-item danger" onclick="event.stopPropagation(); doLogout();">
-          <span>🚪</span> Cerrar Sesión
-        </button>
       </div>
     </div>
   </div>
@@ -20280,10 +20247,6 @@ function setCurrentUser(email, overrides = {}) {
   // Apply role restrictions
   applyRole(role);
 
-  // S240 P10.4: mostrar el menú de usuario persistente (nav-footer) — solo
-  // debe verse una vez hay sesión activa, nunca detrás/encima del login.
-  document.getElementById('navFooter')?.classList.remove('hidden');
-
   // Persist for page reload
   try { sessionStorage.setItem('sentinel_user', JSON.stringify(currentUser)); } catch(e){}
 }
@@ -20367,19 +20330,6 @@ async function dispararNotificacion(fnName, label) {
   }
 }
 
-// S240 P10.4: menú de usuario persistente — toggle del dropdown en nav-footer
-function toggleUserMenu(e) {
-  if (e) e.stopPropagation();
-  const dd = document.getElementById('userMenuDropdown');
-  if (dd) dd.classList.toggle('open');
-}
-document.addEventListener('click', (e) => {
-  const dd = document.getElementById('userMenuDropdown');
-  if (dd && dd.classList.contains('open') && !e.target.closest('#userMenuTrigger')) {
-    dd.classList.remove('open');
-  }
-});
-
 async function doLogout() {
   if (!confirm('¿Deseas cerrar tu sesión en Sentinel-AI?')) return;
   try { await db.auth.signOut(); } catch(e) {}
@@ -20391,10 +20341,6 @@ async function doLogout() {
   document.getElementById('userAvatar').textContent      = '—';
   document.getElementById('userDisplayName').textContent = '—';
   document.getElementById('userRole').textContent        = 'PGR — Honduras';
-  // S240 P10.4: ocultar el menú de usuario persistente junto con el resto
-  // del dashboard — nunca debe flotar encima de la pantalla de login.
-  document.getElementById('userMenuDropdown')?.classList.remove('open');
-  document.getElementById('navFooter')?.classList.add('hidden');
   // Clear alert data
   allAlerts = [];
 }

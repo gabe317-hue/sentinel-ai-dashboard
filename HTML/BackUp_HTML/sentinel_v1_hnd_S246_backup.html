@@ -25062,10 +25062,7 @@ async function generarReporteSEFIN() {
   const meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio',
                  'Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const periodoStr = `${meses[mes]} ${ultimoPeriodo.slice(0,4)}`;
-  // S247: antes de abr 2026 (periodo 202604) la DB solo tenía el presupuesto 2025 prorrogado;
-  // desde 202604 ya refleja el Presupuesto 2026 real aprobado por el Congreso (verificado: L444,335.8M).
-  const esPresupuestoProrrogado = parseInt(ultimoPeriodo) < 202604;
-  const presupuestoRef = esPresupuestoProrrogado ? '2025 prorrogado' : ultimoPeriodo.slice(0,4);
+  const presupuestoRef = parseInt(ultimoPeriodo.slice(0,4)) >= 2026 ? '2025 prorrogado' : ultimoPeriodo.slice(0,4);
 
   // 2 — Traer todas las instituciones del período
   const { data: rows, error } = await db.from('sefin_presupuesto')
@@ -25157,10 +25154,9 @@ async function generarReporteSEFIN() {
   <div class="meta">Período: ${periodoStr} · Generado: ${fechaStr} a las ${horaStr} · Fuente: SEFIN PIEP</div>
 
   <div class="aviso">
-    ${esPresupuestoProrrogado ? `⚠️ <strong>Referencia presupuestaria:</strong> Los montos de "Aprobado Anual" corresponden al
+    ⚠️ <strong>Referencia presupuestaria:</strong> Los montos de "Aprobado Anual" corresponden al
     <strong>Presupuesto ${presupuestoRef}</strong> vigente durante la transición de gobierno.
-    El Presupuesto 2026 aprobado por el Congreso aún no está publicado en SEFIN PIEP y se incorporará automáticamente cuando esté disponible.` : `<strong>Referencia presupuestaria:</strong> Los montos de "Aprobado Anual" corresponden al
-    <strong>Presupuesto ${presupuestoRef}</strong>, aprobado por el Congreso Nacional (período ${periodoStr}).`}
+    El Presupuesto 2026 aprobado por el Congreso aún no está publicado en SEFIN PIEP y se incorporará automáticamente cuando esté disponible.
   </div>
 
   <div class="kpi-bar">

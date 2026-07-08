@@ -10182,23 +10182,6 @@ function _renderMonopolioTable() {
   }).join('');
 }
 
-// S251 — carga proactiva del KPI NS-12 para Vista Ejecutiva (antes solo se
-// poblaba al abrir el panel de detalle vía showMonopolioPanel/_renderMonopolioTable)
-async function monLoadKPI() {
-  try {
-    if (!_monopolioData) {
-      const { data, error } = await db.rpc('get_monopolio_proveedor');
-      if (error) throw error;
-      _monopolioData = data || [];
-    }
-    const nCrit = _monopolioData.filter(r => r.severity === 'CRÍTICA').length;
-    const excEl = document.getElementById('exec-mon-criticos');
-    if (excEl) excEl.textContent = nCrit;
-    const excSub = document.getElementById('exec-mon-sub');
-    if (excSub) excSub.textContent = `de ${_monopolioData.length} casos detectados`;
-  } catch(e) { /* silencioso */ }
-}
-
 // ════════════════════════════════════════════════════════════
 // NS-13 — DOBLE ROL
 // ════════════════════════════════════════════════════════════
@@ -10233,20 +10216,6 @@ async function showDobleRolPanel() {
   if (execEl) execEl.textContent = total;
   _renderDobleRolTabla();
   _loadDrExpManuales(); // S224 QA — "Exp. Manuales" estaba fijo en "1", ahora en vivo
-}
-
-// S251 — carga proactiva del KPI NS-13 para Vista Ejecutiva (antes solo se
-// poblaba al abrir el panel de detalle vía showDobleRolPanel)
-async function drLoadKPI() {
-  try {
-    if (!_drData) {
-      const { data, error } = await db.rpc('get_doble_rol');
-      if (error || !data) throw error || new Error('sin datos');
-      _drData = data;
-    }
-    const execEl = document.getElementById('exec-dr-personas');
-    if (execEl) execEl.textContent = _drData.length;
-  } catch(e) { /* silencioso */ }
 }
 
 async function _loadDrExpManuales() {
@@ -23482,8 +23451,6 @@ function showVistaEjecutiva() {
   renderEjecutiva();
   consLoadKPI();
   idLoadKPI();
-  monLoadKPI();
-  drLoadKPI();
 }
 
 // ── P5 Drilldown — desde Vista Ejecutiva a contratos filtrados por entidad ──

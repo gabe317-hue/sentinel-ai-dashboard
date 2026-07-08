@@ -8882,8 +8882,7 @@ function showVendorPanel(vendorName) {
     'FRACCIONAMIENTO':'Fraccionamiento','COMPRA_MENOR_RECURRENTE':'Compra Menor',
     'CONCENTRACION_PROVEEDOR':'Concentración','PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro',
     'CD_ALTO_MONTO':'CD Alto Monto','SIN_HISTORIAL_PROVEEDOR':'Sin Historial',
-    'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE',
-    'FRACCIONAMIENTO_SICC':'Fraccionamiento (SICC)','PROVEEDOR_FUERA_DE_GIRO_SICC':'Fuera de Giro (SICC)'
+    'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
   };
   const fmtLv = n => { n = Number(n||0); if(!n) return '—'; if(n>=1e9) return 'L '+(n/1e9).toFixed(1)+'B'; if(n>=1e6) return 'L '+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'L '+(n/1e3).toFixed(0)+'K'; return 'L '+n.toLocaleString('es-HN'); };
   document.getElementById('ep-recent').innerHTML = allSorted.length
@@ -11543,8 +11542,7 @@ function renderCandidatosDetectados() {
     'FRACCIONAMIENTO':'Fraccionamiento','COMPRA_MENOR_RECURRENTE':'Compra Menor Recurrente',
     'CONCENTRACION_PROVEEDOR':'Concentración','PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro',
     'CD_ALTO_MONTO':'CD Alto Monto','SIN_HISTORIAL_PROVEEDOR':'Sin Historial',
-    'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE',
-    'FRACCIONAMIENTO_SICC':'Fraccionamiento (SICC)','PROVEEDOR_FUERA_DE_GIRO_SICC':'Fuera de Giro (SICC)'
+    'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE'
   };
 
   // ── S72: Score de Prosecutabilidad CNA ──────────────────────────────────────
@@ -11791,8 +11789,7 @@ async function ejecutarBusquedaBD() {
       'FRACCIONAMIENTO':'Fraccionamiento','FRACCIONAMIENTO_ONCAE':'Fracc. ONCAE',
       'COMPRA_MENOR_RECURRENTE':'Compra Menor','CONCENTRACION_PROVEEDOR':'Concentración',
       'PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro','CD_ALTO_MONTO':'CD Alto Monto',
-      'SIN_HISTORIAL_PROVEEDOR':'Sin Historial','SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD',
-      'FRACCIONAMIENTO_SICC':'Fracc. SICC','PROVEEDOR_FUERA_DE_GIRO_SICC':'Fuera de Giro (SICC)'
+      'SIN_HISTORIAL_PROVEEDOR':'Sin Historial','SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD'
     };
 
     inner.innerHTML = results.map(a => {
@@ -18259,7 +18256,6 @@ function ipMemoEjecutivo() {
     'PERIODO_MINIMO_ONCAE':'Período Mínimo','FRACCIONAMIENTO_ONCAE':'Fraccionamiento',
     'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD',
     'PROVEEDOR_ENGEL':'Lista Engel EE.UU.','PROVEEDOR_SANCIONADO':'Proveedor Sancionado',
-    'CONTRATACION_DIRECTA_SICC':'Contratación Directa (SICC)','FRACCIONAMIENTO_SICC':'Fraccionamiento (SICC)',
   };
 
   const rec = criticos.length >= 10
@@ -20859,11 +20855,6 @@ const PATTERN_LABELS = {
   PERIODO_MINIMO_ONCAE:        '⚠️ Período Mínimo (ONCAE)',
   LICITACION_PRIVADA_ONCAE:    '🔒 Licitación Privada (ONCAE)',
   FRACCIONAMIENTO_ONCAE:       '✂️ Fraccionamiento (ONCAE)',
-  // SICC patterns (S252)
-  CONTRATACION_DIRECTA_SICC:   '⚡ Contratación Directa (SICC)',
-  LICITACION_PRIVADA_SICC:     '🔒 Licitación Privada (SICC)',
-  PROVEEDOR_FUERA_DE_GIRO_SICC:'Fuera de Giro (SICC)',
-  FRACCIONAMIENTO_SICC:        '✂️ Fraccionamiento (SICC)',
 };
 
 // ════════════════════════════════════════════════════════════

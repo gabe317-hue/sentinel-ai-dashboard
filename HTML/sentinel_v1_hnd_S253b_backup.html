@@ -726,10 +726,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 }
 .alert-table tr:last-child td { border-bottom: none; }
 .alert-table tr:hover td { background: var(--glass-hover); }
-.alert-table th.th-sortable { cursor: pointer; user-select: none; transition: color .15s; }
-.alert-table th.th-sortable:hover { color: var(--electric); }
-.alert-table th.th-sortable.active { color: var(--electric); }
-.th-sort-ind { font-size: 9px; opacity: 0.8; }
 
 .cell-id { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--electric); }
 .cell-desc { max-width: 260px; color: var(--text); line-height: 1.4; }
@@ -4854,14 +4850,14 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <table class="alert-table">
         <thead>
           <tr>
-            <th class="th-sortable" onclick="sortTableBy('id')" title="Ordenar por más reciente">ID Alerta <span class="th-sort-ind" id="sort-ind-id"></span></th>
+            <th>ID Alerta</th>
             <th>Descripción</th>
             <th>Proveedor</th>
             <th>Entidad</th>
-            <th class="th-sortable" onclick="sortTableBy('severidad')" title="Ordenar por severidad">Severidad <span class="th-sort-ind" id="sort-ind-severidad"></span></th>
+            <th>Severidad</th>
             <th>Fuente</th>
-            <th class="th-sortable" onclick="sortTableBy('fecha')" title="Ordenar por fecha del contrato">F. Contrato <span class="th-sort-ind" id="sort-ind-fecha"></span></th>
-            <th class="th-sortable" onclick="sortTableBy('monto')" title="Ordenar por monto">Montos (L) <span class="th-sort-ind" id="sort-ind-monto"></span></th>
+            <th>F. Contrato</th>
+            <th>Montos (L)</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -7387,8 +7383,6 @@ let searchQuery    = '';    // Global search — proveedor, entidad, ID
 let selectedSev    = null;  // Severity selected in modal form
 let currentPage    = 0;     // Current pagination page (0-indexed)
 const ALERTS_PER_PAGE = 50; // Rows per page
-let currentSort    = { column: 'default', dir: 'desc' }; // 'default' = severidad desc + monto desc (S253)
-const SEVERITY_RANK = { critica: 4, alta: 3, media: 2, baja: 1 }; // usa claves normalizadas de normSev()
 
 // ════════════════════════════════════════════════════════════
 // normSev() — CRITICAL FIX FOR STAT CARD BUG
@@ -7877,29 +7871,12 @@ function render() {
     );
   }
 
-  // ── Sort (S253: default = severidad desc + monto desc; o columna elegida por el usuario) ──
+  // ── Sort by most recent first ──
   filtered = filtered.sort((a, b) => {
-    let cmp = 0;
-    switch (currentSort.column) {
-      case 'severidad':
-        cmp = (SEVERITY_RANK[a._sev || normSev(a.severity)] || 0) - (SEVERITY_RANK[b._sev || normSev(b.severity)] || 0);
-        break;
-      case 'monto':
-        cmp = Number(a.monto_contrato || 0) - Number(b.monto_contrato || 0);
-        break;
-      case 'fecha':
-        cmp = new Date(a.fecha_contrato || 0) - new Date(b.fecha_contrato || 0);
-        break;
-      case 'id':
-        cmp = new Date(a.created_at || 0) - new Date(b.created_at || 0);
-        break;
-      default: // 'default' — prioriza lo que el analista debe ver primero: severidad, luego monto
-        cmp = (SEVERITY_RANK[a._sev || normSev(a.severity)] || 0) - (SEVERITY_RANK[b._sev || normSev(b.severity)] || 0);
-        if (cmp === 0) cmp = Number(a.monto_contrato || 0) - Number(b.monto_contrato || 0);
-    }
-    return currentSort.dir === 'asc' ? cmp : -cmp;
+    const dateA = new Date(a.created_at || a.fecha_contrato || 0);
+    const dateB = new Date(b.created_at || b.fecha_contrato || 0);
+    return dateB - dateA; // Descending (newest first)
   });
-  _updateSortIndicators();
 
   document.getElementById('tableCount').textContent =
     `${filtered.length} de ${allAlerts.length} contratos`;
@@ -8009,31 +7986,6 @@ function render() {
       </td>
     </tr>`;
   }).join('');
-}
-
-// ── Sort por columna (S253) — click en encabezado de la tabla principal ──
-function sortTableBy(column) {
-  if (currentSort.column === column) {
-    currentSort.dir = currentSort.dir === 'desc' ? 'asc' : 'desc';
-  } else {
-    currentSort.column = column;
-    currentSort.dir = 'desc';
-  }
-  currentPage = 0;
-  render();
-}
-
-function _updateSortIndicators() {
-  ['id', 'severidad', 'fecha', 'monto'].forEach(col => {
-    const ind = document.getElementById('sort-ind-' + col);
-    if (!ind) return;
-    const th = ind.closest('th');
-    // Cuando el sort es 'default' (severidad+monto), mostramos el indicador en Severidad
-    // porque es el criterio primario — Monto es solo el desempate.
-    const isActive = currentSort.column === col || (currentSort.column === 'default' && col === 'severidad');
-    ind.textContent = isActive ? (currentSort.dir === 'desc' ? '▼' : '▲') : '';
-    if (th) th.classList.toggle('active', isActive);
-  });
 }
 
 // ════════════════════════════════════════════════════════════

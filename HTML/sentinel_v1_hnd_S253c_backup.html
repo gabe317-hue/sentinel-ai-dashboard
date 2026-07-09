@@ -7846,12 +7846,10 @@ function render() {
       : 'Cargando presupuesto nacional…';
   }
 
-  // ── Freshness indicator (S253: ignora fechas futuras — no son "dato reciente", son ejecución programada) ──
+  // ── Freshness indicator ──
   if (allAlerts.length > 0) {
-    const _hoyISO = new Date().toISOString();
     const maxFecha = allAlerts.reduce((max, a) => {
       const d = a.fecha_contrato || a.created_at || '';
-      if (d > _hoyISO) return max; // excluir fecha_contrato futura del cálculo de "más reciente"
       return d > max ? d : max;
     }, '');
     const freshnessEl = document.getElementById('freshness-date');

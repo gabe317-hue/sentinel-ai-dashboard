@@ -5541,14 +5541,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
   </div>
 
-  <!-- ══ Modal: historial completo (proveedor/entidad) — "ver más" del Alert Detail Panel ══ -->
-  <div class="modal-overlay" id="adpHistoryModalOverlay" onclick="if(event.target===this)closeAdpHistoryModal()">
-    <div class="modal-box" style="max-width:640px;max-height:80vh;overflow-y:auto;">
-      <div class="modal-title" id="adpHistoryModalTitle">Historial</div>
-      <div class="adp-history-list" id="adpHistoryModalList"></div>
-    </div>
-  </div>
-
   <!-- ══ GLOBAL SOBRECOSTOS SUMMARY PANEL ══ -->
   <div class="fuente-panel" id="sobrecostoPanel">
     <button class="fuente-back" onclick="hideGlobalSobrecostos()">← Contratos</button>
@@ -9625,7 +9617,6 @@ function isSiafiReal(a) {
 // ════════════════════════════════════════════════════════════
 let _alertDetailSource = 'tabla'; // 'tabla' | 'busqueda'
 let _adpRawFecha = null; // fecha_contrato raw del alert actual (para review lookup)
-let _adpHistoryFull = { vendor: [], entity: [] }; // listas completas (sin cortar a 5) para el modal "ver más"
 
 function openAlertDetail(alertId, event, source = 'tabla') {
   // Ignore right-clicks / modifier-clicks
@@ -9735,18 +9726,13 @@ function openAlertDetail(alertId, event, source = 'tabla') {
       ).join('')
     : '<span style="color:var(--text-dim);font-size:12px">Sin patrones</span>';
 
-  // -- Vendor history (same proveedor_nombre, exclude current alert, newest 5 + total real) --
-  const vendorAlertsFull = allAlerts
+  // -- Vendor history (same proveedor_nombre, exclude current alert, newest 5) --
+  const vendorAlerts = allAlerts
     .filter(x => x.id !== alertId && x.proveedor_nombre && x.proveedor_nombre === a.proveedor_nombre)
-    .sort((x, y) => new Date(y.created_at) - new Date(x.created_at));
-  const vendorAlerts = vendorAlertsFull.slice(0, 5);
-  _adpHistoryFull.vendor = vendorAlertsFull;
-  const vendorMoreCount = vendorAlertsFull.length - vendorAlerts.length;
-  const vendorCountEl = document.getElementById('adp-vendor-count');
-  vendorCountEl.textContent = vendorMoreCount > 0 ? `(+${vendorMoreCount} más)` : '';
-  vendorCountEl.style.cursor = vendorMoreCount > 0 ? 'pointer' : 'default';
-  vendorCountEl.style.textDecoration = vendorMoreCount > 0 ? 'underline' : 'none';
-  vendorCountEl.onclick = vendorMoreCount > 0 ? () => openAdpHistoryModal('vendor') : null;
+    .sort((x, y) => new Date(y.created_at) - new Date(x.created_at))
+    .slice(0, 5);
+  document.getElementById('adp-vendor-count').textContent =
+    vendorAlerts.length ? `(${vendorAlerts.length} más)` : '';
   document.getElementById('adp-vendor-history').innerHTML = vendorAlerts.length
     ? vendorAlerts.map(x => `
         <div class="adp-history-item">
@@ -9757,23 +9743,18 @@ function openAlertDetail(alertId, event, source = 'tabla') {
       .join('')
     : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin otros contratos de este proveedor.</div>';
 
-  // -- Entity history (same entity_name, exclude current alert, newest 5 + total real) --
+  // -- Entity history (same entity_name, exclude current alert, newest 5) --
   const entityKey    = pdFor('Entidad compradora') || a.entity_name;
-  const entityAlertsFull = allAlerts
+  const entityAlerts = allAlerts
     .filter(x => {
       if (x.id === alertId) return false;
       const eKey = parseDesc_for('Entidad compradora', x.description) || x.entity_name;
       return eKey && eKey === entityKey;
     })
-    .sort((x, y) => new Date(y.created_at) - new Date(x.created_at));
-  const entityAlerts = entityAlertsFull.slice(0, 5);
-  _adpHistoryFull.entity = entityAlertsFull;
-  const entityMoreCount = entityAlertsFull.length - entityAlerts.length;
-  const entityCountEl = document.getElementById('adp-entity-count');
-  entityCountEl.textContent = entityMoreCount > 0 ? `(+${entityMoreCount} más)` : '';
-  entityCountEl.style.cursor = entityMoreCount > 0 ? 'pointer' : 'default';
-  entityCountEl.style.textDecoration = entityMoreCount > 0 ? 'underline' : 'none';
-  entityCountEl.onclick = entityMoreCount > 0 ? () => openAdpHistoryModal('entity') : null;
+    .sort((x, y) => new Date(y.created_at) - new Date(x.created_at))
+    .slice(0, 5);
+  document.getElementById('adp-entity-count').textContent =
+    entityAlerts.length ? `(${entityAlerts.length} más)` : '';
   document.getElementById('adp-entity-history').innerHTML = entityAlerts.length
     ? entityAlerts.map(x => `
         <div class="adp-history-item">
@@ -9900,27 +9881,6 @@ function closeAlertDetail() {
     document.getElementById('mainTableContainer').style.display = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-}
-
-// -- Modal: historial completo (proveedor o entidad) --
-function openAdpHistoryModal(type) {
-  const list  = _adpHistoryFull[type] || [];
-  const title = type === 'vendor' ? 'Historial Completo del Proveedor' : 'Historial Completo de la Entidad';
-  document.getElementById('adpHistoryModalTitle').textContent = `${title} (${list.length})`;
-  document.getElementById('adpHistoryModalList').innerHTML = list.length
-    ? list.map(x => `
-        <div class="adp-history-item">
-          <span class="adp-hi-id">${x.alert_id || '#' + x.id}</span>
-          <span class="adp-hi-sev" style="color:${_sevColor(x.severity)}">${x.severity || '—'}</span>
-          <span class="adp-hi-desc" title="${(x.description||'').replace(/"/g,'&quot;')}">${(x.description||'—').substring(0,120)}</span>
-        </div>`)
-      .join('')
-    : '<div style="color:var(--text-dim);font-size:12px;padding:4px">Sin registros.</div>';
-  document.getElementById('adpHistoryModalOverlay').classList.add('open');
-}
-
-function closeAdpHistoryModal() {
-  document.getElementById('adpHistoryModalOverlay').classList.remove('open');
 }
 
 function exportAlertDetailPDF() {

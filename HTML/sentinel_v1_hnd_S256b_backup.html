@@ -29598,23 +29598,15 @@ function hideIdentidadPanel() {
 
 async function idLoad() {
   try {
-    // S256: stats reales (no truncadas) vía RPC dedicado — antes se derivaban de
-    // gIdData.length con p_limit:200, lo cual subcontaba (real total 2,333, 657 CRÍTICA)
-    // porque el RPC principal ordena CRÍTICA primero y el límite se llenaba solo con esas.
-    const [{ data, error }, statsRes] = await Promise.all([
-      db.rpc('get_identidad_duplicada', { p_limit: 3000 }),
-      db.rpc('get_identidad_duplicada_stats')
-    ]);
+    const { data, error } = await db.rpc('get_identidad_duplicada', { p_limit: 200 });
     if (error) throw error;
     gIdData = data || [];
-    const stats = (statsRes.data && statsRes.data[0]) || {};
-    const criticas = Number(stats.criticas || 0);
-    const altas    = Number(stats.altas || 0);
-    const medias   = Number(stats.medias || 0);
-    const total    = Number(stats.total || gIdData.length);
+    const criticas = gIdData.filter(r => r.severidad === 'CRÍTICA').length;
+    const altas    = gIdData.filter(r => r.severidad === 'ALTA').length;
+    const medias   = gIdData.filter(r => r.severidad === 'MEDIA').length;
     const maxNombres = gIdData.reduce((m, r) => Math.max(m, parseInt(r.total_nombres) || 0), 0);
     document.getElementById('id-stat-critica').textContent = criticas;
-    document.getElementById('id-stat-total').textContent   = total;
+    document.getElementById('id-stat-total').textContent   = gIdData.length;
     document.getElementById('id-stat-maxnombres').textContent = maxNombres;
     document.getElementById('id-f-crit').textContent  = `CRÍTICA (${criticas})`;
     document.getElementById('id-f-alta').textContent  = `ALTA (${altas})`;
@@ -29812,15 +29804,14 @@ ${acronimoHtml}
 
 async function idLoadKPI() {
   try {
-    // S256: RPC dedicado de conteo (get_identidad_duplicada_stats) en vez de traer filas
-    // con p_limit:20 y usar .length — eso mostraba "20" cuando el real es 657 CRÍTICA.
-    const { data, error } = await db.rpc('get_identidad_duplicada_stats');
+    const { data, error } = await db.rpc('get_identidad_duplicada', { p_severidad: 'CRÍTICA', p_limit: 20 });
     if (error) throw error;
-    const criticas = Number((data && data[0] && data[0].criticas) || 0);
+    const criticas = (data || []).length;
     const el = document.getElementById('exec-id-criticas');
     if (el) el.textContent = criticas;
     const sub = document.getElementById('exec-id-sub');
     if (sub) sub.textContent = 'RTNs CRÍTICOS';
+    if (!gIdData.length && data) gIdData = data;
   } catch(e) { /* silencioso */ }
 }
 // ══ FIN NS-11 ════════════════════════════════════════════════════════════════

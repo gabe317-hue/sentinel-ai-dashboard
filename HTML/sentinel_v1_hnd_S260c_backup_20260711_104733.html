@@ -19859,23 +19859,6 @@ async function renderTop5() {
     invResult.value.data.forEach(r => investigados.set((r.proveedor||'').toUpperCase().trim(), r.estado));
   }
 
-  // ── Z-score helpers (robusto frente a outliers) — S260: subidas aquí (antes
-  // vivían más abajo, junto a las 6 dimensiones) para poder reutilizarlas también
-  // en la normalización de señales NS-1/NS-7 (ver justo abajo). Mismo cálculo,
-  // sin cambios de comportamiento para su uso original en dMonto/dPatron/etc.
-  function zStats(arr) {
-    const n = arr.length;
-    if (n < 2) return { mean: arr[0]||0, std: 1 };
-    const mean = arr.reduce((s,v) => s+v, 0) / n;
-    const std  = Math.sqrt(arr.reduce((s,v) => s+(v-mean)**2, 0) / n) || 1;
-    return { mean, std };
-  }
-  function zNorm(val, st) {
-    // z en [-2, 3] → [0, 100]
-    const z = (val - st.mean) / st.std;
-    return Math.max(0, Math.min(100, Math.round(((z + 2) / 5) * 100)));
-  }
-
   // ── Índice de señales NS por proveedor
   const vendorSignals = {}; // key: normV(proveedor_nombre)
   const addSig = (nombre, key, rawScore, label) => {
@@ -19886,28 +19869,6 @@ async function renderTop5() {
     if (s > 0 && !vendorSignals[k].labels.includes(label)) vendorSignals[k].labels.push(label);
   };
 
-  // S260 — NS-7 corregido: usaba un multiplicador fijo (×4) elegido sin
-  // referencia a la distribución real, causando saturación (10% de los casos
-  // ya llegaban a 100 antes del tope, colapsando la diferencia entre un gemelo
-  // moderado y uno extremo). Fix: normalizar por z-score contra la propia
-  // población devuelta por el RPC — MISMO método [-2,+3]→[0,100] que ya usan
-  // las 6 dimensiones del Score™ (dMonto/dPatron/dAlcance/dRecente) más abajo.
-  // Verificado en vivo antes de aplicar (S260): con datos reales, min/avg/max
-  // pasó de "casi todo en 100" a un rango 31–100 con 66 valores distintos.
-  //
-  // NS-1 (Monogamia) — evaluado el mismo tratamiento y DESCARTADO tras probarlo
-  // en vivo: concentracion_pct ya es un porcentaje 0-100 con significado propio
-  // (qué tan concentrado está un proveedor en una sola institución), y la
-  // mayoría de los casos reales SÍ están genuinamente cerca de 100% — no es un
-  // artefacto de escala. Al z-normalizar esa población, la mayoría "al techo"
-  // (86/100 casos = 100% exacto) quedaba tratada como "promedio" (z≈0→40) y el
-  // score se INVERTÍA para los pocos casos por debajo del techo (85-99%, aún
-  // muy concentrados) — probado en vivo, min=-32/max=48 con esa fórmula, peor
-  // que el original. Se deja NS-1 con el valor crudo, igual que NS-6 (que
-  // tampoco se reescala — su métrica también ya es 0-100 con significado propio).
-  const ns7Vals = ns7Res.status==='fulfilled' ? (ns7Res.value?.data||[]).map(r => Number(r.twin_score||0)) : [];
-  const stNs7 = zStats(ns7Vals);
-
   if (ns1Res.status==='fulfilled') (ns1Res.value?.data||[]).forEach(r =>
     addSig(r.proveedor_nombre, 'ns1', Number(r.concentracion_pct||0), 'NS-1 MONOGAMIA'));
   if (ns5Res.status==='fulfilled') (ns5Res.value?.data||[]).forEach(r =>
@@ -19915,7 +19876,7 @@ async function renderTop5() {
   if (ns6Res.status==='fulfilled') (ns6Res.value?.data||[]).forEach(r =>
     addSig(r.proveedor_nombre, 'ns6', Number(r.pct_monto_reciente||0), 'NS-6 SURGE'));
   if (ns7Res.status==='fulfilled') (ns7Res.value?.data||[]).forEach(r =>
-    addSig(r.proveedor_nombre, 'ns7', zNorm(Number(r.twin_score||0), stNs7), 'NS-7 GEMELOS'));
+    addSig(r.proveedor_nombre, 'ns7', Math.min(100, Number(r.twin_score||0)*4), 'NS-7 GEMELOS'));
   if (ns3Res.status==='fulfilled') (ns3Res.value?.data||[]).forEach(r =>
     addSig(r.proveedor_nombre, 'ns3', Math.min(100, Number(r.anomaly_score||0)*2.5), 'NS-3 DEBUT'));
   // NS-4: BCAI — vendor-level signal (entity-specific)
@@ -20028,7 +19989,19 @@ async function renderTop5() {
     return;
   }
 
-  // (zStats/zNorm ahora definidas más arriba, junto al índice de señales NS — S260)
+  // ── Z-score helpers (robusto frente a outliers)
+  function zStats(arr) {
+    const n = arr.length;
+    if (n < 2) return { mean: arr[0]||0, std: 1 };
+    const mean = arr.reduce((s,v) => s+v, 0) / n;
+    const std  = Math.sqrt(arr.reduce((s,v) => s+(v-mean)**2, 0) / n) || 1;
+    return { mean, std };
+  }
+  function zNorm(val, st) {
+    // z en [-2, 3] → [0, 100]
+    const z = (val - st.mean) / st.std;
+    return Math.max(0, Math.min(100, Math.round(((z + 2) / 5) * 100)));
+  }
 
   // Pre-calcular stats por dimensión (usar montoW — monto ponderado por severidad)
   const logMontos  = todos.map(c => Math.log(c.montoW + 1));

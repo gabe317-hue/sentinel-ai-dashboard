@@ -19971,27 +19971,16 @@ async function renderTop5() {
   const ns7Vals = ns7Res.status==='fulfilled' ? (ns7Res.value?.data||[]).map(r => Number(r.twin_score||0)) : [];
   const stNs7 = zStats(ns7Vals);
 
-  // S261 — mismo fix de z-score aplicado a NS-5 y NS-3 (multiplicadores fijos ×3/×2.5
-  // elegidos sin referencia a la distribución real, igual causa raíz que NS-7 en S260).
-  // Diagnóstico en vivo antes de aplicar: NS-3 (anomaly_score) sí saturaba el tope de 100
-  // en 4/100 casos con fuerte compresión (75% de casos entre 8-12 antes del ×2.5); NS-5
-  // (hugging_score) no llegaba a saturar el tope hoy (max real ×3 = 84.6), pero se aplica
-  // el mismo método por consistencia entre las 9 señales del Score™ (decisión de Gabe).
-  const ns5Vals = ns5Res.status==='fulfilled' ? (ns5Res.value?.data||[]).map(r => Number(r.hugging_score||0)) : [];
-  const stNs5 = zStats(ns5Vals);
-  const ns3Vals = ns3Res.status==='fulfilled' ? (ns3Res.value?.data||[]).map(r => Number(r.anomaly_score||0)) : [];
-  const stNs3 = zStats(ns3Vals);
-
   if (ns1Res.status==='fulfilled') (ns1Res.value?.data||[]).forEach(r =>
     addSig(r.proveedor_nombre, 'ns1', Number(r.concentracion_pct||0), 'NS-1 MONOGAMIA'));
   if (ns5Res.status==='fulfilled') (ns5Res.value?.data||[]).forEach(r =>
-    addSig(r.proveedor_nombre, 'ns5', zNorm(Number(r.hugging_score||0), stNs5), 'NS-5 UMBRAL'));
+    addSig(r.proveedor_nombre, 'ns5', Math.min(100, Number(r.hugging_score||0)*3), 'NS-5 UMBRAL'));
   if (ns6Res.status==='fulfilled') (ns6Res.value?.data||[]).forEach(r =>
     addSig(r.proveedor_nombre, 'ns6', Number(r.pct_monto_reciente||0), 'NS-6 SURGE'));
   if (ns7Res.status==='fulfilled') (ns7Res.value?.data||[]).forEach(r =>
     addSig(r.proveedor_nombre, 'ns7', zNorm(Number(r.twin_score||0), stNs7), 'NS-7 GEMELOS'));
   if (ns3Res.status==='fulfilled') (ns3Res.value?.data||[]).forEach(r =>
-    addSig(r.proveedor_nombre, 'ns3', zNorm(Number(r.anomaly_score||0), stNs3), 'NS-3 DEBUT'));
+    addSig(r.proveedor_nombre, 'ns3', Math.min(100, Number(r.anomaly_score||0)*2.5), 'NS-3 DEBUT'));
   // NS-4: BCAI — vendor-level signal (entity-specific)
   if (ns4Res.status==='fulfilled') (ns4Res.value?.data||[]).forEach(r =>
     addSig(r.proveedor_nombre, 'ns4', Math.min(100, Number(r.bcai_score||0)), 'NS-4 BCAI'));

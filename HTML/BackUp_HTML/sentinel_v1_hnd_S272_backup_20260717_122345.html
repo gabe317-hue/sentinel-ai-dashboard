@@ -8888,10 +8888,6 @@ function showVendorPanel(vendorName) {
   });
 
   const mc = data.reduce((s, a) => s + Number(a.monto_contrato || 0), 0);
-  // S272: sumar monto_pagado real cuando exista (antes siempre mostraba "Sin datos",
-  // aunque el tab Sobrepresupuesto del mismo panel ya prueba que el campo sí trae datos reales).
-  const mpRows = data.filter(a => a.monto_pagado != null && Number(a.monto_pagado) > 0);
-  const mp = mpRows.reduce((s, a) => s + Number(a.monto_pagado || 0), 0);
   const fmtL = n => n > 0
     ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
     : 'L —';
@@ -8907,11 +8903,7 @@ function showVendorPanel(vendorName) {
   document.getElementById('ep-media').textContent   = counts.media;
   document.getElementById('ep-baja').textContent    = counts.baja;
   document.getElementById('ep-monto-contrato').textContent = fmtL(mc);
-  // S272: si hay al menos 1 contrato con monto_pagado real, sumar y mostrar (con nota de
-  // cobertura parcial, mismo lenguaje que el tab Sobrepresupuesto); si no, "Sin datos" como antes.
-  document.getElementById('ep-monto-pagado').innerHTML = mpRows.length > 0
-    ? `${fmtL(mp)}<br><span style="font-size:9px;color:var(--text-dim);font-weight:400;">${mpRows.length}/${data.length} contratos — cobertura parcial SIAFI</span>`
-    : 'Sin datos';
+  document.getElementById('ep-monto-pagado').textContent   = 'Sin datos';
   const difEl = document.getElementById('ep-diferencia');
   const lblEl = document.getElementById('ep-diferencia-lbl');
   // Mostrar conteo + primeras 3 entidades abreviadas, resto en tooltip
@@ -9911,10 +9903,6 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   if (source === 'busqueda') {
     document.getElementById('busquedaBDPanel').classList.remove('open');
   }
-  // Cerrar entityPanel (vista Entidad/Proveedor) directamente si estaba abierto —
-  // nunca quedó cerrado antes de S272, por lo que el detalle se abría detrás de él
-  // (mismo patrón de bug que Regla #11). No usar hideEntityPanel() — tiene side effects.
-  document.getElementById('entityPanel')?.classList.remove('open');
   document.querySelector('.stats-grid').style.display      = 'none';
   document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
   document.getElementById('mainTableContainer').style.display = 'none';
@@ -12858,15 +12846,6 @@ function generarMemorandum() {
   const sevLow = (d.severity || '').toLowerCase();
   const sevColor = sevLow.includes('cr') ? '#c0392b' : sevLow.includes('alt') ? '#d35400' : '#e67e22';
 
-  // S272: detectar caso entidad === proveedor (misma empresa en ambos roles del contrato).
-  // El párrafo original ("suscrito entre la entidad X y el proveedor X") es engañoso cuando
-  // X es el mismo nombre en ambos campos — lenguaje no-acusatorio (Regla #29): "indicador de
-  // posible auto-contratación", nunca "fraude" ni conclusión afirmativa.
-  const _entNorm = (d.entity || '').trim().toUpperCase();
-  const _venNorm = (d.vendor || '').trim().toUpperCase();
-  const selfDealing = _entNorm && _venNorm && _entNorm === _venNorm
-    && d.vendor !== '—' && d.vendor !== '— (múltiples)';
-
   const patronTags = d.patrones !== '—'
     ? d.patrones.split(',').map(p => `<span style="display:inline-block;background:${ent.color}18;border:1px solid ${ent.color}40;color:${ent.color};padding:2px 9px;border-radius:3px;font-size:8.5pt;margin:2px;">${p.trim()}</span>`).join('')
     : '<span style="color:#888;font-size:10pt;">Sin patrones específicos registrados</span>';
@@ -12960,10 +12939,7 @@ function generarMemorandum() {
 <div class="sec">
   <div class="sec-t">III. Recomendación</div>
   <div class="recom">
-    <p>${selfDealing
-      ? `El Sistema <strong>SENTINEL</strong> recomienda a la <strong>${ent.nombre}</strong> iniciar revisión formal del contrato identificado bajo el folio <strong>${d.alertId}</strong>. Se identificó que <strong>${d.entity}</strong> figura registrada simultáneamente como entidad contratante y como proveedor/contratista del mismo contrato — un indicador de posible auto-contratación que amerita verificación documental prioritaria, en virtud de los patrones de riesgo detectados por análisis automatizado de datos de contratación pública de Honduras.<br><br>`
-      : `El Sistema <strong>SENTINEL</strong> recomienda a la <strong>${ent.nombre}</strong> iniciar revisión formal del contrato identificado bajo el folio <strong>${d.alertId}</strong>, suscrito entre la entidad <strong>${d.entity}</strong> y el proveedor <strong>${d.vendor}</strong>, en virtud de los patrones de riesgo detectados por análisis automatizado de datos de contratación pública de Honduras.<br><br>`
-    }
+    <p>El Sistema <strong>SENTINEL</strong> recomienda a la <strong>${ent.nombre}</strong> iniciar revisión formal del contrato identificado bajo el folio <strong>${d.alertId}</strong>, suscrito entre la entidad <strong>${d.entity}</strong> y el proveedor <strong>${d.vendor}</strong>, en virtud de los patrones de riesgo detectados por análisis automatizado de datos de contratación pública de Honduras.<br><br>
     Se sugiere solicitar la documentación contractual completa, verificar el cumplimiento de los procedimientos de licitación aplicables conforme a la <em>Ley de Contratación del Estado</em> y evaluar la trazabilidad del gasto ejecutado, con especial atención a los patrones identificados por el sistema.</p>
   </div>
 </div>

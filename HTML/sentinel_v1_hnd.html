@@ -4152,7 +4152,14 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             🆕 &nbsp;Proveedores Nuevos &lt;90 días
             <span class="exec-section-badge" id="new-vendors-badge" style="background:rgba(0,200,100,0.12);color:#4ade80;">cargando…</span>
           </div>
-          <div id="new-vendors-list">
+          <div style="display:flex;align-items:center;gap:5px;margin:2px 0 6px 0;font-size:10px;color:var(--text-dim);" onclick="event.stopPropagation()">
+            <span>Umbral: L</span>
+            <input type="number" id="nv-threshold-input" value="5" min="0" step="0.5" style="width:46px;background:var(--glass);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;padding:2px 4px;">
+            <span>M</span>
+            <button onclick="_applyNVThreshold()" style="font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--electric);cursor:pointer;">Aplicar</button>
+            <span style="margin-left:auto;font-size:9px;opacity:.7;">clic en fila → detalle</span>
+          </div>
+          <div id="new-vendors-list" style="max-height:280px;overflow-y:auto;">
             <div style="color:var(--text-dim);font-size:10px;padding:8px 0;text-align:center;">Cargando…</div>
           </div>
           <div class="exec-section-hd" style="cursor:default;">
@@ -25916,16 +25923,19 @@ const PLAYBOOK_QUERIES = [
   {
     id: 'prov-nuevo',
     nombre: 'Proveedor nuevo + contrato grande',
-    desc: 'Primer contrato en BD hace <90 días y monto acumulado > L 5M',
+    desc: 'Primer contrato en BD hace <90 días y monto acumulado > umbral ajustable (Portal → Candidatos, default L5M)',
     severidad: 'alta',
     run: function(all) {
       // S152: usar buildNewVendorIndex si ya está disponible, si no recalcular
+      // S272: el umbral (_NV_CURRENT_THRESHOLD) es ajustable desde el input del Portal —
+      // si Gabe ya lo cambió ahí, window._newVendorsData refleja ese umbral, no el default.
       if (!window._newVendorsData) buildNewVendorIndex();
       const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
+      const umbralLabel = fmtL(_NV_CURRENT_THRESHOLD);
       const results = (window._newVendorsData || []).slice(0, 50);
-      if (!results.length) return { titulo: 'Proveedor Nuevo + Contrato Grande', filas: [], cols: ['#','Proveedor','Monto','Contratos','Primer Contrato','Severidad'], noResultsMsg: 'Sin proveedores nuevos (primer contrato <90 días) con monto > L 5M' };
+      if (!results.length) return { titulo: 'Proveedor Nuevo + Contrato Grande', filas: [], cols: ['#','Proveedor','Monto','Contratos','Primer Contrato','Severidad'], noResultsMsg: `Sin proveedores nuevos (primer contrato <90 días) con monto > ${umbralLabel}` };
       return {
-        titulo: 'Proveedores Nuevos <90 días + Monto > L 5M',
+        titulo: `Proveedores Nuevos <90 días + Monto > ${umbralLabel}`,
         filas: results.map(([nombre, v], i) => ({
           num: i+1,
           proveedor: nombre,
@@ -29362,7 +29372,8 @@ async function loadSysHealth() {
 // acumulan monto total > L 5M. Señal clásica de empresa de maletín.
 const _NV_MIN_MONTO  = 5_000_000;   // L 5M mínimo — subido de L1M para eliminar ruido (confirmado por Gabe S272)
 const _NV_DAYS       = 90;          // ventana en días
-const _NV_MAX_SHOW   = 5;           // top en portal
+const _NV_MAX_SHOW   = 12;          // top en portal (S272: subido de 5 a 12 + scroll, para umbral ajustable)
+let _NV_CURRENT_THRESHOLD = _NV_MIN_MONTO; // S272: umbral activo — ajustable desde el input del Portal, arranca en _NV_MIN_MONTO
 
 function buildNewVendorIndex() {
   const cutoff = new Date(Date.now() - _NV_DAYS * 86400000);
@@ -29379,10 +29390,20 @@ function buildNewVendorIndex() {
   });
 
   window._newVendorsData = Object.entries(provMap)
-    .filter(([, v]) => v.firstDate && v.firstDate >= cutoff && v.monto >= _NV_MIN_MONTO)
+    .filter(([, v]) => v.firstDate && v.firstDate >= cutoff && v.monto >= _NV_CURRENT_THRESHOLD)
     .sort((a, b) => b[1].monto - a[1].monto);
 
   _renderNewVendorsPortal();
+}
+
+// S272: permite ajustar el umbral (en millones de L) desde el input del Portal
+// sin tener que pedirle a Claude que corra la query — recalcula y re-renderiza al toque.
+function _applyNVThreshold() {
+  const inp = document.getElementById('nv-threshold-input');
+  const millones = parseFloat(inp && inp.value);
+  if (isNaN(millones) || millones < 0) { alert('Ingresa un monto válido en millones (ej. 5 o 1.5).'); return; }
+  _NV_CURRENT_THRESHOLD = millones * 1_000_000;
+  buildNewVendorIndex();
 }
 
 function _renderNewVendorsPortal() {

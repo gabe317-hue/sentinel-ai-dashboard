@@ -3569,7 +3569,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
     <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#818cf8;">
-      📐 <strong>Señal NS-4 (BCAI):</strong> En licitaciones competitivas, un proveedor legítimo llega al 65–85% del precio referencial. Llegar consistentemente al 88–99% indica que conoce el techo exacto — información privilegiada. El precio de referencia se estima con el historial de contrataciones similares de cada institución.
+      📐 <strong>Señal NS-4 (BCAI):</strong> En licitaciones competitivas, un proveedor legítimo llega al 65–85% del precio referencial. Llegar consistentemente al 88–99% indica que conoce el techo exacto — información privilegiada. Proxy estadístico: precio referencial = promedio institucional por tipo de contrato y año.
     </div>
     <div style="margin-bottom:10px;">
       <input type="text" id="bcai-search" placeholder="Filtrar por proveedor o institución..." oninput="bcaiFiltrar()"
@@ -19925,54 +19925,193 @@ async function renderTop5() {
 
   try {
 
-  // S275 — Sentinel Score™ migrado a Supabase RPC (get_sentinel_score_top +
-  // get_sentinel_score_full). Antes, las 6 dimensiones + z-score + 9 señales NS
-  // se calculaban aquí en JS (visible en view-source del navegador) — protección
-  // de IP estructural pedida por Gabe S273/S275, mismo patrón ya usado en NS-12/NS-13.
-  // El servidor ya trae el score final, las 6 dimensiones normalizadas, y las
-  // etiquetas de señales NS activas — este archivo solo renderiza.
-  const [invResult, scoreResult] = await Promise.allSettled([
+  // ── Excluidos por error de datos conocido
+  const EXCLUIR = ['RILMAC IMPRESORES'];
+
+  // ── Queries paralelas: investigaciones + 5 señales NS
+  const normV = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+
+  const [invResult, ns1Res, ns5Res, ns6Res, ns7Res, ns3Res, ns2Res, ns4Res, ns12Res, ns13Res] = await Promise.allSettled([
     Promise.race([
       db.from('investigaciones').select('proveedor,estado').not('estado','in','("Borrador-Auto","Descartado","Nuevo")'),
       new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000))
     ]),
-    db.rpc('get_sentinel_score_full', { p_limit: 10, p_min_monto: 100000000 }),
+    db.rpc('get_vendor_monogamy',  { min_contratos: 3, min_monto: 500000 }),
+    db.rpc('get_threshold_hugging',{ min_contratos: 2 }),
+    db.rpc('get_surge_reciente',   { meses: 12, min_pct_reciente: 0.55, min_monto_reciente: 2000000, min_contratos_total: 2 }),
+    db.rpc('get_twin_contracts',   { max_diff_pct: 0.05, max_dias: 90, min_monto: 500000 }),
+    db.rpc('get_debut_anomaly',    { min_debut_monto: 2000000, min_contratos: 2 }),
+    db.rpc('get_pressure_window_contracts', { top_n: 100 }),
+    db.rpc('get_bcai_signals', { min_licitaciones: 2, bcai_min: 0.88, bcai_max: 0.995, min_monto: 1000000 }),
+    db.rpc('get_monopolio_proveedor'),
+    db.rpc('get_doble_rol'),
   ]);
 
-  // ── Investigaciones confirmadas (solo para el tag "SEN-INV" — no afecta el score,
-  // esa corroboración ya viene incluida en d_externo desde el servidor)
+  // ── Investigaciones confirmadas
   let investigados = new Map();
   if (invResult.status === 'fulfilled' && invResult.value?.data) {
     invResult.value.data.forEach(r => investigados.set((r.proveedor||'').toUpperCase().trim(), r.estado));
   }
 
-  if (scoreResult.status !== 'fulfilled' || scoreResult.value?.error) {
-    throw (scoreResult.reason || scoreResult.value?.error || new Error('get_sentinel_score_full falló'));
+  // ── Z-score helpers (robusto frente a outliers) — S260: subidas aquí (antes
+  // vivían más abajo, junto a las 6 dimensiones) para poder reutilizarlas también
+  // en la normalización de señales NS-1/NS-7 (ver justo abajo). Mismo cálculo,
+  // sin cambios de comportamiento para su uso original en dMonto/dPatron/etc.
+  function zStats(arr) {
+    const n = arr.length;
+    if (n < 2) return { mean: arr[0]||0, std: 1 };
+    const mean = arr.reduce((s,v) => s+v, 0) / n;
+    const std  = Math.sqrt(arr.reduce((s,v) => s+(v-mean)**2, 0) / n) || 1;
+    return { mean, std };
   }
-  const rpcRows = scoreResult.value?.data || [];
+  function zNorm(val, st) {
+    // z en [-2, 3] → [0, 100]
+    const z = (val - st.mean) / st.std;
+    return Math.max(0, Math.min(100, Math.round(((z + 2) / 5) * 100)));
+  }
 
-  // ── Cache global para _getNS() (usado por memos/expedientes — 12805 y sig.)
-  // S275: antes esto exponía vendorSignals con los 9 valores NS crudos por
-  // proveedor; los consumidores reales (_getNS y quienes lo llaman) solo leen
-  // .count y .labels, nunca los valores individuales — se preserva esa forma
-  // reducida, ahora poblada desde el RPC en vez de calculada aquí.
-  const normV = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
-  const vendorSignalsCache = {};
-  rpcRows.forEach(r => {
-    const k = normV(r.proveedor); if (!k) return;
-    vendorSignalsCache[k] = { count: r.ns_count||0, labels: r.ns_labels||[] };
+  // ── Índice de señales NS por proveedor
+  const vendorSignals = {}; // key: normV(proveedor_nombre)
+  const addSig = (nombre, key, rawScore, label) => {
+    const k = normV(nombre); if (!k) return;
+    if (!vendorSignals[k]) vendorSignals[k] = { ns1:0, ns2:0, ns3:0, ns4:0, ns5:0, ns6:0, ns7:0, ns12:0, ns13:0, labels:[] };
+    const s = Math.max(0, Math.min(100, Math.round(rawScore)));
+    vendorSignals[k][key] = Math.max(vendorSignals[k][key], s);
+    if (s > 0 && !vendorSignals[k].labels.includes(label)) vendorSignals[k].labels.push(label);
+  };
+
+  // S260 — NS-7 corregido: usaba un multiplicador fijo (×4) elegido sin
+  // referencia a la distribución real, causando saturación (10% de los casos
+  // ya llegaban a 100 antes del tope, colapsando la diferencia entre un gemelo
+  // moderado y uno extremo). Fix: normalizar por z-score contra la propia
+  // población devuelta por el RPC — MISMO método [-2,+3]→[0,100] que ya usan
+  // las 6 dimensiones del Score™ (dMonto/dPatron/dAlcance/dRecente) más abajo.
+  // Verificado en vivo antes de aplicar (S260): con datos reales, min/avg/max
+  // pasó de "casi todo en 100" a un rango 31–100 con 66 valores distintos.
+  //
+  // NS-1 (Monogamia) — evaluado el mismo tratamiento y DESCARTADO tras probarlo
+  // en vivo: concentracion_pct ya es un porcentaje 0-100 con significado propio
+  // (qué tan concentrado está un proveedor en una sola institución), y la
+  // mayoría de los casos reales SÍ están genuinamente cerca de 100% — no es un
+  // artefacto de escala. Al z-normalizar esa población, la mayoría "al techo"
+  // (86/100 casos = 100% exacto) quedaba tratada como "promedio" (z≈0→40) y el
+  // score se INVERTÍA para los pocos casos por debajo del techo (85-99%, aún
+  // muy concentrados) — probado en vivo, min=-32/max=48 con esa fórmula, peor
+  // que el original. Se deja NS-1 con el valor crudo, igual que NS-6 (que
+  // tampoco se reescala — su métrica también ya es 0-100 con significado propio).
+  const ns7Vals = ns7Res.status==='fulfilled' ? (ns7Res.value?.data||[]).map(r => Number(r.twin_score||0)) : [];
+  const stNs7 = zStats(ns7Vals);
+
+  // S261 — mismo fix de z-score aplicado a NS-5 y NS-3 (multiplicadores fijos ×3/×2.5
+  // elegidos sin referencia a la distribución real, igual causa raíz que NS-7 en S260).
+  // Diagnóstico en vivo antes de aplicar: NS-3 (anomaly_score) sí saturaba el tope de 100
+  // en 4/100 casos con fuerte compresión (75% de casos entre 8-12 antes del ×2.5); NS-5
+  // (hugging_score) no llegaba a saturar el tope hoy (max real ×3 = 84.6), pero se aplica
+  // el mismo método por consistencia entre las 9 señales del Score™ (decisión de Gabe).
+  const ns5Vals = ns5Res.status==='fulfilled' ? (ns5Res.value?.data||[]).map(r => Number(r.hugging_score||0)) : [];
+  const stNs5 = zStats(ns5Vals);
+  const ns3Vals = ns3Res.status==='fulfilled' ? (ns3Res.value?.data||[]).map(r => Number(r.anomaly_score||0)) : [];
+  const stNs3 = zStats(ns3Vals);
+
+  // S263 — Sesión Dedicada #3 Agenda QA: NS-2/NS-6/NS-12 auditadas por saturación.
+  // Diferencia de causa raíz vs. NS-3/5/7: estas tres son porcentajes genuinos
+  // (monto/monto_total×100), no un score sin límite forzado con multiplicador arbitrario —
+  // por eso NO son el mismo bug. Saturación medida en vivo: NS-2 3%, NS-6 31%, NS-12 18.2%
+  // de los casos exactamente en 100 (vs. NS-1, que descartó este mismo tratamiento en S260
+  // porque el 86% de sus casos estaban al techo). Antes de aplicar se verificó empíricamente
+  // que el z-score NO invierte el ranking aquí (a diferencia de NS-1): el valor z en el techo
+  // (100) resultó ser el MÁXIMO del rango en las tres, no un promedio artificial. Aplicado
+  // por consistencia de tratamiento entre las 9 señales del Score™ (decisión de Gabe).
+  const ns2Vals = ns2Res.status==='fulfilled' ? (ns2Res.value?.data||[]).map(r => Number(r.pct_monto_ventana||0)) : [];
+  const stNs2 = zStats(ns2Vals);
+  const ns6Vals = ns6Res.status==='fulfilled' ? (ns6Res.value?.data||[]).map(r => Number(r.pct_monto_reciente||0)) : [];
+  const stNs6 = zStats(ns6Vals);
+  const ns12Vals = ns12Res.status==='fulfilled' ? (ns12Res.value?.data||[]).map(r => Number(r.pct_concentracion||0)) : [];
+  const stNs12 = zStats(ns12Vals);
+
+  if (ns1Res.status==='fulfilled') (ns1Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns1', Number(r.concentracion_pct||0), 'NS-1 MONOGAMIA'));
+  if (ns5Res.status==='fulfilled') (ns5Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns5', zNorm(Number(r.hugging_score||0), stNs5), 'NS-5 UMBRAL'));
+  if (ns6Res.status==='fulfilled') (ns6Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns6', zNorm(Number(r.pct_monto_reciente||0), stNs6), 'NS-6 SURGE'));
+  if (ns7Res.status==='fulfilled') (ns7Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns7', zNorm(Number(r.twin_score||0), stNs7), 'NS-7 GEMELOS'));
+  if (ns3Res.status==='fulfilled') (ns3Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns3', zNorm(Number(r.anomaly_score||0), stNs3), 'NS-3 DEBUT'));
+  // NS-4: BCAI — vendor-level signal (entity-specific)
+  if (ns4Res.status==='fulfilled') (ns4Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns4', Math.min(100, Number(r.bcai_score||0)), 'NS-4 BCAI'));
+  // NS-12: Monopolio Proveedor — mismo shape que NS-1 (par proveedor+entidad, % concentración).
+  // Se promedia junto a las demás NS signals (ver nsVals más abajo). S256, decisión Gabe S255.
+  // S263: valor reescalado con zNorm (ver comentario arriba) — mismo tratamiento que NS-6.
+  if (ns12Res.status==='fulfilled') (ns12Res.value?.data||[]).forEach(r =>
+    addSig(r.proveedor_nombre, 'ns12', zNorm(Number(r.pct_concentracion||0), stNs12), 'NS-12 MONOPOLIO'));
+  // NS-13: Doble Rol — el hallazgo más grave que produce Sentinel pero con muy pocos
+  // casos totales (~12) — se trata como BONUS FIJO en dSignals, no se promedia con las
+  // demás señales (un promedio lo diluiría). Ver bloque dSignals más abajo. S256, decisión Gabe S255.
+  // S263: revisada — es un valor binario codificado (100/60), no una distribución continua,
+  // no aplica el análisis de saturación por z-score. Sin cambios.
+  if (ns13Res.status==='fulfilled') (ns13Res.value?.data||[]).forEach(r =>
+    addSig(r.nombre_proveedor, 'ns13', r.mismo_organismo ? 100 : 60, 'NS-13 DOBLE ROL'));
+
+  // ── NS-2: índice institucional → score por institución (pct_monto_ventana)
+  // Un proveedor hereda esta señal si alguna de sus instituciones contratantes tiene
+  // alta concentración de contratos en ventana de presión fiscal (fin de año, nueva admin, inicio año)
+  // S263: el umbral de activación (≥40%) se evalúa contra el porcentaje CRUDO (significado de
+  // negocio: la institución debe tener al menos 40% real en ventana fiscal para calificar) —
+  // solo el valor que se hereda al proveedor se reescala con zNorm, igual que NS-6/NS-12.
+  const normInst = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+  const instSignals = {}; // normInst(institucion) → zNorm(pct_monto_ventana)
+  if (ns2Res.status === 'fulfilled') {
+    (ns2Res.value?.data || []).forEach(r => {
+      const pct = Number(r.pct_monto_ventana || 0);
+      if (pct >= 40) {  // umbral mínimo: ≥40% del monto en ventana fiscal (sobre el valor crudo)
+        const k = normInst(r.institucion);
+        instSignals[k] = Math.max(instSignals[k] || 0, zNorm(pct, stNs2));
+      }
+    });
+  }
+  // Función: máximo pct_monto_ventana entre las instituciones de un proveedor
+  function getInst2Score(entidades) {
+    let maxPct = 0;
+    for (const ent of entidades) {
+      const k = normInst(ent);
+      if (instSignals[k] && instSignals[k] > maxPct) { maxPct = instSignals[k]; continue; }
+      // Fuzzy match: primeros 10 chars
+      for (const [ik, ipct] of Object.entries(instSignals)) {
+        if (k.length > 8 && ik.length > 8 && (k.includes(ik.slice(0,10)) || ik.includes(k.slice(0,10)))) {
+          if (ipct > maxPct) maxPct = ipct;
+        }
+      }
+    }
+    return maxPct;
+  }
+
+  Object.values(vendorSignals).forEach(v => {
+    v.count = ['ns1','ns2','ns3','ns4','ns5','ns6','ns7','ns12','ns13'].filter(k => v[k] > 0).length;
   });
-  window._sentinelVendorSignals = vendorSignalsCache;
+
+  // Exponer globalmente para memo/briefing
+  window._sentinelVendorSignals = vendorSignals;
   window._sentinelNormV = normV;
-  if (!rpcRows.length) {
-    body.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Sin contratos CRÍTICA ≥ L 100M en base de datos.</div>';
-    return;
+
+  // Find signal data for a proveedor (exact then partial match)
+  function getSig(proveedor) {
+    const k = normV(proveedor);
+    if (vendorSignals[k]) return vendorSignals[k];
+    const hit = Object.keys(vendorSignals).find(vk =>
+      vk.length > 6 && (k.includes(vk.slice(0,10)) || vk.includes(k.slice(0,10))));
+    return hit ? vendorSignals[hit] : { ns1:0, ns2:0, ns3:0, ns4:0, ns5:0, ns6:0, ns7:0, ns12:0, ns13:0, count:0, labels:[] };
   }
 
-  const esc  = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const fmtM = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
+  const esc     = s => String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const normSev = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const fmtM    = n => n >= 1e9 ? 'L '+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? 'L '+(n/1e6).toFixed(1)+'M' : 'L '+Math.round(n).toLocaleString('es-HN');
+  const ahora   = new Date();
+  const hace18m = new Date(ahora.getFullYear(), ahora.getMonth() - 18, 1).toISOString().slice(0,7);
 
-  // ── Clasificador de sector por nombre de entidad/proveedor (cosmético, no afecta el score)
+  // ── Clasificador de sector por nombre de entidad/proveedor
   function detectarSector(proveedor, entidades) {
     const txt = (proveedor + ' ' + [...entidades].join(' ')).toLowerCase();
     if (/salud|hospital|sesal|farma|medic|laborat|prodylab|corinfar|diagnost/.test(txt)) return 'SALUD';
@@ -19984,32 +20123,122 @@ async function renderTop5() {
     return 'COMERCIO';
   }
 
-  // ── Reconstruir la forma que espera el render de abajo, a partir de las
-  // columnas ya calculadas por get_sentinel_score_full en el servidor.
-  const candidatos = rpcRows.map(r => {
-    const entidades = new Set(r.entidades_arr || []);
-    const patrones  = new Set(r.patrones || []);
-    const nsLabels  = r.ns_labels || [];
+  // ── Agrupar CRÍTICA + ALTA por proveedor (cross-entidad), piso L 100M
+  // CRÍTICA = peso 1.0 · ALTA = peso 0.6
+  const map = {};
+  allAlerts
+    .filter(a => normSev(a.severity).includes('CRITICA') || normSev(a.severity).includes('ALTA'))
+    .filter(a => Number(a.monto_contrato) > 0 && a.proveedor_nombre)
+    .filter(a => !EXCLUIR.some(ex => (a.proveedor_nombre||'').toUpperCase().includes(ex)))
+    .forEach(a => {
+      const isCritica = normSev(a.severity).includes('CRITICA');
+      const peso = isCritica ? 1.0 : 0.6;
+      const key = (a.proveedor_nombre||'').toUpperCase().trim();
+      if (!map[key]) map[key] = { proveedor: a.proveedor_nombre, entidades: new Set(), monto: 0, montoW: 0, n: 0, nCritica: 0, patrones: new Set(), nReciente: 0, fuentes: new Set() };
+      const c = map[key];
+      const montoNum = Number(a.monto_contrato);
+      c.monto  += montoNum;
+      c.montoW += montoNum * peso;  // monto ponderado para scoring
+      c.n++;
+      if (isCritica) c.nCritica++;
+      if (a.entity_name) c.entidades.add(a.entity_name);
+      (a.patterns||'').split(/[,·]/).map(p=>p.trim()).filter(Boolean).forEach(p => c.patrones.add(p));
+      if (a.source) c.fuentes.add(a.source);
+      const mes = (a.fecha_contrato||'').slice(0,7);
+      if (mes && mes >= hace18m) c.nReciente++;
+    });
+
+  // Aplicar piso L 100M (monto total, no ponderado)
+  const todos = Object.values(map).filter(c => c.monto >= 100000000);
+  if (!todos.length) {
+    body.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(160,180,210,0.4);font-family:\'JetBrains Mono\',monospace;font-size:12px;">Sin contratos CRÍTICA ≥ L 100M en base de datos.</div>';
+    return;
+  }
+
+  // (zStats/zNorm ahora definidas más arriba, junto al índice de señales NS — S260)
+
+  // Pre-calcular stats por dimensión (usar montoW — monto ponderado por severidad)
+  const logMontos  = todos.map(c => Math.log(c.montoW + 1));
+  const stM = zStats(logMontos);
+  const stP = zStats(todos.map(c => c.patrones.size));
+  const stE = zStats(todos.map(c => c.entidades.size));
+  const stR = zStats(todos.map(c => c.nReciente));
+
+  // ── Corroboración externa (0–100)
+  function scoreExterno(c) {
+    let pts = 0;
+    const prov = c.proveedor.toUpperCase();
+    const hay  = c.proveedor.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if ((typeof ENGEL_LIST_HND !== 'undefined') && ENGEL_LIST_HND.some(e => hay.includes(e.search))) pts += 50;
+    if ([...c.patrones].some(p => p.includes('SANCIONADO'))) pts += 50;
+    if (c.fuentes.has('ONCAE') || [...c.patrones].some(p => p.includes('ONCAE'))) pts += 30;
+    if ([...investigados.keys()].some(inv => inv.length > 4 && (prov.includes(inv) || inv.includes(prov.slice(0,12))))) pts += 20;
+    return Math.min(100, pts);
+  }
+
+  // ── Sentinel Score™: suma ponderada de 6 dimensiones
+  //    Pesos: MONTO 20% · PATRONES 20% · ALCANCE 15% · RECENCIA 10% · EXT 10% · NS_SIGNALS 25%
+  //    NS_SIGNALS integra NS-1 a NS-7 (promedio) + NS-12 Monopolio (promedio, mismo shape) +
+  //    NS-13 Doble Rol (bonus fijo +50, no promediado — ver dSignals abajo). S256, Jul 9 2026.
+  const candidatos = todos.map((c, idx) => {
+    const sig      = getSig(c.proveedor);
+    // NS-2: heredado de institución → proveedor
+    // S263: instSignals ya solo contiene instituciones que pasaron el umbral de negocio
+    // (≥40% crudo, ver instSignals más arriba) y el valor almacenado ya está en escala
+    // zNorm — comparar ese valor contra el umbral de negocio original (40) sería incorrecto,
+    // por eso aquí basta con "> 0" (la señal ya fue filtrada donde corresponde).
+    const ns2Score = getInst2Score(c.entidades);
+    if (ns2Score > 0) {
+      sig.ns2 = Math.round(ns2Score);
+      if (!sig.labels.includes('NS-2 VENTANA')) sig.labels.push('NS-2 VENTANA');
+    }
+    // Recompute count incluyendo ns2 + ns12/ns13
+    sig.count = ['ns1','ns2','ns3','ns4','ns5','ns6','ns7','ns12','ns13'].filter(k => sig[k] > 0).length;
+    const dMonto   = zNorm(logMontos[idx], stM);
+    const dPatron  = zNorm(c.patrones.size, stP);
+    const dAlcance = zNorm(c.entidades.size, stE);
+    const dRecente = zNorm(c.nReciente, stR);
+    const dExterno = scoreExterno(c);
+
+    // NS Signals: promedio de señales activas + bonus de convergencia (+15% por señal adicional)
+    // NS-12 (Monopolio Proveedor) se promedia junto a NS-1..NS-7 — mismo shape de señal.
+    const nsVals    = [sig.ns1, sig.ns2, sig.ns3, sig.ns4, sig.ns5, sig.ns6, sig.ns7, sig.ns12];
+    const nsActivos = nsVals.filter(v => v > 0);
+    // Convergencia agresiva: +25% por señal adicional. Sin señales: penalización -12 pts
+    let dSignals = nsActivos.length > 0
+      ? Math.min(100, Math.round((nsActivos.reduce((a,b)=>a+b,0)/nsActivos.length) * (1 + nsActivos.length * 0.25)))
+      : 0;
+    // NS-13 (Doble Rol): bonus fijo, no promediado — solo ~12 casos totales en toda la DB,
+    // promediarlo con el resto lo diluiría. Mismo patrón que el bonus fijo de EXT (Engel/OFAC +50).
+    if (sig.ns13 > 0) dSignals = Math.min(100, dSignals + 50);
+    const nspenalty = (nsActivos.length === 0 && sig.ns13 === 0) ? 12 : 0;
+
+    const score = Math.max(0, Math.round(
+      dMonto   * 0.20 +
+      dPatron  * 0.20 +
+      dAlcance * 0.15 +
+      dRecente * 0.10 +
+      dExterno * 0.10 +
+      dSignals * 0.25
+      - nspenalty
+    ));
+
     const dims = [
-      { label: 'MONTO',      val: Number(r.d_monto),   color: '#ff3d57', texto: fmtM(Number(r.monto)) },
-      { label: 'PATRONES',   val: Number(r.d_patron),  color: '#a78bfa', texto: `${r.n_patrones} señal${r.n_patrones!==1?'es':''}` },
-      { label: 'ALCANCE',    val: Number(r.d_alcance), color: '#60a5fa', texto: `${r.entidades_count} entidad${r.entidades_count!==1?'es':''}` },
-      { label: 'RECENCIA',   val: Number(r.d_recente), color: '#34d399', texto: `${r.n_reciente} contratos ult. 18m` },
-      { label: 'EXT',        val: Number(r.d_externo), color: '#fbbf24', texto: r.d_externo >= 50 ? 'Lista Engel/OFAC' : r.d_externo >= 30 ? 'Confirmado ONCAE' : r.d_externo > 0 ? 'SEN-INV activo' : '—' },
-      { label: 'NS SIGNALS', val: Number(r.d_signals), color: '#e879f9', texto: (r.ns_count||0) > 0 ? `${r.ns_count} señal${r.ns_count!==1?'es':''}` : 'Sin señales NS',
-        nsDetail: nsLabels.length > 0 ? nsLabels.join(' · ') : '—' },
+      { label: 'MONTO',      val: dMonto,   color: '#ff3d57', texto: fmtM(c.monto) },
+      { label: 'PATRONES',   val: dPatron,  color: '#a78bfa', texto: `${c.patrones.size} señal${c.patrones.size!==1?'es':''}` },
+      { label: 'ALCANCE',    val: dAlcance, color: '#60a5fa', texto: `${c.entidades.size} entidad${c.entidades.size!==1?'es':''}` },
+      { label: 'RECENCIA',   val: dRecente, color: '#34d399', texto: `${c.nReciente} contratos ult. 18m` },
+      { label: 'EXT',        val: dExterno, color: '#fbbf24', texto: dExterno >= 50 ? 'Lista Engel/OFAC' : dExterno >= 30 ? 'Confirmado ONCAE' : dExterno > 0 ? 'SEN-INV activo' : '—' },
+      { label: 'NS SIGNALS', val: dSignals, color: '#e879f9', texto: nsActivos.length > 0 ? `${nsActivos.length} señal${nsActivos.length!==1?'es':''}` : 'Sin señales NS',
+        nsDetail: sig.labels.length > 0 ? sig.labels.join(' · ') : '—' },
     ];
-    const dominante = dims.filter(d => d.val > 0).reduce((a, b) => b.val > a.val ? b : a, dims[0]);
-    const sector = detectarSector(r.proveedor, entidades);
-    return {
-      proveedor: r.proveedor, monto: Number(r.monto), n: r.n_contratos,
-      entidades, patrones, sig: { count: r.ns_count||0, labels: nsLabels },
-      score: Number(r.score), dims, dominante, sector,
-    };
+    const dominante = dims.filter(d => d.val > 0).reduce((a, b) => b.val > a.val ? b : a);
+    const sector = detectarSector(c.proveedor, c.entidades);
+    return { ...c, dMonto, dPatron, dAlcance, dRecente, dExterno, dSignals, sig, score, dims, dominante, sector };
   });
 
-  // ── Top 10 por score — ya viene ordenado y limitado por el RPC (ORDER BY score DESC LIMIT p_limit)
-  const top10 = candidatos;
+  // ── Top 10 por score ─────────────────────────────────────────────────────
+  const top10 = candidatos.sort((a, b) => b.score - a.score).slice(0, 10);
 
   // ── Insight sectorial + estadística señales ─────────────────────────────
   const sectorCount = {};

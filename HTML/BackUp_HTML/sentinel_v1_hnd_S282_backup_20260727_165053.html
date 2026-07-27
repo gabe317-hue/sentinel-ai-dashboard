@@ -4768,28 +4768,28 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="stat-monto" id="cnt-monto-total">L —</div>
       <div id="cnt-total-note" style="display:none;font-size:9px;opacity:0.45;margin-top:3px;letter-spacing:0.02em;">▸ <span id="cnt-monitored"></span> monitoreados · <span id="cnt-excluded"></span> excluidos (errores de datos)</div>
     </div>
-    <div class="stat-card s-critica" title="Contratación directa con monto ≥ L 500,000 · o contratación directa combinada con proveedor fuera de giro. Referir a PGR.">
+    <div class="stat-card s-critica" title="Puntaje ≥ 9 — Múltiples patrones + monto alto. Referir a PGR.">
       <div class="stat-value" id="cnt-critica">—</div>
       <div class="stat-label">Críticas</div>
       <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Referir a PGR</div>
       <div class="stat-monto" id="cnt-monto-critica">L —</div>
       <div class="stat-monto" id="cnt-pct-critica" style="opacity:0.55;">— %</div>
     </div>
-    <div class="stat-card s-alta" title="Contratación directa · o dos o más patrones concurrentes · o proveedor fuera de giro con monto ≥ L 1,000,000. Escalada legal.">
+    <div class="stat-card s-alta" title="Puntaje 6–8 — Patrones combinados o monto significativo. Escalada legal.">
       <div class="stat-value" id="cnt-alta">—</div>
       <div class="stat-label">Altas</div>
       <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Escalada legal</div>
       <div class="stat-monto" id="cnt-monto-alta">L —</div>
       <div class="stat-monto" id="cnt-pct-alta" style="opacity:0.55;">— %</div>
     </div>
-    <div class="stat-card s-media" title="Un solo patrón, sin contratación directa. Seguimiento institucional.">
+    <div class="stat-card s-media" title="Puntaje 3–5 — Un patrón moderado. Seguimiento institucional.">
       <div class="stat-value" id="cnt-media">—</div>
       <div class="stat-label">Medias</div>
       <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Monitorear</div>
       <div class="stat-monto" id="cnt-monto-media">L —</div>
       <div class="stat-monto" id="cnt-pct-media" style="opacity:0.55;">— %</div>
     </div>
-    <div class="stat-card s-baja" title="Señal débil o monto no reportado en la fuente. Línea base del sistema.">
+    <div class="stat-card s-baja" title="Puntaje 0–2 — Señal débil o monto bajo. Línea base del sistema.">
       <div class="stat-value" id="cnt-baja">—</div>
       <div class="stat-label">Bajas</div>
       <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Referencia</div>
@@ -4839,17 +4839,13 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')">🇺🇸 LISTA ENGEL</button>
   </div>
 
-  <!-- Criterio de severidad — S282: describe las reglas reales del motor de ingesta
-       (patrones concurrentes + monto). La versión anterior anunciaba rangos de puntaje
-       ("≥9 pts", "6–8 pts") que nunca existieron: la severidad no se deriva de un
-       puntaje numérico. Ver ingest-oncae / processRelease(). -->
+  <!-- Risk scoring legend -->
   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 4px;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text-dim);">
-    <span style="letter-spacing:.06em;opacity:0.6;margin-right:4px;">CRITERIO DE SEVERIDAD:</span>
-    <span style="color:var(--red);">● Crítica</span><span style="opacity:0.6;margin:0 4px;">directa ≥ L 500K · o directa + fuera de giro · referir a PGR</span>
-    <span style="color:var(--orange);">● Alta</span><span style="opacity:0.6;margin:0 4px;">directa · o ≥2 patrones · o fuera de giro ≥ L 1M · escalada legal</span>
-    <span style="color:var(--amber);">● Media</span><span style="opacity:0.6;margin:0 4px;">un patrón, sin contratación directa · monitorear</span>
-    <span style="color:var(--green);">● Baja</span><span style="opacity:0.6;margin:0 4px;">señal débil o sin monto en la fuente · referencia</span>
-    <span style="width:100%;opacity:0.4;font-size:10px;margin-top:2px;">La severidad se asigna por patrones concurrentes y monto, no por un puntaje numérico.</span>
+    <span style="letter-spacing:.06em;opacity:0.6;margin-right:4px;">PUNTAJE DE RIESGO:</span>
+    <span style="color:var(--red);">● Crítica</span><span style="opacity:0.6;margin:0 4px;">≥9 pts · multi-patrón + monto alto · referir a PGR</span>
+    <span style="color:var(--orange);">● Alta</span><span style="opacity:0.6;margin:0 4px;">6–8 pts · escalada legal</span>
+    <span style="color:var(--amber);">● Media</span><span style="opacity:0.6;margin:0 4px;">3–5 pts · monitorear</span>
+    <span style="color:var(--green);">● Baja</span><span style="opacity:0.6;margin:0 4px;">0–2 pts · referencia</span>
   </div>
 
   <!-- Alerts table -->

@@ -10611,7 +10611,7 @@ function exportDobleRolPDF() {
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
     @media print{body{padding:14px;}}
   </style></head><body>
-  <h1>NS-13 — Doble Rol</h1>
+  <h1>🎭 NS-13 — Doble Rol</h1>
   <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: IAIP + SEFIN 2019–2026</div>
   <div class="kpis">
     <div class="kpi"><div class="kpi-lbl">CRÍTICA (mismo organismo)</div><div class="kpi-val" style="color:#dc2626;">${nCritica}</div></div>
@@ -10662,7 +10662,7 @@ function exportVistaEjecutivaPDF() {
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
     @media print{body{padding:14px;}}
   </style></head><body>
-  <h1>Vista Ejecutiva — Sentinel AI</h1>
+  <h1>📈 Vista Ejecutiva — Sentinel AI</h1>
   <div class="meta">Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE + IAIP 2019–2026</div>
   <div class="risk-box">
     <div class="risk-lbl">⚠ Contratos de Alto Riesgo — Sistema Sentinel</div>
@@ -10712,7 +10712,7 @@ function exportCpcInhabPDF() {
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
     @media print{body{padding:14px;}}
   </style></head><body>
-  <h1>NS-14 — CPC Inhabilitados</h1>
+  <h1>🚫 NS-14 — CPC Inhabilitados</h1>
   <div class="meta">Sentinel AI — Fuente: ONCAE · Listado CPC Inhabilitados Dic-2025 · Generado: ${ts}</div>
   <div class="kpi"><div class="kpi-lbl">CPC Inhabilitados</div><div class="kpi-val">${data.length}</div></div>
   <table><thead><tr><th>#</th><th>Nombre</th><th>Detalle</th></tr></thead><tbody>${tableRows}</tbody></table>
@@ -12574,7 +12574,7 @@ function exportNSPanelPDF(panelId, title) {
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
     @media print{body{padding:14px;}}
   </style></head><body>
-  <h1>${esc(title)}</h1>
+  <h1>📊 ${esc(title)}</h1>
   <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE 2019–2026</div>
   ${statsHtml}
   ${tablesHtml || '<p style="color:#888;">Sin datos de tabla disponibles en este momento.</p>'}
@@ -12624,7 +12624,7 @@ function exportFraccionamientoPDF() {
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
     @media print{body{padding:14px;}}
   </style></head><body>
-  <h1>Detección de Fraccionamiento</h1>
+  <h1>✂️ Detección de Fraccionamiento</h1>
   <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE 2019–2026</div>
   <div class="kpis">
     <div class="kpi"><div class="kpi-lbl">Casos Críticos</div><div class="kpi-val" style="color:#dc2626;">${nCritica}</div></div>
@@ -14088,7 +14088,7 @@ ${nsConSenal.map((x,i) => `<tr style="background:${i%2===0?'#fffbea':'#fff'};">
 </div>
 
 <div class="signal-box">
-  <h3>Hallazgo Principal</h3>
+  <h3>⚠️ Hallazgo Principal</h3>
   <p style="margin:0;font-size:10pt;">Se identificaron <strong>${sorted.length} contratos de severidad CRÍTICA</strong> en ${entidad} por un monto total de <strong class="highlight">${fmtL(totalMonto)}</strong>. Los patrones detectados incluyen contratación directa sin justificación normativa, proveedores fuera de giro comercial, y concentración de adjudicaciones en entidades relacionadas.</p>
 </div>
 
@@ -16543,7 +16543,7 @@ function exportRiesgoGlobalPDF() {
   </style></head><body>
   <div class="header">
     <div><div style="font-size:10px;color:#00A8D6;letter-spacing:.1em;margin-bottom:4px;">SENTINEL-AI | Public Procurement Intelligence</div>
-    <h1>Reporte: Riesgo Sobrepresupuesto — Contratos SEFIN</h1></div>
+    <h1>⚠️ Reporte: Riesgo Sobrepresupuesto — Contratos SEFIN</h1></div>
     <div class="meta">Generado: ${timestamp}<br/>Total registros analizados: ${allAlerts.length.toLocaleString()}</div>
   </div>
 
@@ -16744,7 +16744,7 @@ function exportSobrecostoRealPDF() {
   <div class="header">
     <div>
       <div style="font-size:10px;color:#00A8D6;letter-spacing:.1em;margin-bottom:4px;">SENTINEL-AI | Public Procurement Intelligence</div>
-      <h1>Reporte: Sobrepresupuesto Real — Contratos SEFIN/SIAFI2</h1>
+      <h1>💰 Reporte: Sobrepresupuesto Real — Contratos SEFIN/SIAFI2</h1>
     </div>
     <div class="meta">Generado: ${timestamp}<br/>Base: ${allAlerts.length.toLocaleString()} contratos analizados</div>
   </div>
@@ -16965,7 +16965,7 @@ function exportAnalyticsPDF(mode) {
     @media print{body{margin:16px;} .no-print{display:none!important;}}
   </style></head><body>
   <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
-  <h1>Análisis de Contratos${mode==='pareto'?' — Pareto (80%)':', Todo'} — SENTINEL-AI</h1>
+  <h1>📈 Análisis de Contratos${mode==='pareto'?' — Pareto (80%)':', Todo'} — SENTINEL-AI</h1>
   <div class="meta">Generado: ${ts} · Fuente: ${fuenteLabel} · ${alerts.length.toLocaleString()} contratos · SentinelAI Intelligence</div>
   <div class="stats">
     <div class="stat-box"><div class="stat-val">${alerts.length.toLocaleString()}</div><div class="stat-lbl">Total Contratos</div></div>
@@ -17172,20 +17172,20 @@ function exportPhase4PDF() {
     @media print{body{margin:16px;} .no-print{display:none!important;}}
   </style></head><body>
   <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
-  <h1>Detección de Anomalías Estadísticas — SENTINEL-AI</h1>
+  <h1>⚡ Detección de Anomalías Estadísticas — SENTINEL-AI</h1>
   <div class="meta">Generado: ${ts} · SEFIN Fiscal 2023–2025 · ${allAlerts.length.toLocaleString()} contratos analizados · SentinelAI Intelligence</div>
   <div class="stats">
     <div class="stat-box"><div class="stat-val">${velocityThreats.length}</div><div class="stat-lbl">Amenazas Velocidad</div></div>
     <div class="stat-box"><div class="stat-val">${anomalies.length}</div><div class="stat-lbl">Anomalías Detectadas</div></div>
     <div class="stat-box"><div class="stat-val" style="color:#e67e22;">${criticalCount}</div><div class="stat-lbl">Proveedores Críticos</div></div>
   </div>
-  <h2>Amenazas de Velocidad — Proveedores con Múltiples Sobrepresupuestos</h2>
+  <h2>⚡ Amenazas de Velocidad — Proveedores con Múltiples Sobrepresupuestos</h2>
   <table><thead><tr><th>#</th><th>Proveedor</th><th style="text-align:center;">Incidentes</th><th style="text-align:center;">Puntaje/100</th><th>Severidad</th><th style="text-align:right;">Exceso Total</th></tr></thead>
   <tbody>${velocityRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin amenazas detectadas</td></tr>'}</tbody></table>
-  <h2>Score de Riesgo por Proveedor — Top 15</h2>
+  <h2>📊 Score de Riesgo por Proveedor — Top 15</h2>
   <table><thead><tr><th>#</th><th>Proveedor</th><th style="text-align:center;">Puntaje/100</th><th>Severidad</th><th style="text-align:center;">Contratos</th><th style="text-align:right;">Exceso Total</th></tr></thead>
   <tbody>${riskRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin datos</td></tr>'}</tbody></table>
-  <h2>Anomalías Estadísticas — Desviación del Promedio por Entidad (Top 10)</h2>
+  <h2>🚨 Anomalías Estadísticas — Desviación del Promedio por Entidad (Top 10)</h2>
   <table><thead><tr><th>#</th><th>ID Contrato</th><th>Proveedor</th><th>Entidad</th><th style="text-align:center;">Desviación</th><th style="text-align:center;">Sobrepago</th></tr></thead>
   <tbody>${anomalyRows || '<tr><td colspan="6" style="text-align:center;color:#888;">Sin anomalías detectadas</td></tr>'}</tbody></table>
   <div class="footer">SENTINEL-AI · Sistema Nacional Anticorrupción · SentinelAI Intelligence — Dallas, TX · Datos: SEFIN/EDCA · Este reporte es referencial — para uso interno de investigación.</div>
@@ -19918,7 +19918,7 @@ function exportarTop10PDF() {
     .footer { margin-top:28px; font-size:9px; color:#9ca3af; text-align:center; border-top:1px solid #f3f4f6; padding-top:12px; }
     @media print { body { padding:16px; } }
   </style></head><body>
-  <h1>Top 10 Casos Críticos — Sentinel AI</h1>
+  <h1>🚨 Top 10 Casos Críticos — Sentinel AI</h1>
   <div class="sub">ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · ${ts}</div>
   <div class="insight">${document.querySelector('.t5-insight') ? document.querySelector('.t5-insight').innerText : ''}</div>
   ${[...document.querySelectorAll('#top5Body .t5-case')].map((card, i) => {
@@ -22134,7 +22134,7 @@ async function exportAuditoriaPDF() {
   <h3 style="font-size:14px;margin-bottom:10px;">Log de Eventos del Sistema</h3>
   <table><thead><tr><th>Timestamp</th><th>Usuario</th><th>Fuente</th><th>Acción</th><th>Objeto</th><th>IP</th></tr></thead>
   <tbody>${logRows}</tbody></table>
-  <h3 style="font-size:14px;margin-bottom:10px;">Eventos de Seguridad</h3>
+  <h3 style="font-size:14px;margin-bottom:10px;">⚠ Eventos de Seguridad</h3>
   <table><thead><tr><th>Fecha</th><th>Tipo de Evento</th><th>Usuario / Fuente</th><th>IP</th><th>Resultado</th></tr></thead>
   <tbody>${secRows}</tbody></table>
   <div class="footer">Sentinel-AI © SentinelAI Intelligence · Confidencial · Uso interno</div>
@@ -22866,7 +22866,7 @@ function generateVendorDetailPDF(detail, timestamp, mode = 'todo') {
 
 <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
-<h1>${detail.vendorName}</h1>
+<h1>📦 ${detail.vendorName}</h1>
 <p class="meta">Reporte de contratos — ${timestamp}</p>
 
 <div class="summary-bar">
@@ -27869,7 +27869,7 @@ async function mfExportarPDF() {
     tr:hover td{background:#fafafa;}
     .footer{margin-top:24px;font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px;}
   </style></head><body>
-  <h1>Canal Denuncias — Integridad Ciudadana</h1>
+  <h1>📡 Canal Denuncias — Integridad Ciudadana</h1>
   <div class="sub">Reporte generado: ${fecha} · Sistema Sentinel AI · Decreto 54-2015</div>
   <div class="kpis">
     <div class="kpi"><div class="kpi-val">${total}</div><div class="kpi-lbl">Denuncias Recibidas</div></div>
@@ -29751,7 +29751,7 @@ function idGenerarReportePDF() {
 </head>
 <body>
 <div class="header">
-  <h1>Análisis NS-11 — Posible Identidad Tributaria Duplicada</h1>
+  <h1>📋 Análisis NS-11 — Posible Identidad Tributaria Duplicada</h1>
   <div class="sub">Sentinel AI · Sistema de Análisis de Alertas en Contratación Pública</div>
 </div>
 <div class="meta-grid">

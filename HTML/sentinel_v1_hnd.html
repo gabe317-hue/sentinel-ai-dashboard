@@ -2408,7 +2408,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag">© Sentinel-AI v1.94</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v1.96 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2448,7 +2448,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer">v1.94 · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v1.96 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -3873,7 +3873,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version">v1.95 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v1.96 — HND</div>
   </div>
 
   <div class="nav">
@@ -4019,7 +4019,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric">v1.94 · 2026</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v1.96 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
@@ -4774,6 +4774,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="stat-card s-critica" title="Contratación directa con monto ≥ L 500,000 · o contratación directa combinada con proveedor fuera de giro. Referir a PGR.">
       <div class="stat-value" id="cnt-critica">—</div>
       <div class="stat-label">Críticas</div>
+      <div class="stat-monto" id="cnt-pctn-critica" style="opacity:0.55;">— %</div>
       <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Referir a PGR</div>
       <div class="stat-monto" id="cnt-monto-critica">L —</div>
       <div class="stat-monto" id="cnt-pct-critica" style="opacity:0.55;">— %</div>
@@ -4781,6 +4782,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="stat-card s-alta" title="Contratación directa · o dos o más patrones concurrentes · o proveedor fuera de giro con monto ≥ L 1,000,000. Escalada legal.">
       <div class="stat-value" id="cnt-alta">—</div>
       <div class="stat-label">Altas</div>
+      <div class="stat-monto" id="cnt-pctn-alta" style="opacity:0.55;">— %</div>
       <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Escalada legal</div>
       <div class="stat-monto" id="cnt-monto-alta">L —</div>
       <div class="stat-monto" id="cnt-pct-alta" style="opacity:0.55;">— %</div>
@@ -4788,6 +4790,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="stat-card s-media" title="Un solo patrón, sin contratación directa. Seguimiento institucional.">
       <div class="stat-value" id="cnt-media">—</div>
       <div class="stat-label">Medias</div>
+      <div class="stat-monto" id="cnt-pctn-media" style="opacity:0.55;">— %</div>
       <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Monitorear</div>
       <div class="stat-monto" id="cnt-monto-media">L —</div>
       <div class="stat-monto" id="cnt-pct-media" style="opacity:0.55;">— %</div>
@@ -4795,6 +4798,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="stat-card s-baja" title="Señal débil o monto no reportado en la fuente. Línea base del sistema.">
       <div class="stat-value" id="cnt-baja">—</div>
       <div class="stat-label">Bajas</div>
+      <div class="stat-monto" id="cnt-pctn-baja" style="opacity:0.55;">— %</div>
       <div style="font-size:10px;opacity:0.55;margin-top:1px;margin-bottom:4px;letter-spacing:0.03em;">▸ Referencia</div>
       <div class="stat-monto" id="cnt-monto-baja">L —</div>
       <div class="stat-monto" id="cnt-pct-baja" style="opacity:0.55;">— %</div>
@@ -7351,6 +7355,24 @@ const _setSearchDebounced = _debounce((...a) => typeof setSearch === 'function' 
 const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 // ════════════════════════════════════════════════════════════
+// VERSIÓN — FUENTE ÚNICA DE VERDAD (S284, R-03 del Dictamen UX/UI)
+// ════════════════════════════════════════════════════════════
+// Antes había 4 cadenas escritas a mano y divergentes: v1.95 en la barra
+// lateral y v1.94 en el portal, el login y el pie del splash. En una
+// herramienta cuyo argumento es la trazabilidad, eso se paga caro.
+// Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
+const APP_VERSION = 'v1.96';
+const APP_BUILD   = '2026-07-29';
+function _pintarVersion() {
+  document.querySelectorAll('[data-app-version]').forEach(el => {
+    el.textContent = el.dataset.appVersion.replace('{v}', APP_VERSION).replace('{b}', APP_BUILD);
+  });
+}
+document.readyState === 'loading'
+  ? document.addEventListener('DOMContentLoaded', _pintarVersion)
+  : _pintarVersion();
+
+// ════════════════════════════════════════════════════════════
 // CONFIGURATION
 // ════════════════════════════════════════════════════════════
 const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
@@ -7815,7 +7837,12 @@ function render() {
   const fmtL = n => n > 0
     ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
     : 'L —';
-  const fmtPct = (n, total) => total > 0 ? (n / total * 100).toFixed(1) + '% del total' : '— %';
+  // S284 (R-02 del Dictamen UX/UI) — cada porcentaje declara su denominador.
+  // Antes ambos decían "% del total" y el de monto quedaba debajo de un conteo:
+  // un auditor dividía 2,733 / 176,819 = 1.5% y concluía que el tablero no cuadra.
+  const fmtPct  = (n, total) => total > 0 ? (n / total * 100).toFixed(1) + '% del monto total' : '— %';
+  const fmtPctN = (n, total) => total > 0 ? (n / total * 100).toFixed(1) + '% de los contratos' : '— %';
+  const totalCuenta = c.critica + c.alta + c.media + c.baja;
 
   document.getElementById('cnt-total').textContent         = (window._bdTotalCount || allAlerts.length).toLocaleString('es-HN');
   { const bdTotal = window._bdTotalCount || 0; const monitored = allAlerts.length; const excluded = bdTotal - monitored;
@@ -7827,19 +7854,24 @@ function render() {
       }
     }
   }
-  document.getElementById('cnt-critica').textContent       = c.critica;
-  document.getElementById('cnt-alta').textContent          = c.alta;
-  document.getElementById('cnt-media').textContent         = c.media;
-  document.getElementById('cnt-baja').textContent          = c.baja;
+  // S284 — separador de miles en los conteos (antes "2733", la franja ya decía "2,733")
+  document.getElementById('cnt-critica').textContent       = c.critica.toLocaleString('es-HN');
+  document.getElementById('cnt-alta').textContent          = c.alta.toLocaleString('es-HN');
+  document.getElementById('cnt-media').textContent         = c.media.toLocaleString('es-HN');
+  document.getElementById('cnt-baja').textContent          = c.baja.toLocaleString('es-HN');
   document.getElementById('cnt-monto-total').textContent   = fmtL(totalMonto);
   document.getElementById('cnt-monto-critica').textContent = fmtL(m.critica);
   document.getElementById('cnt-pct-critica').textContent   = fmtPct(m.critica, totalMonto);
+  document.getElementById('cnt-pctn-critica').textContent  = fmtPctN(c.critica, totalCuenta);
   document.getElementById('cnt-monto-alta').textContent    = fmtL(m.alta);
   document.getElementById('cnt-pct-alta').textContent      = fmtPct(m.alta, totalMonto);
+  document.getElementById('cnt-pctn-alta').textContent     = fmtPctN(c.alta, totalCuenta);
   document.getElementById('cnt-monto-media').textContent   = fmtL(m.media);
   document.getElementById('cnt-pct-media').textContent     = fmtPct(m.media, totalMonto);
+  document.getElementById('cnt-pctn-media').textContent    = fmtPctN(c.media, totalCuenta);
   document.getElementById('cnt-monto-baja').textContent    = fmtL(m.baja);
   document.getElementById('cnt-pct-baja').textContent      = fmtPct(m.baja, totalMonto);
+  document.getElementById('cnt-pctn-baja').textContent     = fmtPctN(c.baja, totalCuenta);
 
   // ── Risk Band (P1) — monto alto riesgo ──
   // S222: presupuesto nacional ahora viene en vivo de sefin_presupuesto (loadPresupuestoNacional()),

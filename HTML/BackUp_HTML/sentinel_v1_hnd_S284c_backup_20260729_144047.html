@@ -2470,7 +2470,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <!-- Campo principal -->
         <div style="display:flex;gap:8px;align-items:center;">
           <input class="ip-search" type="text" id="ipSearchQ1" placeholder="Buscar por nombre de entidad o proveedor…" style="flex:1;" onkeydown="if(event.key==='Enter')ipBuscar()">
-          <button onclick="ipBuscar()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:8px;padding:7px 16px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Buscar</button>
+          <button onclick="ipBuscar()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:8px;padding:7px 16px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'JetBrains Mono',monospace;">🔍 Buscar</button>
           <button onclick="ipLimpiarBusqueda()" id="ipBtnLimpiar" style="display:none;background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:8px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;">✕</button>
         </div>
         <!-- Filtros opcionales -->
@@ -2505,8 +2505,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <div class="ip-detail-sub" id="ipDetailSub">—</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
-          <button onclick="ipExportarExcel()" style="background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:7px 14px;font-size:10px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg> Excel</button>
-          <button onclick="ipMemoEjecutivo()" style="background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:7px 14px;font-size:10px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Memo</button>
+          <button onclick="ipExportarExcel()" style="background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:7px 14px;font-size:10px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;">📊 Excel</button>
+          <button onclick="ipMemoEjecutivo()" style="background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:7px 14px;font-size:10px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;">📄 Memo</button>
         </div>
       </div>
       <div class="ip-kpis">
@@ -2565,8 +2565,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <option value="IDENTIDAD_DUPLICADA">NS-11 — Identidad duplicada (RTN compartido por empresas distintas)</option>
         </select>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-          <button onclick="ccAnalizar()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:10px;padding:10px 24px;font-size:12px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M4 14h7l-1 8 10-12h-7l1-8z"/></svg> ANALIZAR CASO</button>
-          <button onclick="ccMisExpedientes()" style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 18px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg> MIS EXPEDIENTES</button>
+          <button onclick="ccAnalizar()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.4);border-radius:10px;padding:10px 24px;font-size:12px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;">⚡ ANALIZAR CASO</button>
+          <button onclick="ccMisExpedientes()" style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 18px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">📂 MIS EXPEDIENTES</button>
         </div>
       </div>
     </div>
@@ -2581,10 +2581,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div id="ccChartsBox"></div>
       <!-- Export -->
       <div style="display:flex;gap:12px;margin-top:20px;padding-top:20px;border-top:1px solid rgba(160,180,210,0.1);flex-wrap:wrap;">
-        <button onclick="ccExportPDF()" style="background:rgba(220,38,38,0.15);color:#f87171;border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> REPORTE DE INVESTIGACIÓN (PDF)</button>
-        <button onclick="ccExportExcel()" style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg> EVIDENCIA COMPLETA (Excel)</button>
+        <button onclick="ccExportPDF()" style="background:rgba(220,38,38,0.15);color:#f87171;border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">🖨️ REPORTE DE INVESTIGACIÓN (PDF)</button>
+        <button onclick="ccExportExcel()" style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">📊 EVIDENCIA COMPLETA (Excel)</button>
         <button id="ccBtnExpediente" onclick="ccGenerarExpediente()" style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.35);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">✦ EXPEDIENTE NARRATIVO (IA)</button>
-        <button onclick="ccGuardarExpediente()" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg> GUARDAR EXPEDIENTE</button>
+        <button onclick="ccGuardarExpediente()" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">💾 GUARDAR EXPEDIENTE</button>
       </div>
     </div>
 
@@ -2605,7 +2605,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <textarea id="ccExpNotas" rows="3" style="width:100%;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(160,180,210,0.2);color:#e2e8f0;font-size:12px;font-family:'JetBrains Mono',monospace;outline:none;resize:vertical;box-sizing:border-box;" placeholder="Contexto, hipótesis, fuentes adicionales…"></textarea>
     </div>
     <div style="display:flex;gap:10px;">
-      <button onclick="ccConfirmarGuardar()" id="ccBtnConfGuardar" style="background:rgba(251,191,36,0.18);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);border-radius:8px;padding:10px 24px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg> GUARDAR</button>
+      <button onclick="ccConfirmarGuardar()" id="ccBtnConfGuardar" style="background:rgba(251,191,36,0.18);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);border-radius:8px;padding:10px 24px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">💾 GUARDAR</button>
       <button onclick="document.getElementById('ccGuardarModal').style.display='none'" style="background:rgba(255,255,255,0.05);color:rgba(160,180,210,0.6);border:1px solid rgba(160,180,210,0.15);border-radius:8px;padding:10px 20px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Cancelar</button>
     </div>
   </div>
@@ -2649,7 +2649,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <button onclick="exportarTop10PDF()"
         style="padding:8px 14px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.08em;
         background:rgba(255,61,87,0.1);color:#ff3d57;border:1px solid rgba(255,61,87,0.3);border-radius:8px;cursor:pointer;">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> PDF
+        🖨️ PDF
       </button>
       <button class="pe-btn-back" onclick="volverAPanelEjecutivo()">← Panel Ejecutivo</button>
     </div>
@@ -2918,7 +2918,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-10: CONCENTRACIÓN DE CONSULTORÍA PANEL ══ -->
   <div class="fuente-panel" id="consultoriaPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideConsultoriaPanel()">← Contratos</button><button onclick="exportNSPanelPDF('consultoriaPanel','NS-10 — Concentración de Consultoría')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideConsultoriaPanel()">← Contratos</button><button onclick="exportNSPanelPDF('consultoriaPanel','NS-10 — Concentración de Consultoría')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🧾 <span>Concentración de Consultoría — NS-10</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Entidades con gasto desproporcionado en consultoría y asesoría · señal de captura presupuestal sin licitación</div>
@@ -2982,7 +2982,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-11: IDENTIDAD DUPLICADA PANEL ══ -->
   <div class="fuente-panel" id="identidadPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideIdentidadPanel()">← Contratos</button><button onclick="exportNSPanelPDF('identidadPanel','NS-11 — Identidad Duplicada')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideIdentidadPanel()">← Contratos</button><button onclick="exportNSPanelPDF('identidadPanel','NS-11 — Identidad Duplicada')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🪪 <span>Identidad Duplicada — NS-11</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">RTNs compartidos por empresas con nombres completamente distintos · señal de suplantación de identidad tributaria</div>
@@ -3029,7 +3029,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div id="id-drilldown" style="display:none;margin-top:16px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
         <button onclick="idCloseDrilldown()" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;">← Volver a RTNs</button>
-        <button id="id-drill-pdf-btn" onclick="idGenerarReportePDF()" style="background:rgba(255,71,87,0.12);color:#ff4757;border:1px solid rgba(255,71,87,0.35);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Reporte PDF</button>
+        <button id="id-drill-pdf-btn" onclick="idGenerarReportePDF()" style="background:rgba(255,71,87,0.12);color:#ff4757;border:1px solid rgba(255,71,87,0.35);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">📄 Reporte PDF</button>
       </div>
       <div id="id-drill-title" style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;"></div>
       <div id="id-drill-nombres" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;"></div>
@@ -3039,7 +3039,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <!-- ══ MONOPOLIO DE PROVEEDOR PANEL (B1) ══ -->
   <!-- ══ NS-12: MONOPOLIO DE PROVEEDOR PANEL ══ -->
   <div class="fuente-panel" id="monopolioPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideMonopolioPanel()">← Contratos</button><button onclick="exportNSPanelPDF('monopolioPanel','NS-12 — Monopolio de Proveedor')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideMonopolioPanel()">← Contratos</button><button onclick="exportNSPanelPDF('monopolioPanel','NS-12 — Monopolio de Proveedor')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🔒 <span>Monopolio de Proveedor — NS-12</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores que concentran ≥70% del gasto total de una entidad · umbral mínimo: L 500K proveedor / L 2M entidad · señal de captura institucional</div>
@@ -3065,9 +3065,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- Filtros severidad -->
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
       <button id="mon-f-all" onclick="_filterMonopolio(null)" style="background:rgba(255,255,255,0.08);color:var(--text);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Todos</button>
-      <button id="mon-f-crit" onclick="_filterMonopolio('CRÍTICA')" style="background:rgba(255,61,87,0.1);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="9" height="9" fill="var(--red)" aria-hidden="true" style="vertical-align:-1px"><circle cx="12" cy="12" r="9"/></svg> CRÍTICA</button>
-      <button id="mon-f-alta" onclick="_filterMonopolio('ALTA')" style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="9" height="9" fill="var(--amber)" aria-hidden="true" style="vertical-align:-1px"><circle cx="12" cy="12" r="9"/></svg> ALTA</button>
-      <button id="mon-f-media" onclick="_filterMonopolio('MEDIA')" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="9" height="9" fill="var(--electric)" aria-hidden="true" style="vertical-align:-1px"><circle cx="12" cy="12" r="9"/></svg> MEDIA</button>
+      <button id="mon-f-crit" onclick="_filterMonopolio('CRÍTICA')" style="background:rgba(255,61,87,0.1);color:var(--red);border:1px solid rgba(255,61,87,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🔴 CRÍTICA</button>
+      <button id="mon-f-alta" onclick="_filterMonopolio('ALTA')" style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🟡 ALTA</button>
+      <button id="mon-f-media" onclick="_filterMonopolio('MEDIA')" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🔵 MEDIA</button>
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -3095,7 +3095,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div style="display:flex;gap:8px;">
         <button id="dr-btn-back" data-self-managed="true" style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" onclick="hideDobleRolPanel()">← Contratos</button>
       </div>
-      <button onclick="exportDobleRolPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportDobleRolPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
     </div>
     <div class="fuente-header">
       <div class="fuente-title">🎭 <span>Doble Rol — NS-13</span></div>
@@ -3179,7 +3179,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </table>
     </div>
     <div style="margin-top:14px;">
-      <button onclick="abrirConstructorCaso(showDobleRolPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='SEDESOL / Red Solidaria / Gobernación';document.getElementById('ccProveedor').value='Asoc. Jóvenes Metas / CARIBEX S.A.';document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/></svg> Armar Caso — SEN-INV-2026-012</button>
+      <button onclick="abrirConstructorCaso(showDobleRolPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='SEDESOL / Red Solidaria / Gobernación';document.getElementById('ccProveedor').value='Asoc. Jóvenes Metas / CARIBEX S.A.';document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Armar Caso — SEN-INV-2026-012</button>
     </div>
 
     <!-- ── NS-13 DRILL-DOWN: contratos IAIP de la persona seleccionada ── -->
@@ -3200,7 +3200,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <button id="cpc-btn-back" data-self-managed="true" style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;" onclick="hideCpcInhabPanel()">← Contratos</button>
         <a href="https://oncae.gob.hn/wp-content/uploads/2026/03/LISTADO-CPC-INHABILITADOS-DICIEMBRE-2025.pdf" target="_blank" style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;text-decoration:none;">🔗 Fuente ONCAE</a>
       </div>
-      <button onclick="exportCpcInhabPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportCpcInhabPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
     </div>
     <div class="fuente-header">
       <div class="fuente-title">🚫 <span>CPC Inhabilitado — NS-14</span></div>
@@ -3247,7 +3247,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div class="fuente-panel" id="entityRankingPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <button class="fuente-back" style="margin-bottom:0;" onclick="hideEntityRankingPanel()">← Portal Principal</button>
-      <button onclick="exportNSPanelPDF('entityRankingPanel','Ranking Riesgo Institucional')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportNSPanelPDF('entityRankingPanel','Ranking Riesgo Institucional')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
     </div>
     <div class="fuente-header">
       <div class="fuente-title">🏛️ <span>Ranking Riesgo Institucional</span></div>
@@ -3290,7 +3290,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ ONCAE CROSS-REFERENCE PANEL (B2) ══ -->
   <div class="fuente-panel" id="oncaePanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideOncaePanel()">← Portal</button><button onclick="exportNSPanelPDF('oncaePanel','NS-7 — Proveedores ONCAE')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideOncaePanel()">← Portal</button><button onclick="exportNSPanelPDF('oncaePanel','NS-7 — Proveedores ONCAE')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">⚠️ <span>Proveedores Lista ONCAE</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Empresas con anotaciones preventivas ONCAE (incumplimiento contractual) que tienen contratos activos monitoreados por Sentinel</div>
@@ -3405,7 +3405,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div class="fuente-panel" id="redesCorporativasPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <button class="fuente-back" style="margin-bottom:0;" onclick="hideRedesCorporativasPanel()">← Panel Ejecutivo</button>
-      <button onclick="exportNSPanelPDF('redesCorporativasPanel','Redes Corporativas — Clusters de Empresas')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportNSPanelPDF('redesCorporativasPanel','Redes Corporativas — Clusters de Empresas')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
     </div>
     <div class="fuente-header">
       <div class="fuente-title">🕸️ <span>Redes Corporativas</span></div>
@@ -3458,7 +3458,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-1: MONOGAMIA DE PROVEEDOR PANEL ══ -->
   <div class="fuente-panel" id="monogamiaPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideMonogamiaPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('monogamiaPanel','NS-1 — Monogamia de Proveedor')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideMonogamiaPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('monogamiaPanel','NS-1 — Monogamia de Proveedor')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🔗 <span>Monogamia de Proveedor</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con ≥85% de contratos concentrados en una sola institución — en un mercado competitivo normal, un proveedor de alta capacidad debería contratar con múltiples entidades</div>
@@ -3504,7 +3504,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-2: VENTANA DE PRESIÓN FISCAL PANEL ══ -->
   <div class="fuente-panel" id="ventanaFiscalPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideVentanaFiscalPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('ventanaFiscalPanel','NS-2 — Ventana de Presión Fiscal')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideVentanaFiscalPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('ventanaFiscalPanel','NS-2 — Ventana de Presión Fiscal')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">⏱️ <span>Ventana de Presión Fiscal</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Instituciones que concentran su contratación de alto riesgo en períodos de presión fiscal — fin de año (Oct–Dic), nueva administración (Ene–Abr 2026)</div>
@@ -3550,7 +3550,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-4: BCAI — ADHERENCIA AL TECHO PRESUPUESTAL PANEL ══ -->
   <div class="fuente-panel" id="bcaiPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideBcaiPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('bcaiPanel','NS-4 — BCAI Techo Presupuestal')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideBcaiPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('bcaiPanel','NS-4 — BCAI Techo Presupuestal')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">📐 <span>Adherencia al Techo Presupuestal</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">
@@ -3600,7 +3600,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-3: DEBUT ANÓMALO PANEL ══ -->
   <div class="fuente-panel" id="debutAnomalyPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideDebutAnomalyPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('debutAnomalyPanel','NS-3 — Debut Anómalo')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideDebutAnomalyPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('debutAnomalyPanel','NS-3 — Debut Anómalo')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🚀 <span>Debut Anómalo</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores cuyo primer contrato registrado es grande (≥L5M) por contratación directa — señal de empresa creada para ganar contratos, no para competir en el mercado</div>
@@ -3647,7 +3647,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-7: CONTRATOS GEMELOS PANEL ══ -->
   <div class="fuente-panel" id="twinContractsPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideTwinContractsPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('twinContractsPanel','NS-7 — Contratos Gemelos')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideTwinContractsPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('twinContractsPanel','NS-7 — Contratos Gemelos')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">👯 <span>Contratos Gemelos</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Pares de contratos del mismo proveedor + misma institución con montos casi idénticos (±5%) adjudicados en menos de 90 días — fraccionamiento quirúrgico para evadir umbrales de licitación formal</div>
@@ -3694,7 +3694,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-8: OPERADOR INVISIBLE PANEL ══ -->
   <div class="fuente-panel" id="operadorInvisiblePanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideOperadorInvisiblePanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('operadorInvisiblePanel','NS-8 — Operador Invisible')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideOperadorInvisiblePanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('operadorInvisiblePanel','NS-8 — Operador Invisible')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">👁️ <span>Operador Invisible</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con contratos activos en SEFIN pero con monto opaco (NULL o L0) en más del 70% de sus registros — presencia oficial sin valor trazable. Indicador de Opacidad Sistémica Nivel 1.</div>
@@ -3770,7 +3770,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-6: SURGE RECIENTE PANEL ══ -->
   <div class="fuente-panel" id="surgeRecientePanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideSurgeRecientePanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('surgeRecientePanel','NS-6 — Surge Reciente')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideSurgeRecientePanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('surgeRecientePanel','NS-6 — Surge Reciente')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">📈 <span>Surge Reciente</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores donde ≥60% de su monto histórico llegó en los últimos 12 meses — indica acceso repentino al gobierno, posible cambio de conexiones políticas o nuevo esquema activo</div>
@@ -3817,7 +3817,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- ══ NS-5: UMBRAL EVADIDO PANEL ══ -->
   <div class="fuente-panel" id="thresholdHuggingPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideThresholdHuggingPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('thresholdHuggingPanel','NS-5 — Threshold Hugging')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideThresholdHuggingPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('thresholdHuggingPanel','NS-5 — Threshold Hugging')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">🎯 <span>Umbral Evadido</span></div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con ≥2 contratos consistentemente justo debajo de los umbrales legales de licitación — Ley de Contrataciones: L500K (compra menor→directa) · L5M (directa→LPN) · L30M (LPN→LPI)</div>
@@ -3995,7 +3995,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="user-menu-chevron">▾</span>
       <div class="user-menu-dropdown" id="userMenuDropdown">
         <button class="user-menu-item danger" onclick="event.stopPropagation(); doLogout();">
-          <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></span> Cerrar Sesión
+          <span>🚪</span> Cerrar Sesión
         </button>
       </div>
     </div>
@@ -4010,7 +4010,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div class="po-wrap">
     <div class="po-header">
       <div style="display:flex;justify-content:flex-start;margin-bottom:10px;">
-        <button onclick="abrirPanelEjecutivo()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.55);border-radius:12px;padding:7px 22px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.06em;transition:all .2s;box-shadow:0 0 12px rgba(0,200,255,0.15);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg> Panel Ejecutivo</button>
+        <button onclick="abrirPanelEjecutivo()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.55);border-radius:12px;padding:7px 22px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.06em;transition:all .2s;box-shadow:0 0 12px rgba(0,200,255,0.15);">📊 Panel Ejecutivo</button>
       </div>
       <div class="po-eyebrow">SentinelAI Intelligence</div>
       <div class="po-logo">SENTINEL<span>·</span>AI</div>
@@ -4367,9 +4367,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span id="liveClock">--:--:--</span>
         <span class="clock-tz">TGU</span>
       </div>
-      <button class="btn-report-header" id="btnReportPareto" onclick="generateReport('pareto')" title="Top entidades que representan el 80% de contratos de riesgo"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Pareto</button>
-      <button class="btn-report-header" id="btnReportTodo" onclick="generateReport('todo')" title="Reporte completo — todos los contratos filtrados" style="margin-left:4px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Todo</button>
-      <button class="btn-new-alert-header" onclick="openModal()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Nueva Alerta</button>
+      <button class="btn-report-header" id="btnReportPareto" onclick="generateReport('pareto')" title="Top entidades que representan el 80% de contratos de riesgo">📄 Pareto</button>
+      <button class="btn-report-header" id="btnReportTodo" onclick="generateReport('todo')" title="Reporte completo — todos los contratos filtrados" style="margin-left:4px;">📄 Todo</button>
+      <button class="btn-new-alert-header" onclick="openModal()">➕ Nueva Alerta</button>
       <button class="btn-new-alert-header" onclick="toggleModoDemo()" style="background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.4);color:#a855f7;" title="Vista presentación fullscreen">▶ Presentar</button>
     </div>
   </div>
@@ -4383,7 +4383,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <button onclick="document.body.classList.remove('modo-demo');hideAllPanels()" style="background:none;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);padding:0;display:inline-flex;align-items:center;gap:6px;transition:color .15s;" onmouseover="this.style.color='var(--electric)'" onmouseout="this.style.color='var(--text-dim)'">← Dashboard</button>
         <button id="ve-back-pe" onclick="volverAPanelEjecutivo()" style="display:none;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);padding:4px 12px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.2)'" onmouseout="this.style.background='rgba(0,200,255,0.1)'">← Panel Ejecutivo</button>
       </div>
-      <button onclick="exportVistaEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportVistaEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
     </div>
 
     <!-- Ticker bar — live data feed (inside Vista Ejecutiva) -->
@@ -4438,7 +4438,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-subtitle" id="execSubtitle">Cargando datos...</div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;margin-top:4px;">
-        <button onclick="generarEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+        <button onclick="generarEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;">📄 PDF</button>
       </div>
     </div>
     <!-- 3-column grid: Critical alerts, Top risk entities, System status -->
@@ -4735,7 +4735,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- Go to full table button -->
     <div style="margin-top:28px; text-align:center;">
       <button class="btn-new-alert-header" onclick="document.body.classList.remove('modo-demo');hideAllPanels()" style="font-size:14px; padding:12px 28px;">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg> Ver Contratos →
+        📋 Ver Contratos →
       </button>
     </div>
   </div>
@@ -4842,8 +4842,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn"        data-p="ADJUDICACION_DIRECTA"   onclick="setPatternFilter('ADJUDICACION_DIRECTA')">DIRECTA</button>
     <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')">SIN HISTORIAL</button>
     <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
-    <button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" onclick="setPatternFilter('PROVEEDOR_SANCIONADO')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg> SANCIONADO OFAC</button>
-    <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg> LISTA ENGEL</button>
+    <button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" onclick="setPatternFilter('PROVEEDOR_SANCIONADO')">🚨 SANCIONADO OFAC</button>
+    <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')">🇺🇸 LISTA ENGEL</button>
   </div>
 
   <!-- Criterio de severidad — S282: describe las reglas reales del motor de ingesta
@@ -4964,10 +4964,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:center;">
       <div class="fuente-title" id="ep-title">Entidad</div>
       <div style="display:flex;gap:6px;">
-        <button onclick="exportEntityPDF('pareto')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="PDF top contratos (80% del monto)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Pareto</button>
-        <button onclick="exportEntityPDF('todo')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="PDF con todos los contratos"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Todo</button>
-        <button onclick="openReferModalEntity()" style="padding:5px 12px;border-radius:5px;border:1px solid rgba(99,102,241,0.35);background:rgba(99,102,241,0.12);color:#818cf8;font-size:11px;cursor:pointer;transition:all .2s;" title="Generar memorándum de referencia para esta entidad"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg> Referir</button>
-        <button id="ea-header-btn" onclick="lookupEmpresasAbiertas()" style="display:none;padding:5px 12px;border-radius:5px;border:1px solid rgba(34,197,94,0.35);background:rgba(34,197,94,0.12);color:#4ade80;font-size:11px;cursor:pointer;transition:all .2s;" title="Buscar en Empresas Abiertas (registro de socios)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg> Reg. Mercantil</button>
+        <button onclick="exportEntityPDF('pareto')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="PDF top contratos (80% del monto)">📄 Pareto</button>
+        <button onclick="exportEntityPDF('todo')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;" title="PDF con todos los contratos">⬇ Todo</button>
+        <button onclick="openReferModalEntity()" style="padding:5px 12px;border-radius:5px;border:1px solid rgba(99,102,241,0.35);background:rgba(99,102,241,0.12);color:#818cf8;font-size:11px;cursor:pointer;transition:all .2s;" title="Generar memorándum de referencia para esta entidad">📋 Referir</button>
+        <button id="ea-header-btn" onclick="lookupEmpresasAbiertas()" style="display:none;padding:5px 12px;border-radius:5px;border:1px solid rgba(34,197,94,0.35);background:rgba(34,197,94,0.12);color:#4ade80;font-size:11px;cursor:pointer;transition:all .2s;" title="Buscar en Empresas Abiertas (registro de socios)">🏢 Reg. Mercantil</button>
       </div>
     </div>
     <!-- EA inline result — shown in vendor mode -->
@@ -5017,10 +5017,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
     <!-- Drill-down tabs -->
     <div style="display:flex;gap:8px;margin-bottom:16px;padding:12px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;">
-      <button class="ep-drill-tab active" data-tab="recent" onclick="switchEntityDrillTab('recent',this)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg> Recientes</button>
-      <button class="ep-drill-tab" data-tab="sobrecosto" onclick="switchEntityDrillTab('sobrecosto',this)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg> Sobrepresupuesto</button>
-      <button class="ep-drill-tab" data-tab="vendors" onclick="switchEntityDrillTab('vendors',this)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg> Proveedores</button>
-      <button class="ep-drill-tab" data-tab="patterns" onclick="switchEntityDrillTab('patterns',this)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Patrones</button>
+      <button class="ep-drill-tab active" data-tab="recent" onclick="switchEntityDrillTab('recent',this)">📋 Recientes</button>
+      <button class="ep-drill-tab" data-tab="sobrecosto" onclick="switchEntityDrillTab('sobrecosto',this)">💰 Sobrepresupuesto</button>
+      <button class="ep-drill-tab" data-tab="vendors" onclick="switchEntityDrillTab('vendors',this)">🏢 Proveedores</button>
+      <button class="ep-drill-tab" data-tab="patterns" onclick="switchEntityDrillTab('patterns',this)">🎯 Patrones</button>
     </div>
 
     <!-- Recent alerts (default view) -->
@@ -5041,8 +5041,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             <span>Datos parciales — cobertura completa pendiente integración SIAFI</span>
           </div>
           <div style="display:flex;gap:6px;">
-            <button onclick="exportDrilldownData('sobrecosto', 'csv')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a CSV"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> CSV</button>
-            <button onclick="exportDrilldownData('sobrecosto', 'pdf')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a PDF"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> PDF</button>
+            <button onclick="exportDrilldownData('sobrecosto', 'csv')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a CSV">📥 CSV</button>
+            <button onclick="exportDrilldownData('sobrecosto', 'pdf')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a PDF">📥 PDF</button>
           </div>
         </div>
         <div id="ep-sobrecosto-list" style="display:flex;flex-direction:column;gap:8px;"></div>
@@ -5055,8 +5055,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div class="fuente-recent-title">🏢 Top Proveedores (por monto y cantidad)</div>
           <div style="display:flex;gap:6px;">
-            <button onclick="exportDrilldownData('vendors', 'csv')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a CSV"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> CSV</button>
-            <button onclick="exportDrilldownData('vendors', 'pdf')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a PDF"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> PDF</button>
+            <button onclick="exportDrilldownData('vendors', 'csv')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a CSV">📥 CSV</button>
+            <button onclick="exportDrilldownData('vendors', 'pdf')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a PDF">📥 PDF</button>
           </div>
         </div>
         <div id="ep-vendor-list" style="display:flex;flex-direction:column;gap:8px;"></div>
@@ -5070,8 +5070,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div class="fuente-recent-title" id="ep-vendor-detail-title">Contratos — Proveedor</div>
           <div style="display:flex;gap:6px;">
-            <button onclick="exportDrilldownData('vendor-detail', 'csv')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a CSV"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> CSV</button>
-            <button onclick="exportDrilldownData('vendor-detail', 'pdf')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a PDF"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> PDF</button>
+            <button onclick="exportDrilldownData('vendor-detail', 'csv')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a CSV">📥 CSV</button>
+            <button onclick="exportDrilldownData('vendor-detail', 'pdf')" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:10px;cursor:pointer;transition:all .2s;" title="Exportar a PDF">📥 PDF</button>
           </div>
         </div>
         <div id="ep-vendor-contract-list" style="display:flex;flex-direction:column;gap:8px;"></div>
@@ -5080,7 +5080,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="fuente-chart-card" id="ea-lookup-card" style="margin-top:12px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
           <div class="fuente-recent-title" style="font-size:12px;">🏢 Registro Mercantil</div>
-          <button onclick="lookupEmpresasAbiertas()" id="ea-lookup-btn" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--accent);font-size:10px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Consultar EA</button>
+          <button onclick="lookupEmpresasAbiertas()" id="ea-lookup-btn" style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--glass);color:var(--accent);font-size:10px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;">🔍 Consultar EA</button>
         </div>
         <div id="ea-lookup-result" style="font-size:11px;color:var(--text-dim);">Presiona para buscar en Empresas Abiertas</div>
       </div>
@@ -5201,8 +5201,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span>Análisis de Contratos — 2019–2026</span>
       </div>
       <div style="display:flex;gap:8px;">
-        <button onclick="exportAnalyticsPDF('pareto')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Pareto</button>
-        <button onclick="exportAnalyticsPDF('todo')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Todo</button>
+        <button onclick="exportAnalyticsPDF('pareto')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">📄 Pareto</button>
+        <button onclick="exportAnalyticsPDF('todo')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">⬇ Todo</button>
       </div>
     </div>
 
@@ -5297,7 +5297,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div id="patternDetailTitle" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);flex:1;"></div>
         <button onclick="exportPatternDetailPDF()"
           class="tl-export-btn pdf"
-          style="margin-left:auto;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+          style="margin-left:auto;">📄 PDF</button>
       </div>
 
       <!-- Stat cards -->
@@ -5344,9 +5344,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <span>Análisis de Concentración de Proveedores</span>
         </div>
         <div style="display:flex;gap:8px;">
-          <button onclick="exportVendorConcentration('csv')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a CSV"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> CSV</button>
-          <button onclick="exportVendorConcentration('pareto-pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF top proveedores (80% del monto)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Pareto</button>
-          <button onclick="exportVendorConcentration('pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF con todos los proveedores"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Todo</button>
+          <button onclick="exportVendorConcentration('csv')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="Exportar a CSV">📥 CSV</button>
+          <button onclick="exportVendorConcentration('pareto-pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF top proveedores (80% del monto)">📄 Pareto</button>
+          <button onclick="exportVendorConcentration('pdf')" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" title="PDF con todos los proveedores">⬇ Todo</button>
         </div>
       </div>
 
@@ -5409,9 +5409,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
         <!-- MODAL FOOTER -->
         <div style="display:flex;gap:10px;padding:16px;border-top:1px solid var(--border);background:rgba(0,200,255,0.03);justify-content:flex-end;">
-          <button onclick="exportVendorConcentrationDetail('csv')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="Exportar a CSV"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> CSV</button>
-          <button onclick="exportVendorConcentrationDetail('pareto-pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="PDF top contratos (80% del monto)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Pareto</button>
-          <button onclick="exportVendorConcentrationDetail('pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="PDF con todos los contratos"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Todo</button>
+          <button onclick="exportVendorConcentrationDetail('csv')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="Exportar a CSV">📥 CSV</button>
+          <button onclick="exportVendorConcentrationDetail('pareto-pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="PDF top contratos (80% del monto)">📄 Pareto</button>
+          <button onclick="exportVendorConcentrationDetail('pdf')" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''" title="PDF con todos los contratos">⬇ Todo</button>
           <button onclick="closeVendorConcentrationDetail()" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;transition:all .2s;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">Cerrar</button>
         </div>
       </div>
@@ -5428,7 +5428,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div id="alertDetailPanel">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
       <button class="adp-back" id="adp-back-btn" onclick="closeAlertDetail()">← Contratos</button>
-      <button onclick="exportAlertDetailPDF()" style="padding:5px 14px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.10);color:var(--electric);font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s;" onmouseover="this.style.background='rgba(0,168,214,0.2)'" onmouseout="this.style.background='rgba(0,168,214,0.10)'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportAlertDetailPDF()" style="padding:5px 14px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.10);color:var(--electric);font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s;" onmouseover="this.style.background='rgba(0,168,214,0.2)'" onmouseout="this.style.background='rgba(0,168,214,0.10)'">📄 PDF</button>
     </div>
     <div class="adp-title" id="adp-title">Detalle de Alerta</div>
     <div class="adp-meta" id="adp-meta"></div>
@@ -5540,7 +5540,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <textarea id="adp-review-nota" rows="3" placeholder="Ej: Hospital Roatán — contrato EDUCTRADE verificado con noticia empresaexterior.com…"></textarea>
         </div>
         <div style="display:flex;gap:8px;">
-          <button onclick="adpGuardarReview()" style="padding:7px 18px;border-radius:5px;border:1px solid rgba(16,185,129,0.5);background:rgba(16,185,129,0.15);color:#10b981;font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg> Guardar</button>
+          <button onclick="adpGuardarReview()" style="padding:7px 18px;border-radius:5px;border:1px solid rgba(16,185,129,0.5);background:rgba(16,185,129,0.15);color:#10b981;font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;">💾 Guardar</button>
           <button onclick="adpToggleReviewForm()" style="padding:7px 14px;border-radius:5px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Cancelar</button>
         </div>
       </div>
@@ -5578,8 +5578,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="fuente-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div class="fuente-title">📊 Resumen de <span>Sobrepresupuestos</span></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="document.getElementById('sp-riesgo-section').scrollIntoView({behavior:'smooth',block:'start'})" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(255,165,0,0.5);background:rgba(255,165,0,0.08);color:var(--amber);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(255,165,0,0.16)'" onmouseout="this.style.background='rgba(255,165,0,0.08)'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Ver Riesgo</button>
-        <button onclick="exportSobrecostoRealPDF()" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.10);color:var(--electric);font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(0,168,214,0.2)'" onmouseout="this.style.background='rgba(0,168,214,0.10)'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+        <button onclick="document.getElementById('sp-riesgo-section').scrollIntoView({behavior:'smooth',block:'start'})" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(255,165,0,0.5);background:rgba(255,165,0,0.08);color:var(--amber);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(255,165,0,0.16)'" onmouseout="this.style.background='rgba(255,165,0,0.08)'">⚠️ Ver Riesgo</button>
+        <button onclick="exportSobrecostoRealPDF()" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.10);color:var(--electric);font-size:11px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.background='rgba(0,168,214,0.2)'" onmouseout="this.style.background='rgba(0,168,214,0.10)'">📄 PDF</button>
       </div>
     </div>
 
@@ -5677,7 +5677,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
     <!-- BOTÓN EXPORTAR PDF -->
     <div style="margin-top:20px;text-align:right;padding-bottom:8px;">
-      <button onclick="exportRiesgoGlobalPDF()" style="padding:8px 18px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.12);color:var(--electric);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.04em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Exportar Reporte PDF</button>
+      <button onclick="exportRiesgoGlobalPDF()" style="padding:8px 18px;border-radius:6px;border:1px solid rgba(0,168,214,0.5);background:rgba(0,168,214,0.12);color:var(--electric);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.04em;">📥 Exportar Reporte PDF</button>
     </div>
 
   </div>
@@ -5691,7 +5691,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="fuente-title">⚡ <span>Detección de Anomalías Estadísticas</span></div>
         <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Velocidad de pago, patrones anómalos y score de riesgo por proveedor · SEFIN 2023–2025</div>
       </div>
-      <button onclick="exportPhase4PDF()" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportPhase4PDF()" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .2s;" onmouseover="this.style.borderColor='var(--electric)';this.style.color='var(--electric)'" onmouseout="this.style.borderColor='';this.style.color=''">📄 PDF</button>
     </div>
 
     <!-- Summary stats row -->
@@ -5736,7 +5736,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div class="fuente-panel" id="fraccionamientoPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <button class="fuente-back" style="margin-bottom:0;" onclick="hideFraccionamientoPanel()">← Contratos</button>
-      <button onclick="exportFraccionamientoPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportFraccionamientoPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
     </div>
     <div class="fuente-header">
       <div class="fuente-title">✂️ <span>Detección de Fraccionamiento</span></div>
@@ -5760,9 +5760,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- Filtros -->
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
       <button id="frac-btn-all"      onclick="fracFilterSev('')"       style="padding:5px 12px;border-radius:20px;border:1px solid var(--electric);background:var(--electric-dim);color:var(--electric);font-size:11px;cursor:pointer;">Todos</button>
-      <button id="frac-btn-critica"  onclick="fracFilterSev('CRÍTICA')" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;"><svg viewBox="0 0 24 24" width="9" height="9" fill="var(--red)" aria-hidden="true" style="vertical-align:-1px"><circle cx="12" cy="12" r="9"/></svg> Críticos</button>
-      <button id="frac-btn-alta"     onclick="fracFilterSev('ALTA')"    style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;"><svg viewBox="0 0 24 24" width="9" height="9" fill="var(--orange)" aria-hidden="true" style="vertical-align:-1px"><circle cx="12" cy="12" r="9"/></svg> Altos</button>
-      <button id="frac-btn-media"    onclick="fracFilterSev('MEDIA')"   style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;"><svg viewBox="0 0 24 24" width="9" height="9" fill="var(--amber)" aria-hidden="true" style="vertical-align:-1px"><circle cx="12" cy="12" r="9"/></svg> Medios</button>
+      <button id="frac-btn-critica"  onclick="fracFilterSev('CRÍTICA')" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;">🔴 Críticos</button>
+      <button id="frac-btn-alta"     onclick="fracFilterSev('ALTA')"    style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;">🟠 Altos</button>
+      <button id="frac-btn-media"    onclick="fracFilterSev('MEDIA')"   style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--glass);color:var(--text-dim);font-size:11px;cursor:pointer;">🟡 Medios</button>
       <input id="frac-search" type="text" placeholder="Buscar proveedor o entidad…" oninput="fracRender()" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--text);font-size:11px;flex:1;min-width:160px;">
     </div>
     <!-- Lista -->
@@ -5779,7 +5779,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div class="fuente-panel" id="tscPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
       <button class="fuente-back" style="margin-bottom:0;" onclick="hideTSCPanel()">← Portal Principal</button>
-      <button onclick="exportNSPanelPDF('tscPanel','Informes TSC — Tribunal Superior de Cuentas')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportNSPanelPDF('tscPanel','Informes TSC — Tribunal Superior de Cuentas')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;">📄 PDF</button>
     </div>
     <div class="fuente-header">
       <div class="fuente-title">⚖️ <span>Informes de Auditoría — TSC</span></div>
@@ -5862,7 +5862,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           Concentración de riesgo por sector de gobierno — basado en los contratos monitoreados
         </div>
       </div>
-      <button onclick="exportSectorSummaryPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportSectorSummaryPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;">📄 PDF</button>
     </div>
 
     <!-- Summary stat cards -->
@@ -5920,9 +5920,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="tl-drilldown-header">
         <div class="tl-drilldown-title" id="sector-drilldown-title">—</div>
         <div style="display:flex;gap:6px;align-items:center;">
-          <button class="tl-export-btn pdf" onclick="exportSectorPDF('pareto')" title="PDF top contratos (80% del monto)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Pareto</button>
-          <button class="tl-export-btn pdf" onclick="exportSectorPDF('todo')" title="PDF con todos los contratos" style="background:rgba(255,255,255,0.06);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Todo</button>
-          <button class="tl-export-btn csv" onclick="exportSectorCSV()" title="Exportar contratos a CSV"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> CSV</button>
+          <button class="tl-export-btn pdf" onclick="exportSectorPDF('pareto')" title="PDF top contratos (80% del monto)">📄 Pareto</button>
+          <button class="tl-export-btn pdf" onclick="exportSectorPDF('todo')" title="PDF con todos los contratos" style="background:rgba(255,255,255,0.06);">⬇ Todo</button>
+          <button class="tl-export-btn csv" onclick="exportSectorCSV()" title="Exportar contratos a CSV">⬇ CSV</button>
           <button class="tl-drilldown-close" onclick="closeSectorDrilldown()">✕</button>
         </div>
       </div>
@@ -5941,7 +5941,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           Distribución cronológica de contratos monitoreados — por mes y severidad
         </div>
       </div>
-      <button onclick="exportTimelineSummaryPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+      <button onclick="exportTimelineSummaryPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;">📄 PDF</button>
     </div>
 
     <!-- Stats row -->
@@ -5986,8 +5986,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
     <!-- Vista tabs: Por Mes / Por Proveedor (Opción 2) -->
     <div class="tl-tab-row">
-      <button class="tl-tab-btn active" id="tl-tab-mes"  onclick="setTlTab('mes')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg> Por Mes</button>
-      <button class="tl-tab-btn"        id="tl-tab-prov" onclick="setTlTab('proveedor')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg> Por Proveedor</button>
+      <button class="tl-tab-btn active" id="tl-tab-mes"  onclick="setTlTab('mes')">📅 Por Mes</button>
+      <button class="tl-tab-btn"        id="tl-tab-prov" onclick="setTlTab('proveedor')">🏢 Por Proveedor</button>
     </div>
 
     <!-- Controls: entity filter + count/monto toggle -->
@@ -6007,7 +6007,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="fuente-chart-card" style="margin-bottom:20px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
           <div class="fuente-recent-title" id="tl-chart-title" style="margin-bottom:0;">Contratos por mes</div>
-          <button class="tl-export-btn pdf" onclick="exportTimelineMesPDF()" title="Exportar tabla mensual a PDF"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+          <button class="tl-export-btn pdf" onclick="exportTimelineMesPDF()" title="Exportar tabla mensual a PDF">📄 PDF</button>
         </div>
         <div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;opacity:0.7;">
           Apilado por severidad — <span style="color:var(--red);">■</span> Crítica &nbsp;
@@ -6046,8 +6046,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <div class="tl-drilldown-header">
             <div class="tl-drilldown-title" id="tl-drilldown-title">—</div>
             <div style="display:flex;gap:6px;align-items:center;">
-              <button class="tl-export-btn pdf" onclick="exportTlPDF()" title="Exportar reporte PDF polished"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
-              <button class="tl-export-btn csv" onclick="exportTlCSV()" title="Exportar todos los contratos a CSV"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Todo</button>
+              <button class="tl-export-btn pdf" onclick="exportTlPDF()" title="Exportar reporte PDF polished">📄 PDF</button>
+              <button class="tl-export-btn csv" onclick="exportTlCSV()" title="Exportar todos los contratos a CSV">⬇ Todo</button>
               <button class="tl-drilldown-close" onclick="closeTlDrilldown()">✕</button>
             </div>
           </div>
@@ -6063,7 +6063,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="fuente-chart-card" style="margin-bottom:20px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
           <div class="fuente-recent-title" id="tl-prov-chart-title" style="margin-bottom:0;">Top 20 Proveedores</div>
-          <button class="tl-export-btn pdf" onclick="exportTimelineProvPDF()" title="Exportar ranking de proveedores a PDF"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+          <button class="tl-export-btn pdf" onclick="exportTimelineProvPDF()" title="Exportar ranking de proveedores a PDF">📄 PDF</button>
         </div>
         <div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;opacity:0.7;">
           Apilado por severidad — <span style="color:var(--red);">■</span> Crítica &nbsp;
@@ -6106,7 +6106,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <div class="tl-drilldown-header">
             <div class="tl-drilldown-title" id="tl-prov-drilldown-title">—</div>
             <div style="display:flex;gap:6px;align-items:center;">
-              <button class="tl-export-btn pdf" onclick="exportProvPDF()" title="Exportar reporte PDF de este proveedor"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+              <button class="tl-export-btn pdf" onclick="exportProvPDF()" title="Exportar reporte PDF de este proveedor">📄 PDF</button>
               <button class="tl-drilldown-close" onclick="closeProvDrilldown()">✕</button>
             </div>
           </div>
@@ -6499,7 +6499,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         Funcionarios, empresas y fundaciones señaladas por CNA, UFERCO y Ministerio Público de Honduras (2022–2026). Cruza contra contratos monitoreados.
       </div>
       <div style="margin-top:14px;">
-        <button class="pdf-btn" onclick="exportRedFlagPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF Red Flags</button>
+        <button class="pdf-btn" onclick="exportRedFlagPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);">📄 PDF Red Flags</button>
       </div>
     </div>
     <div style="margin-top:22px;">
@@ -6530,8 +6530,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         Lista Engel (Ley RENACER) · Sanciones OFAC-SDN (Tesoro EE.UU.) · Proveedores señalados con contratos activos en Honduras
       </div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="pdf-btn" onclick="exportEngelPDF()" style="background:rgba(168,85,247,0.12);color:var(--purple);border-color:rgba(168,85,247,0.35);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF Engel</button>
-        <button class="pdf-btn" onclick="exportOfacPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF OFAC</button>
+        <button class="pdf-btn" onclick="exportEngelPDF()" style="background:rgba(168,85,247,0.12);color:var(--purple);border-color:rgba(168,85,247,0.35);">📄 PDF Engel</button>
+        <button class="pdf-btn" onclick="exportOfacPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);">📄 PDF OFAC</button>
       </div>
     </div>
 
@@ -6580,7 +6580,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         Cruce interno SEFIN vs ONCAE · Portal OCDS Honduras (contratacionesabiertas.gob.hn)
       </div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="pdf-btn" onclick="exportOcdsCrossRefPDF()" style="background:rgba(0,200,255,0.08);color:var(--electric);border-color:rgba(0,200,255,0.3);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+        <button class="pdf-btn" onclick="exportOcdsCrossRefPDF()" style="background:rgba(0,200,255,0.08);color:var(--electric);border-color:rgba(0,200,255,0.3);">📄 PDF</button>
       </div>
     </div>
 
@@ -6610,8 +6610,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         Contratos fraccionados · Brecha ONCAE vs ejecución SEFIN por institución
       </div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="pdf-btn" onclick="exportCruceASimilaresPDF()" style="background:rgba(255,80,80,0.08);color:var(--red);border-color:rgba(255,80,80,0.3);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF Contratos Similares</button>
-        <button class="pdf-btn" onclick="exportCruceBCoberturaPDF()" style="background:rgba(255,165,0,0.08);color:var(--amber);border-color:rgba(255,165,0,0.3);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF Cobertura SEFIN</button>
+        <button class="pdf-btn" onclick="exportCruceASimilaresPDF()" style="background:rgba(255,80,80,0.08);color:var(--red);border-color:rgba(255,80,80,0.3);">📄 PDF Contratos Similares</button>
+        <button class="pdf-btn" onclick="exportCruceBCoberturaPDF()" style="background:rgba(255,165,0,0.08);color:var(--amber);border-color:rgba(255,165,0,0.3);">📄 PDF Cobertura SEFIN</button>
       </div>
     </div>
 
@@ -6619,11 +6619,11 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div style="display:flex;gap:0;margin-top:18px;border-bottom:1px solid var(--border);">
       <button id="cruce-tab-a" onclick="switchCruceTab('a')"
         style="padding:9px 18px;font-size:12px;font-weight:700;letter-spacing:.05em;background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;margin-right:4px;">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg> Contratos Similares
+        🔁 Contratos Similares
       </button>
       <button id="cruce-tab-b" onclick="switchCruceTab('b')"
         style="padding:9px 18px;font-size:12px;font-weight:700;letter-spacing:.05em;background:var(--glass);color:var(--text-dim);border:1px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg> Cobertura SEFIN
+        📊 Cobertura SEFIN
       </button>
     </div>
 
@@ -6731,7 +6731,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           ℹ️ La ingesta descarga el archivo HC1_datos_{año}.json desde ONCAE, aplica detección de patrones de riesgo y actualiza la base de datos. Tiempo estimado: 60–90 segundos.
         </div>
         <button id="ingestRunBtn" onclick="runIngest()" style="margin-top:16px;width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--green),#00b862);color:#001a0d;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.04em;transition:opacity .2s;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg> Iniciar Actualización ONCAE
+          🔄 Iniciar Actualización ONCAE
         </button>
       </div>
 
@@ -6761,7 +6761,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           ⚠️ Detecta instituciones que gastan más rápido del 115% de su ritmo lineal esperado (no significa que ya excedieron su presupuesto anual total). Los contratos EDCA de esas instituciones reciben <code style="color:var(--amber);">budget_amount</code> — desde S222, solo se aplica a contratos del mismo año fiscal del período analizado, activando RITMO ACELERADO en el dashboard.
         </div>
         <button id="sefinRunBtn" onclick="runSEFINIngest()" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--amber),#cc8800);color:#1a0d00;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.04em;transition:opacity .2s;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 21 8H3z"/></svg> Actualizar SEFIN — Ritmo de Ejecución
+          🏦 Actualizar SEFIN — Ritmo de Ejecución
         </button>
         <!-- SEFIN result inline -->
         <div id="sefinResult" style="display:none;margin-top:12px;padding:12px;border-radius:8px;border:1px solid rgba(0,230,118,0.2);background:rgba(0,230,118,0.04);font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;line-height:1.8;"></div>
@@ -6786,7 +6786,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div id="ingestResultsBody"></div>
         <button onclick="document.getElementById('ingestResults').style.display='none';document.getElementById('ingestProgress').style.display='none';document.getElementById('ingestRunBtn').disabled=false;document.getElementById('ingestRunBtn').style.opacity='1';"
           style="margin-top:14px;padding:8px 18px;border-radius:8px;border:1px solid rgba(0,230,118,0.3);background:rgba(0,230,118,0.08);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg> Nueva Ingesta
+          🔄 Nueva Ingesta
         </button>
       </div>
 
@@ -6905,7 +6905,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <button onclick="ejecutarBusquedaBD()"
         style="padding:11px 32px;border-radius:7px;border:1px solid var(--electric);background:rgba(0,212,255,0.12);color:var(--electric);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'Syne',sans-serif;"
         onmouseover="this.style.background='rgba(0,212,255,0.22)'" onmouseout="this.style.background='rgba(0,212,255,0.12)'">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Buscar
+        🔍 Buscar
       </button>
       <button onclick="limpiarBusquedaBD()"
         style="padding:11px 18px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .15s;"
@@ -7268,7 +7268,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </select>
     <div class="refer-modal-actions">
       <button class="btn-cancel" onclick="closeReferModal()">Cancelar</button>
-      <button class="btn-save" onclick="generarMemorandum()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Generar Memorándum</button>
+      <button class="btn-save" onclick="generarMemorandum()">📄 Generar Memorándum</button>
     </div>
     <div style="border-top:1px solid rgba(255,255,255,0.07);margin:14px 0 10px;"></div>
     <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">📝 Solicitud LTAIP — Acceso a Documentación Oficial</div>
@@ -7279,7 +7279,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <option value="TSC">TSC — Tribunal Superior de Cuentas (informes de auditoría)</option>
     </select>
     <div class="refer-modal-actions" style="margin-top:8px;">
-      <button class="btn-save" onclick="generarSolicitudLTAIP()" style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.35);color:#818cf8;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h6"/><path d="M14 2v6h6"/><path d="M21.4 14.6a2 2 0 0 1 0 2.8L18 20.8l-3 .7.7-3 3.4-3.4a2 2 0 0 1 2.8 0Z"/></svg> Generar Solicitud LTAIP</button>
+      <button class="btn-save" onclick="generarSolicitudLTAIP()" style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.35);color:#818cf8;">📝 Generar Solicitud LTAIP</button>
     </div>
   </div>
 </div>
@@ -7336,7 +7336,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:16px;display:flex;gap:10px;justify-content:flex-end;">
       <button onclick="closeBorradorDetalle()" style="background:var(--glass);border:1px solid var(--border);color:var(--text-dim);font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;">Cerrar</button>
       <button id="bd-btn-descartar" onclick="descartarDesdeModal()" style="background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.3);color:var(--red);font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;">✕ Descartar</button>
-      <button onclick="generarExpedienteBorradorPDF()" style="background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.3);color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;" title="Genera expediente PDF para revisar antes de aprobar"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Expediente PDF</button>
+      <button onclick="generarExpedienteBorradorPDF()" style="background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.3);color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;" title="Genera expediente PDF para revisar antes de aprobar">📄 Expediente PDF</button>
       <button id="bd-btn-aprobar" onclick="aprobarDesdeModal()" style="background:rgba(0,200,100,0.15);border:1px solid rgba(0,200,100,0.3);color:#4ade80;font-size:11px;font-family:'JetBrains Mono',monospace;padding:8px 18px;border-radius:8px;cursor:pointer;">✓ Aprobar → Activa</button>
     </div>
   </div>
@@ -8050,9 +8050,9 @@ function render() {
       <td><span class="status-badge ${(_rStatus === 'LEGITIMO' || _rStatus === 'FALSO_POSITIVO') ? 'revisado' : stc}">${(_rStatus === 'LEGITIMO') ? 'Legítimo' : (_rStatus === 'FALSO_POSITIVO') ? 'Falso Positivo' : (a.status || 'Pendiente')}</span></td>
       <td>
         <div class="action-group" onclick="event.stopPropagation()">
-          ${(sc === 'critica' || sc === 'alta') ? `<button class="btn-action btn-refer" onclick="openReferModal(${a.id})" title="Generar memorándum de referencia"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg> Referir</button>` : ''}
-          ${(!_rStatus || _rStatus === 'ESCALADO') ? `<button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg> Enviar</button>` : ''}
-          <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Archivar contrato"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg> Archivar</button>
+          ${(sc === 'critica' || sc === 'alta') ? `<button class="btn-action btn-refer" onclick="openReferModal(${a.id})" title="Generar memorándum de referencia">📋 Referir</button>` : ''}
+          ${(!_rStatus || _rStatus === 'ESCALADO') ? `<button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta">📤 Enviar</button>` : ''}
+          <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Archivar contrato">📁 Archivar</button>
         </div>
       </td>
     </tr>`;
@@ -8298,7 +8298,7 @@ async function generateReport(mode = 'todo') {
 </head>
 <body>
 
-<button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>SENTINEL-AI HONDURAS</h1>
 <h2>Informe de Alertas &mdash; ${modeLabel} &nbsp;|&nbsp; Contrataci&oacute;n P&uacute;blica</h2>
@@ -10173,7 +10173,7 @@ function exportAlertDetailPDF() {
 </style>
 </head>
 <body>
-<button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 <h1>SENTINEL-AI HONDURAS</h1>
 <h2>Detalle de Contrato</h2>
 <div class="meta">Generado: ${fechaStr} ${horaStr} &nbsp;·&nbsp; ${meta}</div>
@@ -10389,7 +10389,7 @@ function _renderMonopolioTable() {
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${r.contratos_proveedor||0}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_proveedor)}</td>
       <td style="padding:8px 10px;text-align:center;"><span style="background:${sevBg};color:${sevColor};border:1px solid ${sevColor}33;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">${sev}</span></td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showMonopolioPanel);setTimeout(()=>{document.getElementById('ccEntidad').value=_monEntityList[${i}];document.getElementById('ccProveedor').value=_monVendorList[${i}];document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/></svg> Armar Caso</button></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showMonopolioPanel);setTimeout(()=>{document.getElementById('ccEntidad').value=_monEntityList[${i}];document.getElementById('ccProveedor').value=_monVendorList[${i}];document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Armar Caso</button></td>
     </tr>`;
   }).join('');
 }
@@ -10559,7 +10559,7 @@ async function drShowDrilldown(rowIdx) {
             ${insts?`<div style="font-size:10px;color:var(--text-dim);margin-bottom:2px;">🏛️ ${insts}</div>`:''}
             ${años?`<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;">📅 ${años}</div>`:''}
             <button onclick="abrirConstructorCaso(showDobleRolPanel);setTimeout(()=>{document.getElementById('ccProveedor').value='${nombre.replace(/'/g,"\\'")}';document.getElementById('ccEsquema').value='CAPTURA_INSTITUCIONAL';ccAnalizar();},250)"
-              style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/></svg> Armar Caso</button>
+              style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Armar Caso</button>
           </div>`;
         }).join('')}
       </div>`;
@@ -11457,7 +11457,7 @@ function segRender() {
       </td>
       <td style="padding:8px 10px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${diasColor(dias)};">${diasTxt}</td>
       <td style="padding:8px 10px;text-align:center;">
-        <button id="seg-save-${r.id}" onclick="segGuardar(${r.id})" style="display:none;background:rgba(0,200,255,0.15);color:var(--electric);border:1px solid rgba(0,200,255,0.4);border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg> Guardar</button>
+        <button id="seg-save-${r.id}" onclick="segGuardar(${r.id})" style="display:none;background:rgba(0,200,255,0.15);color:var(--electric);border:1px solid rgba(0,200,255,0.4);border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">💾 Guardar</button>
         <span id="seg-ok-${r.id}" style="color:#4caf50;font-size:10px;display:none;">✓</span>
       </td>
     </tr>`;
@@ -11526,7 +11526,7 @@ function rcRender(data) {
       <td style="padding:8px 10px;text-align:right;font-size:11px;">${r.n_contratos}</td>
       <td style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--text);">${fmtL(Number(r.monto_total))}</td>
       <td style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:${pctColor};">${pct}%</td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="event.stopPropagation();rcVerDetalle(${i})" style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Ver</button></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="event.stopPropagation();rcVerDetalle(${i})" style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer;">🔍 Ver</button></td>
     </tr>`;
   }).join('');
 }
@@ -11577,7 +11577,7 @@ function _renderOncaeTable() {
       <td style="padding:8px 10px;text-align:center;">${critTag}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_total)}</td>
       <td style="padding:8px 10px;text-align:center;">${anioTag}</td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showOncaePanel);setTimeout(()=>{document.getElementById('ccProveedor').value=_oncaeKeywordList[${i}];document.getElementById('ccEsquema').value='PROVEEDOR_ÚNICO';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/></svg> Analizar</button></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="abrirConstructorCaso(showOncaePanel);setTimeout(()=>{document.getElementById('ccProveedor').value=_oncaeKeywordList[${i}];document.getElementById('ccEsquema').value='PROVEEDOR_ÚNICO';},200)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">⚖️ Analizar</button></td>
     </tr>`;
   }).join('');
 }
@@ -11610,7 +11610,7 @@ function _renderEntityRankTable() {
       <td style="padding:8px 10px;text-align:right;color:var(--amber);font-family:'JetBrains Mono',monospace;">${Number(r.alta).toLocaleString('es-HN')}</td>
       <td style="padding:8px 10px;text-align:right;font-weight:600;color:${pctC};font-family:'JetBrains Mono',monospace;">${r.pct_alto_riesgo}%</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;">${fmtL(r.monto_riesgo)}</td>
-      <td style="padding:8px 10px;text-align:center;"><button onclick="showEntityPanelFromSector(_erkEntityList[${i}], showEntityRankingPanel)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Ver</button></td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="showEntityPanelFromSector(_erkEntityList[${i}], showEntityRankingPanel)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🔍 Ver</button></td>
     </tr>`;
   }).join('');
 }
@@ -11818,12 +11818,12 @@ function renderCandidatosDetectados() {
         <button onclick="iniciarInvestigacion('${provSafe}')"
           style="font-size:10px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.1);color:#818cf8;cursor:pointer;white-space:nowrap;transition:all .15s;"
           onmouseover="this.style.background='rgba(99,102,241,0.22)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'" title="Ver contratos de este proveedor">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Ver evidencia
+          🔍 Ver evidencia
         </button>
         <button onclick="openReferModalCandidato('${provSafe}',${montoRaw},'${patRaw.replace(/'/g,"&#39;")}','${entRaw.replace(/'/g,"&#39;")}')"
           style="font-size:10px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid rgba(255,61,87,0.35);background:rgba(255,61,87,0.1);color:var(--red);cursor:pointer;white-space:nowrap;transition:all .15s;"
           onmouseover="this.style.background='rgba(255,61,87,0.22)'" onmouseout="this.style.background='rgba(255,61,87,0.1)'" title="Generar memorándum de referencia">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg> Referir
+          📋 Referir
         </button>
         <button onclick="descartarCandidato('${provSafe}',${idx})"
           style="font-size:10px;font-weight:500;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;white-space:nowrap;transition:all .15s;"
@@ -12382,7 +12382,7 @@ function exportSectorPDF(mode = 'pareto') {
 </style>
 </head>
 <body>
-<button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>SENTINEL-AI HONDURAS</h1>
 <h2>Reporte por Sector — ${esc(_sectorDrilldownLabel)}</h2>
@@ -12711,7 +12711,7 @@ function exportSectorSummaryPDF() {
 </head>
 <body>
 
-<button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>SENTINEL-AI HONDURAS</h1>
 <h2>Riesgo por Sector Institucional — Resumen Comparativo</h2>
@@ -12960,7 +12960,7 @@ function generarMemorandum() {
 </style>
 </head>
 <body>
-<button class="noprint" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:${ent.color};color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;z-index:100;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / PDF</button>
+<button class="noprint" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:${ent.color};color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;z-index:100;">🖨️ Imprimir / PDF</button>
 
 <div class="hdr">
   <div class="esc">🇭🇳</div>
@@ -13148,7 +13148,7 @@ function generarSolicitudLTAIP() {
 </style>
 </head>
 <body>
-<button class="noprint" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:${inst.color};color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;z-index:100;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / PDF</button>
+<button class="noprint" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:${inst.color};color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;z-index:100;">🖨️ Imprimir / PDF</button>
 
 <div class="hdr">
   <div style="font-size:10pt;color:#999;margin-bottom:4px;text-transform:uppercase;letter-spacing:.1em">SentinelAI Intelligence</div>
@@ -13283,8 +13283,8 @@ async function loadInvestigacionesDB() {
         <span class="exec-inv-name" style="flex:1;cursor:pointer;" onclick="tryExecuteInvestigacionPDF('${invId}')">${r.proveedor}${r.entidad?' · '+r.entidad:''}</span>
         ${montoStr ? `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--electric);margin-right:4px;">${montoStr}</span>` : ''}
         <span style="display:inline-flex;gap:4px;margin-right:6px;">
-          <button onclick="event.stopPropagation();generarMemoPGR('${r.folio}','${entEsc}')" style="background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.3);color:var(--red);font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:5px;cursor:pointer;" title="Memorándum PGR"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Memo</button>
-          <button onclick="event.stopPropagation();exportarListaCompleta('${r.folio}','${entEsc}')" style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.25);color:var(--electric);font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:5px;cursor:pointer;" title="Lista completa contratos"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg> Lista</button>
+          <button onclick="event.stopPropagation();generarMemoPGR('${r.folio}','${entEsc}')" style="background:rgba(255,61,87,0.1);border:1px solid rgba(255,61,87,0.3);color:var(--red);font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:5px;cursor:pointer;" title="Memorándum PGR">📄 Memo</button>
+          <button onclick="event.stopPropagation();exportarListaCompleta('${r.folio}','${entEsc}')" style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.25);color:var(--electric);font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:5px;cursor:pointer;" title="Lista completa contratos">📋 Lista</button>
         </span>
         <span class="exec-inv-status" style="${statusBg};cursor:pointer;position:relative;"
           onclick="event.stopPropagation();changeInvEstado('${r.folio}', this)"
@@ -14045,7 +14045,7 @@ ${nsConSenal.map((x,i) => `<tr style="background:${i%2===0?'#fffbea':'#fff'};">
 <body>
 
 <div class="no-print print-btn">
-  <button class="btn btn-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar PDF</button>
+  <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
   <button class="btn btn-close" onclick="window.close()">✕ Cerrar</button>
 </div>
 
@@ -14324,7 +14324,7 @@ async function exportarListaCompleta(folio, entidad) {
 </head>
 <body>
 <div class="no-print print-btn">
-  <button class="btn btn-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar PDF</button>
+  <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
   <button class="btn btn-close" onclick="window.close()">✕ Cerrar</button>
 </div>
 <div class="header-band">
@@ -15115,7 +15115,7 @@ function exportProvPDF() {
 </style>
 </head>
 <body>
-<button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 <h1>SENTINEL-AI HONDURAS</h1>
 <h2>Reporte de Proveedor — ${esc(_currentProv)}</h2>
 <p class="meta">Generado: ${fechaStr} a las ${horaStr} &nbsp;|&nbsp; Total contratos: ${_provDrilldownData.length.toLocaleString('es-HN')} &nbsp;|&nbsp; Monto total: ${esc(fmtL(montoTotal))}</p>
@@ -15588,7 +15588,7 @@ function exportTimelineMesPDF() {
   .btn{display:inline-block;margin:0 0 14px 0;padding:8px 18px;background:#1A3A6B;color:#fff;border:none;border-radius:6px;font-size:10pt;cursor:pointer}
   @media print{.btn{display:none}}
 </style></head><body>
-<button class="btn" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 <h1>Cronología — Contratos por Mes</h1>
 <div class="meta">Año: ${esc(yearLabel)} · ${entityFilter ? esc(entityFilter) : 'Todas las entidades'} · Generado: ${timestamp}</div>
 ${chartImgHtml}
@@ -15673,7 +15673,7 @@ function exportTimelineProvPDF() {
   .btn{display:inline-block;margin:0 0 14px 0;padding:8px 18px;background:#1A3A6B;color:#fff;border:none;border-radius:6px;font-size:10pt;cursor:pointer}
   @media print{.btn{display:none}}
 </style></head><body>
-<button class="btn" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 <h1>Cronología — Ranking de Proveedores</h1>
 <div class="meta">Año: ${esc(yearLabel)} · ${entityFilter ? esc(entityFilter) : 'Todas las entidades'} · Top 50 por ${isMonto?'monto':'contratos'} · Generado: ${timestamp}</div>
 ${chartImgHtml}
@@ -15762,7 +15762,7 @@ function exportTlPDF() {
 </head>
 <body>
 
-<button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>SENTINEL-AI HONDURAS</h1>
 <h2>Reporte de Alertas — Cronología: ${esc(periodoStr)}</h2>
@@ -15908,7 +15908,7 @@ function exportTimelineSummaryPDF() {
 </head>
 <body>
 
-<button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>SENTINEL-AI HONDURAS</h1>
 <h2>Cronología de Alertas — Resumen Mensual</h2>
@@ -16073,7 +16073,7 @@ function exportEntityPDF(mode = 'pareto') {
 </head>
 <body>
 
-<button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>SENTINEL-AI HONDURAS</h1>
 <h2>Reporte por Entidad — ${esc(_epCurrentEntity)}</h2>
@@ -16637,7 +16637,7 @@ function exportRiesgoGlobalPDF() {
   </div>
 
   <div class="no-print" style="padding:16px 28px;background:#f0f4f8;text-align:center;">
-    <button onclick="window.print()" style="padding:10px 24px;background:#0A1628;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin-right:10px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar PDF</button>
+    <button onclick="window.print()" style="padding:10px 24px;background:#0A1628;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin-right:10px;">🖨️ Imprimir / Guardar PDF</button>
     <button onclick="window.close()" style="padding:10px 20px;background:#e8ecf0;color:#444;border:none;border-radius:6px;font-size:13px;cursor:pointer;">✕ Cerrar</button>
   </div>
   </body></html>`));
@@ -16860,7 +16860,7 @@ function exportSobrecostoRealPDF() {
   </div>
 
   <div class="no-print" style="padding:16px 28px;background:#f0f4f8;text-align:center;">
-    <button onclick="window.print()" style="padding:10px 24px;background:#0A1628;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin-right:10px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar PDF</button>
+    <button onclick="window.print()" style="padding:10px 24px;background:#0A1628;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin-right:10px;">🖨️ Imprimir / Guardar PDF</button>
     <button onclick="window.close()" style="padding:10px 20px;background:#e8ecf0;color:#444;border:none;border-radius:6px;font-size:13px;cursor:pointer;">✕ Cerrar</button>
   </div>
   </body></html>`));
@@ -16964,7 +16964,7 @@ function exportAnalyticsPDF(mode) {
     .print-btn{display:inline-block;margin:0 0 16px 0;padding:8px 18px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:10pt;cursor:pointer;}
     @media print{body{margin:16px;} .no-print{display:none!important;}}
   </style></head><body>
-  <button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
   <h1>Análisis de Contratos${mode==='pareto'?' — Pareto (80%)':', Todo'} — SENTINEL-AI</h1>
   <div class="meta">Generado: ${ts} · Fuente: ${fuenteLabel} · ${alerts.length.toLocaleString()} contratos · SentinelAI Intelligence</div>
   <div class="stats">
@@ -17171,7 +17171,7 @@ function exportPhase4PDF() {
     .print-btn{display:inline-block;margin:0 0 16px 0;padding:8px 18px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:10pt;cursor:pointer;}
     @media print{body{margin:16px;} .no-print{display:none!important;}}
   </style></head><body>
-  <button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
   <h1>Detección de Anomalías Estadísticas — SENTINEL-AI</h1>
   <div class="meta">Generado: ${ts} · SEFIN Fiscal 2023–2025 · ${allAlerts.length.toLocaleString()} contratos analizados · SentinelAI Intelligence</div>
   <div class="stats">
@@ -19850,7 +19850,7 @@ async function ccMisExpedientes() {
             </div>
             <button onclick="ccEliminarExpediente('${exp.id}')" title="Eliminar expediente"
               style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:3px 8px;font-size:10px;cursor:pointer;transition:all .2s;"
-              onmouseover="this.style.background='rgba(239,68,68,0.25)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> Eliminar</button>
+              onmouseover="this.style.background='rgba(239,68,68,0.25)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">🗑 Eliminar</button>
           </div>
         </div>
       </div>`).join('');
@@ -20116,18 +20116,18 @@ async function renderTop5() {
           ${c.entidades.size > 0 ? `<button onclick="investigarDesdeTop10('${esc([...c.entidades][0]).replace(/'/g,"\\'")}');event.stopPropagation();"
             style="padding:6px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
             background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left;">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 21 8H3z"/></svg> Por Entidad →
+            🏛️ Por Entidad →
           </button>` : ''}
           <button onclick="investigarDesdeTop10PorProveedor('${esc(c.proveedor).replace(/'/g,"\\'")}');event.stopPropagation();"
             style="padding:6px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
             background:rgba(52,211,153,0.1);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left;">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg> Por Proveedor →
+            📦 Por Proveedor →
           </button>
           <button id="t5-ea-btn-${i}" onclick="lookupEmpresasAbiertasTop10('${esc(c.proveedor).replace(/'/g,"\\'")}', ${i});event.stopPropagation();"
             style="padding:6px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.07em;
             background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;text-align:left;"
             title="Buscar en Empresas Abiertas (registro de socios) — dato no oficial, verificar">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg> Reg. Mercantil
+            🏢 Reg. Mercantil
           </button>
         </div>
         <div id="t5-ea-result-${i}" style="display:none;margin-top:8px;text-align:left;max-width:220px;font-size:10px;background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.2);border-radius:8px;padding:8px;"></div>
@@ -20627,7 +20627,7 @@ function renderAuditLog() {
             : 'El log de auditoría registra automáticamente cuando se crean, envían o eliminan alertas desde el dashboard. Los registros importados desde SEFIN no generan entradas de auditoría.'}
         </div>
         ${!isFilterActive ? `<button onclick="initAuditLogFromAlerts()" style="background:rgba(0,200,255,0.15);border:1px solid var(--electric);color:var(--electric);padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M4 14h7l-1 8 10-12h-7l1-8z"/></svg> Inicializar log con alertas actuales (${allAlerts.length.toLocaleString()} alertas)
+          ⚡ Inicializar log con alertas actuales (${allAlerts.length.toLocaleString()} alertas)
         </button>` : ''}
       </div>`;
     return;
@@ -20990,7 +20990,7 @@ function addPrintBtn(html) {
   // Strip any existing inline print buttons to avoid duplicates
   html = html.replace(/<button[^>]*onclick="window\.print\(\)"[^>]*>[\s\S]*?<\/button>/g, '');
   const printCss = '<style>@media print { .no-print { display: none !important; } }</style>';
-  const btn = '<button class="no-print" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:#1a56db;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;"><span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg></span> Imprimir / Guardar como PDF</button>';
+  const btn = '<button class="no-print" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:#1a56db;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;"><span>🖨️</span> Imprimir / Guardar como PDF</button>';
   const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
   const disclaimer = `<div style="margin-top:40px;padding:16px 20px;border-top:2px solid #dc2626;background:#fff8f8;font-family:Arial,sans-serif;font-size:10px;color:#555;line-height:1.6;">
     <div style="font-weight:700;color:#dc2626;font-size:11px;letter-spacing:.05em;margin-bottom:6px;">⚠ AVISO LEGAL — DOCUMENTO CONFIDENCIAL</div>
@@ -21235,7 +21235,7 @@ function exportPatternDetailPDF() {
   .btn{display:inline-block;margin:0 0 14px 0;padding:8px 18px;background:#1A3A6B;color:#fff;border:none;border-radius:6px;font-size:10pt;cursor:pointer}
   @media print{.btn{display:none}}
 </style></head><body>
-<button class="btn" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 <h1>Patrón: ${esc(d.label)}</h1>
 <div class="meta">Código: ${esc(d.patternCode)} · Generado: ${timestamp} · SentinelAI Intelligence</div>
 <div class="stats">
@@ -22675,7 +22675,7 @@ function generateVendorConcentrationPDF(data, timestamp, mode = 'pareto') {
 </head>
 <body>
 
-<button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>Análisis de Concentración de Proveedores</h1>
 <p class="meta">Reporte Pareto — ${timestamp}</p>
@@ -22864,7 +22864,7 @@ function generateVendorDetailPDF(detail, timestamp, mode = 'todo') {
 </head>
 <body>
 
-<button class="print-btn no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Imprimir / Guardar como PDF</button>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
 
 <h1>${detail.vendorName}</h1>
 <p class="meta">Reporte de contratos — ${timestamp}</p>
@@ -23463,7 +23463,7 @@ function showDashboardEjecutivo() {
         <td style="padding:10px 12px;font-size:12px;">${inv.entidad||'—'}</td>
         <td style="padding:10px 20px 10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;">${fmtM(monto)}</td>
         <td style="padding:10px 12px;"><span style="background:rgba(255,255,255,0.06);color:${col};font-size:11px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;">${inv.estado||'—'}</span></td>
-        <td style="padding:8px 12px;text-align:center;white-space:nowrap;"><div style="display:inline-flex;gap:6px;align-items:center;"><button onclick="generarMemoPGR('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(255,61,87,0.12);border:1px solid rgba(255,61,87,0.35);color:var(--red);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(255,61,87,0.25)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'" title="Memorándum PGR — top 25 Pareto"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Memo PGR</button><button onclick="exportarListaCompleta('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.3);color:var(--electric);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" title="Lista completa todos los contratos CRÍTICOS"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg> Lista</button></div></td>
+        <td style="padding:8px 12px;text-align:center;white-space:nowrap;"><div style="display:inline-flex;gap:6px;align-items:center;"><button onclick="generarMemoPGR('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(255,61,87,0.12);border:1px solid rgba(255,61,87,0.35);color:var(--red);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(255,61,87,0.25)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'" title="Memorándum PGR — top 25 Pareto">📄 Memo PGR</button><button onclick="exportarListaCompleta('${inv.folio}','${(inv.entidad||'').replace(/'/g,"\\'")}')" style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.3);color:var(--electric);font-size:10px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(0,200,255,0.18)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'" title="Lista completa todos los contratos CRÍTICOS">📋 Lista</button></div></td>
       </tr>`;
     }).join('') || '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text-dim);">Sin investigaciones</td></tr>';
   });
@@ -23677,7 +23677,7 @@ function fracRender() {
       <div style="text-align:right;margin-top:4px;">
         <button onclick="abrirConstructorCaso(showFraccionamientoPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='${entEsc}';document.getElementById('ccProveedor').value='${provEsc}';document.getElementById('ccEsquema').value='FRACCIONAMIENTO';ccAnalizar();},250)"
           style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/></svg> Armar Caso
+          ⚖️ Armar Caso
         </button>
       </div>
     </div>`;
@@ -26726,7 +26726,7 @@ function selectReporteItem(idx) {
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="pdf-btn" onclick="${card.btn}"
             style="padding:9px 20px;font-size:13px;font-weight:700;background:${card.bg};color:${card.color};border-color:${card.border};white-space:nowrap;">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Generar PDF
+            📄 Generar PDF
           </button>
         </div>
       </div>
@@ -27376,13 +27376,13 @@ function renderMatchBar(title, summary) {
     const rEntBtns = rEnt.map(e => {
       const s = e.name.replace(/'/g, "\\'");
       return `<button class="news-recent-btn" onclick="showEntityFromNews('${s}')" title="Ver contratos de ${e.name}">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 21 8H3z"/></svg> ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
+        🏛 ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
       </button>`;
     }).join('');
     const rVenBtns = rVen.map(v => {
       const s = v.name.replace(/'/g, "\\'");
       return `<button class="news-recent-btn vendor" onclick="showVendorFromNews('${s}')" title="Ver contratos de ${v.name}">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg> ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
+        🏢 ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
       </button>`;
     }).join('');
     recentBar = `<div class="news-recent-bar">
@@ -27400,13 +27400,13 @@ function renderMatchBar(title, summary) {
   const entityBtns = entities.map(e => {
     const s = e.name.replace(/'/g, "\\'");
     return `<button class="news-match-btn" onclick="showEntityFromNews('${s}')" title="Ver contratos de ${e.name}">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 21 8H3z"/></svg> ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
+      🏛 ${e.name.length > 28 ? e.name.slice(0,26)+'…' : e.name} (${e.count})
     </button>`;
   }).join('');
   const vendorBtns = vendors.map(v => {
     const s = v.name.replace(/'/g, "\\'");
     return `<button class="news-match-btn vendor" onclick="showVendorFromNews('${s}')" title="Ver contratos de ${v.name}">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg> ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
+      🏢 ${v.name.length > 28 ? v.name.slice(0,26)+'…' : v.name} (${v.count})
     </button>`;
   }).join('');
   const allBar = `<div class="news-match-bar">
@@ -27437,7 +27437,7 @@ function mfScoreBadge(score) {
 }
 
 function mfAccionBtn(d) {
-  if (d.accion === 'escalar')    return `<button class="btn-mp" style="background:rgba(168,85,247,0.15);color:var(--purple);border-color:rgba(168,85,247,0.35);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg> PGR</button>`;
+  if (d.accion === 'escalar')    return `<button class="btn-mp" style="background:rgba(168,85,247,0.15);color:var(--purple);border-color:rgba(168,85,247,0.35);">📤 PGR</button>`;
   if (d.accion === 'investigar') return `<span class="severity alta" style="cursor:default;">Investigar</span>`;
   return `<span class="severity baja" style="cursor:default;">Archivar</span>`;
 }
@@ -27535,8 +27535,8 @@ function mfAplicarFiltros(limpiar) {
       <td><span class="severity ${score>=75?'critica':score>=50?'alta':'baja'}" style="cursor:pointer;" onclick="mfToggleDetail('${d.id}')">● ${score}/100</span></td>
       <td><span style="font-size:10px;background:${estadoBg};color:${estadoColor};border:1px solid ${estadoColor};padding:2px 8px;border-radius:12px;">${d.estado||'Recibida'}</span></td>
       <td style="white-space:nowrap;">
-        <button class="btn-mp" style="font-size:10px;padding:3px 10px;" onclick="mfArmarCaso('${d.id}')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/></svg> Armar Caso</button>
-        <button style="font-size:10px;padding:3px 8px;margin-left:4px;background:rgba(255,23,68,0.1);color:var(--red);border:1px solid rgba(255,23,68,0.3);border-radius:6px;cursor:pointer;" onclick="mfEliminarDenuncia('${d.id}','${d.folio||''}')" title="Eliminar denuncia"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+        <button class="btn-mp" style="font-size:10px;padding:3px 10px;" onclick="mfArmarCaso('${d.id}')">⚖️ Armar Caso</button>
+        <button style="font-size:10px;padding:3px 8px;margin-left:4px;background:rgba(255,23,68,0.1);color:var(--red);border:1px solid rgba(255,23,68,0.3);border-radius:6px;cursor:pointer;" onclick="mfEliminarDenuncia('${d.id}','${d.folio||''}')" title="Eliminar denuncia">🗑</button>
       </td>
     </tr>
     <tr id="mf-detail-${d.id}" style="display:none;background:rgba(168,85,247,0.04);">
@@ -27779,7 +27779,7 @@ function mfAbrirNuevaDenuncia() {
 
       <div style="display:flex;gap:10px;">
         <button onclick="document.getElementById('mfNuevaDenunciaModal').remove()" style="flex:1;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
-        <button onclick="mfRegistrarDenuncia()" style="flex:2;padding:12px;background:linear-gradient(135deg,rgba(168,85,247,0.8),rgba(124,58,237,0.9));border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M4.9 19.1a10 10 0 0 1 0-14.2"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg> Registrar Denuncia</button>
+        <button onclick="mfRegistrarDenuncia()" style="flex:2;padding:12px;background:linear-gradient(135deg,rgba(168,85,247,0.8),rgba(124,58,237,0.9));border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">📡 Registrar Denuncia</button>
       </div>
     </div>
   `;
@@ -28614,7 +28614,7 @@ function runScannerPattern(patternId) {
   document.getElementById('scannerExportBar').innerHTML=`
     <button onclick="exportScannerPDF('${patternId}')"
       style="padding:8px 16px;border-radius:8px;background:${pattern.color}22;border:1px solid ${pattern.color}44;
-      color:${pattern.color};font-size:12px;font-weight:700;cursor:pointer;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> Exportar PDF</button>
+      color:${pattern.color};font-size:12px;font-weight:700;cursor:pointer;">📄 Exportar PDF</button>
     <span style="font-size:11px;color:var(--muted);align-self:center;">${results.length} registros · ${fmtL(totalMonto)}</span>
   `;
 
@@ -29530,7 +29530,7 @@ async function consLoadDrilldown(entidad) {
         <td style="padding:8px 10px;text-align:center;">
           <button onclick="abrirConstructorCaso(showConsultoriaPanel);setTimeout(()=>{document.getElementById('ccEntidad').value='${entEsc2}';document.getElementById('ccProveedor').value='${provEsc}';document.getElementById('ccEsquema').value='CONSULTOR_DOMINANTE';ccAnalizar();},250)"
             style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/></svg> Armar Caso
+            ⚖️ Armar Caso
           </button>
         </td>
       </tr>`;
@@ -29639,7 +29639,7 @@ function idRender() {
       <td style="padding:8px 10px;text-align:center;">
         <button onclick="event.stopPropagation();abrirConstructorCaso(showIdentidadPanel);setTimeout(()=>{document.getElementById('ccProveedor').value='${rtnEsc}';document.getElementById('ccEsquema').value='IDENTIDAD_DUPLICADA';ccAnalizar();},250)"
           style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:3px 10px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/></svg> Caso
+          ⚖️ Caso
         </button>
       </td>
     </tr>`;
@@ -29691,7 +29691,7 @@ async function idShowDrilldown(rtn) {
       ${años  ? `<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;">📅 ${años}</div>` : ''}
       <button onclick="abrirConstructorCaso(showIdentidadPanel);setTimeout(()=>{document.getElementById('ccProveedor').value='${nEsc}';document.getElementById('ccEsquema').value='IDENTIDAD_DUPLICADA';ccAnalizar();},250)"
         style="background:rgba(0,200,255,0.12);color:var(--electric);border:1px solid rgba(0,200,255,0.35);border-radius:6px;padding:4px 12px;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/></svg> Armar Caso con este nombre
+        ⚖️ Armar Caso con este nombre
       </button>
     </div>`;
   }).join('');

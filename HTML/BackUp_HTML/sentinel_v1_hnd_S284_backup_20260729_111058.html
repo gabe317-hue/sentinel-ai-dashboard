@@ -163,7 +163,7 @@ body::after {
 .notif-trigger-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .po-item:hover { background: var(--glass-hover); color: var(--text); }
 .po-item:hover .po-arrow { opacity: 1; transform: translateX(0); }
-.po-item-icon  { width: 20px; height: 18px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.po-item-icon  { font-size: 13px; width: 20px; text-align: center; flex-shrink: 0; }
 .po-item-label { flex: 1; }
 .po-item-tag   { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; }
 .po-arrow      { font-size: 10px; color: var(--text-dim); opacity: 0; transform: translateX(-4px); transition: all 0.15s; }
@@ -319,10 +319,7 @@ body::after {
 }
 .nav-item:hover  { background: var(--glass-hover); color: var(--text); }
 .nav-item.active { background: var(--electric-dim); color: var(--electric); border: 1px solid rgba(0,200,255,0.15); }
-.nav-item .nav-icon { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.nav-icon svg, .po-card-icon svg, .po-item-icon svg { display: block; }
-.po-card-icon span { display: flex; align-items: center; justify-content: center; }
-.po-dot-r { color: var(--red); } .po-dot-a { color: var(--amber); } .po-dot-b { color: var(--electric); }
+.nav-item .nav-icon { font-size: 14px; width: 18px; text-align: center; }
 .nav-item .nav-chip {
   margin-left: auto;
   font-family: 'JetBrains Mono', monospace; font-size: 9px;
@@ -3880,69 +3877,69 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="nav-section">
       <div class="nav-section-label">Operación</div>
       <button class="nav-item" id="nav-ejecutiva" onclick="showVistaEjecutiva()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg></span> Vista Ejecutiva
+        <span class="nav-icon">📊</span> Vista Ejecutiva
       </button>
       <button class="nav-item active" id="nav-contratos" onclick="hideAllPanels()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg></span> Contratos
+        <span class="nav-icon">📋</span> Contratos
       </button>
     </div>
 
     <div class="nav-section">
       <div class="nav-section-label">Análisis</div>
       <button class="nav-item" id="nav-analytics" onclick="showAnalyticsPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 7-7"/><path d="M15 8h5v5"/></svg></span> Análisis
+        <span class="nav-icon">📈</span> Análisis
       </button>
       <button class="nav-item" id="nav-vendor-concentration" onclick="showVendorConcentrationPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span> Concentración
+        <span class="nav-icon">🔴</span> Concentración
       </button>
       <button class="nav-item" id="nav-sobrecostos" onclick="showGlobalSobrecostos()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg></span> Sobrepresupuesto
+        <span class="nav-icon">💰</span> Sobrepresupuesto
       </button>
       <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span> Anomalías
+        <span class="nav-icon">⚡</span> Anomalías
       </button>
       <button class="nav-item" id="nav-fraccionamiento" onclick="showFraccionamientoPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88"/><path d="M14.47 14.48 20 20"/><path d="M8.12 8.12 12 12"/></svg></span> Fraccionamiento
+        <span class="nav-icon">✂️</span> Fraccionamiento
       </button>
       <button class="nav-item" id="nav-consultoria" onclick="showConsultoriaPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span> Consultoría NS-10
+        <span class="nav-icon">🧾</span> Consultoría NS-10
       </button>
       <button class="nav-item" id="nav-identidad" onclick="showIdentidadPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12a10 10 0 0 1 18-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M21.8 16c.2-2 .13-5.35 0-6"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/></svg></span> Identidad Duplicada NS-11
+        <span class="nav-icon">🪪</span> Identidad Duplicada NS-11
       </button>
       <button class="nav-item" id="nav-monopolio" onclick="showMonopolioPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span> Monopolio Proveedor NS-12
+        <span class="nav-icon">🔒</span> Monopolio Proveedor NS-12
       </button>
       <button class="nav-item" id="nav-doblerol" onclick="showDobleRolPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Doble Rol NS-13
+        <span class="nav-icon">🎭</span> Doble Rol NS-13
       </button>
       <button class="nav-item" id="nav-cpcinh" onclick="showCpcInhabPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg></span> CPC Inhabilitado NS-14
+        <span class="nav-icon">🚫</span> CPC Inhabilitado NS-14
       </button>
       <button class="nav-item" id="nav-sector" onclick="showSectorPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 21 8H3z"/></svg></span> Sectores Institucionales
+        <span class="nav-icon">🏛️</span> Sectores Institucionales
       </button>
     </div>
 
     <div class="nav-section">
       <div class="nav-section-label">Investigación</div>
       <button class="nav-item" id="nav-candidatos" onclick="showCandidatosPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span> Candidatos
+        <span class="nav-icon">🎯</span> Candidatos
         <span class="nav-chip" id="nav-candidatos-chip" style="background:rgba(255,61,87,0.1);color:var(--red);border-color:rgba(255,61,87,0.25);">—</span>
       </button>
       <button class="nav-item" id="nav-timeline" onclick="showTimelinePanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg></span> Cronología
+        <span class="nav-icon">📅</span> Cronología
       </button>
       <button class="nav-item mod-f" id="nav-modulof" onclick="showModuloFPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.9 19.1a10 10 0 0 1 0-14.2"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg></span> Canal Denuncias
+        <span class="nav-icon">📡</span> Canal Denuncias
         <span class="nav-chip" id="nav-mf-chip" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(168,85,247,0.3);">F</span>
       </button>
       <button class="nav-item" id="nav-news" onclick="showNewsPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span> Noticias
+        <span class="nav-icon">📰</span> Noticias
         <span class="nav-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">RSS</span>
       </button>
       <button class="nav-item" id="nav-scanner" onclick="showScannerPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span> Escáner
+        <span class="nav-icon">🔍</span> Escáner
         <span class="nav-chip" style="background:rgba(124,58,237,0.15);color:#a78bfa;border-color:rgba(124,58,237,0.3);">AUTO</span>
       </button>
 
@@ -3951,34 +3948,34 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="nav-section">
       <div class="nav-section-label">Sistema</div>
       <button class="nav-item" id="nav-reportes" onclick="showReportesPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 18v-2"/><path d="M12 18v-4"/><path d="M16 18v-6"/></svg></span> Reportes
+        <span class="nav-icon">📋</span> Reportes
       </button>
       <button class="nav-item" id="nav-ocds" onclick="showOcdsPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></span> OCDS / Cruce
+        <span class="nav-icon">🔗</span> OCDS / Cruce
         <span class="nav-chip" id="nav-ocds-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">—</span>
       </button>
       <button class="nav-item" id="nav-cruce-sefin" onclick="showCruceSefinPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="3"/><circle cx="19" cy="18" r="3"/><path d="M12 6h5a2 2 0 0 1 2 2v7"/><path d="M12 18H7a2 2 0 0 1-2-2V9"/></svg></span> Cruce ONCAE×SEFIN
+        <span class="nav-icon">⚖️</span> Cruce ONCAE×SEFIN
         <span class="nav-chip" id="nav-cruce-sefin-chip" style="background:rgba(255,165,0,0.1);color:var(--amber);border-color:rgba(255,165,0,0.25);">NEW</span>
       </button>
       <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span> Auditoría
+        <span class="nav-icon">📝</span> Auditoría
         <span class="nav-chip">LOG</span>
       </button>
       <button class="nav-item" id="nav-ingest" onclick="showIngestPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></span> Ingesta
+        <span class="nav-icon">🔄</span> Ingesta
         <span class="nav-chip" style="background:rgba(0,230,118,0.12);color:var(--green);border-color:rgba(0,230,118,0.3);">LIVE</span>
       </button>
       <button class="nav-item" id="nav-admin" onclick="showAdminPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Admin
+        <span class="nav-icon">⚙️</span> Admin
         <span class="nav-chip" style="background:rgba(99,102,241,0.15);color:#818cf8;border-color:rgba(99,102,241,0.3);">USR</span>
       </button>
       <button class="nav-item" id="nav-client-admin" onclick="showClientAdminPanel()" style="display:none;">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg></span> Mi Org
+        <span class="nav-icon">🏢</span> Mi Org
         <span class="nav-chip" style="background:rgba(16,185,129,0.15);color:#10b981;border-color:rgba(16,185,129,0.3);">ORG</span>
       </button>
       <a class="nav-item" href="https://sentinelai-hn.com" target="_blank">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span> Inicio
+        <span class="nav-icon">🏠</span> Inicio
       </a>
     </div>
   </div>
@@ -4034,7 +4031,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- CONSULTAS (S92B — movida al grid) -->
       <div class="po-card po-amber" id="poc-playbook" onclick="poToggle('playbook')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span></div>
+          <div class="po-card-icon"><span>🔍</span></div>
           <div><div class="po-card-title">Consultas</div><div class="po-card-desc">Vista ejecutiva · datos en tiempo real</div></div>
           <div class="po-chevron">▼</div>
         </div>
@@ -4052,25 +4049,25 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         </div>
 
         <button class="po-item" onclick="executePlaybookQuery('prov-nuevo')">
-          <span class="po-item-icon po-dot-r"><svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/></svg></span><span class="po-item-label">Proveedor nuevo + contrato grande</span><span class="po-item-tag tag-r">&lt;90 días</span><span class="po-arrow">›</span>
+          <span class="po-item-icon">🔴</span><span class="po-item-label">Proveedor nuevo + contrato grande</span><span class="po-item-tag tag-r">&lt;90 días</span><span class="po-arrow">›</span>
         </button>
         <button class="po-item" onclick="executePlaybookQuery('prov-inactivo')">
-          <span class="po-item-icon po-dot-r"><svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/></svg></span><span class="po-item-label">Proveedor inactivo reactivado</span><span class="po-item-tag tag-r">12+ meses</span><span class="po-arrow">›</span>
+          <span class="po-item-icon">🔴</span><span class="po-item-label">Proveedor inactivo reactivado</span><span class="po-item-tag tag-r">12+ meses</span><span class="po-arrow">›</span>
         </button>
         <button class="po-item" onclick="executePlaybookQuery('contratacion-directa')">
-          <span class="po-item-icon po-dot-a"><svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/></svg></span><span class="po-item-label">Contratación directa por institución</span><span class="po-item-tag tag-n">ranking</span><span class="po-arrow">›</span>
+          <span class="po-item-icon">🟠</span><span class="po-item-label">Contratación directa por institución</span><span class="po-item-tag tag-n">ranking</span><span class="po-arrow">›</span>
         </button>
         <button class="po-item" onclick="executePlaybookQuery('top10-riesgo')">
-          <span class="po-item-icon po-dot-a"><svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/></svg></span><span class="po-item-label">Top 10 proveedores de riesgo</span><span class="po-item-tag tag-n">score</span><span class="po-arrow">›</span>
+          <span class="po-item-icon">🟠</span><span class="po-item-label">Top 10 proveedores de riesgo</span><span class="po-item-tag tag-n">score</span><span class="po-arrow">›</span>
         </button>
         <button class="po-item" onclick="executePlaybookQuery('inst-alertas')">
-          <span class="po-item-icon po-dot-b"><svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/></svg></span><span class="po-item-label">Instituciones con más alertas</span><span class="po-item-tag tag-n">ranking</span><span class="po-arrow">›</span>
+          <span class="po-item-icon">🔵</span><span class="po-item-label">Instituciones con más alertas</span><span class="po-item-tag tag-n">ranking</span><span class="po-arrow">›</span>
         </button>
         <button class="po-item" onclick="executePlaybookQuery('sobre-presupuesto')">
-          <span class="po-item-icon po-dot-a"><svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/></svg></span><span class="po-item-label">Instituciones Ritmo Acelerado</span><span class="po-item-tag tag-c" style="background:rgba(255,171,0,.15);color:var(--amber);">SEFIN PIEP</span><span class="po-arrow">›</span>
+          <span class="po-item-icon">🟠</span><span class="po-item-label">Instituciones Ritmo Acelerado</span><span class="po-item-tag tag-c" style="background:rgba(255,171,0,.15);color:var(--amber);">SEFIN PIEP</span><span class="po-arrow">›</span>
         </button>
         <button class="po-item" onclick="executePlaybookQuery('red-flags')">
-          <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg></span><span class="po-item-label">Entidades y Personas — Lista de Riesgo</span><span class="po-item-tag tag-r">Red Flags</span><span class="po-arrow">›</span>
+          <span class="po-item-icon">🚩</span><span class="po-item-label">Entidades y Personas — Lista de Riesgo</span><span class="po-item-tag tag-r">Red Flags</span><span class="po-arrow">›</span>
         </button>
 
       </div>
@@ -4079,28 +4076,28 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- INVESTIGACIÓN -->
       <div class="po-card po-red" id="poc-investigacion" onclick="poToggle('investigacion')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><circle cx="11.5" cy="14.5" r="2.5"/><path d="m17 20-3.7-3.7"/></svg></span></div>
+          <div class="po-card-icon"><span>🔎</span></div>
           <div><div class="po-card-title">Investigación</div><div class="po-card-desc">Casos · Cronología · Escáner</div></div>
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
           <button class="po-item" onclick="poGo(abrirConstructorCaso)" style="border-bottom:1px solid rgba(0,200,255,0.15);margin-bottom:4px;">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/></svg></span><span class="po-item-label">Constructor de Caso</span><span class="po-item-tag" style="background:rgba(0,200,255,0.1);color:var(--cyan);border:1px solid rgba(0,200,255,0.25);">NUEVO</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">⚖️</span><span class="po-item-label">Constructor de Caso</span><span class="po-item-tag" style="background:rgba(0,200,255,0.1);color:var(--cyan);border:1px solid rgba(0,200,255,0.25);">NUEVO</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="event.stopPropagation();seleccionarInvParaMemo()">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg></span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span>
+            <span class="po-item-icon">📄</span><span class="po-item-label">Memorándum al PGR</span><span class="po-arrow" style="color:var(--red);">›</span>
           </button>
           <button class="po-item" onclick="poGo(() => showTimelinePanel('portal'))">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span><span class="po-item-label">Cronología</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🕐</span><span class="po-item-label">Cronología</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showNewsPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="po-item-label">Noticias</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">📰</span><span class="po-item-label">Noticias</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showScannerPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 10a7.31 7.31 0 0 0 10 10Z"/><path d="m9 15 3-3"/><path d="M17 13a6 6 0 0 0-6-6"/><path d="M21 13A10 10 0 0 0 11 3"/></svg></span><span class="po-item-label">Escáner Automático</span><span class="po-item-tag tag-l">6 patrones</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🛰️</span><span class="po-item-label">Escáner Automático</span><span class="po-item-tag tag-l">6 patrones</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(mfAbrirDesdeEjecutivo)" style="border-top:1px solid rgba(168,85,247,0.2);margin-top:4px;">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span><span class="po-item-label">Canal Denuncias</span><span class="po-item-tag" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);" id="po-mf-badge">F</span><span class="po-arrow" style="color:#a855f7;">›</span>
+            <span class="po-item-icon">📣</span><span class="po-item-label">Canal Denuncias</span><span class="po-item-tag" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);" id="po-mf-badge">F</span><span class="po-arrow" style="color:#a855f7;">›</span>
           </button>
         </div>
       </div>
@@ -4108,25 +4105,25 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- ANÁLISIS -->
       <div class="po-card po-amber" id="poc-analisis" onclick="poToggle('analisis')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg></span></div>
+          <div class="po-card-icon"><span>📊</span></div>
           <div><div class="po-card-title">Análisis</div><div class="po-card-desc">5 módulos · Riesgo cuantitativo</div></div>
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
           <button class="po-item" onclick="poGo(showAnalyticsPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 7-7"/><path d="M15 8h5v5"/></svg></span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🔍</span><span class="po-item-label">Análisis General</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showVendorConcentrationPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span><span class="po-item-label">Concentración</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🎯</span><span class="po-item-label">Concentración</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showGlobalSobrecostos)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg></span><span class="po-item-label">Sobrepresupuestos</span><span class="po-item-tag tag-n" id="po-tag-sobrecosto">— casos</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">💰</span><span class="po-item-label">Sobrepresupuestos</span><span class="po-item-tag tag-n" id="po-tag-sobrecosto">— casos</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showPhase4Detection)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">⚠️</span><span class="po-item-label">Anomalías</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showSectorPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 21 8H3z"/></svg></span><span class="po-item-label">Sectores Institucionales</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🏛️</span><span class="po-item-label">Sectores Institucionales</span><span class="po-arrow">›</span>
           </button>
         </div>
       </div>
@@ -4138,7 +4135,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- CANDIDATOS -->
       <div class="po-card po-red" id="poc-candidatos" onclick="poToggle('candidatos')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span></div>
+          <div class="po-card-icon"><span>🎯</span></div>
           <div><div class="po-card-title">Candidatos</div><div class="po-card-desc">Detecciones · Proveedores nuevos · Investigaciones</div></div>
           <div class="po-chevron">▼</div>
         </div>
@@ -4185,7 +4182,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- NOTIFICACIÓN MANUAL -->
       <div class="po-card po-electric" id="poc-notificacion" onclick="poToggle('notificacion')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span></div>
+          <div class="po-card-icon"><span>📧</span></div>
           <div><div class="po-card-title">Notificación Manual</div><div class="po-card-desc">Disparar alerta · sin esperar schedule</div></div>
           <div class="po-chevron">▼</div>
         </div>
@@ -4211,33 +4208,33 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- REPORTES -->
       <div class="po-card po-green" id="poc-reportes" onclick="poToggle('reportes')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg></span></div>
+          <div class="po-card-icon"><span>📄</span></div>
           <div><div class="po-card-title">Reportes</div><div class="po-card-desc">PDF · Memorándums · Briefings</div></div>
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
           <div class="po-rpt-group-label">Reportes de Riesgo</div>
           <button class="po-item" onclick="poGo(()=>generateReport('pareto'))">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg></span><span class="po-item-label">Briefing Ejecutivo (Pareto 80/20)</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">📊</span><span class="po-item-label">Briefing Ejecutivo (Pareto 80/20)</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(()=>generateReport('todo'))">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg></span><span class="po-item-label">Reporte Completo</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">📋</span><span class="po-item-label">Reporte Completo</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
           </button>
           <div class="po-divider"></div>
           <div class="po-rpt-group-label">Actores de Riesgo</div>
           <button class="po-item" onclick="poGo(showRedFlagPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg></span><span class="po-item-label">Red Flags CNA/UFERCO/ASJ</span><span class="po-item-tag" style="background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);">NUEVO</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🚩</span><span class="po-item-label">Red Flags CNA/UFERCO/ASJ</span><span class="po-item-tag" style="background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);">NUEVO</span><span class="po-arrow">›</span>
           </button>
           <div class="po-rpt-group-label">Referencias Internacionales</div>
           <button class="po-item" onclick="poGo(showEngelPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg></span><span class="po-item-label">Lista Engel</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🇺🇸</span><span class="po-item-label">Lista Engel</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showOfacPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></span><span class="po-item-label">Sanciones OFAC</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🚨</span><span class="po-item-label">Sanciones OFAC</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
           </button>
           <div class="po-divider"></div>
           <button class="po-item" onclick="poGo(showReportesPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span><span class="po-item-label">Panel de Reportes</span><span class="po-item-tag tag-n" id="badge-reportes-panel">10 PDF</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">📁</span><span class="po-item-label">Panel de Reportes</span><span class="po-item-tag tag-n" id="badge-reportes-panel">10 PDF</span><span class="po-arrow">›</span>
           </button>
         </div>
       </div>
@@ -4245,23 +4242,23 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- SISTEMA -->
       <div class="po-card po-purple" id="poc-sistema" onclick="poToggle('sistema')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span></div>
+          <div class="po-card-icon"><span>⚙️</span></div>
           <div><div class="po-card-title">Sistema</div><div class="po-card-desc">Auditoría · Ingesta · Sesión</div></div>
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
           <button class="po-item" onclick="poGo(showAuditPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></span><span class="po-item-label">Auditoría del Sistema</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🗂️</span><span class="po-item-label">Auditoría del Sistema</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="poGo(showIngestPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></span><span class="po-item-label">Panel de Ingesta</span><span class="po-item-tag tag-l">Live</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">📥</span><span class="po-item-label">Panel de Ingesta</span><span class="po-item-tag tag-l">Live</span><span class="po-arrow">›</span>
           </button>
           <div class="po-divider"></div>
           <button class="po-item" onclick="poGo(showModuloFPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span><span class="po-item-label">Canal Denuncias</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">📢</span><span class="po-item-label">Canal Denuncias</span><span class="po-arrow">›</span>
           </button>
           <button class="po-item" onclick="doLogout()" style="color:var(--red);">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></span><span class="po-item-label">Cerrar Sesión</span>
+            <span class="po-item-icon">🔒</span><span class="po-item-label">Cerrar Sesión</span>
           </button>
         </div>
       </div>
@@ -4269,13 +4266,13 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- BÚSQUEDA BD -->
       <div class="po-card po-electric" id="poc-busqueda" onclick="poToggle('busqueda')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></span></div>
+          <div class="po-card-icon"><span>🔎</span></div>
           <div><div class="po-card-title">Búsqueda BD</div><div class="po-card-desc"><span id="busqueda-card-count">—</span> registros · filtros avanzados</div></div>
           <div class="po-chevron">▼</div>
         </div>
         <div class="po-submenu">
           <button class="po-item" onclick="poGo(showBusquedaBDPanel)">
-            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span><span class="po-item-label">Buscar en Base de Datos</span><span class="po-item-tag tag-l">Live</span><span class="po-arrow">›</span>
+            <span class="po-item-icon">🔍</span><span class="po-item-label">Buscar en Base de Datos</span><span class="po-item-tag tag-l">Live</span><span class="po-arrow">›</span>
           </button>
           <div style="padding:8px 16px 4px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.06em;">FILTROS DISPONIBLES</div>
           <div style="padding:4px 16px 12px;font-size:10px;color:var(--text-dim);line-height:1.6;">
@@ -4287,7 +4284,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <!-- ACTIVIDAD DEL SISTEMA -->
       <div class="po-card po-green" id="poc-actividad" onclick="poToggle('actividad')">
         <div class="po-card-hd">
-          <div class="po-card-icon"><span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.9 19.1a10 10 0 0 1 0-14.2"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg></span></div>
+          <div class="po-card-icon"><span>📡</span></div>
           <div>
             <div class="po-card-title">Actividad del Sistema</div>
             <div class="po-card-desc" style="display:flex;align-items:center;gap:5px;">

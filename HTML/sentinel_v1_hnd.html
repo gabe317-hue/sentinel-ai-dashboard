@@ -123,15 +123,19 @@ body::after {
 .po-close {
   position: fixed; top: 20px; right: 24px; z-index: 10001;
   background: var(--glass); border: 1px solid var(--border);
-  border-radius: 8px; color: var(--text-dim);
+  border-radius: 8px; color: var(--text); /* S285 · R-08 — antes var(--text-dim): contraste insuficiente (H-12) */
   font-family: 'JetBrains Mono', monospace; font-size: 11px;
   letter-spacing: 1px; padding: 7px 14px; cursor: pointer;
   transition: all 0.15s; display: flex; align-items: center; gap: 6px;
 }
 .po-close:hover { color: var(--text); border-color: rgba(0,200,255,0.3); }
-.po-header { position: relative; z-index: 1; padding: 52px 0 44px; text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 48px; }
+/* S285 · R-08 — el portal se acerca al ritmo espacial del panel: menos aire de
+   página de aterrizaje, más densidad de consola (H-06). Antes: padding 52px/44px. */
+.po-header { position: relative; z-index: 1; padding: 36px 0 28px; text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 48px; }
 .po-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--electric); opacity: 0.7; margin-bottom: 18px; }
-.po-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(38px, 6vw, 64px); letter-spacing: -1.5px; color: var(--text); line-height: 1; margin-bottom: 14px; }
+/* S285 · R-08 — antes clamp(38px, 6vw, 64px): 64px de logotipo es escala de portada,
+   no de herramienta operativa. */
+.po-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(30px, 4vw, 44px); letter-spacing: -1.5px; color: var(--text); line-height: 1; margin-bottom: 14px; }
 .po-logo span { color: var(--electric); }
 .po-subtitle { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 24px; }
 .po-meta { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
@@ -2459,7 +2463,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v1.96 — HND</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v1.97 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2499,7 +2503,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v1.96 — HND · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v1.97 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -3924,7 +3928,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version" data-app-version="{v} — HND">v1.96 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v1.97 — HND</div>
   </div>
 
   <div class="nav">
@@ -4060,9 +4064,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <div class="po-wrap">
     <div class="po-header">
-      <div style="display:flex;justify-content:flex-start;margin-bottom:10px;">
-        <button onclick="abrirPanelEjecutivo()" style="background:rgba(0,200,255,0.18);color:var(--cyan);border:1px solid rgba(0,200,255,0.55);border-radius:12px;padding:7px 22px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.06em;transition:all .2s;box-shadow:0 0 12px rgba(0,200,255,0.15);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg> Panel Ejecutivo</button>
-      </div>
       <div class="po-eyebrow">SentinelAI Intelligence</div>
       <div class="po-logo">SENTINEL<span>·</span>AI</div>
       <div class="po-subtitle">Detección de Riesgo en Contratación Pública</div>
@@ -4070,11 +4071,23 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric" data-app-version="{v} — HND">v1.96 — HND</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v1.97 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
+        <!-- S285 · R-08 — píldora de frescura del DATO (H-12). Distinta del delta badge de arriba:
+             ese compara contra lo último que vio ESTE navegador (localStorage), esta muestra la fecha
+             del contrato más reciente en la base. Se puebla en render(), misma fuente que #freshness-date. -->
+        <span id="po-ingesta-badge" style="display:none;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:3px 11px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;color:var(--text-dim);" title="Fecha del contrato más reciente en la base de datos"><span id="po-ingesta-dot" style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;"></span><span id="po-ingesta-txt">Última ingesta: —</span></span>
         <button id="btn-reload-data" onclick="reloadDashboardData()" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">↺ Cargar Datos</button>
         <button id="btn-ver-contratos" onclick="hidePortal();showContratosView();" style="background:rgba(255,61,87,0.15);color:var(--red);border:1px solid rgba(255,61,87,0.35);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;">⊞ Ver Contratos</button>
+      </div>
+      <!-- S285 · R-08 — "Panel Ejecutivo" estaba arriba del todo, alineado a la izquierda y
+           fuera de cualquier agrupación (H-12: "flota sin pertenecer a ninguna banda"). Ahora
+           ancla al final del header, centrado bajo las píldoras de metadatos, y es el único
+           botón primario de la pantalla. Nota: el estilo anterior usaba color:var(--cyan),
+           token que NO existe en :root — el color nunca se aplicaba. -->
+      <div style="display:flex;justify-content:center;margin-top:22px;">
+        <button onclick="abrirPanelEjecutivo()" style="background:var(--electric);color:var(--navy);border:none;border-radius:10px;padding:9px 26px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.06em;transition:opacity .2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg> Panel Ejecutivo</button>
       </div>
     </div>
 
@@ -4361,11 +4374,16 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <!-- STATUS BAND -->
   <div class="po-band">
     <div class="po-band-inner">
-      <div class="po-ind"><span class="po-ind-lbl">Contratos Críticos</span><span class="po-ind-val red" id="po-ind-crit">—</span></div>
+      <!-- S285 · R-08 (H-06, duplicación en el portal) — se retiraron 3 de los 6 indicadores
+           porque ya aparecen en esta misma pantalla:
+             · Contratos Críticos  → tarjeta Consultas
+             · Sobrepresupuesto    → tarjeta Consultas (y #po-tag-sobrecosto)
+             · Total Monitoreado   → badge #po-db-badge del header ("X contratos monitoreados")
+           Los 3 que quedan NO se repiten en ningún otro lugar del portal, así que se conservan
+           a propósito: borrar la banda entera (lectura literal del prompt del Dictamen) habría
+           perdido datos en vez de quitar duplicación. -->
       <div class="po-ind"><span class="po-ind-lbl">Riesgo Alto</span><span class="po-ind-val amber" id="po-ind-alto">—</span></div>
       <div class="po-ind"><span class="po-ind-lbl">Listas Internacionales</span><span class="po-ind-val purple" id="po-ind-intl">—</span></div>
-      <div class="po-ind"><span class="po-ind-lbl">Total Monitoreado</span><span class="po-ind-val blue" id="po-ind-total">—</span></div>
-      <div class="po-ind"><span class="po-ind-lbl">Sobrepresupuesto</span><span class="po-ind-val amber" id="po-ind-sob">—</span></div>
       <div class="po-ind"><span class="po-ind-dot green"></span><span class="po-ind-lbl">Estado</span><span class="po-ind-val green">Operativo</span></div>
     </div>
   </div>
@@ -7413,7 +7431,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v1.96';
+const APP_VERSION = 'v1.97';
 const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -7958,6 +7976,24 @@ function render() {
     }, '');
     const freshnessEl = document.getElementById('freshness-date');
     if (freshnessEl) freshnessEl.textContent = maxFecha ? maxFecha.substring(0, 10) : '—';
+
+    // S285 · R-08 (H-12) — píldora de frescura del portal. Reutiliza maxFecha, que ya se calculó
+    // arriba para #freshness-date: una sola fuente de verdad, no dos cálculos que pueden divergir.
+    // Verde si el dato más reciente es de los últimos 7 días, ámbar si es más antiguo.
+    const _ingBadge = document.getElementById('po-ingesta-badge');
+    if (_ingBadge && maxFecha) {
+      const _fecha = maxFecha.substring(0, 10);
+      const _dias  = Math.floor((Date.now() - new Date(_fecha + 'T00:00:00').getTime()) / 86400000);
+      const _resc  = _dias <= 7;
+      const _txt = document.getElementById('po-ingesta-txt');
+      const _dot = document.getElementById('po-ingesta-dot');
+      if (_txt) _txt.textContent = 'Última ingesta: ' + _fecha.split('-').reverse().join('/');
+      if (_dot) _dot.style.background = _resc ? 'var(--green)' : 'var(--amber)';
+      _ingBadge.title = _resc
+        ? `Dato más reciente: ${_fecha} (hace ${_dias} día${_dias === 1 ? '' : 's'})`
+        : `Dato más reciente: ${_fecha} — hace ${_dias} días. Verificar si la ingesta está corriendo.`;
+      _ingBadge.style.display = 'inline-flex';
+    }
   }
 
   // ── Filter for table display ──
@@ -20283,7 +20319,6 @@ function poUpdateIndicators() {
     const data = (typeof allAlerts !== 'undefined') ? allAlerts : [];
     if (!data.length) return;
     const normSevP = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    const crit  = data.filter(a => normSevP(a.severity) === 'critica').length;
     const alto  = data.filter(a => normSevP(a.severity) === 'alta').length;
     const sob   = data.filter(a => {
       const mc = Number(a.monto_contrato||0);
@@ -20294,14 +20329,20 @@ function poUpdateIndicators() {
     }).length;
     const engel = data.filter(a => a.tags && a.tags.includes('LISTA_ENGEL')).length;
     const ofac  = data.filter(a => a.tags && a.tags.includes('PROVEEDOR_SANCIONADO')).length;
-    document.getElementById('po-ind-crit').textContent  = crit.toLocaleString('es-HN');
+    // S285 · R-08 — los indicadores po-ind-crit / po-ind-sob / po-ind-total se retiraron de la
+    // banda del portal (duplicaban la tarjeta Consultas y el badge del header). Sus asignaciones
+    // se quitaron de aquí junto con el markup: estaban SIN guarda (getElementById(...).textContent
+    // directo), así que dejar el markup fuera y el JS dentro habría lanzado TypeError y matado
+    // todo lo que sigue en esta función, incluidos po-db-badge y el delta badge.
+    // Sobre las variables: `sob` y `displayTotal` se conservan porque las siguen usando
+    // po-tag-sobrecosto y po-db-badge. `const crit` se eliminó: su ÚNICO consumidor era
+    // po-ind-crit, así que quedaba como un filtro completo sobre todo el dataset en cada
+    // carga del portal sin que nadie leyera el resultado.
     document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
     document.getElementById('po-ind-intl').textContent  = (engel + ofac).toLocaleString('es-HN');
-    document.getElementById('po-ind-sob').textContent   = sob.toLocaleString('es-HN');
     const poTagSob = document.getElementById('po-tag-sobrecosto');
     if (poTagSob) poTagSob.textContent = sob.toLocaleString('es-HN') + ' casos';
     const displayTotal = window._bdTotalCount || data.length;
-    document.getElementById('po-ind-total').textContent = displayTotal.toLocaleString('es-HN');
     document.getElementById('po-db-badge').textContent  = displayTotal.toLocaleString('es-HN') + ' contratos monitoreados';
 
     // Delta counter — compara contra último conteo guardado
@@ -20329,7 +20370,12 @@ function poUpdateIndicators() {
           deltaBadge.style.borderColor = 'rgba(255,200,0,0.3)';
         } else if (prevCount > 0 && curCount === prevCount) {
           const fmtPrev = new Date(prevDate).toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'});
-          deltaBadge.textContent = `↔ sin cambios desde ${fmtPrev}`;
+          // S285 · R-08 (H-12) — antes decía "↔ sin cambios desde DD/MM/AAAA", que no permitía
+          // distinguir "el dato está al día y no hay nada nuevo" de "el sistema no está actualizando".
+          // El texto ahora nombra qué es lo que no cambió. La fecha de frescura del dato va aparte,
+          // en #po-ingesta-badge, porque esta fecha sale de localStorage (última visita de ESTE
+          // navegador) y llamarla "última ingesta" sería falso.
+          deltaBadge.textContent = `↔ Sin nuevos contratos desde ${fmtPrev}`;
           deltaBadge.style.background = 'rgba(255,255,255,0.05)';
           deltaBadge.style.color = 'var(--text-dim, #666)';
           deltaBadge.style.borderColor = 'rgba(255,255,255,0.1)';

@@ -669,57 +669,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 .risk-band-item.rb-critica .risk-band-item-val { color: var(--red); }
 .risk-band-item.rb-alta    .risk-band-item-val { color: var(--orange); }
 
-/* ── S285 · R-04 del Dictamen UX/UI — franja del panel a registro forense ──
-   Contención por defecto: la cifra deja de ser el elemento más pesado de la pantalla
-   y el universo auditado sube a su misma jerarquía. El objetivo no es esconder el dato
-   sino ganar autoridad por sobriedad (un lector institucional descuenta lo que grita).
-
-   ⚠ ALCANCE DELIBERADO: estas reglas van scopeadas a #risk-band, NO a la clase .risk-band.
-   La misma clase la usa #risk-band-exec (modo Presentar, línea ~4413), y ahí el énfasis
-   SÍ es correcto — el propio Dictamen lo dice en H-04: "Para una presentación comercial
-   o de prensa, la franja actual funciona. Para PGR/CNA/Presidencia, no."
-   Si algún día se quiere sobriedad también en Presentar, cambiar el selector, no borrar esto. */
-#risk-band {
-  background: none;
-  border: 1px solid var(--border);
-  border-left: 1px solid var(--border);
-  align-items: flex-start;
-}
-#risk-band .risk-band-label {
-  color: var(--text-dim);
-  letter-spacing: 1.5px;
-  opacity: 1;
-}
-#risk-band .risk-band-amount {
-  font-size: clamp(30px, 3.4vw, 42px);
-  color: var(--text);
-  text-shadow: none;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-/* Único resto cromático: el color aquí es el dato (severidad), no decoración. */
-#risk-band .rb-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--red);
-  flex-shrink: 0;
-}
-#risk-band .risk-band-budget {
-  font-size: 12px;
-  font-weight: 400;
-  opacity: 0.8;
-  margin-top: 7px;
-}
-#risk-band .risk-band-item {
-  min-width: 172px;
-  text-align: left;
-}
-#risk-band .risk-band-item-val {
-  font-size: 22px;
-  color: var(--text);
-}
-
 /* Controls bar */
 .controls-bar {
   display: flex; align-items: center; gap: 12px;
@@ -4792,25 +4741,24 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
 
-  <!-- P1 — Risk Band: monto total en contratos de alto riesgo
-       S285 · R-04 del Dictamen UX/UI — recalibrada a registro forense.
-       Los dos bloques CRÍTICOS/ALTOS se retiraron: eran el mismo dato que las tarjetas
-       de indicadores de abajo, en el mismo campo visual (H-13, duplicación). En su lugar
-       queda el universo auditado, que es lo que sustenta la autoridad del sistema.
-       El estilo sobrio vive en las reglas #risk-band del CSS; el modo Presentar
-       (#risk-band-exec) conserva el tratamiento enfático a propósito. -->
+  <!-- P1 — Risk Band: monto total en contratos de alto riesgo -->
   <div class="risk-band" id="risk-band">
     <div class="risk-band-main">
-      <div class="risk-band-label">MONTO EN CONTRATOS CON SEÑALES DE IRREGULARIDAD</div>
-      <div class="risk-band-amount"><span class="rb-dot" aria-hidden="true"></span><span id="risk-band-total">L —</span></div>
-      <div class="risk-band-sub">Suma de contratos clasificados Críticos y Altos</div>
+      <div class="risk-band-label">⚠ ALERTA SISTEMA SENTINEL — CONTRATOS DE ALTO RIESGO DETECTADOS</div>
+      <div class="risk-band-amount" id="risk-band-total">L —</div>
+      <div class="risk-band-sub">Monto acumulado en contratos con señales de irregularidad (Críticos + Altos)</div>
       <div class="risk-band-budget" id="risk-band-budget"></div>
     </div>
     <div class="risk-band-breakdown">
-      <div class="risk-band-item">
-        <div class="risk-band-item-label">Universo auditado</div>
-        <div class="risk-band-item-val" id="risk-band-universo">—</div>
-        <div class="risk-band-item-cnt">contratos monitoreados</div>
+      <div class="risk-band-item rb-critica">
+        <div class="risk-band-item-label">⬤ Críticos</div>
+        <div class="risk-band-item-val" id="risk-band-critica">L —</div>
+        <div class="risk-band-item-cnt" id="risk-band-critica-cnt">— contratos</div>
+      </div>
+      <div class="risk-band-item rb-alta">
+        <div class="risk-band-item-label">⬤ Altos</div>
+        <div class="risk-band-item-val" id="risk-band-alta">L —</div>
+        <div class="risk-band-item-cnt" id="risk-band-alta-cnt">— contratos</div>
       </div>
     </div>
   </div>
@@ -7934,14 +7882,10 @@ function render() {
   const riskPct   = (riskMonto > 0 && PRESUPUESTO_HND) ? (riskMonto / PRESUPUESTO_HND * 100).toFixed(2) : null;
   const _rb = id => document.getElementById(id);
   if (_rb('risk-band-total'))       _rb('risk-band-total').textContent       = riskMonto > 0 ? fmtL(riskMonto) : 'L —';
-  // S285 (R-04) — el universo auditado sube a la misma jerarquía que la cifra de riesgo.
-  // Se lee de la MISMA fuente que la tarjeta "Total Contratos" (arriba, cnt-total) en vez de
-  // escribirse a mano: un número fijo en el HTML se desactualiza en la siguiente ingesta y
-  // vuelve a abrir el problema de "los números no cuadran" que R-02 acaba de cerrar.
-  if (_rb('risk-band-universo')) _rb('risk-band-universo').textContent = (window._bdTotalCount || allAlerts.length).toLocaleString('es-HN');
-  // Los bloques CRÍTICOS/ALTOS de la franja se retiraron en S285 (duplicaban las tarjetas,
-  // H-13). Sus 4 asignaciones se quitaron de aquí junto con el markup. El modo Presentar usa
-  // ids propios (exec-risk-critica / exec-risk-alta) y no depende de estas líneas.
+  if (_rb('risk-band-critica'))     _rb('risk-band-critica').textContent     = fmtL(m.critica);
+  if (_rb('risk-band-alta'))        _rb('risk-band-alta').textContent        = fmtL(m.alta);
+  if (_rb('risk-band-critica-cnt')) _rb('risk-band-critica-cnt').textContent = c.critica.toLocaleString() + ' contratos';
+  if (_rb('risk-band-alta-cnt'))    _rb('risk-band-alta-cnt').textContent    = c.alta.toLocaleString() + ' contratos';
   if (_rb('risk-band-budget')) {
     _rb('risk-band-budget').textContent = riskPct
       ? `≈ ${riskPct}% del Presupuesto General de la República (${fmtL(PRESUPUESTO_HND)} aprobado ${presupuestoAnio})`

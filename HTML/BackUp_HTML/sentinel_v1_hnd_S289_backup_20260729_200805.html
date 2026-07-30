@@ -2464,7 +2464,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.00 — HND</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v1.99 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2504,7 +2504,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.00 — HND · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v1.99 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -3929,7 +3929,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version" data-app-version="{v} — HND">v2.00 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v1.99 — HND</div>
   </div>
 
   <div class="nav">
@@ -4076,7 +4076,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric" data-app-version="{v} — HND">v2.00 — HND</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v1.99 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <!-- S285 · R-08 — píldora de frescura del DATO (H-12). Distinta del delta badge de arriba:
@@ -7544,7 +7544,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.00';
+const APP_VERSION = 'v1.99';
 const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -7703,11 +7703,50 @@ function _applyFraccionamientoScrub(arr) {
   return arr;
 }
 
-// S289 — `_loadRemainingAlertsBackground()` BORRADA. Definida en S126 para traer MEDIA+BAJA
-// en segundo plano, pero nunca se llegó a invocar desde ningún punto del archivo: loadAlerts()
-// carga el universo completo. Se elimina porque arrastraba el patrón .range() con offset
-// profundo, que desde S287 ya no usa el índice — dejarla era una mina para cualquier sesión
-// futura que la reactivara sin conocer el diagnóstico. Recuperable del backup de S289.
+// S126 — Background loader: fetches MEDIA + BAJA records after UI is already live.
+// Merges into allAlerts silently — no UI freeze, no blocking.
+async function _loadRemainingAlertsBackground() {
+  try {
+    const PAGE_SIZE  = 1000;
+    const BATCH_SIZE = 4;
+    const REMAINING_SEVERITIES = ['MEDIA', 'Media', 'BAJA', 'Baja'];
+    let remaining = [];
+    let batchStart = 0;
+    let done = false;
+    while (!done) {
+      const promises = [];
+      for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) {
+        promises.push(
+          db.from('alerts')
+            .select('*')
+            .in('severity', REMAINING_SEVERITIES)
+            .order('id', { ascending: false })
+            .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
+        );
+      }
+      const results = await Promise.all(promises);
+      for (const { data, error } of results) {
+        if (error) { done = true; break; }
+        const batch = data || [];
+        remaining = remaining.concat(batch);
+        if (batch.length < PAGE_SIZE) done = true;
+      }
+      batchStart += BATCH_SIZE;
+      await new Promise(r => setTimeout(r, 50)); // yield to UI between batches
+    }
+    // Merge: apply filters to new records, then re-run FRACCIONAMIENTO on full combined set
+    const combined = _applyFraccionamientoScrub(
+      allAlerts.concat(_applyAlertsFilters(remaining))
+    );
+    allAlerts = combined;
+    allAlerts.forEach(a => { a._sev = normSev(a.severity); }); // S170 — pre-compute
+    window.allAlerts = allAlerts;
+    window._bdTotalCount = allAlerts.length; // update to exact count now that full data is ready
+    updateBDCountDisplay(allAlerts.length);
+  } catch (err) {
+    console.warn('⚠️ Background load partial — using priority data only:', err.message);
+  }
+}
 
 async function loadReviewCache() {
   // Carga todas las revisiones de alert_reviews en un Map para lookup O(1) en tabla
@@ -7878,106 +7917,51 @@ async function loadAlerts() {
     } catch(_) {}
     setProgress(5);
 
-    // S289 — PAGINACIÓN POR RANGO DE LLAVE (keyset). No usar .range() nunca más acá.
-    // Causa raíz: el UPDATE masivo de S287 reescribió las 176,819 filas y la correlación
-    // id↔orden físico cayó de ~1.0 a −0.34. El planificador dejó de usar alerts_pkey y cada
-    // página pasó a hacer seq scan + sort externo derramado a disco (102 MB).
-    // Medido en offset 150,000: .range() = 17,978 ms (POR ENCIMA del PAGE_TIMEOUT de 12 s, así
-    // que las páginas profundas se caían y se reintentaban) vs. rango de llave = 1.8 ms.
-    // El rango es inmune a que un futuro UPDATE masivo vuelva a romper la correlación.
-
-    const withTimeout = (req) => {
+    // Fetch one page with a hard timeout — never blocks forever
+    const fetchPage = (p) => {
+      const req = db.from('alerts').select('*').order('id', { ascending: false })
+        .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1);
       const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), PAGE_TIMEOUT));
       return Promise.race([req, timeout]).catch(e => ({ data: null, error: e }));
     };
 
-    // Una página = un intervalo cerrado de id. lo_id NULL en la última (sin cota inferior),
-    // así la unión de las páginas es la tabla completa, sin duplicados ni saltos.
-    const fetchAnchor = (a) => {
-      let req = db.from('alerts').select('*').order('id', { ascending: false }).lte('id', a.hi_id);
-      if (a.lo_id !== null && a.lo_id !== undefined) req = req.gt('id', a.lo_id);
-      return withTimeout(req.limit(PAGE_SIZE));
-    };
+    let all = [];
+    let batchStart = 0;
+    let done = false;
+    let pagesLoaded = 0;
+    const failedPages = [];
 
-    // Respaldo: paginación por offset. Solo si la RPC de anclas no responde — es lenta,
-    // pero es preferible a dejar el dashboard sin datos.
-    const fetchOffsetPage = (p) => withTimeout(
-      db.from('alerts').select('*').order('id', { ascending: false })
-        .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
-    );
+    while (!done) {
+      const pageNums = [];
+      for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) pageNums.push(p);
 
-    // Una sola consulta (~330 ms) devuelve los 177 cortes de página. Por eso se conserva el
-    // lote paralelo de 4: el keyset secuencial obligaría a 177 viajes de red en fila.
-    let anchors = null;
-    try {
-      const { data: anc, error: ancErr } = await db.rpc('get_alert_page_anchors', { p_page_size: PAGE_SIZE });
-      if (!ancErr && Array.isArray(anc) && anc.length) {
-        anchors = anc.slice().sort((x, y) => x.page_index - y.page_index);
-        approxPages = anchors.length;
-      } else if (ancErr) {
-        console.warn('⚠️ get_alert_page_anchors:', ancErr.message, '— se usa paginación por offset');
+      // allSettled: even if one page times out, others succeed — never freezes
+      const results = await Promise.allSettled(pageNums.map(p => fetchPage(p)));
+
+      for (let i = 0; i < results.length; i++) {
+        const r = results[i];
+        const val = r.status === 'fulfilled' ? r.value : { data: null, error: r.reason };
+        if (!val.error && val.data) {
+          all = all.concat(val.data);
+          pagesLoaded++;
+          if (val.data.length < PAGE_SIZE) done = true;
+        } else {
+          failedPages.push(pageNums[i]);
+          console.warn(`⚠️ Page ${pageNums[i]} failed (${val.error?.message}) — will retry`);
+        }
       }
-    } catch (e) {
-      console.warn('⚠️ get_alert_page_anchors falló:', e.message, '— se usa paginación por offset');
+
+      setProgress(5 + Math.round((pagesLoaded / approxPages) * 90));
+      batchStart += BATCH_SIZE;
+      if (batchStart > approxPages + BATCH_SIZE) done = true; // safety stop
     }
 
-    let all = [];
-    let pagesLoaded = 0;
-
-    if (anchors) {
-      const failed = [];
-      for (let i = 0; i < anchors.length; i += BATCH_SIZE) {
-        const slice = anchors.slice(i, i + BATCH_SIZE);
-        // allSettled: si una página expira, las otras siguen — nunca se congela
-        const results = await Promise.allSettled(slice.map(a => fetchAnchor(a)));
-        for (let j = 0; j < results.length; j++) {
-          const r = results[j];
-          const val = r.status === 'fulfilled' ? r.value : { data: null, error: r.reason };
-          if (!val.error && val.data) {
-            all = all.concat(val.data);
-            pagesLoaded++;
-          } else {
-            failed.push(slice[j]);
-            console.warn(`⚠️ Página ${slice[j].page_index} falló (${val.error?.message}) — se reintenta`);
-          }
-        }
-        setProgress(5 + Math.round((pagesLoaded / approxPages) * 90));
-      }
-      // Reintento de páginas fallidas, una por una
-      for (const a of failed) {
-        const { data, error } = await fetchAnchor(a);
-        if (!error && data) { all = all.concat(data); pagesLoaded++; }
-        else console.warn(`⚠️ Página ${a.page_index} falló en el reintento — omitida`);
-      }
-    } else {
-      // ── Respaldo por offset (ruta lenta) ──
-      let batchStart = 0;
-      let done = false;
-      const failedPages = [];
-      while (!done) {
-        const pageNums = [];
-        for (let p = batchStart; p < batchStart + BATCH_SIZE; p++) pageNums.push(p);
-        const results = await Promise.allSettled(pageNums.map(p => fetchOffsetPage(p)));
-        for (let i = 0; i < results.length; i++) {
-          const r = results[i];
-          const val = r.status === 'fulfilled' ? r.value : { data: null, error: r.reason };
-          if (!val.error && val.data) {
-            all = all.concat(val.data);
-            pagesLoaded++;
-            if (val.data.length < PAGE_SIZE) done = true;
-          } else {
-            failedPages.push(pageNums[i]);
-            console.warn(`⚠️ Página ${pageNums[i]} falló (${val.error?.message}) — se reintenta`);
-          }
-        }
-        setProgress(5 + Math.round((pagesLoaded / approxPages) * 90));
-        batchStart += BATCH_SIZE;
-        if (batchStart > approxPages + BATCH_SIZE) done = true; // parada de seguridad
-      }
+    // Retry failed pages one at a time
+    if (failedPages.length) {
       for (const p of failedPages) {
-        const { data, error } = await fetchOffsetPage(p);
+        const { data, error } = await fetchPage(p);
         if (!error && data) { all = all.concat(data); pagesLoaded++; }
-        else console.warn(`⚠️ Página ${p} falló en el reintento — omitida`);
+        else console.warn(`⚠️ Page ${p} failed on retry — skipped`);
       }
     }
 

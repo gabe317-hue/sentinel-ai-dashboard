@@ -12354,7 +12354,11 @@ async function ejecutarBusquedaBD() {
     const { data, error } = await db.rpc('buscar_contratos', rpcParams);
     if (error) throw error;
 
-    const results = data || [];
+    // S292 — este panel consulta la RPC directo, NO pasa por allAlerts, así que no
+    // heredaba la fusión de patterns_ctx del pipeline de carga (Regla #32). Sin esto
+    // las señales contextuales no salían como badge acá, y openAlertDetail abierto
+    // desde esta lista tampoco las mostraba. _mergePatternsCtx es idempotente.
+    const results = _mergePatternsCtx(data || []);
     const total   = results.length;
 
     // Cache para openAlertDetail (registros fuera de allAlerts)

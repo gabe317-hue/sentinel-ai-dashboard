@@ -850,15 +850,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   border-color: var(--red) !important;
   color: var(--red) !important;
 }
-/* S295 (MS-R04) — el chip OFAC está deshabilitado por falta de datos, no por estado
-   de la UI: anular el hover para que no sugiera que es pulsable. */
-.filter-btn-sancionado[disabled]:hover {
-  background: transparent !important;
-  border-color: rgba(255,61,87,0.5) !important;
-}
-/* Contenedor del chip deshabilitado — existe solo para portar el title (un
-   <button disabled> no dispara eventos de mouse). */
-.chip-wrap { display: inline-flex; }
 /* Lista Engel filter button — purple styling */
 .filter-btn-engel {
   border-color: rgba(168,85,247,0.5) !important;
@@ -2473,7 +2464,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.04 — HND</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.03 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2513,7 +2504,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.04 — HND · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.03 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -4011,7 +4002,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version" data-app-version="{v} — HND">v2.04 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v2.03 — HND</div>
   </div>
 
   <div class="nav">
@@ -4158,7 +4149,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric" data-app-version="{v} — HND">v2.04 — HND</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v2.03 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <!-- S285 · R-08 — píldora de frescura del DATO (H-12). Distinta del delta badge de arriba:
@@ -4999,17 +4990,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn"        data-p="ADJUDICACION_DIRECTA"   onclick="setPatternFilter('ADJUDICACION_DIRECTA')">DIRECTA</button>
     <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')">SIN HISTORIAL</button>
     <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
-    <!-- S295 (MS-R04) — Chip OFAC honestamente deshabilitado. La tabla
-         `international_sanctions` tiene 0 filas: antes este chip filtraba por el patrón
-         PROVEEDOR_SANCIONADO, que no aparece en NINGUNA de las 176,819 alertas
-         (verificado en patterns, patterns_norm y patterns_ctx), así que devolvía
-         siempre vacío sin explicar por qué — el usuario concluía "no hay proveedores
-         sancionados" cuando lo correcto es "no hay datos cargados".
-         El title va en el <span> contenedor porque un <button disabled> no dispara
-         eventos de mouse y el tooltip no se mostraría de forma confiable.
-         NO simular resultados: se habilita cuando se ingeste la lista SDN del Tesoro. -->
-    <span class="chip-wrap" title="Sin datos OFAC cargados — pendiente de ingesta"><button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" disabled aria-disabled="true" style="opacity:.4;cursor:not-allowed;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg> SANCIONADO OFAC <span class="lf-count" style="opacity:.55;">0</span></button></span>
-    <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')" title="Contratos cuyo proveedor, entidad o descripción coincide con un nombre de la Lista Engel (52 entradas). Una coincidencia de nombre no constituye por sí sola evidencia de irregularidad."><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg> LISTA ENGEL <span class="lf-count" style="opacity:.55;">—</span></button>
+    <button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" onclick="setPatternFilter('PROVEEDOR_SANCIONADO')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg> SANCIONADO OFAC</button>
+    <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg> LISTA ENGEL</button>
   </div>
 
   <!-- Estado de revisión — S288 (R-05, punto A.4). Cada chip lleva su contador para
@@ -7649,7 +7631,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.04';
+const APP_VERSION = 'v2.03';
 const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -8574,18 +8556,6 @@ function updateReviewFilterCounts() {
     el.textContent = k === 'all' ? allAlerts.length.toLocaleString('es-HN')
                                  : (t[k] ?? 0).toLocaleString('es-HN');
   });
-}
-
-// S295 (MS-R04) — Contador junto a los chips de listas internacionales.
-// Mismo criterio que updateReviewFilterCounts(): el número sale de la MISMA fuente
-// que el filtro aplica (_engelMatchedIds), no de una consulta aparte, para que no
-// puedan divergir. El estado debe ser visible ANTES de pulsar el chip.
-// OFAC no se calcula a propósito: `international_sanctions` tiene 0 filas y el chip
-// está deshabilitado con su explicación — un 0 calculado y un 0 por falta de datos
-// se ven igual en pantalla y significan cosas distintas.
-function updateListFilterCounts() {
-  const el = document.querySelector('.filter-btn-engel .lf-count');
-  if (el) el.textContent = _engelMatchedIds.size.toLocaleString('es-HN');
 }
 
 function setPage(n) {
@@ -24999,8 +24969,6 @@ function buildEngelIndex() {
   // Update nav chip
   const chip = document.getElementById('nav-engel-chip');
   if (chip) chip.textContent = _engelMatchedIds.size || '—';
-  // S295 (MS-R04) — mismo índice alimenta el contador del chip de filtro.
-  try { updateListFilterCounts(); } catch(e) {}
 }
 
 // ── ENGEL PANEL — show / hide / render / PDF ──────────────────────────────────

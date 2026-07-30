@@ -2464,7 +2464,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.01 — HND</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.00 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2504,7 +2504,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.01 — HND · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.00 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -3929,7 +3929,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version" data-app-version="{v} — HND">v2.01 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v2.00 — HND</div>
   </div>
 
   <div class="nav">
@@ -4076,7 +4076,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric" data-app-version="{v} — HND">v2.01 — HND</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v2.00 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <!-- S285 · R-08 — píldora de frescura del DATO (H-12). Distinta del delta badge de arriba:
@@ -7544,7 +7544,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.01';
+const APP_VERSION = 'v2.00';
 const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -7886,51 +7886,24 @@ async function loadAlerts() {
     // que las páginas profundas se caían y se reintentaban) vs. rango de llave = 1.8 ms.
     // El rango es inmune a que un futuro UPDATE masivo vuelva a romper la correlación.
 
-    const withTimeout = (req, ms) => {
-      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms || PAGE_TIMEOUT));
+    const withTimeout = (req) => {
+      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), PAGE_TIMEOUT));
       return Promise.race([req, timeout]).catch(e => ({ data: null, error: e }));
     };
-
-    // S290 — COLUMNAS EXPLÍCITAS en vez de select('*'). alerts tiene 33 columnas y 9 de ellas
-    // NO se referencian ni una vez en este archivo (verificado con grep, conteo 0 cada una):
-    //   updated_at · vendor_id · severity_rank · justificacion_completa · patterns_norm
-    //   risk_score_v2 · severity_v2 · severity_v1_backup · risk_score_v1_backup
-    // Las 4 últimas son residuo del corte de severidad de S287: v2 ya ES la columna viva
-    // (severity/risk_score) y los _v1_backup existen solo para el rollback en la DB.
-    // Ahorro medido: 16 MB de 102 MB = 15.5% del payload.
-    // ⚠️ NO se quitaron description (22 MB) ni contract_id (14 MB), que son las dos columnas
-    // más pesadas: description es la celda de la tabla, el campo de búsqueda Y el parser de
-    // respaldo de Proveedor/Entidad (parseD/parseDesc_for); contract_id se usa en 6 lugares.
-    // Por eso el ahorro es 15.5% y no el ~43% que estimaba la nota de S288.
-    // Al agregar una columna nueva a alerts que el cliente deba leer, AGREGARLA ACÁ TAMBIÉN:
-    // si falta, llega como undefined y se renderiza en blanco SIN ERROR.
-    const ALERT_COLS = [
-      'id','alert_id','description','entity_name','severity','risk_score','data_source',
-      'status','created_at','monto_contrato','monto_pagado','fecha_contrato','contract_id',
-      'patterns','pattern_count','entidad','monto','tipo_contratacion','proveedor_nombre',
-      'fecha_publicacion','fecha_adjudicacion','source','title','budget_amount'
-    ].join(',');
 
     // Una página = un intervalo cerrado de id. lo_id NULL en la última (sin cota inferior),
     // así la unión de las páginas es la tabla completa, sin duplicados ni saltos.
     const fetchAnchor = (a) => {
-      let req = db.from('alerts').select(ALERT_COLS).order('id', { ascending: false }).lte('id', a.hi_id);
+      let req = db.from('alerts').select('*').order('id', { ascending: false }).lte('id', a.hi_id);
       if (a.lo_id !== null && a.lo_id !== undefined) req = req.gt('id', a.lo_id);
       return withTimeout(req.limit(PAGE_SIZE));
     };
 
     // Respaldo: paginación por offset. Solo si la RPC de anclas no responde — es lenta,
     // pero es preferible a dejar el dashboard sin datos.
-    // ⚠️ S290 — timeout PROPIO de 30 s, no el de 12 s. El diagnóstico de S289 midió 17,978 ms
-    // en la página de offset 150,000: con el timeout normal este respaldo se caía exactamente
-    // en las páginas profundas que debía rescatar, las reintentaba una vez y las omitía. O sea
-    // era un respaldo que fallaba justo donde hacía falta. Que sea lento es aceptable acá;
-    // que pierda páginas en silencio, no.
-    const OFFSET_TIMEOUT = 30000;
     const fetchOffsetPage = (p) => withTimeout(
-      db.from('alerts').select(ALERT_COLS).order('id', { ascending: false })
-        .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1),
-      OFFSET_TIMEOUT
+      db.from('alerts').select('*').order('id', { ascending: false })
+        .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1)
     );
 
     // Una sola consulta (~330 ms) devuelve los 177 cortes de página. Por eso se conserva el

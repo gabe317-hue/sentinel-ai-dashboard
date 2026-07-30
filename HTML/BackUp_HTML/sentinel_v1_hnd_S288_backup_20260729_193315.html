@@ -1009,7 +1009,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 .adp-review-badge.LEGITIMO      { display:inline-block; background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
 .adp-review-badge.FALSO_POSITIVO{ display:inline-block; background:rgba(100,116,139,0.12); color:var(--text-dim); border:1px solid rgba(100,116,139,0.3); }
 .adp-review-badge.ESCALADO      { display:inline-block; background:rgba(255,165,0,0.12); color:var(--amber); border:1px solid rgba(255,165,0,0.3); }
-.adp-review-badge.PENDIENTE     { display:inline-block; background:rgba(148,163,184,0.10); color:var(--text-dim); border:1px dashed rgba(148,163,184,0.45); }
 
 /* Status badges */
 .status-badge {
@@ -2464,7 +2463,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v1.99 — HND</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v1.98 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2504,7 +2503,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v1.99 — HND · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v1.98 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -3929,7 +3928,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version" data-app-version="{v} — HND">v1.99 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v1.98 — HND</div>
   </div>
 
   <div class="nav">
@@ -4017,10 +4016,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="3"/><circle cx="19" cy="18" r="3"/><path d="M12 6h5a2 2 0 0 1 2 2v7"/><path d="M12 18H7a2 2 0 0 1-2-2V9"/></svg></span> Cruce ONCAE×SEFIN
         <span class="nav-chip" id="nav-cruce-sefin-chip" style="background:rgba(255,165,0,0.1);color:var(--amber);border-color:rgba(255,165,0,0.25);">NEW</span>
       </button>
-      <button class="nav-item" id="nav-validacion" onclick="showValidacionPanel()">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></span> Validación
-        <span class="nav-chip" id="nav-validacion-chip" style="background:rgba(16,185,129,0.12);color:#10b981;border-color:rgba(16,185,129,0.3);">—</span>
-      </button>
       <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span> Auditoría
         <span class="nav-chip">LOG</span>
@@ -4076,7 +4071,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric" data-app-version="{v} — HND">v1.99 — HND</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v1.98 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <!-- S285 · R-08 — píldora de frescura del DATO (H-12). Distinta del delta badge de arriba:
@@ -4921,19 +4916,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg> LISTA ENGEL</button>
   </div>
 
-  <!-- Estado de revisión — S288 (R-05, punto A.4). Cada chip lleva su contador para
-       que el estado sea visible ANTES de pulsarlo (mismo criterio que R-04 del Dictamen:
-       un control que devuelve vacío sin avisar es peor que uno deshabilitado). -->
-  <div class="controls-bar" id="reviewFilterBar" style="margin-top:6px; gap:6px;">
-    <span style="color:var(--text-dim);font-size:11px;letter-spacing:.06em;align-self:center;margin-right:4px;">REVISIÓN:</span>
-    <button class="filter-btn active" data-r="all"            onclick="setReviewFilter('all')">TODAS <span class="rf-count" style="opacity:.55;">—</span></button>
-    <button class="filter-btn"        data-r="sin"            onclick="setReviewFilter('sin')">SIN REVISAR <span class="rf-count" style="opacity:.55;">—</span></button>
-    <button class="filter-btn"        data-r="PENDIENTE"      onclick="setReviewFilter('PENDIENTE')">◔ SIN CONCLUIR <span class="rf-count" style="opacity:.55;">—</span></button>
-    <button class="filter-btn"        data-r="ESCALADO"       onclick="setReviewFilter('ESCALADO')">▲ CONFIRMADAS <span class="rf-count" style="opacity:.55;">—</span></button>
-    <button class="filter-btn"        data-r="LEGITIMO"       onclick="setReviewFilter('LEGITIMO')">✓ LEGÍTIMAS <span class="rf-count" style="opacity:.55;">—</span></button>
-    <button class="filter-btn"        data-r="FALSO_POSITIVO" onclick="setReviewFilter('FALSO_POSITIVO')">⚪ FALSO POSITIVO <span class="rf-count" style="opacity:.55;">—</span></button>
-  </div>
-
   <!-- Criterio de severidad — S287 (29 jul 2026): la severidad ya SÍ se deriva de un
        puntaje numérico, calculado por sentinel_risk_score() en Supabase.
        HISTORIA, para que nadie revierta esto por error:
@@ -5189,83 +5171,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
   <!-- ══ AUDIT LOG PANEL ══ -->
-  <!-- ═══════════════════ VALIDACIÓN — TASA DE PRECISIÓN (S288 · R-05) ═══════════════════
-       El activo que este panel construye no es una pantalla: es la respuesta a la única
-       pregunta que la PGR va a hacer — "¿cuántas de sus alertas resultaron ciertas?".
-       Sin casos con desenlace registrado, ninguna afirmación de precisión es demostrable.
-       Regla dura de este panel: NUNCA inventar datos de ejemplo. Si no hay revisiones,
-       se muestra estado vacío con instrucciones. Un número inventado aquí destruye
-       exactamente la credibilidad que el panel existe para sostener. -->
-  <div class="fuente-panel" id="validacionPanel">
-    <button class="fuente-back" onclick="hideValidacionPanel()">← Contratos</button>
-
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-      <div>
-        <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);margin:0 0 4px 0;">Validación</h2>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.05em;">Bucle de revisión · Tasa de confirmación por señal · Cobertura de la muestra</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <button onclick="initValidacionPanel()" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:var(--glass);color:var(--text);font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">↺ Actualizar</button>
-      </div>
-    </div>
-
-    <!-- Advertencia de muestra insuficiente -->
-    <div id="val-muestra-warn" style="display:none;margin-bottom:18px;padding:12px 16px;border:1px solid rgba(255,165,0,0.35);background:rgba(255,165,0,0.06);border-radius:10px;font-size:12px;color:var(--text);line-height:1.6;"></div>
-
-    <!-- KPIs -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
-      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">COBERTURA DE REVISIÓN</div>
-        <div id="val-kpi-cobertura" style="font-size:34px;font-weight:800;color:var(--electric);font-family:'Syne',sans-serif;line-height:1;">…</div>
-        <div id="val-kpi-cobertura-sub" style="font-size:11px;color:var(--text-dim);margin-top:6px;">—</div>
-      </div>
-      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">TASA DE CONFIRMACIÓN</div>
-        <div id="val-kpi-tasa" style="font-size:34px;font-weight:800;color:#10b981;font-family:'Syne',sans-serif;line-height:1;">…</div>
-        <div id="val-kpi-tasa-sub" style="font-size:11px;color:var(--text-dim);margin-top:6px;">—</div>
-      </div>
-      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">CONCLUIDAS</div>
-        <div id="val-kpi-concluidas" style="font-size:34px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif;line-height:1;">…</div>
-        <div id="val-kpi-concluidas-sub" style="font-size:11px;color:var(--text-dim);margin-top:6px;">—</div>
-      </div>
-      <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--text-dim);margin-bottom:8px;">SIN CONCLUIR</div>
-        <div id="val-kpi-pendientes" style="font-size:34px;font-weight:800;color:var(--amber);font-family:'Syne',sans-serif;line-height:1;">…</div>
-        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Fuera del denominador</div>
-      </div>
-    </div>
-
-    <!-- Nota metodológica — es lo que hace la cifra defendible -->
-    <div style="margin-bottom:20px;padding:11px 15px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text-dim);line-height:1.65;">
-      <span style="letter-spacing:.06em;opacity:.7;">CÓMO SE CALCULA:</span>
-      tasa de confirmación = <span style="color:var(--text);">escaladas ÷ (escaladas + legítimas + falsos positivos)</span>.
-      Las revisiones «sin concluir» quedan fuera del denominador: una revisión abierta no es evidencia ni a favor ni en contra de la señal.
-      «Legítimo» y «falso positivo» se reportan por separado a propósito — son dos fallos con causa distinta y se corrigen distinto
-      (ajustar el umbral de la señal vs. arreglar el dato en la ingesta).
-    </div>
-
-    <!-- Tasa POR PATRÓN — la métrica clave -->
-    <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;">
-      <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.04em;margin-bottom:4px;">Tasa de confirmación por señal</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;">Es la métrica que dice qué señales funcionan y cuáles hay que retirar o endurecer.</div>
-      <div id="val-por-patron"></div>
-    </div>
-
-    <!-- Por severidad -->
-    <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;">
-      <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.04em;margin-bottom:4px;">Tasa de confirmación por severidad</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;">Si la escala discrimina bien, la tasa debe bajar de CRÍTICA hacia BAJA. Si no baja, la escala no está separando nada.</div>
-      <div id="val-por-severidad"></div>
-    </div>
-
-    <!-- Motivos -->
-    <div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:18px;">
-      <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.04em;margin-bottom:14px;">Motivos registrados</div>
-      <div id="val-por-categoria"></div>
-    </div>
-  </div>
-
   <!-- ═══════════════════ AUDITORÍA DEL SISTEMA (S74) ═══════════════════ -->
   <div class="fuente-panel" id="auditPanel">
     <button class="fuente-back" onclick="hideAuditPanel()">← Contratos</button>
@@ -5690,31 +5595,18 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             <option value="LEGITIMO">✅ Legítimo — contrato verificado</option>
             <option value="FALSO_POSITIVO">⚪ Falso positivo — no es riesgo real</option>
             <option value="ESCALADO">⚠️ Escalado — referido a autoridades</option>
-            <option value="PENDIENTE">◔ Sin concluir — revisión abierta</option>
           </select>
-          <div style="font-size:9px;color:var(--text-dim);margin-top:5px;line-height:1.5;">
-            «Sin concluir» no cuenta en la tasa de precisión — queda fuera del denominador hasta que se cierre.
-          </div>
         </div>
         <div style="margin-bottom:10px;">
           <label>CATEGORÍA</label>
           <select id="adp-review-categoria">
             <option value="OTRO">— Seleccionar —</option>
-            <optgroup label="Motivo del descarte — por qué NO es riesgo">
-              <option value="INFRAESTRUCTURA">Infraestructura / Obra pública</option>
-              <option value="FINANCIAMIENTO_EXTERNO">Financiamiento externo (BID, España, USAID…)</option>
-              <option value="EMPRESA_EXTRANJERA_VERIFICADA">Empresa extranjera verificada</option>
-              <option value="LICITACION_VALIDA">Licitación válida confirmada</option>
-              <option value="PANDEMIA_EMERGENCIA">Pandemia / Emergencia declarada</option>
-              <option value="DUPLICADO_DB">Duplicado en DB</option>
-            </optgroup>
-            <optgroup label="Motivo de la confirmación — qué se halló">
-              <option value="FRACCIONAMIENTO">Fraccionamiento</option>
-              <option value="CONFLICTO_INTERES">Conflicto de interés</option>
-              <option value="SOBREPRECIO">Sobreprecio</option>
-              <option value="PROVEEDOR_IRREGULAR">Proveedor irregular</option>
-              <option value="ERROR_DATO">Error de dato</option>
-            </optgroup>
+            <option value="INFRAESTRUCTURA">Infraestructura / Obra pública</option>
+            <option value="FINANCIAMIENTO_EXTERNO">Financiamiento externo (BID, España, USAID…)</option>
+            <option value="EMPRESA_EXTRANJERA_VERIFICADA">Empresa extranjera verificada</option>
+            <option value="LICITACION_VALIDA">Licitación válida confirmada</option>
+            <option value="PANDEMIA_EMERGENCIA">Pandemia / Emergencia declarada</option>
+            <option value="DUPLICADO_DB">Duplicado en DB</option>
             <option value="OTRO">Otro</option>
           </select>
         </div>
@@ -7544,7 +7436,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v1.99';
+const APP_VERSION = 'v1.98';
 const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -7599,10 +7491,9 @@ function gNormSev(s) {
 // APP STATE
 // ════════════════════════════════════════════════════════════
 let allAlerts      = [];    // Full dataset from Supabase
-let _reviewCache   = new Map(); // key: alerts.id (número) → review_status — S288: antes era la cadena "proveedor|entidad|fecha"
+let _reviewCache   = new Map(); // key: "proveedor|entidad|fecha" → review_status
 let activeFilter   = 'all'; // Active severity filter
 let activePattern  = 'all'; // Active pattern filter
-let activeReview   = 'all'; // S288 — filtro por estado de revisión: all | sin | PENDIENTE | ESCALADO | LEGITIMO | FALSO_POSITIVO
 let searchQuery    = '';    // Global search — proveedor, entidad, ID
 let selectedSev    = null;  // Severity selected in modal form
 let currentPage    = 0;     // Current pagination page (0-indexed)
@@ -7751,16 +7642,13 @@ async function _loadRemainingAlertsBackground() {
 async function loadReviewCache() {
   // Carga todas las revisiones de alert_reviews en un Map para lookup O(1) en tabla
   // S234: migrado a casos-admin (ar_cache) — anon_read_alert_reviews eliminada (exponía review_nota vía REST)
-  // S288 (MS-R05): la llave pasa de la terna "proveedor|entidad|fecha" a alerts.id.
-  //   La terna dejaba 37,333 alertas (21.1%) sin llave completa — irrevisables — y
-  //   colapsaba hasta 63 alertas distintas en una sola revisión. alerts.id cubre el
-  //   100% y es la misma llave que ya usa cada fila de la tabla.
   try {
     const result = await _casosAdminCall({ action: 'ar_cache' });
     const data = result.data;
     _reviewCache = new Map();
     (data || []).forEach(r => {
-      if (r.alert_row_id != null) _reviewCache.set(Number(r.alert_row_id), r.review_status);
+      const key = `${r.proveedor_nombre}|${r.entidad}|${r.fecha_contrato}`;
+      _reviewCache.set(key, r.review_status);
     });
   } catch(e) { /* silencioso — no bloquear carga de alertas */ }
 }
@@ -8124,13 +8012,6 @@ function render() {
       filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
     }
   }
-  // S288 (R-05 A.4) — filtro por estado de revisión. 'sin' es el más útil en la
-  // práctica: es la cola de trabajo del analista, lo que todavía no se ha revisado.
-  if (activeReview !== 'all') {
-    filtered = activeReview === 'sin'
-      ? filtered.filter(a => !_reviewCache.has(a.id))
-      : filtered.filter(a => _reviewCache.get(a.id) === activeReview);
-  }
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
     filtered = filtered.filter(a =>
@@ -8220,18 +8101,13 @@ function render() {
     const proveedorDisplay = _sanitize(parseDesc('Proveedor') || a.proveedor_nombre || '—');
     const entidadDisplay   = _sanitize(parseDesc('Entidad compradora') || a.entity_name || '—');
 
-    // Review badge — lookup en _reviewCache por alerts.id (S288: antes era la terna)
-    // Los 4 estados son visibles en la fila: sin ellos, ESCALADO y PENDIENTE eran
-    // indistinguibles de "no revisado" y el operador no sabía qué le falta cerrar.
-    const _rStatus = _reviewCache.get(a.id);
-    const _rBadge = _rStatus === 'ESCALADO'
-      ? `<span title="Confirmado — referido a autoridades" style="margin-left:4px;font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(255,165,0,0.12);color:var(--amber);border:1px solid rgba(255,165,0,0.3);vertical-align:middle;">▲</span>`
-      : _rStatus === 'LEGITIMO'
+    // Review badge — lookup en _reviewCache (normalizar fecha a yyyy-mm-dd)
+    const _rKey = `${a.proveedor_nombre||''}|${a.entidad||a.entity_name||''}|${(a.fecha_contrato||'').slice(0,10)}`;
+    const _rStatus = _reviewCache.get(_rKey);
+    const _rBadge = _rStatus === 'LEGITIMO'
       ? `<span title="Verificado como legítimo" style="margin-left:4px;font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);vertical-align:middle;">✓</span>`
       : _rStatus === 'FALSO_POSITIVO'
       ? `<span title="Falso positivo registrado" style="margin-left:4px;font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(100,116,139,0.12);color:var(--text-dim);border:1px solid rgba(100,116,139,0.3);vertical-align:middle;">⚪</span>`
-      : _rStatus === 'PENDIENTE'
-      ? `<span title="Revisión abierta — sin concluir" style="margin-left:4px;font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(148,163,184,0.12);color:var(--text-dim);border:1px dashed rgba(148,163,184,0.45);vertical-align:middle;">◔</span>`
       : '';
 
     return `<tr onclick="openAlertDetail(${a.id}, event)">
@@ -8268,7 +8144,7 @@ function render() {
         html += '</div>';
         return html;
       })()}</td>
-      <td><span class="status-badge ${(_rStatus === 'LEGITIMO' || _rStatus === 'FALSO_POSITIVO') ? 'revisado' : stc}">${(_rStatus === 'LEGITIMO') ? 'Legítimo' : (_rStatus === 'FALSO_POSITIVO') ? 'Falso Positivo' : (_rStatus === 'ESCALADO') ? 'Escalado' : (_rStatus === 'PENDIENTE') ? 'En revisión' : (a.status || 'Pendiente')}</span></td>
+      <td><span class="status-badge ${(_rStatus === 'LEGITIMO' || _rStatus === 'FALSO_POSITIVO') ? 'revisado' : stc}">${(_rStatus === 'LEGITIMO') ? 'Legítimo' : (_rStatus === 'FALSO_POSITIVO') ? 'Falso Positivo' : (a.status || 'Pendiente')}</span></td>
       <td>
         <div class="action-group" onclick="event.stopPropagation()">
           ${(sc === 'critica' || sc === 'alta') ? `<button class="btn-action btn-refer" onclick="openReferModal(${a.id})" title="Generar memorándum de referencia"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg> Referir</button>` : ''}
@@ -8341,35 +8217,6 @@ function setPatternFilter(p) {
     b.classList.toggle('active', b.dataset.p === p)
   );
   render();
-}
-
-// S288 (R-05 A.4) — filtro por estado de revisión
-function setReviewFilter(r) {
-  activeReview = r;
-  currentPage = 0;
-  document.querySelectorAll('.filter-btn[data-r]').forEach(b =>
-    b.classList.toggle('active', b.dataset.r === r)
-  );
-  render();
-}
-
-// Contadores junto a cada chip de revisión. Se recalculan desde _reviewCache
-// (no desde la DB) para que el número que se ve sea el mismo que el filtro aplica.
-function updateReviewFilterCounts() {
-  const bar = document.getElementById('reviewFilterBar');
-  if (!bar || !window.allAlerts) return;
-  const t = { sin: 0, PENDIENTE: 0, ESCALADO: 0, LEGITIMO: 0, FALSO_POSITIVO: 0 };
-  allAlerts.forEach(a => {
-    const s = _reviewCache.get(a.id);
-    if (!s) t.sin++; else if (t[s] !== undefined) t[s]++;
-  });
-  bar.querySelectorAll('.filter-btn[data-r]').forEach(b => {
-    const k = b.dataset.r;
-    const el = b.querySelector('.rf-count');
-    if (!el) return;
-    el.textContent = k === 'all' ? allAlerts.length.toLocaleString('es-HN')
-                                 : (t[k] ?? 0).toLocaleString('es-HN');
-  });
 }
 
 function setPage(n) {
@@ -10041,8 +9888,7 @@ function isSiafiReal(a) {
 // ALERT DETAIL PANEL — drill-down for a single alert row
 // ════════════════════════════════════════════════════════════
 let _alertDetailSource = 'tabla'; // 'tabla' | 'busqueda'
-let _adpRawFecha = null; // fecha_contrato raw del alert actual (descriptivo; ya no es la llave de review)
-let _adpAlertRowId = null; // S288 — alerts.id del alert abierto: LA llave de la revisión
+let _adpRawFecha = null; // fecha_contrato raw del alert actual (para review lookup)
 let _adpHistoryFull = { vendor: [], entity: [] }; // listas completas (sin cortar a 5) para el modal "ver más"
 
 function openAlertDetail(alertId, event, source = 'tabla') {
@@ -10055,7 +9901,6 @@ function openAlertDetail(alertId, event, source = 'tabla') {
 
   _alertDetailSource = source;
   _adpRawFecha = (a.fecha_contrato || '').slice(0, 10); // yyyy-mm-dd, sin hora ni timezone
-  _adpAlertRowId = a.id; // S288 — llave de la revisión
   const backBtn = document.getElementById('adp-back-btn');
   if (backBtn) backBtn.textContent = source === 'busqueda' ? '← Búsqueda BD' : source === 'redflag' ? '← Red Flags' : '← Contratos';
 
@@ -10219,10 +10064,12 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   document.getElementById('alertDetailPanel').classList.add('open');
   window.scrollTo({ top: 0, behavior: 'instant' });
 
-  // Cargar review existente si aplica — S288: por alerts.id, no por proveedor+entidad+fecha
+  // Cargar review existente si aplica (usar fecha raw, no la display con hora/timezone)
+  const _prov = document.getElementById('adp-proveedor')?.textContent?.trim();
+  const _ent  = document.getElementById('adp-entidad')?.textContent?.trim();
   // Reset form state
   document.getElementById('adp-review-form').classList.remove('open');
-  if (_adpAlertRowId != null) adpCargarReview(_adpAlertRowId);
+  if (_prov && _ent) adpCargarReview(_prov, _ent, _adpRawFecha);
 }
 
 // ── Alert Review Functions ──
@@ -10232,31 +10079,20 @@ function adpToggleReviewForm() {
   form.classList.toggle('open');
 }
 
-async function adpCargarReview(alertRowId) {
-  // Verificar si esta alerta ya tiene review registrada
+async function adpCargarReview(proveedor, entidad, fechaContrato) {
+  // Verificar si este contrato ya tiene review registrada
   // S234: migrado a casos-admin (ar_get) — anon_read_alert_reviews eliminada (exponía review_nota vía REST)
-  // S288: se busca por alerts.id. Antes se buscaba por proveedor+entidad+fecha, lo que
-  //   devolvía la MISMA revisión para hasta 63 alertas distintas que comparten esa terna.
   try {
-    const result = await _casosAdminCall({ action: 'ar_get', alert_row_id: alertRowId });
+    const result = await _casosAdminCall({ action: 'ar_get', proveedor_nombre: proveedor, entidad, fecha_contrato: fechaContrato });
     const data = result.data;
 
     const badge = document.getElementById('adp-review-badge');
     const btn   = document.getElementById('adp-review-btn');
 
     if (data) {
-      const labels = {
-        LEGITIMO: '✅ Verificado: Legítimo',
-        FALSO_POSITIVO: '⚪ Falso Positivo',
-        ESCALADO: '⚠️ Escalado',
-        PENDIENTE: '◔ Revisión abierta'
-      };
+      const labels = { LEGITIMO: '✅ Verificado: Legítimo', FALSO_POSITIVO: '⚪ Falso Positivo', ESCALADO: '⚠️ Escalado' };
       badge.textContent = labels[data.review_status] || data.review_status;
       badge.className = `adp-review-badge ${data.review_status}`;
-      // Quién y cuándo — sin esto la revisión no es auditable por un tercero
-      const _quien = data.reviewed_by || '—';
-      const _cuando = data.reviewed_at ? new Date(data.reviewed_at).toLocaleDateString('es-HN') : '';
-      badge.title = `Revisado por ${_quien}${_cuando ? ' el ' + _cuando : ''}`;
       btn.textContent = '✎ Editar revisión';
       btn.classList.add('reviewed');
       // Pre-llenar el form con datos existentes
@@ -10265,8 +10101,6 @@ async function adpCargarReview(alertRowId) {
       document.getElementById('adp-review-nota').value     = data.review_nota || '';
     } else {
       badge.className = 'adp-review-badge';
-      badge.textContent = '';
-      badge.title = '';
       btn.textContent = '✓ Marcar como Revisado';
       btn.classList.remove('reviewed');
       document.getElementById('adp-review-status').value   = 'LEGITIMO';
@@ -10284,10 +10118,8 @@ async function adpGuardarReview() {
   const categoria = document.getElementById('adp-review-categoria')?.value;
   const nota      = document.getElementById('adp-review-nota')?.value?.trim();
 
-  // S288 — la llave es alerts.id. Sin ella la revisión se guardaría y nunca volvería
-  // a cruzar contra la alerta: es el modo de falla que esta sesión vino a cerrar.
-  if (_adpAlertRowId == null || !status) {
-    alert('No se pudo identificar la alerta. Cierra y abre el panel de nuevo.');
+  if (!proveedor || !entidad || !status) {
+    alert('Faltan datos del contrato. Cierra y abre el panel de nuevo.');
     return;
   }
 
@@ -10302,28 +10134,20 @@ async function adpGuardarReview() {
 
   try {
     // S234: migrado a casos-admin (ar_upsert) — anon nunca tuvo INSERT/UPDATE aquí (botón fallaba en silencio)
-    // S288: se ancla a alert_row_id. proveedor/entidad/fecha se siguen guardando,
-    //   pero ya como columnas DESCRIPTIVAS (respaldo legible si la alerta se borrara),
-    //   no como llave. reviewed_by sale de la sesión real en vez del hardcode
-    //   'sentinel-operador' — sin autoría la revisión no es auditable.
     await _casosAdminCall({ action: 'ar_upsert', record: {
-      alert_row_id: _adpAlertRowId,
-      proveedor_nombre: proveedor || null,
-      entidad: entidad || null,
+      proveedor_nombre: proveedor,
+      entidad: entidad,
       fecha_contrato: fechaISO,
       monto_contrato: montoNum,
       review_status: status,
       review_categoria: categoria,
       review_nota: nota,
-      reviewed_by: (currentUser && currentUser.email) ? currentUser.email : 'sentinel-operador',
+      reviewed_by: 'sentinel-operador',
       reviewed_at: new Date().toISOString()
     }});
 
     document.getElementById('adp-review-form').classList.remove('open');
-    // Mantener el cache de la tabla en sincronía sin recargar toda la vista
-    _reviewCache.set(_adpAlertRowId, status);
-    try { updateReviewFilterCounts(); } catch(e) {}
-    await adpCargarReview(_adpAlertRowId);
+    await adpCargarReview(proveedor, entidad, fechaISO);
   } catch(e) {
     alert('Error al guardar: ' + (e.message || e));
     btn.textContent = '✓ Marcar como Revisado';
@@ -10548,7 +10372,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','dobleRolPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel','bcaiPanel','validacionPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','dobleRolPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel','bcaiPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -21754,156 +21578,6 @@ function hideVendorConcentrationPanel() {
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
-// ════════════════════════════════════════════════════════════
-// PANEL VALIDACIÓN — tasa de precisión del motor (S288 · R-05)
-// Lee agregados vía casos-admin → get_review_precision(). Solo conteos:
-// review_nota nunca sale de la base (patrón de contención de S234).
-// ════════════════════════════════════════════════════════════
-function showValidacionPanel() {
-  _closeAllFuentePanels();
-  document.getElementById('nav-validacion').classList.add('active');
-  document.getElementById('validacionPanel').classList.add('open');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  initValidacionPanel();
-}
-
-function hideValidacionPanel() {
-  document.getElementById('validacionPanel').classList.remove('open');
-  document.getElementById('nav-validacion').classList.remove('active');
-  document.getElementById('risk-band')       && (document.getElementById('risk-band').style.display = '');
-  document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = '');
-  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
-  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
-  document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
-}
-
-function _valBarra(pct, color) {
-  const p = Math.max(0, Math.min(100, Number(pct) || 0));
-  return `<div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;min-width:60px;">
-            <div style="width:${p}%;height:100%;background:${color};border-radius:3px;"></div>
-          </div>`;
-}
-
-// Estado vacío honesto: dice qué hacer, no simula datos.
-function _valVacio(msg) {
-  return `<div style="padding:22px 16px;text-align:center;color:var(--text-dim);font-size:12px;line-height:1.7;">${msg}</div>`;
-}
-
-async function initValidacionPanel() {
-  const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  const setHtml = (id, v) => { const el = document.getElementById(id); if (el) el.innerHTML = v; };
-
-  setTxt('val-kpi-cobertura', '…'); setTxt('val-kpi-tasa', '…');
-  setTxt('val-kpi-concluidas', '…'); setTxt('val-kpi-pendientes', '…');
-
-  let d;
-  try {
-    const r = await _casosAdminCall({ action: 'ar_stats' });
-    d = r.data;
-  } catch (e) {
-    setHtml('val-por-patron', _valVacio('No se pudieron cargar las revisiones. Revisá la conexión y probá «Actualizar».'));
-    return;
-  }
-  if (!d) return;
-
-  const nf = n => Number(n || 0).toLocaleString('es-HN');
-  const totalAlertas   = Number(d.total_alertas   || 0);
-  const totalRevisadas = Number(d.total_revisadas || 0);
-  const concluidas     = Number(d.total_concluidas|| 0);
-  const confirmadas    = Number(d.confirmadas     || 0);
-
-  // ── Cobertura ──
-  const pctCob = totalAlertas > 0 ? (100 * totalRevisadas / totalAlertas) : 0;
-  // 2 decimales a propósito: con 2 revisiones sobre 176,819, "0%" pareceria un
-  // error de carga y "0.0%" esconde que sí hay algo. 0.00% dice la verdad exacta.
-  setTxt('val-kpi-cobertura', pctCob.toFixed(2) + '%');
-  setTxt('val-kpi-cobertura-sub', `${nf(totalRevisadas)} de ${nf(totalAlertas)} contratos`);
-
-  // ── Tasa global ──
-  if (concluidas > 0) {
-    setTxt('val-kpi-tasa', (100 * confirmadas / concluidas).toFixed(1) + '%');
-    setTxt('val-kpi-tasa-sub', `${nf(confirmadas)} confirmadas de ${nf(concluidas)} concluidas`);
-  } else {
-    setTxt('val-kpi-tasa', '—');
-    setTxt('val-kpi-tasa-sub', 'Sin revisiones concluidas');
-  }
-
-  setTxt('val-kpi-concluidas', nf(concluidas));
-  setTxt('val-kpi-concluidas-sub', `${nf(d.legitimas)} legítimas · ${nf(d.falsos_positivos)} falso positivo`);
-  setTxt('val-kpi-pendientes', nf(d.pendientes));
-
-  const chip = document.getElementById('nav-validacion-chip');
-  if (chip) chip.textContent = nf(totalRevisadas);
-
-  // ── Advertencia de muestra ──
-  const warn = document.getElementById('val-muestra-warn');
-  if (warn) {
-    if (!d.muestra_suficiente) {
-      warn.style.display = 'block';
-      warn.innerHTML = concluidas === 0
-        ? `<b>Sin muestra.</b> Todavía no hay revisiones concluidas, así que no existe tasa de precisión que reportar. Ninguna cifra de este panel debe citarse ante terceros hasta que haya al menos 100 casos cerrados.`
-        : `<b>Muestra insuficiente para inferencia estadística.</b> Hay ${nf(concluidas)} caso${concluidas === 1 ? '' : 's'} concluido${concluidas === 1 ? '' : 's'}; se necesitan al menos 100 para que las tasas de abajo sean interpretables. Las cifras se muestran para seguimiento interno, <b>no para citarse ante la PGR o en documentos ejecutivos</b>.`;
-    } else {
-      warn.style.display = 'none';
-    }
-  }
-
-  // ── Por patrón — la métrica clave ──
-  const pats = d.por_patron || [];
-  if (!pats.length) {
-    setHtml('val-por-patron', _valVacio(
-      'Todavía no hay señales con revisiones concluidas.<br>Abrí un contrato desde la tabla, usá <b>«Marcar como Revisado»</b> y registrá el desenlace. Cada caso cerrado alimenta esta tabla.'));
-  } else {
-    const ordenados = pats.slice().sort((a, b) => (b.tasa - a.tasa) || (b.concluidas - a.concluidas));
-    setHtml('val-por-patron', ordenados.map(p => {
-      const etiqueta = (typeof PATTERN_LABELS !== 'undefined' && PATTERN_LABELS[p.patron]) || p.patron;
-      const tasa = Number(p.tasa || 0);
-      const color = tasa >= 60 ? '#10b981' : tasa >= 30 ? 'var(--amber)' : 'var(--text-dim)';
-      // n<10 se marca: una tasa de 100% sobre 1 caso no es una tasa.
-      const frag = Number(p.concluidas) < 10
-        ? `<span title="Muestra muy pequeña — no interpretar como tasa" style="margin-left:6px;font-size:9px;color:var(--amber);opacity:.85;">n bajo</span>` : '';
-      return `<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);">
-        <div style="flex:0 0 34%;font-size:12px;color:var(--text);">${etiqueta}${frag}</div>
-        ${_valBarra(tasa, color)}
-        <div style="flex:0 0 52px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:${color};">${tasa.toFixed(1)}%</div>
-        <div style="flex:0 0 96px;text-align:right;font-size:11px;color:var(--text-dim);">${nf(p.confirmadas)} / ${nf(p.concluidas)}</div>
-      </div>`;
-    }).join(''));
-  }
-
-  // ── Por severidad ──
-  const sevs = d.por_severidad || [];
-  if (!sevs.length) {
-    setHtml('val-por-severidad', _valVacio('Sin revisiones concluidas todavía.'));
-  } else {
-    const colorSev = s => s === 'CRÍTICA' ? 'var(--red)' : s === 'ALTA' ? 'var(--orange)'
-                        : s === 'MEDIA' ? 'var(--amber)' : s === 'BAJA' ? 'var(--green)' : 'var(--text-dim)';
-    setHtml('val-por-severidad', sevs.map(s => {
-      const tasa = Number(s.tasa || 0);
-      return `<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);">
-        <div style="flex:0 0 34%;font-size:12px;color:${colorSev(s.severidad)};">● ${s.severidad}</div>
-        ${_valBarra(tasa, colorSev(s.severidad))}
-        <div style="flex:0 0 52px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);">${tasa.toFixed(1)}%</div>
-        <div style="flex:0 0 96px;text-align:right;font-size:11px;color:var(--text-dim);">${nf(s.confirmadas)} / ${nf(s.concluidas)}</div>
-      </div>`;
-    }).join(''));
-  }
-
-  // ── Motivos ──
-  const cats = d.por_categoria || [];
-  if (!cats.length) {
-    setHtml('val-por-categoria', _valVacio('Sin motivos registrados todavía.'));
-  } else {
-    const etiquetaEstado = { ESCALADO: 'Confirmada', LEGITIMO: 'Legítima', FALSO_POSITIVO: 'Falso positivo' };
-    setHtml('val-por-categoria', cats.map(c =>
-      `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);">
-        <div style="flex:1;font-size:12px;color:var(--text);">${c.categoria.replace(/_/g, ' ')}</div>
-        <div style="flex:0 0 120px;font-size:11px;color:var(--text-dim);">${etiquetaEstado[c.estado] || c.estado}</div>
-        <div style="flex:0 0 50px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);">${nf(c.n)}</div>
-      </div>`).join(''));
-  }
-}
-
 function showAuditPanel() {
   _closeAllFuentePanels();
   document.getElementById('nav-audit').classList.add('active');
@@ -22709,9 +22383,6 @@ async function init() {
   if (await checkStoredSession()) {
     showPortal();
     await Promise.all([loadAlerts(), loadReviewCache()]);
-    // S288 — el cache de revisiones y las alertas llegan en paralelo; los contadores
-    // de los chips solo son correctos cuando ambos terminaron.
-    try { updateReviewFilterCounts(); render(); } catch(e) {}
     startRealtime();
   } else {
     // No valid session — show login screen

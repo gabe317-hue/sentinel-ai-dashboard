@@ -2464,7 +2464,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.02 — HND</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.01 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2504,7 +2504,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.02 — HND · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.01 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -3929,7 +3929,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version" data-app-version="{v} — HND">v2.02 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v2.01 — HND</div>
   </div>
 
   <div class="nav">
@@ -4076,7 +4076,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric" data-app-version="{v} — HND">v2.02 — HND</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v2.01 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <!-- S285 · R-08 — píldora de frescura del DATO (H-12). Distinta del delta badge de arriba:
@@ -4941,25 +4941,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
          · S282 la corrigió a las reglas reales de ingest-oncae (patrones + monto).
          · S287 llevó R-02 a producción: severity y risk_score ahora salen de la fórmula
            de abajo, y los umbrales de puntaje son reales. Las reglas de S282 ya NO aplican.
-         · S292 agrega las señales contextuales y la distribución real en vivo.
        Los pesos son auditables en la tabla sentinel_pattern_weights; los umbrales viven
-       en sentinel_severity_from_score(). Si cambian allá, cambiarlos aquí.
-       ⚠️ Los porcentajes NO están escritos a mano: los calcula updateSevLegend() sobre
-       allAlerts. Cualquier corte de severidad futuro los mueve solo — que es justo lo
-       que falló antes, cuando la leyenda prometía rangos que la base no tenía. -->
+       en sentinel_severity_from_score(). Si cambian allá, cambiarlos aquí. -->
   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 4px;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text-dim);">
     <span style="letter-spacing:.06em;opacity:0.6;margin-right:4px;">CRITERIO DE SEVERIDAD:</span>
-    <span style="color:var(--red);">● Crítica</span><span style="opacity:0.6;margin:0 4px;">≥ 9 pts · referir a PGR <span class="sev-dist" data-sev="critica"></span></span>
-    <span style="color:var(--orange);">● Alta</span><span style="opacity:0.6;margin:0 4px;">6 – 8.99 pts · escalada legal <span class="sev-dist" data-sev="alta"></span></span>
-    <span style="color:var(--amber);">● Media</span><span style="opacity:0.6;margin:0 4px;">3 – 5.99 pts · monitorear <span class="sev-dist" data-sev="media"></span></span>
-    <span style="color:var(--green);">● Baja</span><span style="opacity:0.6;margin:0 4px;">&lt; 3 pts · referencia <span class="sev-dist" data-sev="baja"></span></span>
+    <span style="color:var(--red);">● Crítica</span><span style="opacity:0.6;margin:0 4px;">≥ 9 pts · referir a PGR</span>
+    <span style="color:var(--orange);">● Alta</span><span style="opacity:0.6;margin:0 4px;">6 – 8.99 pts · escalada legal</span>
+    <span style="color:var(--amber);">● Media</span><span style="opacity:0.6;margin:0 4px;">3 – 5.99 pts · monitorear</span>
+    <span style="color:var(--green);">● Baja</span><span style="opacity:0.6;margin:0 4px;">&lt; 3 pts · referencia</span>
     <span style="width:100%;opacity:0.4;font-size:10px;margin-top:2px;">Puntaje = (suma de pesos de los patrones detectados + bonificación por familias de evidencia distintas) × factor de monto, acotado a ×1.5. El monto agrava el puntaje; no lo determina.</span>
-    <span style="width:100%;opacity:0.55;font-size:10px;margin-top:3px;padding-top:5px;border-top:1px solid var(--border);">
-      <strong style="opacity:0.8;">Señales contextuales</strong> — no vienen de la fuente; Sentinel las deduce cruzando el contrato contra su entidad y su ventana de tiempo, y <strong>sí pesan en el puntaje</strong>:
-      <span style="opacity:0.9;">Cierre de Ejercicio</span> (concentración de adjudicaciones en los últimos días del año fiscal, peso 2.0) ·
-      <span style="opacity:0.9;">Ráfaga de 7 Días</span> (varios contratos al mismo proveedor dentro de una ventana de 7 días, peso 1.0).
-      Aparecen junto a los demás patrones en el registro, en los filtros y en los reportes.
-    </span>
   </div>
 
   <!-- Alerts table -->
@@ -7078,10 +7068,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <option value="ALTO_MONTO">Alto Monto</option>
           <option value="PROVEEDOR_SIN_HISTORIAL">Sin Historial</option>
           <option value="SOBRECOSTO">Sobrepresupuesto</option>
-          <!-- S292: señales contextuales de S291. No vienen de la fuente — las deduce
-               Sentinel y viven en alerts.patterns_ctx, fusionada en patterns al cargar. -->
-          <option value="CIERRE_EJERCICIO">Cierre de Ejercicio (contextual)</option>
-          <option value="RAFAGA_7D">Ráfaga de 7 Días (contextual)</option>
         </select>
         <!-- S219: se eliminaron "Concentración Proveedor" (CONCENTRACION_PROVEEDOR) y
              "Cluster CD" (CLUSTER_CD) — 0 coincidencias reales en la columna patterns,
@@ -7558,7 +7544,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.02';
+const APP_VERSION = 'v2.01';
 const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -7715,55 +7701,6 @@ function _applyFraccionamientoScrub(arr) {
     }
   });
   return arr;
-}
-
-// ════════════════════════════════════════════════════════════
-// S292 — SEÑALES CONTEXTUALES: patterns_ctx se fusiona en a.patterns
-// ════════════════════════════════════════════════════════════
-// POR QUÉ ACÁ Y NO EN 90 LUGARES (Regla #21): a.patterns se consume en ~90 puntos
-// del archivo (tabla, filtros, exports, PDFs, paneles, gráficas). Fusionar en el
-// pipeline de carga hace que TODOS vean las señales contextuales sin un solo parche
-// aguas abajo. La alternativa —una columna aparte en la tabla— dejaba los PDFs
-// referidos a PGR sin explicar por qué un contrato subió a CRÍTICA.
-//
-// QUÉ SON: CIERRE_EJERCICIO (peso 2.0, familia temporal) y RAFAGA_7D (peso 1.0,
-// familia fraccionamiento), creadas en S291 (MS-R06). Viven en su propia columna
-// porque el trigger alerts_derivar_riesgo RECONSTRUYE patterns_norm en cada ingesta
-// y las habría borrado en silencio — ver CLAUDE_state.md S291.
-//
-// SE CORRE AL FINAL, después del scrub de fraccionamiento, para que ese scrub siga
-// operando solo sobre los patrones crudos de ingesta y no sobre las contextuales.
-//
-// ⚠️ a.patterns_raw conserva la cadena cruda de ingesta. Si alguna vista necesita
-// distinguir "lo que dijo la fuente" de "lo que dedujo Sentinel", ese es el campo.
-function _mergePatternsCtx(arr) {
-  arr.forEach(a => {
-    a.patterns_raw = a.patterns || '';
-    const ctx = Array.isArray(a.patterns_ctx)
-      ? a.patterns_ctx.map(p => String(p).trim()).filter(Boolean)
-      : [];
-    if (!ctx.length) return;
-    const base   = (a.patterns || '').split(',').map(p => p.trim()).filter(Boolean);
-    const nuevos = ctx.filter(p => !base.includes(p));   // idempotente: no duplica
-    if (nuevos.length) a.patterns = base.concat(nuevos).join(',');
-  });
-  return arr;
-}
-
-// S292 — 4º criterio de aceptación de MS-R06: la leyenda debe describir la distribución
-// REAL. Se calcula sobre allAlerts en vez de escribirse a mano, para que ningún corte de
-// severidad futuro la deje mintiendo (fue exactamente el defecto que corrigió S282).
-// Usa a._sev, que ya normaliza tildes y mayúsculas (normSev, S170).
-function updateSevLegend() {
-  const els = document.querySelectorAll('.sev-dist');
-  if (!els.length || !window.allAlerts || !allAlerts.length) return;
-  const total = allAlerts.length;
-  const conteo = {};
-  allAlerts.forEach(a => { const s = a._sev || 'baja'; conteo[s] = (conteo[s] || 0) + 1; });
-  els.forEach(el => {
-    const n = conteo[el.dataset.sev] || 0;
-    el.textContent = `· ${n.toLocaleString('es-HN')} (${(100 * n / total).toFixed(1)}%)`;
-  });
 }
 
 // S289 — `_loadRemainingAlertsBackground()` BORRADA. Definida en S126 para traer MEDIA+BAJA
@@ -7967,16 +7904,10 @@ async function loadAlerts() {
     // Por eso el ahorro es 15.5% y no el ~43% que estimaba la nota de S288.
     // Al agregar una columna nueva a alerts que el cliente deba leer, AGREGARLA ACÁ TAMBIÉN:
     // si falta, llega como undefined y se renderiza en blanco SIN ERROR.
-    // S292 — patterns_ctx AGREGADA (25ª columna). Es text[] y la escribe el cron
-    // sentinel-ctx-aplicar (03:30), no la ingesta: contiene las señales contextuales
-    // CIERRE_EJERCICIO y RAFAGA_7D de S291, que SÍ pesan en risk_score/severity.
-    // Sin ella el usuario veía un contrato subir a CRÍTICA sin poder ver por qué.
-    // patterns_norm sigue FUERA a propósito: es la normalización interna de patterns
-    // que usa el trigger para puntuar — no aporta nada que el cliente no tenga ya.
     const ALERT_COLS = [
       'id','alert_id','description','entity_name','severity','risk_score','data_source',
       'status','created_at','monto_contrato','monto_pagado','fecha_contrato','contract_id',
-      'patterns','patterns_ctx','pattern_count','entidad','monto','tipo_contratacion','proveedor_nombre',
+      'patterns','pattern_count','entidad','monto','tipo_contratacion','proveedor_nombre',
       'fecha_publicacion','fecha_adjudicacion','source','title','budget_amount'
     ].join(',');
 
@@ -8080,10 +8011,9 @@ async function loadAlerts() {
     setProgress(100);
     setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 400);
 
-    allAlerts = _mergePatternsCtx(_applyFraccionamientoScrub(_applyAlertsFilters(all)));
+    allAlerts = _applyFraccionamientoScrub(_applyAlertsFilters(all));
     allAlerts.forEach(a => { a._sev = normSev(a.severity); }); // S170 — pre-compute
     window.allAlerts = allAlerts;
-    updateSevLegend();   // S292 — la leyenda declara la distribución real, no una fija
     window._bdTotalCount = window._bdTotalCount || allAlerts.length;
     updateBDCountDisplay(window._bdTotalCount);
 
@@ -9358,8 +9288,7 @@ function showVendorPanel(vendorName) {
     'CONCENTRACION_PROVEEDOR':'Concentración','PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro',
     'CD_ALTO_MONTO':'CD Alto Monto','SIN_HISTORIAL_PROVEEDOR':'Sin Historial',
     'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE',
-    'FRACCIONAMIENTO_SICC':'Fraccionamiento (SICC)','PROVEEDOR_FUERA_DE_GIRO_SICC':'Fuera de Giro (SICC)',
-    'CIERRE_EJERCICIO':'Cierre de Ejercicio','RAFAGA_7D':'Ráfaga 7 Días'   // S292 — contextuales
+    'FRACCIONAMIENTO_SICC':'Fraccionamiento (SICC)','PROVEEDOR_FUERA_DE_GIRO_SICC':'Fuera de Giro (SICC)'
   };
   const fmtLv = n => { n = Number(n||0); if(!n) return '—'; if(n>=1e9) return 'L '+(n/1e9).toFixed(1)+'B'; if(n>=1e6) return 'L '+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'L '+(n/1e3).toFixed(0)+'K'; return 'L '+n.toLocaleString('es-HN'); };
   document.getElementById('ep-recent').innerHTML = allSorted.length
@@ -12142,8 +12071,7 @@ function renderCandidatosDetectados() {
     'CONCENTRACION_PROVEEDOR':'Concentración','PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro',
     'CD_ALTO_MONTO':'CD Alto Monto','SIN_HISTORIAL_PROVEEDOR':'Sin Historial',
     'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD','FRACCIONAMIENTO_ONCAE':'Fraccionamiento ONCAE',
-    'FRACCIONAMIENTO_SICC':'Fraccionamiento (SICC)','PROVEEDOR_FUERA_DE_GIRO_SICC':'Fuera de Giro (SICC)',
-    'CIERRE_EJERCICIO':'Cierre de Ejercicio','RAFAGA_7D':'Ráfaga 7 Días'   // S292 — contextuales
+    'FRACCIONAMIENTO_SICC':'Fraccionamiento (SICC)','PROVEEDOR_FUERA_DE_GIRO_SICC':'Fuera de Giro (SICC)'
   };
 
   // ── S72: Score de Prosecutabilidad CNA ──────────────────────────────────────
@@ -12391,8 +12319,7 @@ async function ejecutarBusquedaBD() {
       'COMPRA_MENOR_RECURRENTE':'Compra Menor','CONCENTRACION_PROVEEDOR':'Concentración',
       'PROVEEDOR_FUERA_DE_GIRO':'Fuera de Giro','CD_ALTO_MONTO':'CD Alto Monto',
       'SIN_HISTORIAL_PROVEEDOR':'Sin Historial','SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD',
-      'FRACCIONAMIENTO_SICC':'Fracc. SICC','PROVEEDOR_FUERA_DE_GIRO_SICC':'Fuera de Giro (SICC)',
-      'CIERRE_EJERCICIO':'Cierre de Ejercicio','RAFAGA_7D':'Ráfaga 7 Días'   // S292 — contextuales
+      'FRACCIONAMIENTO_SICC':'Fracc. SICC','PROVEEDOR_FUERA_DE_GIRO_SICC':'Fuera de Giro (SICC)'
     };
 
     inner.innerHTML = results.map(a => {
@@ -18872,7 +18799,6 @@ function ipMemoEjecutivo() {
     'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD',
     'PROVEEDOR_ENGEL':'Lista Engel EE.UU.','PROVEEDOR_SANCIONADO':'Proveedor Sancionado',
     'CONTRATACION_DIRECTA_SICC':'Contratación Directa (SICC)','FRACCIONAMIENTO_SICC':'Fraccionamiento (SICC)',
-    'CIERRE_EJERCICIO':'Cierre de Ejercicio','RAFAGA_7D':'Ráfaga 7 Días',   // S292 — contextuales
   };
 
   const rec = criticos.length >= 10
@@ -21346,11 +21272,6 @@ const PATTERN_LABELS = {
   LICITACION_PRIVADA_SICC:     '🔒 Licitación Privada (SICC)',
   PROVEEDOR_FUERA_DE_GIRO_SICC:'Fuera de Giro (SICC)',
   FRACCIONAMIENTO_SICC:        '✂️ Fraccionamiento (SICC)',
-  // Señales contextuales (S291/MS-R06) — no vienen de la fuente, las deduce Sentinel
-  // cruzando el contrato contra su entidad y su ventana de tiempo. Sin emoji a
-  // propósito (criterio S284). El sufijo las distingue de los patrones de ingesta.
-  CIERRE_EJERCICIO:            'Cierre de Ejercicio · contextual',
-  RAFAGA_7D:                   'Ráfaga de 7 Días · contextual',
 };
 
 // ════════════════════════════════════════════════════════════

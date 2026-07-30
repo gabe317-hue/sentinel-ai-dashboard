@@ -2464,7 +2464,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.03 — HND</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.02 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2504,7 +2504,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.03 — HND · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.02 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -2967,15 +2967,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="pe-card-title">CPC Inhabilitado</div>
       <div class="pe-card-desc">Funcionarios de compras (CPC) inhabilitados por ONCAE — 157 personas sancionadas que no pueden operar como compradores públicos certificados</div>
       <span class="pe-card-tag" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.35);">NS-14</span>
-    </div>
-
-    <!-- Card 28 — Red de Socios Compartidos (S-04) -->
-    <div class="pe-card" onclick="irDesdeEjecutivo(showRedSociosPanel)">
-      <div class="pe-card-num">28</div>
-      <div class="pe-card-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="7" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8.2 8.4 10.6 15.9"/><path d="M15.8 8.4 13.4 15.9"/></svg></div>
-      <div class="pe-card-title">Red de Socios Compartidos</div>
-      <div class="pe-card-desc">Proveedores que registran socios en común ante el Registro Mercantil — indicador de posible vinculación societaria, no evidencia de colusión</div>
-      <span class="pe-card-tag" style="background:rgba(129,140,248,0.15);color:#818cf8;border:1px solid rgba(129,140,248,0.35);">S-04</span>
     </div>
 
   </div>
@@ -3521,70 +3512,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
   </div>
 
-  <!-- ══ S-04: RED DE SOCIOS COMPARTIDOS PANEL ══ -->
-  <div class="fuente-panel" id="redSociosPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <button class="fuente-back" style="margin-bottom:0;" onclick="hideRedSociosPanel()">← Panel Ejecutivo</button>
-      <button onclick="exportNSPanelPDF('redSociosPanel','S-04 — Red de Socios Compartidos')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
-    </div>
-    <div class="fuente-header">
-      <div class="fuente-title"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px"><circle cx="6" cy="7" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8.2 8.4 10.6 15.9"/><path d="M15.8 8.4 13.4 15.9"/></svg> <span>Red de Socios Compartidos — S-04</span></div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Grupos de proveedores que registran al menos un socio en común ante el Registro Mercantil · indicador de posible vinculación societaria entre empresas que concurren a la misma contratación</div>
-    </div>
-    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-      <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Grupos</div>
-        <div id="rs-stat-grupos" style="font-size:22px;font-weight:700;color:#818cf8;">—</div>
-      </div>
-      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Empresas</div>
-        <div id="rs-stat-empresas" style="font-size:22px;font-weight:700;color:#fbbf24;">—</div>
-      </div>
-      <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:130px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Monto combinado</div>
-        <div id="rs-stat-monto" style="font-size:22px;font-weight:700;color:var(--electric);">—</div>
-      </div>
-      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Contratos</div>
-        <div id="rs-stat-contratos" style="font-size:22px;font-weight:700;color:var(--text);">—</div>
-      </div>
-    </div>
-    <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:#a5b4fc;line-height:1.6;">
-      <strong>Metodología:</strong> se agrupan proveedores por componentes conexas — si A comparte socio con B y B con C, los tres forman un grupo. La fuente societaria es el Registro Mercantil vía Empresas Abiertas. Los contratos se agregan por nombre normalizado, porque una misma empresa aparece en los portales con varias grafías.<br>
-      <strong style="color:#fbbf24;">Lectura correcta:</strong> compartir un socio <u>no</u> constituye evidencia de colusión ni de irregularidad. Es un indicador que requiere verificación por la autoridad competente. Muchas empresas comparten socios de forma enteramente legítima.
-    </div>
-    <div id="rs-cobertura" style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.25);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#fbbf24;line-height:1.6;">
-      <strong>Cobertura limitada — leer antes de interpretar:</strong> <span id="rs-cobertura-txt">la consulta societaria cubre una fracción del padrón de proveedores.</span> <u>La ausencia de un grupo no significa ausencia de vínculo</u> — significa que aún no se ha consultado a esos proveedores.
-    </div>
-    <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
-      <input type="text" id="rs-search" placeholder="Filtrar por empresa o socio..." oninput="rsFiltrar()"
-        style="flex:1;min-width:200px;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;">
-      <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-dim);cursor:pointer;white-space:nowrap;">
-        <input type="checkbox" id="rs-solo-verificados" onchange="loadRedSocios()" style="cursor:pointer;">
-        Solo grupos con match verificado
-      </label>
-    </div>
-    <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-size:12px;">
-        <thead>
-          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
-            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">#</th>
-            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Empresas del grupo</th>
-            <th style="text-align:left;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Socio(s) en común</th>
-            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Contratos</th>
-            <th style="text-align:right;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Monto L</th>
-            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Alto riesgo</th>
-            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Entidades</th>
-            <th style="text-align:center;padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Match</th>
-          </tr>
-        </thead>
-        <tbody id="rs-tbody">
-          <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
   <!-- ══ NS-1: MONOGAMIA DE PROVEEDOR PANEL ══ -->
   <div class="fuente-panel" id="monogamiaPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideMonogamiaPanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('monogamiaPanel','NS-1 — Monogamia de Proveedor')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
@@ -4002,7 +3929,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version" data-app-version="{v} — HND">v2.03 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v2.02 — HND</div>
   </div>
 
   <div class="nav">
@@ -4149,7 +4076,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric" data-app-version="{v} — HND">v2.03 — HND</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v2.02 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <!-- S285 · R-08 — píldora de frescura del DATO (H-12). Distinta del delta badge de arriba:
@@ -7631,7 +7558,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.03';
+const APP_VERSION = 'v2.02';
 const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -10735,7 +10662,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','dobleRolPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','redSociosPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel','bcaiPanel','validacionPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','dobleRolPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel','bcaiPanel','validacionPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');
@@ -11285,115 +11212,6 @@ async function showRedesCorporativasPanel() {
   if (_rcData.length === 0) await loadRedesCorporativas();
 }
 function hideRedesCorporativasPanel() { document.getElementById('redesCorporativasPanel')?.classList.remove('open'); }
-
-// ══ S-04: RED DE SOCIOS COMPARTIDOS ═══════════════════════════════════════════
-// Componentes conexas de proveedores que comparten socio en el Registro Mercantil.
-// Fuente: RPC sentinel_red_socios(p_solo_verificados) — las guardas contra vínculos
-// falsos (centinela "sin dato", mismo ea_company_id, misma empresa con dos grafías)
-// viven en la vista v_socios_aristas, del lado de la base. Aquí no se replican.
-let _rsData = [], _rsFiltered = [], _rsCobertura = null;
-
-async function showRedSociosPanel() {
-  document.getElementById('redSociosPanel').classList.add('open');
-  if (_rsData.length === 0) await loadRedSocios();
-}
-// Regla UX "el Back regresa al punto anterior exacto": si se entró desde el Panel
-// Ejecutivo, se vuelve ahí. Sin esto el botón dice "← Panel Ejecutivo" pero deja al
-// usuario en la vista de Contratos (así se comportan hoy varios paneles NS; no se
-// tocan aquí — regla de parada).
-function hideRedSociosPanel() {
-  if (window._fromPanelEjecutivo && typeof volverAPanelEjecutivo === 'function') { volverAPanelEjecutivo(); return; }
-  document.getElementById('redSociosPanel')?.classList.remove('open');
-}
-
-async function loadRedSocios() {
-  const tbody = document.getElementById('rs-tbody');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">Cargando…</td></tr>';
-  const soloVerif = !!document.getElementById('rs-solo-verificados')?.checked;
-  try {
-    const { data, error } = await db.rpc('sentinel_red_socios', { p_solo_verificados: soloVerif });
-    if (error) throw error;
-    _rsData = data || [];
-    _rsFiltered = [..._rsData];
-
-    const empresas  = _rsData.reduce((s, r) => s + Number(r.n_empresas || 0), 0);
-    const monto     = _rsData.reduce((s, r) => s + Number(r.monto || 0), 0);
-    const contratos = _rsData.reduce((s, r) => s + Number(r.contratos || 0), 0);
-    document.getElementById('rs-stat-grupos').textContent    = _rsData.length;
-    document.getElementById('rs-stat-empresas').textContent  = empresas;
-    document.getElementById('rs-stat-monto').textContent     = fmtLpsCompact(monto);
-    document.getElementById('rs-stat-contratos').textContent = contratos.toLocaleString('es-HN');
-
-    await rsCargarCobertura();
-    rsRender();
-  } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
-  }
-}
-
-// Las cifras de cobertura NUNCA se escriben a mano: salen de la RPC y se mueven
-// solas cuando se amplíe la consulta societaria (mismo criterio que la leyenda de S292).
-async function rsCargarCobertura() {
-  const el = document.getElementById('rs-cobertura-txt');
-  if (!el) return;
-  try {
-    if (!_rsCobertura) {
-      const { data, error } = await db.rpc('sentinel_red_socios_cobertura');
-      if (error) throw error;
-      _rsCobertura = Array.isArray(data) ? data[0] : data;
-    }
-    const c = _rsCobertura || {};
-    const total = Number(c.proveedores_total || 0);
-    const conSocios = Number(c.con_socios || 0);
-    const pct = total ? (conSocios / total * 100) : 0;
-    el.innerHTML = `se han consultado <strong>${Number(c.proveedores_consultados||0).toLocaleString('es-HN')}</strong> proveedores ante el Registro Mercantil y solo <strong>${conSocios.toLocaleString('es-HN')}</strong> devolvieron socios — <strong>${pct < 0.1 ? pct.toFixed(3) : pct.toFixed(1)}%</strong> de los ${total.toLocaleString('es-HN')} proveedores del padrón. De esos ${conSocios}, <strong>${Number(c.matches_verificados||0)}</strong> tienen el match con Empresas Abiertas confirmado manualmente y <strong>${Number(c.matches_pendientes||0)}</strong> están sin revisar.`;
-  } catch (e) {
-    el.textContent = 'la consulta societaria cubre una fracción del padrón de proveedores (no se pudo leer la cifra exacta).';
-  }
-}
-
-function rsFiltrar() {
-  const q = (document.getElementById('rs-search')?.value || '').toLowerCase();
-  _rsFiltered = q ? _rsData.filter(r =>
-    (r.empresas || []).some(e => (e || '').toLowerCase().includes(q)) ||
-    (r.socios_vinculo || []).some(s => (s || '').toLowerCase().includes(q))
-  ) : [..._rsData];
-  rsRender();
-}
-
-function rsRender() {
-  const tbody = document.getElementById('rs-tbody');
-  if (!tbody) return;
-  if (!_rsFiltered.length) {
-    const soloVerif = !!document.getElementById('rs-solo-verificados')?.checked;
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-dim);">${
-      soloVerif ? 'Ningún grupo tiene todos sus matches verificados todavía. Desmarca la casilla para ver los grupos pendientes de revisión.' : 'Sin resultados.'
-    }</td></tr>`;
-    return;
-  }
-  const _esc = s => (s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  tbody.innerHTML = _rsFiltered.map(r => {
-    const verif = r.todos_verificados === true;
-    const badge = verif
-      ? '<span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-family:\'JetBrains Mono\',monospace;letter-spacing:.05em;background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);">VERIFICADO</span>'
-      : '<span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-family:\'JetBrains Mono\',monospace;letter-spacing:.05em;background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);" title="El cruce con el Registro Mercantil no ha sido confirmado por un revisor. Interpretar con reserva.">SIN REVISAR</span>';
-    const empresas = (r.empresas || []).map(e => `<div style="padding:1px 0;">${_esc(e)}</div>`).join('');
-    const socios   = (r.socios_vinculo || []).map(s => `<div style="padding:1px 0;">${_esc(s)}</div>`).join('');
-    const ar = Number(r.alertas_alto_riesgo || 0);
-    return `
-    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-      <td style="padding:8px 10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;vertical-align:top;">${r.grupo_id}</td>
-      <td style="padding:8px 10px;color:var(--text);font-size:11px;vertical-align:top;max-width:280px;">${empresas}</td>
-      <td style="padding:8px 10px;color:#a5b4fc;font-size:11px;vertical-align:top;max-width:200px;">${socios}</td>
-      <td style="padding:8px 10px;text-align:right;color:var(--text-dim);font-size:11px;vertical-align:top;">${Number(r.contratos||0).toLocaleString('es-HN')}</td>
-      <td style="padding:8px 10px;text-align:right;color:var(--electric);font-size:11px;font-family:'JetBrains Mono',monospace;vertical-align:top;">${fmtLps(Number(r.monto||0))}</td>
-      <td style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:${ar > 0 ? '#f87171' : 'var(--text-dim)'};vertical-align:top;">${ar}</td>
-      <td style="padding:8px 10px;text-align:center;color:var(--text-dim);font-size:11px;vertical-align:top;">${Number(r.entidades||0)}</td>
-      <td style="padding:8px 10px;text-align:center;vertical-align:top;">${badge}</td>
-    </tr>`;
-  }).join('');
-}
 
 // ══ NS-1: MONOGAMIA DE PROVEEDOR ══════════════════════════════════════════════
 let _vmsData = [], _vmsFiltered = [];
@@ -30049,7 +29867,6 @@ const _PANEL_MAP = {
   'candidatos':  () => showCandidatosPanel(),
   'busqueda':    () => showBusquedaBDPanel(),
   'redes':       () => showRedesCorporativasPanel(),
-  'redsocios':   () => showRedSociosPanel(),
 };
 
 // Leer ?panel= al cargar (después de auth/loadAlerts)
@@ -30160,7 +29977,7 @@ function _setUrlPanel(panelKey) {
       seguimientoPanel:'seguimiento', monopolioPanel:'monopolio', dobleRolPanel:'doblerol',
       entityRankingPanel:'ranking', oncaePanel:'oncae',
       candidatosPanel:'candidatos', busquedaBDPanel:'busqueda',
-      redesCorporativasPanel:'redes', redSociosPanel:'redsocios'
+      redesCorporativasPanel:'redes'
     };
     document.querySelectorAll('.fuente-panel').forEach(function (p) {
       new MutationObserver(function () {

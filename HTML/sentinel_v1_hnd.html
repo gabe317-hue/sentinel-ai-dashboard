@@ -22711,7 +22711,10 @@ async function init() {
     await Promise.all([loadAlerts(), loadReviewCache()]);
     // S288 — el cache de revisiones y las alertas llegan en paralelo; los contadores
     // de los chips solo son correctos cuando ambos terminaron.
-    try { updateReviewFilterCounts(); render(); } catch(e) {}
+    // NO llamar render() acá: loadAlerts() ya renderiza al terminar, y un render extra
+    // vuelve a ordenar las 176,819 filas para no cambiar nada en pantalla. Los contadores
+    // escriben directo en el DOM de los chips, así que no necesitan un ciclo de render.
+    try { updateReviewFilterCounts(); } catch(e) {}
     startRealtime();
   } else {
     // No valid session — show login screen

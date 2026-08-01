@@ -35,65 +35,6 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* R-11 (Dictamen UX, sesión S308) — capa mínima de accesibilidad.
-   Estado enfocado visible en todo elemento interactivo. */
-:focus-visible {
-  outline: 2px solid var(--electric);
-  outline-offset: 2px;
-}
-
-/* Enlace "Saltar al contenido" — oculto hasta recibir foco por teclado */
-.skip-link {
-  position: absolute;
-  top: -60px;
-  left: 8px;
-  z-index: 10000;
-  background: var(--navy-light);
-  color: var(--text);
-  border: 1px solid var(--electric);
-  border-radius: 6px;
-  padding: 10px 16px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  text-decoration: none;
-  transition: top .15s;
-}
-.skip-link:focus {
-  top: 8px;
-}
-
-/* Pantalla de cortesía móvil — Sentinel-AI está optimizado para escritorio */
-.mobile-courtesy {
-  display: none;
-}
-@media (max-width: 640px) {
-  .mobile-courtesy.active {
-    display: flex;
-    position: fixed;
-    inset: 0;
-    z-index: 20000;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    text-align: center;
-    padding: 32px 24px;
-    background: var(--navy);
-  }
-  .mobile-courtesy .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: var(--text); }
-  .mobile-courtesy .logo-text span { color: var(--electric); }
-  .mobile-courtesy p { color: var(--text-dim); font-size: 13px; max-width: 320px; line-height: 1.5; }
-  .mobile-courtesy button {
-    background: var(--electric-dim);
-    border: 1px solid var(--electric);
-    color: var(--electric);
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 12px;
-    cursor: pointer;
-  }
-}
-
 body {
   font-family: 'Inter', sans-serif;
   background: var(--navy);
@@ -2497,23 +2438,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 </head>
 <body>
 
-<!-- R-11 (Dictamen UX, sesión S308) -->
-<a href="#main-content" class="skip-link">Saltar al contenido</a>
-
-<!-- R-11 — pantalla de cortesía móvil. No rediseña el layout de escritorio;
-     solo cubre la pantalla en viewports angostos con opción de continuar. -->
-<div class="mobile-courtesy" id="mobileCourtesy">
-  <div class="logo-text">SENTINEL<span>-AI</span></div>
-  <p>Sentinel-AI está optimizado para escritorio. Para acceso completo, utilice una pantalla de 1280px o superior.</p>
-  <button onclick="document.getElementById('mobileCourtesy').classList.remove('active')">Continuar de todos modos</button>
-</div>
-<script>
-  (function(){
-    var mc = document.getElementById('mobileCourtesy');
-    if (window.innerWidth <= 640) mc.classList.add('active');
-  })();
-</script>
-
 <!-- ═══════════════════ LOAD PROGRESS BAR (fixed top) ═══════════════════ -->
 <div id="load-progress-wrap" style="position:fixed;top:0;left:0;width:100%;height:3px;z-index:99999;background:transparent;display:none;">
   <div id="load-progress-bar" style="height:100%;width:0%;background:var(--electric);box-shadow:0 0 8px var(--electric);transition:width 0.35s ease;"></div>
@@ -2549,7 +2473,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.05 — HND</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.04 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2589,7 +2513,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.05 — HND · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.04 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -4077,7 +4001,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
 <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
-<nav class="sidebar" role="navigation" aria-label="Navegación principal">
+<nav class="sidebar">
   <div class="logo-area">
     <button onclick="showPortal()" class="portal-back">Portal de Acceso</button>
     <div class="logo-text">SENTINEL<span>-AI</span></div>
@@ -4087,75 +4011,75 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version" data-app-version="{v} — HND">v2.05 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v2.04 — HND</div>
   </div>
 
   <div class="nav">
     <div class="nav-section">
       <div class="nav-section-label">Operación</div>
-      <button class="nav-item" id="nav-ejecutiva" onclick="showVistaEjecutiva()" aria-label="Ir a Vista Ejecutiva">
+      <button class="nav-item" id="nav-ejecutiva" onclick="showVistaEjecutiva()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg></span> Vista Ejecutiva
       </button>
-      <button class="nav-item active" id="nav-contratos" onclick="hideAllPanels()" aria-label="Ir a Contratos">
+      <button class="nav-item active" id="nav-contratos" onclick="hideAllPanels()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg></span> Contratos
       </button>
     </div>
 
     <div class="nav-section">
       <div class="nav-section-label">Análisis</div>
-      <button class="nav-item" id="nav-analytics" onclick="showAnalyticsPanel()" aria-label="Ir a Análisis">
+      <button class="nav-item" id="nav-analytics" onclick="showAnalyticsPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 7-7"/><path d="M15 8h5v5"/></svg></span> Análisis
       </button>
-      <button class="nav-item" id="nav-vendor-concentration" onclick="showVendorConcentrationPanel()" aria-label="Ir a Concentración de Proveedores">
+      <button class="nav-item" id="nav-vendor-concentration" onclick="showVendorConcentrationPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span> Concentración
       </button>
-      <button class="nav-item" id="nav-sobrecostos" onclick="showGlobalSobrecostos()" aria-label="Ir a Sobrepresupuesto">
+      <button class="nav-item" id="nav-sobrecostos" onclick="showGlobalSobrecostos()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg></span> Sobrepresupuesto
       </button>
-      <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()" aria-label="Ir a Anomalías">
+      <button class="nav-item" id="nav-phase4" onclick="showPhase4Detection()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span> Anomalías
       </button>
-      <button class="nav-item" id="nav-fraccionamiento" onclick="showFraccionamientoPanel()" aria-label="Ir a Fraccionamiento">
+      <button class="nav-item" id="nav-fraccionamiento" onclick="showFraccionamientoPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88"/><path d="M14.47 14.48 20 20"/><path d="M8.12 8.12 12 12"/></svg></span> Fraccionamiento
       </button>
-      <button class="nav-item" id="nav-consultoria" onclick="showConsultoriaPanel()" aria-label="Ir a Consultoría NS-10">
+      <button class="nav-item" id="nav-consultoria" onclick="showConsultoriaPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span> Consultoría NS-10
       </button>
-      <button class="nav-item" id="nav-identidad" onclick="showIdentidadPanel()" aria-label="Ir a Identidad Duplicada NS-11">
+      <button class="nav-item" id="nav-identidad" onclick="showIdentidadPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12a10 10 0 0 1 18-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M21.8 16c.2-2 .13-5.35 0-6"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/></svg></span> Identidad Duplicada NS-11
       </button>
-      <button class="nav-item" id="nav-monopolio" onclick="showMonopolioPanel()" aria-label="Ir a Monopolio Proveedor NS-12">
+      <button class="nav-item" id="nav-monopolio" onclick="showMonopolioPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span> Monopolio Proveedor NS-12
       </button>
-      <button class="nav-item" id="nav-doblerol" onclick="showDobleRolPanel()" aria-label="Ir a Doble Rol NS-13">
+      <button class="nav-item" id="nav-doblerol" onclick="showDobleRolPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Doble Rol NS-13
       </button>
-      <button class="nav-item" id="nav-cpcinh" onclick="showCpcInhabPanel()" aria-label="Ir a CPC Inhabilitado NS-14">
+      <button class="nav-item" id="nav-cpcinh" onclick="showCpcInhabPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg></span> CPC Inhabilitado NS-14
       </button>
-      <button class="nav-item" id="nav-sector" onclick="showSectorPanel()" aria-label="Ir a Sectores Institucionales">
+      <button class="nav-item" id="nav-sector" onclick="showSectorPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 21 8H3z"/></svg></span> Sectores Institucionales
       </button>
     </div>
 
     <div class="nav-section">
       <div class="nav-section-label">Investigación</div>
-      <button class="nav-item" id="nav-candidatos" onclick="showCandidatosPanel()" aria-label="Ir a Candidatos">
+      <button class="nav-item" id="nav-candidatos" onclick="showCandidatosPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span> Candidatos
         <span class="nav-chip" id="nav-candidatos-chip" style="background:rgba(255,61,87,0.1);color:var(--red);border-color:rgba(255,61,87,0.25);">—</span>
       </button>
-      <button class="nav-item" id="nav-timeline" onclick="showTimelinePanel()" aria-label="Ir a Cronología">
+      <button class="nav-item" id="nav-timeline" onclick="showTimelinePanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg></span> Cronología
       </button>
-      <button class="nav-item mod-f" id="nav-modulof" onclick="showModuloFPanel()" aria-label="Ir a Canal Denuncias">
+      <button class="nav-item mod-f" id="nav-modulof" onclick="showModuloFPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.9 19.1a10 10 0 0 1 0-14.2"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg></span> Canal Denuncias
         <span class="nav-chip" id="nav-mf-chip" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(168,85,247,0.3);">F</span>
       </button>
-      <button class="nav-item" id="nav-news" onclick="showNewsPanel()" aria-label="Ir a Noticias">
+      <button class="nav-item" id="nav-news" onclick="showNewsPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span> Noticias
         <span class="nav-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">RSS</span>
       </button>
-      <button class="nav-item" id="nav-scanner" onclick="showScannerPanel()" aria-label="Ir a Escáner">
+      <button class="nav-item" id="nav-scanner" onclick="showScannerPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span> Escáner
         <span class="nav-chip" style="background:rgba(124,58,237,0.15);color:#a78bfa;border-color:rgba(124,58,237,0.3);">AUTO</span>
       </button>
@@ -4164,38 +4088,38 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
     <div class="nav-section">
       <div class="nav-section-label">Sistema</div>
-      <button class="nav-item" id="nav-reportes" onclick="showReportesPanel()" aria-label="Ir a Reportes">
+      <button class="nav-item" id="nav-reportes" onclick="showReportesPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 18v-2"/><path d="M12 18v-4"/><path d="M16 18v-6"/></svg></span> Reportes
       </button>
-      <button class="nav-item" id="nav-ocds" onclick="showOcdsPanel()" aria-label="Ir a OCDS / Cruce">
+      <button class="nav-item" id="nav-ocds" onclick="showOcdsPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></span> OCDS / Cruce
         <span class="nav-chip" id="nav-ocds-chip" style="background:rgba(0,200,255,0.1);color:var(--electric);border-color:rgba(0,200,255,0.25);">—</span>
       </button>
-      <button class="nav-item" id="nav-cruce-sefin" onclick="showCruceSefinPanel()" aria-label="Ir a Cruce ONCAE por SEFIN">
+      <button class="nav-item" id="nav-cruce-sefin" onclick="showCruceSefinPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="3"/><circle cx="19" cy="18" r="3"/><path d="M12 6h5a2 2 0 0 1 2 2v7"/><path d="M12 18H7a2 2 0 0 1-2-2V9"/></svg></span> Cruce ONCAE×SEFIN
         <span class="nav-chip" id="nav-cruce-sefin-chip" style="background:rgba(255,165,0,0.1);color:var(--amber);border-color:rgba(255,165,0,0.25);">NEW</span>
       </button>
-      <button class="nav-item" id="nav-validacion" onclick="showValidacionPanel()" aria-label="Ir a Validación">
+      <button class="nav-item" id="nav-validacion" onclick="showValidacionPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></span> Validación
         <span class="nav-chip" id="nav-validacion-chip" style="background:rgba(16,185,129,0.12);color:#10b981;border-color:rgba(16,185,129,0.3);">—</span>
       </button>
-      <button class="nav-item" id="nav-audit" onclick="showAuditPanel()" aria-label="Ir a Auditoría">
+      <button class="nav-item" id="nav-audit" onclick="showAuditPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span> Auditoría
         <span class="nav-chip">LOG</span>
       </button>
-      <button class="nav-item" id="nav-ingest" onclick="showIngestPanel()" aria-label="Ir a Ingesta">
+      <button class="nav-item" id="nav-ingest" onclick="showIngestPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></span> Ingesta
         <span class="nav-chip" style="background:rgba(0,230,118,0.12);color:var(--green);border-color:rgba(0,230,118,0.3);">LIVE</span>
       </button>
-      <button class="nav-item" id="nav-admin" onclick="showAdminPanel()" aria-label="Ir a Administración">
+      <button class="nav-item" id="nav-admin" onclick="showAdminPanel()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Admin
         <span class="nav-chip" style="background:rgba(99,102,241,0.15);color:#818cf8;border-color:rgba(99,102,241,0.3);">USR</span>
       </button>
-      <button class="nav-item" id="nav-client-admin" onclick="showClientAdminPanel()" style="display:none;" aria-label="Ir a Mi Organización">
+      <button class="nav-item" id="nav-client-admin" onclick="showClientAdminPanel()" style="display:none;">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg></span> Mi Org
         <span class="nav-chip" style="background:rgba(16,185,129,0.15);color:#10b981;border-color:rgba(16,185,129,0.3);">ORG</span>
       </button>
-      <a class="nav-item" href="https://sentinelai-hn.com" target="_blank" aria-label="Ir al sitio público de Sentinel-AI (se abre en pestaña nueva)">
+      <a class="nav-item" href="https://sentinelai-hn.com" target="_blank">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span> Inicio
       </a>
     </div>
@@ -4234,7 +4158,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric" data-app-version="{v} — HND">v2.05 — HND</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v2.04 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <!-- S285 · R-08 — píldora de frescura del DATO (H-12). Distinta del delta badge de arriba:
@@ -4564,7 +4488,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 </div><!-- /portalOverlay -->
 
 <!-- ═══════════════════ MAIN ═══════════════════ -->
-<main class="main" id="main-content">
+<main class="main">
 
   <!-- Error banner — shown only on Supabase failure, never silent -->
   <div class="error-banner" id="errorBanner">
@@ -5042,7 +4966,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <div class="controls-bar" style="margin-bottom:6px;gap:8px;">
     <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:.06em;white-space:nowrap;align-self:center;">🔍 BUSCAR:</span>
     <input id="global-search" type="text" placeholder="Proveedor, entidad, o ID de contrato..."
-      aria-label="Buscar por proveedor, entidad o ID de contrato"
       oninput="_setSearchDebounced(this.value)"
       style="flex:1;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;
              padding:7px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;
@@ -5060,22 +4983,22 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 
   <!-- Severity filter bar -->
   <div class="controls-bar">
-    <button class="filter-btn active" data-f="all"     onclick="setFilter('all')" aria-label="Filtrar por severidad: todas las severidades">TODAS</button>
-    <button class="filter-btn"        data-f="critica" onclick="setFilter('critica')" aria-label="Filtrar por severidad: críticas">CRÍTICAS</button>
-    <button class="filter-btn"        data-f="alta"    onclick="setFilter('alta')" aria-label="Filtrar por severidad: altas">ALTAS</button>
-    <button class="filter-btn"        data-f="media"   onclick="setFilter('media')" aria-label="Filtrar por severidad: medias">MEDIAS</button>
-    <button class="filter-btn"        data-f="baja"    onclick="setFilter('baja')" aria-label="Filtrar por severidad: bajas">BAJAS</button>
+    <button class="filter-btn active" data-f="all"     onclick="setFilter('all')">TODAS</button>
+    <button class="filter-btn"        data-f="critica" onclick="setFilter('critica')">CRÍTICAS</button>
+    <button class="filter-btn"        data-f="alta"    onclick="setFilter('alta')">ALTAS</button>
+    <button class="filter-btn"        data-f="media"   onclick="setFilter('media')">MEDIAS</button>
+    <button class="filter-btn"        data-f="baja"    onclick="setFilter('baja')">BAJAS</button>
   </div>
 
   <!-- Pattern filter bar -->
   <div class="controls-bar" style="margin-top:6px; gap:6px;">
     <span style="color:var(--muted);font-size:11px;letter-spacing:.06em;align-self:center;margin-right:4px;">PATRÓN:</span>
-    <button class="filter-btn active" data-p="all"                    onclick="setPatternFilter('all')" aria-label="Filtrar por patrón: todos los patrones">TODOS</button>
-    <button class="filter-btn"        data-p="FRACCIONAMIENTO_MICRO"  onclick="setPatternFilter('FRACCIONAMIENTO_MICRO')" aria-label="Filtrar por patrón: fraccionamiento">FRACCIONAMIENTO</button>
-    <button class="filter-btn"        data-p="COMPRA_EMERGENCIA"      onclick="setPatternFilter('COMPRA_EMERGENCIA')" aria-label="Filtrar por patrón: compra de emergencia">EMERGENCIA</button>
-    <button class="filter-btn"        data-p="ADJUDICACION_DIRECTA"   onclick="setPatternFilter('ADJUDICACION_DIRECTA')" aria-label="Filtrar por patrón: adjudicación directa">DIRECTA</button>
-    <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')" aria-label="Filtrar por patrón: proveedor sin historial">SIN HISTORIAL</button>
-    <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')" aria-label="Filtrar por patrón: monto fraccionado">MONTO FRACCIONADO</button>
+    <button class="filter-btn active" data-p="all"                    onclick="setPatternFilter('all')">TODOS</button>
+    <button class="filter-btn"        data-p="FRACCIONAMIENTO_MICRO"  onclick="setPatternFilter('FRACCIONAMIENTO_MICRO')">FRACCIONAMIENTO</button>
+    <button class="filter-btn"        data-p="COMPRA_EMERGENCIA"      onclick="setPatternFilter('COMPRA_EMERGENCIA')">EMERGENCIA</button>
+    <button class="filter-btn"        data-p="ADJUDICACION_DIRECTA"   onclick="setPatternFilter('ADJUDICACION_DIRECTA')">DIRECTA</button>
+    <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')">SIN HISTORIAL</button>
+    <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')">MONTO FRACCIONADO</button>
     <!-- S295 (MS-R04) — Chip OFAC honestamente deshabilitado. La tabla
          `international_sanctions` tiene 0 filas: antes este chip filtraba por el patrón
          PROVEEDOR_SANCIONADO, que no aparece en NINGUNA de las 176,819 alertas
@@ -5085,8 +5008,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
          El title va en el <span> contenedor porque un <button disabled> no dispara
          eventos de mouse y el tooltip no se mostraría de forma confiable.
          NO simular resultados: se habilita cuando se ingeste la lista SDN del Tesoro. -->
-    <span class="chip-wrap" title="Sin datos OFAC cargados — pendiente de ingesta"><button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" disabled aria-disabled="true" style="opacity:.4;cursor:not-allowed;" aria-label="Filtrar por patrón: sancionado OFAC (sin datos cargados)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg> SANCIONADO OFAC <span class="lf-count" style="opacity:.55;">0</span></button></span>
-    <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')" title="Contratos cuyo proveedor, entidad o descripción coincide con un nombre de la Lista Engel (52 entradas). Una coincidencia de nombre no constituye por sí sola evidencia de irregularidad." aria-label="Filtrar por patrón: Lista Engel"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg> LISTA ENGEL <span class="lf-count" style="opacity:.55;">—</span></button>
+    <span class="chip-wrap" title="Sin datos OFAC cargados — pendiente de ingesta"><button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" disabled aria-disabled="true" style="opacity:.4;cursor:not-allowed;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg> SANCIONADO OFAC <span class="lf-count" style="opacity:.55;">0</span></button></span>
+    <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')" title="Contratos cuyo proveedor, entidad o descripción coincide con un nombre de la Lista Engel (52 entradas). Una coincidencia de nombre no constituye por sí sola evidencia de irregularidad."><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg> LISTA ENGEL <span class="lf-count" style="opacity:.55;">—</span></button>
   </div>
 
   <!-- Estado de revisión — S288 (R-05, punto A.4). Cada chip lleva su contador para
@@ -5094,12 +5017,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
        un control que devuelve vacío sin avisar es peor que uno deshabilitado). -->
   <div class="controls-bar" id="reviewFilterBar" style="margin-top:6px; gap:6px;">
     <span style="color:var(--text-dim);font-size:11px;letter-spacing:.06em;align-self:center;margin-right:4px;">REVISIÓN:</span>
-    <button class="filter-btn active" data-r="all"            onclick="setReviewFilter('all')" aria-label="Filtrar por estado de revisión: todas">TODAS <span class="rf-count" style="opacity:.55;">—</span></button>
-    <button class="filter-btn"        data-r="sin"            onclick="setReviewFilter('sin')" aria-label="Filtrar por estado de revisión: sin revisar">SIN REVISAR <span class="rf-count" style="opacity:.55;">—</span></button>
-    <button class="filter-btn"        data-r="PENDIENTE"      onclick="setReviewFilter('PENDIENTE')" aria-label="Filtrar por estado de revisión: sin concluir">◔ SIN CONCLUIR <span class="rf-count" style="opacity:.55;">—</span></button>
-    <button class="filter-btn"        data-r="ESCALADO"       onclick="setReviewFilter('ESCALADO')" aria-label="Filtrar por estado de revisión: confirmadas y escaladas">▲ CONFIRMADAS <span class="rf-count" style="opacity:.55;">—</span></button>
-    <button class="filter-btn"        data-r="LEGITIMO"       onclick="setReviewFilter('LEGITIMO')" aria-label="Filtrar por estado de revisión: legítimas">✓ LEGÍTIMAS <span class="rf-count" style="opacity:.55;">—</span></button>
-    <button class="filter-btn"        data-r="FALSO_POSITIVO" onclick="setReviewFilter('FALSO_POSITIVO')" aria-label="Filtrar por estado de revisión: falso positivo">⚪ FALSO POSITIVO <span class="rf-count" style="opacity:.55;">—</span></button>
+    <button class="filter-btn active" data-r="all"            onclick="setReviewFilter('all')">TODAS <span class="rf-count" style="opacity:.55;">—</span></button>
+    <button class="filter-btn"        data-r="sin"            onclick="setReviewFilter('sin')">SIN REVISAR <span class="rf-count" style="opacity:.55;">—</span></button>
+    <button class="filter-btn"        data-r="PENDIENTE"      onclick="setReviewFilter('PENDIENTE')">◔ SIN CONCLUIR <span class="rf-count" style="opacity:.55;">—</span></button>
+    <button class="filter-btn"        data-r="ESCALADO"       onclick="setReviewFilter('ESCALADO')">▲ CONFIRMADAS <span class="rf-count" style="opacity:.55;">—</span></button>
+    <button class="filter-btn"        data-r="LEGITIMO"       onclick="setReviewFilter('LEGITIMO')">✓ LEGÍTIMAS <span class="rf-count" style="opacity:.55;">—</span></button>
+    <button class="filter-btn"        data-r="FALSO_POSITIVO" onclick="setReviewFilter('FALSO_POSITIVO')">⚪ FALSO POSITIVO <span class="rf-count" style="opacity:.55;">—</span></button>
   </div>
 
   <!-- Criterio de severidad — S287 (29 jul 2026): la severidad ya SÍ se deriva de un
@@ -5136,23 +5059,23 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="table-title">Registro de Contratos</span>
       <div style="display:flex;align-items:center;gap:14px;">
         <span id="data-freshness" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:.04em;opacity:0.7;" title="Fecha del contrato más reciente en la base de datos">🕒 Datos al: <span id="freshness-date">—</span></span>
-        <span class="table-count" id="tableCount" aria-live="polite">Cargando...</span>
+        <span class="table-count" id="tableCount">Cargando...</span>
       </div>
     </div>
     <div style="overflow-x: auto;">
       <table class="alert-table">
         <thead>
           <tr>
-            <th scope="col" class="th-sortable" onclick="sortTableBy('id')" title="Ordenar por más reciente">ID Alerta <span class="th-sort-ind" id="sort-ind-id"></span></th>
-            <th scope="col">Descripción</th>
-            <th scope="col">Proveedor</th>
-            <th scope="col">Entidad</th>
-            <th scope="col" class="th-sortable" onclick="sortTableBy('severidad')" title="Ordenar por severidad">Severidad <span class="th-sort-ind" id="sort-ind-severidad"></span></th>
-            <th scope="col">Fuente</th>
-            <th scope="col" class="th-sortable" onclick="sortTableBy('fecha')" title="Ordenar por fecha del contrato">F. Contrato <span class="th-sort-ind" id="sort-ind-fecha"></span></th>
-            <th scope="col" class="th-sortable" onclick="sortTableBy('monto')" title="Ordenar por monto">Montos (L) <span class="th-sort-ind" id="sort-ind-monto"></span></th>
-            <th scope="col">Estado</th>
-            <th scope="col">Acciones</th>
+            <th class="th-sortable" onclick="sortTableBy('id')" title="Ordenar por más reciente">ID Alerta <span class="th-sort-ind" id="sort-ind-id"></span></th>
+            <th>Descripción</th>
+            <th>Proveedor</th>
+            <th>Entidad</th>
+            <th class="th-sortable" onclick="sortTableBy('severidad')" title="Ordenar por severidad">Severidad <span class="th-sort-ind" id="sort-ind-severidad"></span></th>
+            <th>Fuente</th>
+            <th class="th-sortable" onclick="sortTableBy('fecha')" title="Ordenar por fecha del contrato">F. Contrato <span class="th-sort-ind" id="sort-ind-fecha"></span></th>
+            <th class="th-sortable" onclick="sortTableBy('monto')" title="Ordenar por monto">Montos (L) <span class="th-sort-ind" id="sort-ind-monto"></span></th>
+            <th>Estado</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody id="alertTbody">
@@ -7726,7 +7649,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.05';
+const APP_VERSION = 'v2.04';
 const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -8552,9 +8475,9 @@ function render() {
       <td><span class="status-badge ${(_rStatus === 'LEGITIMO' || _rStatus === 'FALSO_POSITIVO') ? 'revisado' : stc}">${(_rStatus === 'LEGITIMO') ? 'Legítimo' : (_rStatus === 'FALSO_POSITIVO') ? 'Falso Positivo' : (_rStatus === 'ESCALADO') ? 'Escalado' : (_rStatus === 'PENDIENTE') ? 'En revisión' : (a.status || 'Pendiente')}</span></td>
       <td>
         <div class="action-group" onclick="event.stopPropagation()">
-          ${(sc === 'critica' || sc === 'alta') ? `<button class="btn-action btn-refer" onclick="openReferModal(${a.id})" title="Generar memorándum de referencia" aria-label="Generar memorándum de referencia para el contrato ${a.alert_id || ('#' + a.id)}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg> Referir</button>` : ''}
-          ${(!_rStatus || _rStatus === 'ESCALADO') ? `<button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta" aria-label="Enviar alerta del contrato ${a.alert_id || ('#' + a.id)}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg> Enviar</button>` : ''}
-          <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Archivar contrato" aria-label="Archivar contrato ${a.alert_id || ('#' + a.id)}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg> Archivar</button>
+          ${(sc === 'critica' || sc === 'alta') ? `<button class="btn-action btn-refer" onclick="openReferModal(${a.id})" title="Generar memorándum de referencia"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg> Referir</button>` : ''}
+          ${(!_rStatus || _rStatus === 'ESCALADO') ? `<button class="btn-action btn-pgr" onclick="openSendModal(${a.id})" title="Enviar alerta"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg> Enviar</button>` : ''}
+          <button class="btn-action btn-del" onclick="deleteAlert(${a.id})" title="Archivar contrato"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg> Archivar</button>
         </div>
       </td>
     </tr>`;

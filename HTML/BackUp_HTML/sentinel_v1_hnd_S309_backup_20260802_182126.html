@@ -2549,7 +2549,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.06 — HND</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.05 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2589,7 +2589,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.06 — HND · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.05 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -4087,7 +4087,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version" data-app-version="{v} — HND">v2.06 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v2.05 — HND</div>
   </div>
 
   <div class="nav">
@@ -4234,7 +4234,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric" data-app-version="{v} — HND">v2.06 — HND</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v2.05 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <!-- S285 · R-08 — píldora de frescura del DATO (H-12). Distinta del delta badge de arriba:
@@ -7726,7 +7726,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.06';
+const APP_VERSION = 'v2.05';
 const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -11149,7 +11149,7 @@ function exportDobleRolPDF() {
   const nAlta = rows.filter(r => !r.mismo_organismo).length;
   const totalCttos = rows.reduce((s,r) => s + (r.contratos_iaip||0), 0);
   const tableRows = rows.map((r,i) => {
-    const c = r.mismo_organismo ? 'var(--print-red)' : '#ea580c';
+    const c = r.mismo_organismo ? '#dc2626' : '#ea580c';
     const inst_emp = (r.instituciones_empleador||'').split(' | ')[0];
     const inst_cnt = (r.instituciones_contratante||'').split(' | ')[0];
     return `<tr style="${i%2?'background:#f9fafb':''}">
@@ -11169,19 +11169,19 @@ function exportDobleRolPDF() {
     body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
     h1{font-size:18px;margin-bottom:4px;} .meta{font-size:11px;color:#666;margin-bottom:20px;}
     .kpis{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
-    .kpi{border:1px solid var(--print-border);border-radius:8px;padding:10px 16px;min-width:110px;}
+    .kpi{border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;min-width:110px;}
     .kpi-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em;}
     .kpi-val{font-size:22px;font-weight:700;}
     table{width:100%;border-collapse:collapse;font-size:11px;}
     th{background:#0a1628 !important;color:#fff !important;padding:7px 8px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
-    td{border-bottom:1px solid var(--print-border);color:#111;}
+    td{border-bottom:1px solid #e5e7eb;color:#111;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
     @media print{body{padding:14px;}}
   </style></head><body>
   <h1>NS-13 — Doble Rol</h1>
   <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: IAIP + SEFIN 2019–2026</div>
   <div class="kpis">
-    <div class="kpi"><div class="kpi-lbl">CRÍTICA (mismo organismo)</div><div class="kpi-val" style="color:var(--print-red);">${nCritica}</div></div>
+    <div class="kpi"><div class="kpi-lbl">CRÍTICA (mismo organismo)</div><div class="kpi-val" style="color:#dc2626;">${nCritica}</div></div>
     <div class="kpi"><div class="kpi-lbl">ALTA (distinto organismo)</div><div class="kpi-val" style="color:#ea580c;">${nAlta}</div></div>
     <div class="kpi"><div class="kpi-lbl">Total detectados</div><div class="kpi-val" style="color:#0bc;">${rows.length}</div></div>
     <div class="kpi"><div class="kpi-lbl">Contratos IAIP</div><div class="kpi-val" style="color:#0bc;">${totalCttos}</div></div>
@@ -11210,7 +11210,7 @@ function exportVistaEjecutivaPDF() {
     { lbl:'Lista OFAC-SDN', val: g('exec-ofac'), sub: 'EE.UU. · OFAC-SDN', color:'#ff3d57' },
   ];
   const kpiHtml = kpis.map(k => `
-    <div style="border:1px solid var(--print-border);border-radius:8px;padding:14px 18px;min-width:160px;flex:1;">
+    <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;min-width:160px;flex:1;">
       <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">${k.lbl}</div>
       <div style="font-size:26px;font-weight:700;color:${k.color};">${k.val}</div>
       <div style="font-size:10px;color:#999;margin-top:2px;">${k.sub}</div>
@@ -11222,8 +11222,8 @@ function exportVistaEjecutivaPDF() {
     body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
     h1{font-size:18px;margin-bottom:4px;} .meta{font-size:11px;color:#666;margin-bottom:20px;}
     .risk-box{background:#fff5f5;border:2px solid #fecaca;border-radius:10px;padding:18px 22px;margin-bottom:24px;}
-    .risk-lbl{font-size:11px;color:var(--print-red);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
-    .risk-val{font-size:32px;font-weight:800;color:var(--print-red);margin:4px 0;}
+    .risk-lbl{font-size:11px;color:#dc2626;text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+    .risk-val{font-size:32px;font-weight:800;color:#dc2626;margin:4px 0;}
     .risk-sub{display:flex;gap:32px;margin-top:8px;font-size:11px;color:#666;}
     .kpi-grid{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
@@ -11270,12 +11270,12 @@ function exportCpcInhabPDF() {
   <style>
     body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:28px;margin:0;}
     h1{font-size:18px;margin-bottom:4px;} .meta{font-size:11px;color:#666;margin-bottom:20px;}
-    .kpi{display:inline-block;border:1px solid var(--print-border);border-radius:8px;padding:10px 16px;min-width:110px;margin-bottom:20px;}
+    .kpi{display:inline-block;border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;min-width:110px;margin-bottom:20px;}
     .kpi-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em;}
-    .kpi-val{font-size:22px;font-weight:700;color:var(--print-red);}
+    .kpi-val{font-size:22px;font-weight:700;color:#dc2626;}
     table{width:100%;border-collapse:collapse;font-size:11px;}
     th{background:#0a1628 !important;color:#fff !important;padding:7px 8px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
-    td{border-bottom:1px solid var(--print-border);color:#111;}
+    td{border-bottom:1px solid #e5e7eb;color:#111;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
     @media print{body{padding:14px;}}
   </style></head><body>
@@ -13232,7 +13232,7 @@ function exportNSPanelPDF(panelId, title) {
       }
       extraHtml = `<div style="margin-top:24px;">
         <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#555;margin-bottom:10px;">TENDENCIA ANUAL — CONTRATOS SIN MONTO REPORTADO</div>
-        <div style="background:#f9fafb;border:1px solid var(--print-border);border-radius:8px;padding:16px;">
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;">
           <div style="display:flex;align-items:flex-end;gap:6px;height:80px;">${barsHtml ? barsHtml.replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '') : ''}</div>
           <div style="display:flex;gap:6px;margin-top:6px;">${lblsHtml ? lblsHtml.replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '') : ''}</div>
         </div>
@@ -13251,7 +13251,7 @@ function exportNSPanelPDF(panelId, title) {
     .meta{font-size:11px;color:#666;margin-bottom:20px;}
     table{width:100%;border-collapse:collapse;font-size:11px;}
     th{background:#0a1628 !important;color:#fff !important;padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
-    td{padding:6px 10px;border-bottom:1px solid var(--print-border);color:#111;}
+    td{padding:6px 10px;border-bottom:1px solid #e5e7eb;color:#111;}
     tr:nth-child(even) td{background:#f9fafb;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
     @media print{body{padding:14px;}}
@@ -13273,7 +13273,7 @@ function exportFraccionamientoPDF() {
   const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const ts = new Date().toLocaleDateString('es-HN', {year:'numeric',month:'long',day:'numeric'});
   const fmtL = v => { const n=Number(v||0); return n>=1e9?'L '+(n/1e9).toFixed(2)+'B':n>=1e6?'L '+(n/1e6).toFixed(1)+'M':n>=1e3?'L '+(n/1e3).toFixed(0)+'K':'L '+n.toLocaleString('es-HN'); };
-  const sevColor = { 'CRÍTICA':'var(--print-red)', 'ALTA':'#ea580c', 'MEDIA':'#ca8a04' };
+  const sevColor = { 'CRÍTICA':'#dc2626', 'ALTA':'#ea580c', 'MEDIA':'#ca8a04' };
   const nCritica = gFracData.filter(r=>r.severidad==='CRÍTICA').length;
   const nAlta    = gFracData.filter(r=>r.severidad==='ALTA').length;
   const montoTotal = gFracData.reduce((s,r)=>s+Number(r.monto_total_lps||0),0);
@@ -13297,22 +13297,22 @@ function exportFraccionamientoPDF() {
     h1{font-size:18px;margin-bottom:4px;}
     .meta{font-size:11px;color:#666;margin-bottom:20px;}
     .kpis{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
-    .kpi{border:1px solid var(--print-border);border-radius:8px;padding:10px 16px;min-width:110px;}
+    .kpi{border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;min-width:110px;}
     .kpi-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em;}
-    .kpi-val{font-size:22px;font-weight:700;color:var(--print-red);}
+    .kpi-val{font-size:22px;font-weight:700;color:#dc2626;}
     table{width:100%;border-collapse:collapse;font-size:11px;}
     th{background:#0a1628 !important;color:#fff !important;padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
-    td{border-bottom:1px solid var(--print-border);color:#111;}
+    td{border-bottom:1px solid #e5e7eb;color:#111;}
     .footer{font-size:9px;color:#aaa;margin-top:20px;border-top:1px solid #e5;padding-top:6px;display:flex;justify-content:space-between;}
     @media print{body{padding:14px;}}
   </style></head><body>
   <h1>Detección de Fraccionamiento</h1>
   <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE 2019–2026</div>
   <div class="kpis">
-    <div class="kpi"><div class="kpi-lbl">Casos Críticos</div><div class="kpi-val" style="color:var(--print-red);">${nCritica}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Casos Críticos</div><div class="kpi-val" style="color:#dc2626;">${nCritica}</div></div>
     <div class="kpi"><div class="kpi-lbl">Casos Altos</div><div class="kpi-val" style="color:#ea580c;">${nAlta}</div></div>
     <div class="kpi"><div class="kpi-lbl">Total Detectados</div><div class="kpi-val" style="color:#0bc;">${gFracData.length}</div></div>
-    <div class="kpi"><div class="kpi-lbl">Monto Total</div><div class="kpi-val" style="color:var(--print-red);font-size:16px;">${fmtL(montoTotal)}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Monto Total</div><div class="kpi-val" style="color:#dc2626;font-size:16px;">${fmtL(montoTotal)}</div></div>
   </div>
   <table><thead><tr>
     <th>Proveedor</th><th>Entidad</th><th>Año</th><th style="text-align:center;">Contratos</th><th style="text-align:right;">Monto</th><th style="text-align:center;">Severidad</th>
@@ -14302,7 +14302,7 @@ function generarExpedienteBorradorPDF() {
   .field { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px; }
   .field-label { font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px; }
   .field-value { font-size:13px; font-weight:600; color:#0f172a; }
-  .monto { font-size:18px; color:var(--print-red); font-family:monospace; }
+  .monto { font-size:18px; color:#dc2626; font-family:monospace; }
   .notas { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:14px; line-height:1.7; white-space:pre-wrap; }
   .sefin-box { background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:14px; }
   .footer { margin-top:40px; border-top:1px solid #e2e8f0; padding-top:12px; font-size:10px; color:#94a3b8; }
@@ -18526,12 +18526,12 @@ function generarBriefingEjecutivo() {
       ? sig.labels.slice(0,3).map(l=>`<span style="display:inline-block;background:#1a1a2e;border:1px solid #e0a800;color:#e0a800;font-size:7px;font-family:monospace;padding:1px 4px;border-radius:2px;margin:1px;">${l}</span>`).join('')
       : '<span style="color:#aaa;font-size:9px;">—</span>';
     return `<tr style="background:${bg}">
-      <td style="padding:7px 10px;font-size:11px;color:var(--print-grey);text-align:center;">${i+1}</td>
+      <td style="padding:7px 10px;font-size:11px;color:#6b7280;text-align:center;">${i+1}</td>
       <td style="padding:7px 10px;font-size:12px;font-weight:600;">${esc(proveedor)}</td>
       <td style="padding:7px 10px;font-size:11px;color:#374151;">${esc(entidad)}</td>
       <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#c0392b;text-align:right;">${monto}</td>
       <td style="padding:7px 10px;font-size:11px;font-weight:700;color:${sevColor(sev)};text-align:center;">${esc(sev)}</td>
-      <td style="padding:7px 10px;font-size:10px;color:var(--print-grey);font-family:'JetBrains Mono',monospace;">${esc(pats)}</td>
+      <td style="padding:7px 10px;font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;">${esc(pats)}</td>
       <td style="padding:7px 10px;">${nsBadges}</td>
     </tr>`;
   }).join('');
@@ -18543,7 +18543,7 @@ function generarBriefingEjecutivo() {
   <style>
     body{margin:0;padding:24px 32px;font-family:Arial,sans-serif;color:#1a202c;background:#fff;}
     h1{font-size:20px;font-weight:800;color:#0a1628;margin:0 0 2px;}
-    .sub{font-size:13px;color:var(--print-grey);margin:0 0 16px;}
+    .sub{font-size:13px;color:#6b7280;margin:0 0 16px;}
     .meta{font-size:11px;color:#94a3b8;margin-bottom:20px;}
     .kpi-bar{display:flex;gap:16px;margin-bottom:20px;padding:12px 16px;background:#0a1628;border-radius:6px;}
     .kpi{text-align:center;flex:1;}
@@ -18552,7 +18552,7 @@ function generarBriefingEjecutivo() {
     table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;}
     th{background:#0a1628;color:#fff;padding:8px 10px;font-size:11px;text-align:left;}
     th:nth-child(4),th:nth-child(5){text-align:center;}
-    .footer{margin-top:20px;font-size:10px;color:#94a3b8;text-align:center;border-top:1px solid var(--print-border);padding-top:10px;}
+    .footer{margin-top:20px;font-size:10px;color:#94a3b8;text-align:center;border-top:1px solid #e5e7eb;padding-top:10px;}
     .conf{display:inline-block;background:#c0392b;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:3px;letter-spacing:1px;margin-bottom:12px;}
   </style></head><body>
   <span class="conf">CONFIDENCIAL</span>
@@ -19183,7 +19183,7 @@ function ipMemoEjecutivo() {
   .hdr{text-align:center;border-bottom:2px solid #111;padding-bottom:14px;margin-bottom:22px;}
   .hdr h1{font-size:15pt;letter-spacing:.07em;margin:0 0 3px;}
   .hdr p{margin:2px 0;font-size:8.5pt;color:#555;}
-  .conf{background:var(--print-red);color:#fff;font-size:7.5pt;font-weight:700;letter-spacing:.15em;padding:2px 9px;display:inline-block;margin-bottom:6px;}
+  .conf{background:#dc2626;color:#fff;font-size:7.5pt;font-weight:700;letter-spacing:.15em;padding:2px 9px;display:inline-block;margin-bottom:6px;}
   .folio{font-family:monospace;font-size:8.5pt;color:#777;}
   h2{font-size:10.5pt;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #bbb;padding-bottom:3px;margin:20px 0 8px;}
   table{width:100%;border-collapse:collapse;font-size:9pt;margin:8px 0;}
@@ -19192,7 +19192,7 @@ function ipMemoEjecutivo() {
   tr:nth-child(even) td{background:#f7f7f7;}
   .kpis{display:flex;gap:12px;margin:10px 0;}
   .kpi{flex:1;border:1px solid #ccc;border-radius:4px;padding:8px;text-align:center;}
-  .kpi .v{font-size:15pt;font-weight:700;color:var(--print-red);}
+  .kpi .v{font-size:15pt;font-weight:700;color:#dc2626;}
   .kpi .l{font-size:7.5pt;color:#666;text-transform:uppercase;margin-top:2px;}
   .ftr{margin-top:28px;border-top:1px solid #ccc;padding-top:8px;font-size:7.5pt;color:#777;}
 </style></head><body>
@@ -19217,7 +19217,7 @@ function ipMemoEjecutivo() {
 
 <h2>III. Proveedores de Mayor Riesgo</h2>
 <table><thead><tr><th>#</th><th>Proveedor</th><th>Contratos</th><th>Críticos</th><th>Monto Total</th></tr></thead>
-<tbody>${topProvs.map(([p,v],i)=>`<tr><td>${i+1}</td><td>${p}</td><td>${v.n}</td><td style="color:var(--print-red);font-weight:700;">${v.criticos}</td><td>${fmtM(v.monto)}</td></tr>`).join('')}</tbody></table>
+<tbody>${topProvs.map(([p,v],i)=>`<tr><td>${i+1}</td><td>${p}</td><td>${v.n}</td><td style="color:#dc2626;font-weight:700;">${v.criticos}</td><td>${fmtM(v.monto)}</td></tr>`).join('')}</tbody></table>
 
 <h2>IV. Patrones Detectados</h2>
 <table><thead><tr><th>Patrón</th><th>Contratos</th><th>% del Total</th></tr></thead>
@@ -19828,7 +19828,7 @@ function ccExportPDF() {
   const fmt = n => 'L ' + (n/1e6).toFixed(1) + 'M';
   const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
   const folio = `SEN-INV-${new Date().getFullYear()}-RI-${String(Date.now()).slice(-4)}`;
-  const scoreColor = score.total >= 5 ? 'var(--print-red)' : score.total >= 3 ? '#d97706' : '#16a34a';
+  const scoreColor = score.total >= 5 ? '#dc2626' : score.total >= 3 ? '#d97706' : '#16a34a';
   const scoreLabel = score.total >= 5 ? 'CASO SÓLIDO — Escalar a PGR/MP' : score.total >= 3 ? 'EVIDENCIA PARCIAL — Continuar investigación' : 'EVIDENCIA DÉBIL — Requiere más datos';
   const maxM = Math.max(...timeline.map(t=>t.monto), 1);
 
@@ -19837,33 +19837,33 @@ function ccExportPDF() {
   <style>
     body { background:#fff; color:#111; font-family:'Segoe UI',Arial,sans-serif; margin:0; padding:0; font-size:12px; }
     .page { padding:40px 50px; max-width:900px; margin:0 auto; }
-    .hdr { border-bottom:3px solid var(--print-red); padding-bottom:18px; margin-bottom:24px; }
+    .hdr { border-bottom:3px solid #dc2626; padding-bottom:18px; margin-bottom:24px; }
     .hdr-eyebrow { font-size:9px; letter-spacing:.15em; text-transform:uppercase; color:#666; margin-bottom:6px; }
     .hdr-title { font-size:22px; font-weight:900; color:#111; margin:0 0 4px; }
     .hdr-sub { font-size:11px; color:#666; }
-    .meta { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px; padding:14px; background:#f9fafb; border-radius:8px; border:1px solid var(--print-border); }
-    .meta label { font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:var(--print-grey-light); display:block; margin-bottom:2px; }
+    .meta { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px; padding:14px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb; }
+    .meta label { font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:#9ca3af; display:block; margin-bottom:2px; }
     .meta span { font-size:12px; font-weight:700; color:#111; }
     .sec { margin-bottom:22px; }
-    .sec-title { font-size:10px; letter-spacing:.15em; text-transform:uppercase; font-weight:800; color:#374151; border-bottom:1px solid var(--print-border); padding-bottom:6px; margin-bottom:12px; }
+    .sec-title { font-size:10px; letter-spacing:.15em; text-transform:uppercase; font-weight:800; color:#374151; border-bottom:1px solid #e5e7eb; padding-bottom:6px; margin-bottom:12px; }
     .score-badge { display:inline-block; padding:6px 16px; border-radius:6px; font-size:13px; font-weight:900; color:#fff; background:${scoreColor}; margin-bottom:10px; }
     .crit-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
-    .crit { display:flex; align-items:flex-start; gap:7px; padding:8px; border-radius:6px; background:#f9fafb; border:1px solid var(--print-border); }
+    .crit { display:flex; align-items:flex-start; gap:7px; padding:8px; border-radius:6px; background:#f9fafb; border:1px solid #e5e7eb; }
     .crit .lbl { font-size:11px; font-weight:700; color:#374151; }
-    .crit .det { font-size:10px; color:var(--print-grey); margin-top:2px; }
+    .crit .det { font-size:10px; color:#6b7280; margin-top:2px; }
     .kpi-row { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
-    .kpi { padding:10px 14px; background:#f9fafb; border:1px solid var(--print-border); border-radius:8px; text-align:center; min-width:100px; }
+    .kpi { padding:10px 14px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; text-align:center; min-width:100px; }
     .kpi .val { font-size:18px; font-weight:900; color:#111; }
-    .kpi .lbl { font-size:9px; color:var(--print-grey-light); text-transform:uppercase; letter-spacing:.06em; }
+    .kpi .lbl { font-size:9px; color:#9ca3af; text-transform:uppercase; letter-spacing:.06em; }
     .adm { margin-bottom:9px; }
     .adm .row { display:flex; justify-content:space-between; font-size:10px; font-weight:700; margin-bottom:3px; }
-    .adm .bg { height:7px; background:var(--print-border); border-radius:4px; overflow:hidden; }
+    .adm .bg { height:7px; background:#e5e7eb; border-radius:4px; overflow:hidden; }
     .adm .fill { height:100%; border-radius:4px; }
     .gap-item { padding:10px 14px; border-radius:6px; border-left:3px solid #3b82f6; background:#eff6ff; margin-bottom:8px; }
     .gap-item .gt { font-weight:700; color:#1e3a5f; font-size:11px; }
     .gap-item .lt { font-size:10px; color:#3b82f6; margin-top:4px; }
     .disclaimer { margin-top:28px; padding:10px 14px; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; font-size:10px; color:#7f1d1d; }
-    .footer { margin-top:20px; padding-top:10px; border-top:1px solid var(--print-border); display:flex; justify-content:space-between; font-size:9px; color:var(--print-grey-light); }
+    .footer { margin-top:20px; padding-top:10px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; }
     @media print { .no-print { display:none; } }
   </style></head><body><div class="page">
     <div class="hdr">
@@ -19892,16 +19892,16 @@ function ccExportPDF() {
         <div class="kpi"><div class="val">${fmt(concentracion.vendorMonto)}</div><div class="lbl">monto proveedor</div></div>
         <div class="kpi"><div class="val">${concentracion.mntPct.toFixed(1)}%</div><div class="lbl">del monto en sistema*</div></div>
       </div>
-      <p style="font-size:11px;color:#374151;margin:0;">La entidad trabaja con <strong>${concentracion.uniqueVendors}</strong> proveedores distintos. Este proveedor representa el <strong>${concentracion.mntPct.toFixed(1)}%</strong> del monto contratado registrado en Sentinel (${fmt(concentracion.entityMonto)}). <em style="color:var(--print-grey);">*Porcentaje calculado sobre contratos ONCAE/SEFIN disponibles en el sistema — no refleja el presupuesto total de la entidad.</em></p>
+      <p style="font-size:11px;color:#374151;margin:0;">La entidad trabaja con <strong>${concentracion.uniqueVendors}</strong> proveedores distintos. Este proveedor representa el <strong>${concentracion.mntPct.toFixed(1)}%</strong> del monto contratado registrado en Sentinel (${fmt(concentracion.entityMonto)}). <em style="color:#6b7280;">*Porcentaje calculado sobre contratos ONCAE/SEFIN disponibles en el sistema — no refleja el presupuesto total de la entidad.</em></p>
     </div>
     <div class="sec">
       <div class="sec-title">3 · Actividad por Administración Presidencial</div>
-      ${timeline.map(t=>`<div class="adm"><div class="row"><span style="color:${t.color};">${t.nombre}</span><span style="color:var(--print-grey);">${t.count>0?`${t.count} contratos · ${fmt(t.monto)}`:'Sin actividad'}</span></div><div class="bg"><div class="fill" style="width:${(t.monto/maxM*100).toFixed(0)}%;background:${t.color};"></div></div></div>`).join('')}
+      ${timeline.map(t=>`<div class="adm"><div class="row"><span style="color:${t.color};">${t.nombre}</span><span style="color:#6b7280;">${t.count>0?`${t.count} contratos · ${fmt(t.monto)}`:'Sin actividad'}</span></div><div class="bg"><div class="fill" style="width:${(t.monto/maxM*100).toFixed(0)}%;background:${t.color};"></div></div></div>`).join('')}
       ${timeline.filter(t=>t.count>0).length>=2?`<p style="font-size:11px;color:#b45309;background:#fffbeb;padding:8px;border-radius:6px;border:1px solid #fde68a;margin-top:10px;">⚠️ Proveedor activo en múltiples administraciones — patrón consistente con captura institucional sostenida.</p>`:''}
     </div>
     <div class="sec">
       <div class="sec-title">4 · Patrones de Riesgo Detectados</div>
-      ${Object.keys(patrones.patMap).length?`<p style="font-size:11px;"><strong>${patrones.criticos}</strong> contratos CRÍTICA · <strong>${patrones.altos}</strong> contratos ALTA</p><div style="display:flex;flex-wrap:wrap;gap:8px;">${Object.entries(patrones.patMap).map(([p,n])=>`<span style="padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;background:#fef2f2;color:var(--print-red);border:1px solid #fecaca;">${p} ×${n}</span>`).join('')}</div>`:`<p style="font-size:11px;color:var(--print-grey);">No se detectaron patrones específicos de riesgo en los contratos de este proveedor.</p>`}
+      ${Object.keys(patrones.patMap).length?`<p style="font-size:11px;"><strong>${patrones.criticos}</strong> contratos CRÍTICA · <strong>${patrones.altos}</strong> contratos ALTA</p><div style="display:flex;flex-wrap:wrap;gap:8px;">${Object.entries(patrones.patMap).map(([p,n])=>`<span style="padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">${p} ×${n}</span>`).join('')}</div>`:`<p style="font-size:11px;color:#6b7280;">No se detectaron patrones específicos de riesgo en los contratos de este proveedor.</p>`}
     </div>
     <div class="sec">
       <div class="sec-title">5 · Gaps de Evidencia y Solicitudes LTAIP</div>
@@ -20235,7 +20235,7 @@ async function ccGenerarExpediente() {
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
       .replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>')
-      .replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid var(--print-border);margin:8px 0">')
+      .replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0">')
       .replace(/\n/g, '<br>');
     const secHtml = (title, icon) => {
       const content = secMap[title] || '';
@@ -20257,17 +20257,17 @@ async function ccGenerarExpediente() {
       .hdr-sub { font-size:11px; color:#666; }
       .ai-badge { display:inline-block; background:#f3e8ff; color:#7c3aed; font-size:9px; font-weight:800; letter-spacing:.1em; padding:3px 10px; border-radius:20px; text-transform:uppercase; margin-left:10px; vertical-align:middle; }
       .meta { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px; padding:14px; background:#faf5ff; border-radius:8px; border:1px solid #e9d5ff; }
-      .meta label { font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:var(--print-grey-light); display:block; margin-bottom:2px; }
+      .meta label { font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:#9ca3af; display:block; margin-bottom:2px; }
       .meta span { font-size:12px; font-weight:700; color:#111; }
       .sec { margin-bottom:22px; }
-      .sec-title { font-size:10px; letter-spacing:.15em; text-transform:uppercase; font-weight:800; color:#374151; border-bottom:1px solid var(--print-border); padding-bottom:6px; margin-bottom:12px; }
+      .sec-title { font-size:10px; letter-spacing:.15em; text-transform:uppercase; font-weight:800; color:#374151; border-bottom:1px solid #e5e7eb; padding-bottom:6px; margin-bottom:12px; }
       .sec-body { font-size:12px; line-height:1.7; color:#374151; }
       .disclaimer { margin-top:10px; padding:8px 14px; background:#f3e8ff; border:1px solid #e9d5ff; border-radius:6px; font-size:10px; color:#5b21b6; font-style:italic; }
-      .footer { margin-top:10px; padding-top:8px; border-top:1px solid var(--print-border); display:flex; justify-content:space-between; font-size:9px; color:var(--print-grey-light); }
+      .footer { margin-top:10px; padding-top:8px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; }
       .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:8px; }
-      .chart-box { background:#fafafa; border:1px solid var(--print-border); border-radius:8px; padding:14px; }
+      .chart-box { background:#fafafa; border:1px solid #e5e7eb; border-radius:8px; padding:14px; }
       .chart-box.full { grid-column:1/-1; }
-      .chart-lbl { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--print-grey); margin-bottom:10px; font-weight:700; }
+      .chart-lbl { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#6b7280; margin-bottom:10px; font-weight:700; }
       @media print { .no-print { display:none; } }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>
@@ -20313,15 +20313,15 @@ async function ccGenerarExpediente() {
       <!-- Fila 1: stats rápidos -->
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
         <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;text-align:center;">
-          <div style="font-size:9px;color:var(--print-grey-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Monto Total</div>
+          <div style="font-size:9px;color:#9ca3af;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Monto Total</div>
           <div style="font-size:20px;font-weight:900;color:#7c3aed;">L ${(d.concentracion.vendorMonto/1e6).toFixed(1)}M</div>
         </div>
         <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;text-align:center;">
-          <div style="font-size:9px;color:var(--print-grey-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Contratos</div>
+          <div style="font-size:9px;color:#9ca3af;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Contratos</div>
           <div style="font-size:20px;font-weight:900;color:#7c3aed;">${d.concentracion.vendorCount}</div>
         </div>
         <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;text-align:center;">
-          <div style="font-size:9px;color:var(--print-grey-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Riesgo</div>
+          <div style="font-size:9px;color:#9ca3af;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Riesgo</div>
           <div style="font-size:20px;font-weight:900;color:${d.score.total>=5?'#ef4444':d.score.total>=3?'#f59e0b':'#22c55e'};">${d.score.total}/${d.score.max}</div>
         </div>
       </div>
@@ -20575,30 +20575,30 @@ function exportarTop10PDF() {
     body { background:#fff; color:#111; font-family: 'Segoe UI', Arial, sans-serif; margin:0; padding:32px; }
     h1 { font-size:18px; font-weight:900; margin:0 0 4px; }
     .sub { font-size:10px; color:#666; letter-spacing:.08em; text-transform:uppercase; margin-bottom:24px; }
-    .insight { background:#fff5f5; border-left:3px solid var(--print-red); padding:10px 14px; font-size:11px; color:#666; margin-bottom:20px; border-radius:4px; }
-    .insight strong { color:var(--print-red); }
-    .case { border:1px solid var(--print-border); border-radius:10px; padding:16px 20px; margin-bottom:14px; display:grid; grid-template-columns:44px 1fr 160px; gap:16px; }
+    .insight { background:#fff5f5; border-left:3px solid #dc2626; padding:10px 14px; font-size:11px; color:#666; margin-bottom:20px; border-radius:4px; }
+    .insight strong { color:#dc2626; }
+    .case { border:1px solid #e5e7eb; border-radius:10px; padding:16px 20px; margin-bottom:14px; display:grid; grid-template-columns:44px 1fr 160px; gap:16px; }
     .rank { font-size:26px; font-weight:900; color:#d1d5db; font-variant-numeric:tabular-nums; }
-    .rank.r1 { color:var(--print-red); } .rank.r2 { color:#f59e0b; } .rank.r3 { color:#f59e0b; }
+    .rank.r1 { color:#dc2626; } .rank.r2 { color:#f59e0b; } .rank.r3 { color:#f59e0b; }
     .proveedor { font-size:13px; font-weight:800; margin-bottom:3px; }
-    .entidades { font-size:9px; color:var(--print-grey); margin-bottom:6px; }
+    .entidades { font-size:9px; color:#6b7280; margin-bottom:6px; }
     .tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
     .tag { font-size:8px; font-weight:700; padding:2px 7px; border-radius:8px; letter-spacing:.05em; }
-    .tag-p { background:#fee2e2; color:var(--print-red); } .tag-n { background:#dbeafe; color:#1d4ed8; }
+    .tag-p { background:#fee2e2; color:#dc2626; } .tag-n { background:#dbeafe; color:#1d4ed8; }
     .tag-s { background:#f3f4f6; color:#4b5563; } .tag-e { background:#fef3c7; color:#b45309; }
     .nivel { font-size:8px; font-weight:900; letter-spacing:.1em; padding:2px 8px; border-radius:8px; margin-bottom:6px; display:inline-block; }
-    .nivel-max  { background:#fee2e2; color:var(--print-red); }
+    .nivel-max  { background:#fee2e2; color:#dc2626; }
     .nivel-alto { background:#ffedd5; color:#ea580c; }
     .nivel-elev { background:#fef9c3; color:#ca8a04; }
-    .dominante { font-size:9px; color:var(--print-grey); margin-top:4px; }
+    .dominante { font-size:9px; color:#6b7280; margin-top:4px; }
     .dim-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
-    .dim-label { font-size:7px; font-weight:700; color:var(--print-grey-light); width:64px; text-transform:uppercase; letter-spacing:.06em; }
+    .dim-label { font-size:7px; font-weight:700; color:#9ca3af; width:64px; text-transform:uppercase; letter-spacing:.06em; }
     .dim-track { flex:1; height:3px; background:#f3f4f6; border-radius:2px; }
     .dim-fill  { height:100%; border-radius:2px; }
-    .monto-val { font-size:18px; font-weight:900; color:var(--print-red); text-align:right; }
-    .monto-lbl { font-size:8px; color:var(--print-grey-light); text-align:right; text-transform:uppercase; letter-spacing:.07em; }
+    .monto-val { font-size:18px; font-weight:900; color:#dc2626; text-align:right; }
+    .monto-lbl { font-size:8px; color:#9ca3af; text-align:right; text-transform:uppercase; letter-spacing:.07em; }
     .right { text-align:right; }
-    .footer { margin-top:28px; font-size:9px; color:var(--print-grey-light); text-align:center; border-top:1px solid #f3f4f6; padding-top:12px; }
+    .footer { margin-top:28px; font-size:9px; color:#9ca3af; text-align:center; border-top:1px solid #f3f4f6; padding-top:12px; }
     @media print { body { padding:16px; } }
   </style></head><body>
   <h1>Top 10 Casos Críticos — Sentinel AI</h1>
@@ -20619,7 +20619,7 @@ function exportarTop10PDF() {
       const lbl = d.querySelector('.t5-dim-label') ? d.querySelector('.t5-dim-label').innerText : '';
       const val = d.querySelector('.t5-dim-val')   ? parseInt(d.querySelector('.t5-dim-val').innerText)||0 : 0;
       const fill= d.querySelector('.t5-dim-fill');
-      const color = fill ? fill.style.background : 'var(--print-red)';
+      const color = fill ? fill.style.background : '#dc2626';
       return '<div class="dim-row"><span class="dim-label">'+lbl+'</span><div class="dim-track"><div class="dim-fill" style="width:'+val+'%;background:'+color+';"></div></div></div>';
     }).join('');
     return '<div class="case"><div class="rank '+rCls+'">'+(rank<10?'0'+rank:rank)+'</div>'
@@ -21687,11 +21687,11 @@ const ENTITY_ALIASES = {
 function addPrintBtn(html) {
   // Strip any existing inline print buttons to avoid duplicates
   html = html.replace(/<button[^>]*onclick="window\.print\(\)"[^>]*>[\s\S]*?<\/button>/g, '');
-  const printCss = '<style>@media print { .no-print { display: none !important; } } /* PALETA IMPRESION - fondo blanco (R-09 Fase 2, S309) */ :root{--print-red:#dc2626;--print-amber:#fbbf24;--print-grey:#6b7280;--print-grey-light:#9ca3af;--print-border:#e5e7eb;}</style>';
+  const printCss = '<style>@media print { .no-print { display: none !important; } }</style>';
   const btn = '<button class="no-print" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:#1a56db;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;"><span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg></span> Imprimir / Guardar como PDF</button>';
   const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
-  const disclaimer = `<div style="margin-top:40px;padding:16px 20px;border-top:2px solid var(--print-red);background:#fff8f8;font-family:Arial,sans-serif;font-size:10px;color:#555;line-height:1.6;">
-    <div style="font-weight:700;color:var(--print-red);font-size:11px;letter-spacing:.05em;margin-bottom:6px;">⚠ AVISO LEGAL — DOCUMENTO CONFIDENCIAL</div>
+  const disclaimer = `<div style="margin-top:40px;padding:16px 20px;border-top:2px solid #dc2626;background:#fff8f8;font-family:Arial,sans-serif;font-size:10px;color:#555;line-height:1.6;">
+    <div style="font-weight:700;color:#dc2626;font-size:11px;letter-spacing:.05em;margin-bottom:6px;">⚠ AVISO LEGAL — DOCUMENTO CONFIDENCIAL</div>
     <p style="margin:0 0 6px 0;">Este documento ha sido generado por <strong>SENTINEL-AI</strong>, sistema de análisis de riesgo en contratación pública de Honduras, con base en registros públicos de la Secretaría de Finanzas (SEFIN), la Oficina Normativa de Contratación y Adquisiciones del Estado (ONCAE) y el Instituto de Acceso a la Información Pública (IAIP). Los datos comprenden el período 2019–2026. Los patrones de riesgo asociados a listas internacionales de sanciones (Lista Engel, OFAC) se generan por cruce de nombres contra dichas listas públicas, no como fuente de registros de contratación.</p>
     <p style="margin:0 0 6px 0;"><strong>Los hallazgos contenidos en este reporte son indicadores estadísticos de riesgo — no constituyen prueba de irregularidad, fraude o responsabilidad penal o administrativa.</strong> La presencia de un contrato o proveedor en este análisis no implica determinación de culpabilidad. Los datos de fuente pueden contener errores de captura, duplicados o registros incompletos que afecten los montos reportados.</p>
     <p style="margin:0 0 6px 0;">Toda acción formal — incluyendo investigación administrativa, referido a autoridad competente o apertura de proceso penal — requiere verificación independiente por la autoridad correspondiente conforme a la Ley de Contratación del Estado (Decreto 74-2001) y demás normativa aplicable. SENTINEL-AI no es un órgano jurisdiccional ni emite resoluciones vinculantes.</p>
@@ -22965,7 +22965,7 @@ async function exportAuditoriaPDF() {
     table{width:100%;border-collapse:collapse;margin-bottom:24px;}
     th{background:#f5f5f5;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:6px 8px;text-align:left;border-bottom:2px solid #ddd;}
     td{padding:6px 8px;border-bottom:1px solid #eee;font-size:11px;}
-    .badge-blocked{background:#fee2e2;color:var(--print-red);border-radius:20px;padding:2px 8px;font-size:9px;}
+    .badge-blocked{background:#fee2e2;color:#dc2626;border-radius:20px;padding:2px 8px;font-size:9px;}
     .badge-alert{background:#fef3c7;color:#d97706;border-radius:20px;padding:2px 8px;font-size:9px;}
     .banner{background:#e0f2fe;border-left:3px solid #0284c7;padding:12px 16px;border-radius:4px;margin-bottom:24px;font-size:11px;}
     .footer{color:#999;font-size:10px;border-top:1px solid #eee;padding-top:12px;margin-top:24px;}
@@ -24375,7 +24375,7 @@ function exportDashboardEjecutivoPDF() {
     <style>
       *{box-sizing:border-box;margin:0;padding:0;}
       body{background:#ffffff;color:#1a202c;font-family:'Helvetica Neue',Arial,sans-serif;padding:32px;font-size:11px;}
-      :root{--electric:#0066cc;--red:#cc0000;--amber:#cc7700;--green:#007700;--glass:#f7f8fa;--border:#dde1e7;--text-dim:var(--print-grey);}
+      :root{--electric:#0066cc;--red:#cc0000;--amber:#cc7700;--green:#007700;--glass:#f7f8fa;--border:#dde1e7;--text-dim:#6b7280;}
       table{width:100%;border-collapse:collapse;}
       th,td{border-bottom:1px solid #dde1e7;padding:6px 10px;}
       /* KPI cards — reducir 20% */
@@ -24391,7 +24391,7 @@ function exportDashboardEjecutivoPDF() {
     <div style="margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #0066cc;">
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;color:#0066cc;text-transform:uppercase;margin-bottom:6px;">◈ Sentinel-AI · Módulo D — Reporte Oficial</div>
       <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#1a202c;">Dashboard Ejecutivo — Resumen del Sistema Sentinel-AI</div>
-      <div style="font-size:10px;color:var(--print-grey);margin-top:4px;">Generado: ${fechaPDF} &nbsp;·&nbsp; Confidencial · SentinelAI Intelligence</div>
+      <div style="font-size:10px;color:#6b7280;margin-top:4px;">Generado: ${fechaPDF} &nbsp;·&nbsp; Confidencial · SentinelAI Intelligence</div>
     </div>
     ${clone.innerHTML}
   </body></html>`;
@@ -25323,7 +25323,7 @@ function exportEngelPDF() {
     const entidades = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
     const detRows = alerts.slice(0,20).map(a => {
       const sev=(a.severity||a.severidad||'').toUpperCase();
-      const sc=sev==='CRÍTICA'?'var(--print-red)':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
+      const sc=sev==='CRÍTICA'?'#dc2626':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
       const prov=a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
       const ent=a.entity_name||a.entidad_nombre||'—';
       const id=a.alert_id||a.id||'—';
@@ -25399,7 +25399,7 @@ function exportEngelPDF() {
   <div class="kpi-row">
     <div class="kpi-box"><div class="kpi-val">${activeActors.length}</div><div class="kpi-lbl">ACTORES EN LISTA</div></div>
     <div class="kpi-box"><div class="kpi-val">${totalContratos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS VINCULADOS</div></div>
-    <div class="kpi-box"><div class="kpi-val" style="color:var(--print-red);">${totalCriticos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">${totalCriticos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
     <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">MONTO TOTAL</div></div>
     <div class="kpi-box"><div class="kpi-val">${fmtUSD2(totalMonto)}</div><div class="kpi-lbl">EQUIVALENTE USD</div></div>
   </div>
@@ -25549,7 +25549,7 @@ function exportOfacPDF() {
     const entsInv = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
     const detRows = alerts.slice(0,15).map(a => {
       const sev=(a.severity||a.severidad||'').toUpperCase();
-      const sc=sev==='CRÍTICA'?'var(--print-red)':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
+      const sc=sev==='CRÍTICA'?'#dc2626':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
       const ent=a.entity_name||a.entidad_nombre||'—';
       const id=a.alert_id||a.id||'—';
       const fecha=a.fecha_contrato||a.created_at||'';
@@ -25562,8 +25562,8 @@ function exportOfacPDF() {
       </tr>`;
     }).join('');
     return `
-    <div style="margin-bottom:28px;border:2px solid var(--print-red);border-radius:8px;overflow:hidden;page-break-inside:avoid;">
-      <div style="background:var(--print-red);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start;">
+    <div style="margin-bottom:28px;border:2px solid #dc2626;border-radius:8px;overflow:hidden;page-break-inside:avoid;">
+      <div style="background:#dc2626;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start;">
         <div>
           <div style="font-size:14px;font-weight:700;">🚨 ${prov}</div>
           <div style="font-size:11px;opacity:0.85;margin-top:2px;">Proveedor Sancionado — OFAC SDN List</div>
@@ -25580,11 +25580,11 @@ function exportOfacPDF() {
       <table style="width:100%;border-collapse:collapse;">
         <thead style="background:#fef2f2;">
           <tr>
-            <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">ID</th>
-            <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Entidad Compradora</th>
-            <th style="padding:6px 8px;text-align:right;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Monto</th>
-            <th style="padding:6px 8px;text-align:center;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Sev.</th>
-            <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Fecha</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">ID</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Entidad Compradora</th>
+            <th style="padding:6px 8px;text-align:right;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Monto</th>
+            <th style="padding:6px 8px;text-align:center;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Sev.</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Fecha</th>
           </tr>
         </thead>
         <tbody>${detRows}${alerts.length>15?`<tr><td colspan="5" style="padding:8px;text-align:center;color:#888;font-size:10px;">… y ${alerts.length-15} contratos adicionales</td></tr>`:''}</tbody>
@@ -25598,14 +25598,14 @@ function exportOfacPDF() {
     body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
     @page{size:A4 portrait;margin:18mm 15mm;}
     @media print{body{margin:0;}}
-    .header{background:linear-gradient(135deg,#7f1d1d,var(--print-red));color:#fff;padding:24px 28px 20px;margin-bottom:20px;}
+    .header{background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fff;padding:24px 28px 20px;margin-bottom:20px;}
     .kpi-row{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
     .kpi-box{flex:1;min-width:100px;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;background:#fff5f5;text-align:center;}
-    .kpi-val{font-size:22px;font-weight:700;color:var(--print-red);}
+    .kpi-val{font-size:22px;font-weight:700;color:#dc2626;}
     .kpi-lbl{font-size:10px;color:#888;margin-top:4px;letter-spacing:.05em;}
     .warning-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:#92400e;}
-    .footer{margin-top:30px;padding-top:12px;border-top:2px solid var(--print-red);display:flex;justify-content:space-between;font-size:10px;color:#888;}
-    .classification{background:var(--print-red);color:#fff;text-align:center;padding:6px;font-size:10px;font-weight:700;letter-spacing:.12em;margin-top:16px;}
+    .footer{margin-top:30px;padding-top:12px;border-top:2px solid #dc2626;display:flex;justify-content:space-between;font-size:10px;color:#888;}
+    .classification{background:#dc2626;color:#fff;text-align:center;padding:6px;font-size:10px;font-weight:700;letter-spacing:.12em;margin-top:16px;}
   </style></head><body>
   <div class="header">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -25625,7 +25625,7 @@ function exportOfacPDF() {
   <div class="kpi-row">
     <div class="kpi-box"><div class="kpi-val">${provList.length}</div><div class="kpi-lbl">PROVEEDORES SANCIONADOS</div></div>
     <div class="kpi-box"><div class="kpi-val">${ofacAlerts.length.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS DETECTADOS</div></div>
-    <div class="kpi-box"><div class="kpi-val" style="color:var(--print-red);">${totalCriticos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">${totalCriticos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
     <div class="kpi-box"><div class="kpi-val">${entidades.size}</div><div class="kpi-lbl">ENTIDADES AFECTADAS</div></div>
     <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">MONTO TOTAL</div></div>
   </div>
@@ -25679,11 +25679,11 @@ function exportRedFlagPDF() {
     const criticos = alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
     const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
     const entidades = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
-    const nivelColor = meta.nivel === 'alto' ? 'var(--print-red)' : '#d97706';
+    const nivelColor = meta.nivel === 'alto' ? '#dc2626' : '#d97706';
     const nivelBg    = meta.nivel === 'alto' ? '#7f1d1d' : '#451a03';
     const detRows = alerts.slice(0,20).map(a => {
       const sev=(a.severity||a.severidad||'').toUpperCase();
-      const sc=sev==='CRÍTICA'?'var(--print-red)':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
+      const sc=sev==='CRÍTICA'?'#dc2626':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
       const prov=a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
       const ent=a.entity_name||a.entidad_nombre||'—';
       const id=a.alert_id||a.id||'—';
@@ -25696,7 +25696,7 @@ function exportRedFlagPDF() {
       </tr>`;
     }).join('');
     return `
-    <div style="margin-bottom:28px;border:2px solid var(--print-red);border-radius:8px;overflow:hidden;page-break-inside:avoid;">
+    <div style="margin-bottom:28px;border:2px solid #dc2626;border-radius:8px;overflow:hidden;page-break-inside:avoid;">
       <div style="background:${nivelBg};color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start;">
         <div>
           <div style="font-size:14px;font-weight:700;">🚩 ${meta.full}</div>
@@ -25714,11 +25714,11 @@ function exportRedFlagPDF() {
       <table style="width:100%;border-collapse:collapse;">
         <thead style="background:#fef2f2;">
           <tr>
-            <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">ID</th>
-            <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Entidad</th>
-            <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Proveedor</th>
-            <th style="padding:6px 8px;text-align:right;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Monto</th>
-            <th style="padding:6px 8px;text-align:center;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Sev.</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">ID</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Entidad</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Proveedor</th>
+            <th style="padding:6px 8px;text-align:right;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Monto</th>
+            <th style="padding:6px 8px;text-align:center;font-size:10px;color:#dc2626;border-bottom:1px solid #fecaca;">Sev.</th>
           </tr>
         </thead>
         <tbody>${detRows}${alerts.length>20?`<tr><td colspan="5" style="padding:8px;text-align:center;color:#888;font-size:10px;">… y ${alerts.length-20} contratos adicionales</td></tr>`:''}</tbody>
@@ -25739,14 +25739,14 @@ function exportRedFlagPDF() {
     body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
     @page{size:A4 portrait;margin:18mm 15mm;}
     @media print{body{margin:0;}}
-    .header{background:linear-gradient(135deg,#7f1d1d,var(--print-red));color:#fff;padding:24px 28px 20px;margin-bottom:20px;}
+    .header{background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fff;padding:24px 28px 20px;margin-bottom:20px;}
     .kpi-row{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
     .kpi-box{flex:1;min-width:100px;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;background:#fff5f5;text-align:center;}
-    .kpi-val{font-size:22px;font-weight:700;color:var(--print-red);}
+    .kpi-val{font-size:22px;font-weight:700;color:#dc2626;}
     .kpi-lbl{font-size:10px;color:#888;margin-top:4px;letter-spacing:.05em;}
     .info-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:#92400e;}
-    .footer{margin-top:30px;padding-top:12px;border-top:2px solid var(--print-red);display:flex;justify-content:space-between;font-size:10px;color:#888;}
-    .classification{background:var(--print-red);color:#fff;text-align:center;padding:6px;font-size:10px;font-weight:700;letter-spacing:.12em;margin-top:16px;}
+    .footer{margin-top:30px;padding-top:12px;border-top:2px solid #dc2626;display:flex;justify-content:space-between;font-size:10px;color:#888;}
+    .classification{background:#dc2626;color:#fff;text-align:center;padding:6px;font-size:10px;font-weight:700;letter-spacing:.12em;margin-top:16px;}
   </style></head><body>
   <div class="header">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -25766,7 +25766,7 @@ function exportRedFlagPDF() {
     <div class="kpi-box"><div class="kpi-val">${activeActors.length || '0'}</div><div class="kpi-lbl">ENTIDADES COINCIDENTES</div></div>
     <div class="kpi-box"><div class="kpi-val">${totalContratos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS VINCULADOS</div></div>
     <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">MONTO TOTAL EXPUESTO</div></div>
-    <div class="kpi-box"><div class="kpi-val" style="color:var(--print-red);">${totalCriticos}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">${totalCriticos}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
   </div>
   <div class="info-box">
     ⚠️ Este reporte identifica contratos públicos de Honduras cuyos proveedores o entidades coinciden con actores señalados por el CNA, UFERCO o Ministerio Público en casos de corrupción documentados (2022–2026). Los datos son de referencia; las coincidencias no implican sentencia judicial.
@@ -25940,7 +25940,7 @@ function exportOcdsCrossRefPDF() {
       <td style="padding:6px 8px;font-size:10px;">${esc(ents.length>50?ents.slice(0,49)+'…':ents)}</td>
       <td style="padding:6px 8px;text-align:center;font-size:11px;">${p.count}</td>
       <td style="padding:6px 8px;text-align:right;font-weight:700;font-size:11px;color:#d97706;">${fmtL(p.monto)}</td>
-      ${p.criticos > 0 ? `<td style="padding:6px 8px;text-align:center;font-size:10px;color:var(--print-red);font-weight:700;">⚠ ${p.criticos}</td>` : '<td style="padding:6px 8px;text-align:center;font-size:10px;color:#888;">—</td>'}
+      ${p.criticos > 0 ? `<td style="padding:6px 8px;text-align:center;font-size:10px;color:#dc2626;font-weight:700;">⚠ ${p.criticos}</td>` : '<td style="padding:6px 8px;text-align:center;font-size:10px;color:#888;">—</td>'}
     </tr>`;
   }).join('');
 
@@ -26084,7 +26084,7 @@ async function generarReporteSEFIN() {
     if (r >= 1.0) return '#f59e0b';
     if (r >= 0.33) return '#059669';
     if (r > 0)   return '#3b82f6';
-    return 'var(--print-grey-light)';
+    return '#9ca3af';
   };
   const ritmoBadge = r => {
     if (r >= 2.0) return { txt: '🔴 Muy acelerado', color:'#c0392b' };
@@ -26092,19 +26092,19 @@ async function generarReporteSEFIN() {
     if (r >= 1.0) return { txt: '🟡 Lev. acelerado',color:'#f59e0b' };
     if (r >= 0.33)return { txt: '🟢 Normal',         color:'#059669' };
     if (r > 0)    return { txt: '🔵 Rezagado',        color:'#3b82f6' };
-    return         { txt: '⚪ Sin ejecución',          color:'var(--print-grey-light)' };
+    return         { txt: '⚪ Sin ejecución',          color:'#9ca3af' };
   };
 
   const filas = data.map((r, i) => {
     const badge = ritmoBadge(r.ritmo);
     const bg    = i % 2 === 0 ? '#fff' : '#f8fafc';
     return `<tr style="background:${bg}">
-      <td style="padding:6px 10px;font-size:11px;color:var(--print-grey);text-align:center;">${i+1}</td>
+      <td style="padding:6px 10px;font-size:11px;color:#6b7280;text-align:center;">${i+1}</td>
       <td style="padding:6px 10px;font-size:11px;font-weight:600;">${r.nombre}</td>
       <td style="padding:6px 10px;font-size:11px;text-align:right;">${fmtL(r.aprobado)}</td>
       <td style="padding:6px 10px;font-size:11px;text-align:right;color:#78350f;">${fmtL(r.esperado)}</td>
       <td style="padding:6px 10px;font-size:11px;text-align:right;font-weight:700;">${fmtL(r.ejecutado)}</td>
-      <td style="padding:6px 10px;font-size:11px;text-align:center;color:var(--print-grey);">${r.pctAnual.toFixed(0)}%</td>
+      <td style="padding:6px 10px;font-size:11px;text-align:center;color:#6b7280;">${r.pctAnual.toFixed(0)}%</td>
       <td style="padding:6px 10px;font-size:11px;text-align:center;font-weight:700;color:${ritmoColor(r.ritmo)};">${r.ritmo > 0 ? (r.ritmo*100).toFixed(0)+'%' : '—'}</td>
       <td style="padding:6px 10px;font-size:10px;"><span style="color:${badge.color};font-weight:700;">${badge.txt}</span></td>
     </tr>`;
@@ -26114,7 +26114,7 @@ async function generarReporteSEFIN() {
   <style>
     body{margin:0;padding:24px 32px;font-family:Arial,sans-serif;color:#1a202c;background:#fff;font-size:12px;}
     h1{font-size:19px;font-weight:800;color:#0a1628;margin:0 0 2px;}
-    .sub{font-size:13px;color:var(--print-grey);margin:0 0 6px;}
+    .sub{font-size:13px;color:#6b7280;margin:0 0 6px;}
     .meta{font-size:11px;color:#94a3b8;margin-bottom:14px;}
     .aviso{background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:10px 14px;font-size:11px;color:#713f12;margin-bottom:14px;line-height:1.6;}
     .kpi-bar{display:flex;gap:12px;margin-bottom:16px;}
@@ -26127,7 +26127,7 @@ async function generarReporteSEFIN() {
     th{background:#0a1628;color:#fff;padding:7px 10px;font-size:10px;text-align:left;letter-spacing:.04em;}
     th:nth-child(1),th:nth-child(6),th:nth-child(7){text-align:center;}
     th:nth-child(3),th:nth-child(4),th:nth-child(5){text-align:right;}
-    .footer{margin-top:16px;font-size:10px;color:#94a3b8;border-top:1px solid var(--print-border);padding-top:10px;line-height:1.6;}
+    .footer{margin-top:16px;font-size:10px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;line-height:1.6;}
     .conf{display:inline-block;background:#c0392b;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:3px;letter-spacing:1px;margin-bottom:10px;}
     @media print { body{padding:16px 20px;} }
   </style></head><body>
@@ -26144,10 +26144,10 @@ async function generarReporteSEFIN() {
   </div>
 
   <div class="kpi-bar">
-    <div class="kpi" style="background:#fef2f2;"><div class="kpi-val" style="color:#c0392b;">${aceleradas}</div><div class="kpi-lbl" style="color:var(--print-grey);">Ejecución acelerada<br>(>100% ritmo)</div></div>
-    <div class="kpi" style="background:#f0fdf4;"><div class="kpi-val" style="color:#059669;">${normal}</div><div class="kpi-lbl" style="color:var(--print-grey);">Ritmo normal<br>(33–100%)</div></div>
-    <div class="kpi" style="background:#eff6ff;"><div class="kpi-val" style="color:#3b82f6;">${rezagadas}</div><div class="kpi-lbl" style="color:var(--print-grey);">Rezagadas<br>(<33% ritmo)</div></div>
-    <div class="kpi" style="background:#f9fafb;"><div class="kpi-val" style="color:var(--print-grey-light);">${sinDatos}</div><div class="kpi-lbl" style="color:var(--print-grey);">Sin ejecución<br>registrada</div></div>
+    <div class="kpi" style="background:#fef2f2;"><div class="kpi-val" style="color:#c0392b;">${aceleradas}</div><div class="kpi-lbl" style="color:#6b7280;">Ejecución acelerada<br>(>100% ritmo)</div></div>
+    <div class="kpi" style="background:#f0fdf4;"><div class="kpi-val" style="color:#059669;">${normal}</div><div class="kpi-lbl" style="color:#6b7280;">Ritmo normal<br>(33–100%)</div></div>
+    <div class="kpi" style="background:#eff6ff;"><div class="kpi-val" style="color:#3b82f6;">${rezagadas}</div><div class="kpi-lbl" style="color:#6b7280;">Rezagadas<br>(<33% ritmo)</div></div>
+    <div class="kpi" style="background:#f9fafb;"><div class="kpi-val" style="color:#9ca3af;">${sinDatos}</div><div class="kpi-lbl" style="color:#6b7280;">Sin ejecución<br>registrada</div></div>
     <div class="kpi" style="background:#0a1628;"><div class="kpi-val" style="color:#fff;">${data.length}</div><div class="kpi-lbl" style="color:#94a3b8;">Total instituciones<br>período ${periodoStr}</div></div>
   </div>
 
@@ -26158,7 +26158,7 @@ async function generarReporteSEFIN() {
     <div class="ley-item"><span style="color:#059669;font-weight:700;">🟢 Normal</span> 33–100%</div>
     <div class="ley-item"><span style="color:#3b82f6;font-weight:700;">🔵 Rezagado</span> &lt;33%</div>
   </div>
-  <div style="font-size:10px;color:var(--print-grey-light);margin-bottom:10px;">
+  <div style="font-size:10px;color:#9ca3af;margin-bottom:10px;">
     Ritmo esperado = Aprobado anual × (${mes}/12) = ${(esperadoBase*100).toFixed(0)}% del presupuesto. Columna "% Ritmo" = Ejecutado ÷ Esperado.
   </div>
 
@@ -26437,7 +26437,7 @@ function exportCruceASimilaresPDF() {
       <td style="padding:6px 8px;font-size:11px;text-align:center;color:#92400e;">${i+1}</td>
       <td style="padding:6px 8px;font-size:11px;font-weight:600;">${esc(g.prov.length>50?g.prov.slice(0,49)+'…':g.prov)}</td>
       <td style="padding:6px 8px;font-size:10px;">${esc(g.ent.length>45?g.ent.slice(0,44)+'…':g.ent)}</td>
-      <td style="padding:6px 8px;text-align:center;font-size:11px;font-weight:700;color:var(--print-red);">${g.count}</td>
+      <td style="padding:6px 8px;text-align:center;font-size:11px;font-weight:700;color:#dc2626;">${g.count}</td>
       <td style="padding:6px 8px;text-align:right;font-size:11px;">${fmtL(g.monto)}</td>
       <td style="padding:6px 8px;text-align:right;font-size:11px;font-weight:700;color:#d97706;">${fmtL(exceso)}</td>
       <td style="padding:6px 8px;font-size:10px;color:#666;">${g.fecha}</td>
@@ -26450,17 +26450,17 @@ function exportCruceASimilaresPDF() {
     body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
     @page{size:A4 landscape;margin:15mm 14mm;}
     @media print{body{margin:0;}}
-    .header{background:linear-gradient(135deg,#7c1d1d,var(--print-red));color:#fff;padding:20px 26px 16px;margin-bottom:16px;}
+    .header{background:linear-gradient(135deg,#7c1d1d,#dc2626);color:#fff;padding:20px 26px 16px;margin-bottom:16px;}
     .kpi-row{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
     .kpi-box{flex:1;min-width:90px;border:1px solid #fde8cc;border-radius:8px;padding:10px 14px;background:#fff8f0;text-align:center;}
-    .kpi-val{font-size:18px;font-weight:700;color:var(--print-red);}
+    .kpi-val{font-size:18px;font-weight:700;color:#dc2626;}
     .kpi-lbl{font-size:9px;color:#888;margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
     .alert-box{background:#fff8f0;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:10px;color:#92400e;}
     table{width:100%;border-collapse:collapse;margin-bottom:20px;}
     thead tr{background:#7c1d1d;}
     thead th{padding:7px 8px;color:#fff;font-size:10px;font-weight:700;text-align:left;letter-spacing:.04em;}
-    .footer{margin-top:20px;padding-top:10px;border-top:2px solid var(--print-red);display:flex;justify-content:space-between;font-size:9px;color:#888;}
-    .classification{background:var(--print-red);color:#fff;text-align:center;padding:5px;font-size:9px;font-weight:700;letter-spacing:.12em;margin-top:12px;}
+    .footer{margin-top:20px;padding-top:10px;border-top:2px solid #dc2626;display:flex;justify-content:space-between;font-size:9px;color:#888;}
+    .classification{background:#dc2626;color:#fff;text-align:center;padding:5px;font-size:9px;font-weight:700;letter-spacing:.12em;margin-top:12px;}
   </style></head><body>
   <div class="header">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -26521,7 +26521,7 @@ function exportCruceBCoberturaPDF() {
 
   // Re-use rendered table HTML, strip interactive elements
   const tableHTML = tableEl.innerHTML
-    .replace(/style="color:var\(--red\)/g, 'style="color:var(--print-red)')
+    .replace(/style="color:var\(--red\)/g, 'style="color:#dc2626')
     .replace(/style="color:var\(--amber\)/g, 'style="color:#d97706')
     .replace(/style="color:var\(--green\)/g, 'style="color:#16a34a')
     .replace(/var\(--text-dim\)/g,'#666')
@@ -26529,7 +26529,7 @@ function exportCruceBCoberturaPDF() {
     .replace(/var\(--electric\)/g,'#0e7490')
     .replace(/rgba\(255,255,255,0\.03\)/g,'#fff')
     .replace(/rgba\(255,255,255,0\.01\)/g,'#f9fafb')
-    .replace(/rgba\(255,255,255,0\.1\)/g,'var(--print-border)');
+    .replace(/rgba\(255,255,255,0\.1\)/g,'#e5e7eb');
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Sentinel — Cobertura ONCAE vs SEFIN</title>
@@ -26562,7 +26562,7 @@ function exportCruceBCoberturaPDF() {
   </div>
   <div class="info-box">ℹ️ <strong>Metodología:</strong> Cruce por nombre normalizado (minúsculas) entre tabla <code>alerts</code> (ONCAE/Honducompras) y <code>sefin_presupuesto</code> (PIEP). Una cobertura baja indica que la institución ejecutó presupuesto de adquisiciones sin publicar los contratos correspondientes en ONCAE — posible señal de contratación directa irregular.</div>
   <div class="legend">
-    <div class="leg-item"><span style="color:var(--print-red);font-weight:700;">■</span> &lt;10% — Riesgo alto</div>
+    <div class="leg-item"><span style="color:#dc2626;font-weight:700;">■</span> &lt;10% — Riesgo alto</div>
     <div class="leg-item"><span style="color:#d97706;font-weight:700;">■</span> 10–25% — Riesgo medio</div>
     <div class="leg-item"><span style="color:#16a34a;font-weight:700;">■</span> &gt;25% — Normal</div>
   </div>
@@ -27026,11 +27026,11 @@ function executeInvestigacionPDF(invId) {
   const tablaRows = contratos.slice(0,15).map((a,i) => {
     const bg = i%2===0?'#ffffff':'#f8fafc';
     return `<tr style="background:${bg};">
-      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid var(--print-border);">${a.proveedor_nombre||'—'}</td>
-      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid var(--print-border);">${a.entity_name||'—'}</td>
-      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid var(--print-border);text-align:right;">${fmtL(Number(a.monto_contrato||0))}</td>
-      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid var(--print-border);">${a.fecha_contrato||'—'}</td>
-      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid var(--print-border);color:${(a.severity||a.severidad||'').toUpperCase().includes('CRÍTICA')||((a.severity||a.severidad)||'').toUpperCase()==='CRITICA'?'var(--print-red)':'#374151'};">${a.severity||a.severidad||'—'}</td>
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;">${a.proveedor_nombre||'—'}</td>
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;">${a.entity_name||'—'}</td>
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;text-align:right;">${fmtL(Number(a.monto_contrato||0))}</td>
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;">${a.fecha_contrato||'—'}</td>
+      <td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;color:${(a.severity||a.severidad||'').toUpperCase().includes('CRÍTICA')||((a.severity||a.severidad)||'').toUpperCase()==='CRITICA'?'#dc2626':'#374151'};">${a.severity||a.severidad||'—'}</td>
     </tr>`;
   }).join('');
 
@@ -27045,18 +27045,18 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f8fafc; color:#1e293
 .entidad { font-size:12px; opacity:.75; margin-top:4px; }
 .body { padding:20px 28px; }
 .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
-.stat { background:white; border:1px solid var(--print-border); border-radius:8px; padding:12px 16px; }
+.stat { background:white; border:1px solid #e5e7eb; border-radius:8px; padding:12px 16px; }
 .stat-val { font-size:24px; font-weight:700; }
-.stat-label { font-size:10px; color:var(--print-grey); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+.stat-label { font-size:10px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
 .section { margin-bottom:16px; }
 .section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#1e3a5f; border-bottom:2px solid #1e3a5f; padding-bottom:4px; margin-bottom:10px; }
 .hallazgo { background:#fef3c7; border-left:3px solid #f59e0b; padding:10px 14px; border-radius:0 6px 6px 0; font-size:13px; line-height:1.6; margin-bottom:10px; }
 .recomendacion { background:#dbeafe; border-left:3px solid #3b82f6; padding:10px 14px; border-radius:0 6px 6px 0; font-size:13px; line-height:1.6; }
 .actor-pill { display:inline-block; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; font-size:11px; padding:3px 8px; margin:2px; }
 .patron-pill { display:inline-block; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:4px; font-size:10px; padding:2px 7px; margin:2px; font-family:monospace; }
-table { width:100%; border-collapse:collapse; background:white; border:1px solid var(--print-border); border-radius:8px; overflow:hidden; }
+table { width:100%; border-collapse:collapse; background:white; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
 th { padding:7px 8px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; border-bottom:2px solid #1e3a5f; color:#1e3a5f; background:white; }
-.footer { margin-top:16px; font-size:9px; color:var(--print-grey-light); text-align:right; }
+.footer { margin-top:16px; font-size:9px; color:#9ca3af; text-align:right; }
 .estado { display:inline-block; background:#d1fae5; color:#065f46; font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px; margin-left:12px; }
 @media print { body { background:white; } }
 </style></head><body>
@@ -27067,9 +27067,9 @@ th { padding:7px 8px; text-align:left; font-size:10px; font-weight:700; text-tra
 </div>
 <div class="body">
   <div class="grid3">
-    <div class="stat"><div class="stat-val" style="color:var(--print-red);">${contratos.length}</div><div class="stat-label">Contratos en BD</div></div>
+    <div class="stat"><div class="stat-val" style="color:#dc2626;">${contratos.length}</div><div class="stat-label">Contratos en BD</div></div>
     <div class="stat"><div class="stat-val" style="color:#d97706;">${fmtL(monto)}</div><div class="stat-label">Monto expuesto</div></div>
-    <div class="stat"><div class="stat-val" style="color:var(--print-red);">${criticos}</div><div class="stat-label">Contratos críticos</div></div>
+    <div class="stat"><div class="stat-val" style="color:#dc2626;">${criticos}</div><div class="stat-label">Contratos críticos</div></div>
   </div>
   <div class="section">
     <div class="section-title">Actores identificados</div>
@@ -27091,7 +27091,7 @@ th { padding:7px 8px; text-align:left; font-size:10px; font-weight:700; text-tra
     <div class="section-title">Contratos en base de datos${contratos.length>15?' (top 15)':''}</div>
     <table><thead><tr><th>Proveedor</th><th>Entidad</th><th>Monto</th><th>Fecha</th><th>Severidad</th></tr></thead>
     <tbody>${tablaRows}</tbody></table>
-  </div>` : '<div style="font-size:12px;color:var(--print-grey);padding:12px 0;">No se encontraron contratos relacionados en la base de datos actual.</div>'}
+  </div>` : '<div style="font-size:12px;color:#6b7280;padding:12px 0;">No se encontraron contratos relacionados en la base de datos actual.</div>'}
   <div class="footer">SENTINEL AI · ${inv.folio} · Uso oficial restringido · ${now}</div>
 </div></body></html>`;
 
@@ -27111,19 +27111,19 @@ function executeTodasInvestigacionesPDF() {
     const monto = contratos.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
     const bg = i%2===0?'#ffffff':'#f8fafc';
     return `<tr style="background:${bg};">
-      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid var(--print-border);font-family:monospace;color:#1e40af;font-weight:700;">${inv.folio}</td>
-      <td style="padding:8px 10px;font-size:12px;border-bottom:1px solid var(--print-border);font-weight:600;">${inv.titulo}</td>
-      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid var(--print-border);">${inv.entidad}</td>
-      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid var(--print-border);text-align:right;font-weight:600;">${fmtL(monto)}</td>
-      <td style="padding:8px 10px;font-size:10px;border-bottom:1px solid var(--print-border);"><span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-weight:700;">${inv.estado}</span></td>
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #e5e7eb;font-family:monospace;color:#1e40af;font-weight:700;">${inv.folio}</td>
+      <td style="padding:8px 10px;font-size:12px;border-bottom:1px solid #e5e7eb;font-weight:600;">${inv.titulo}</td>
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #e5e7eb;">${inv.entidad}</td>
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:600;">${fmtL(monto)}</td>
+      <td style="padding:8px 10px;font-size:10px;border-bottom:1px solid #e5e7eb;"><span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-weight:700;">${inv.estado}</span></td>
     </tr>`;
   }).join('');
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Investigaciones Activas — SENTINEL AI</title>
 <style>* {box-sizing:border-box;margin:0;padding:0;} body{font-family:'Segoe UI',Arial,sans-serif;background:#f8fafc;}
 .header{background:#1e3a5f;color:white;padding:22px 28px;} .header h1{font-size:20px;font-weight:700;} .header p{font-size:12px;opacity:.7;margin-top:4px;}
-.body{padding:20px 28px;} table{width:100%;border-collapse:collapse;background:white;border:1px solid var(--print-border);border-radius:8px;overflow:hidden;}
+.body{padding:20px 28px;} table{width:100%;border-collapse:collapse;background:white;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;}
 th{padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #1e3a5f;color:#1e3a5f;}
-.footer{margin-top:16px;font-size:9px;color:var(--print-grey-light);text-align:right;} @media print{body{background:white;}}</style></head>
+.footer{margin-top:16px;font-size:9px;color:#9ca3af;text-align:right;} @media print{body{background:white;}}</style></head>
 <body><div class="header"><h1>Investigaciones Activas — SEN-INV-2026</h1><p>SENTINEL AI · ${now} · ${INVESTIGATIONS_EXEC.length} investigaciones</p></div>
 <div class="body"><table><thead><tr><th>Folio</th><th>Caso</th><th>Entidad principal</th><th>Monto expuesto</th><th>Estado</th></tr></thead>
 <tbody>${rows}</tbody></table>
@@ -27156,7 +27156,7 @@ function executePlaybookQuery(id) {
       return fila[key !== undefined ? key : Object.keys(fila)[result.cols.indexOf(col)]] || '—';
     });
     const bg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
-    const cells = vals.map(v => `<td style="padding:5px 8px;font-size:11px;border-bottom:1px solid var(--print-border);color:#374151;">${v}</td>`).join('');
+    const cells = vals.map(v => `<td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #e5e7eb;color:#374151;">${v}</td>`).join('');
     return `<tr style="background:${bg};">${cells}</tr>`;
   }).join('');
 
@@ -27173,8 +27173,8 @@ function executePlaybookQuery(id) {
   .meta-pill { background: #e0f2fe; color: #0369a1; font-size: 10px; font-weight: 700;
                padding: 3px 10px; border-radius: 12px; }
   table { width: 100%; border-collapse: collapse; background: white;
-          border: 1px solid var(--print-border); border-radius: 8px; overflow: hidden; }
-  .footer { margin-top: 16px; font-size: 9px; color: var(--print-grey-light); text-align: right; }
+          border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .footer { margin-top: 16px; font-size: 9px; color: #9ca3af; text-align: right; }
   @media print { body { background: white; } }
 </style></head><body>
 <div class="header">
@@ -27191,7 +27191,7 @@ function executePlaybookQuery(id) {
     <thead><tr>${headerRow}</tr></thead>
     <tbody>${dataRows}</tbody>
   </table>
-  ${result.nota ? `<div style="font-size:9px;color:var(--print-grey);margin-top:10px;padding-top:8px;border-top:1px solid var(--print-border);font-style:italic;">* ${result.nota}</div>` : ''}
+  ${result.nota ? `<div style="font-size:9px;color:#6b7280;margin-top:10px;padding-top:8px;border-top:1px solid #e5e7eb;font-style:italic;">* ${result.nota}</div>` : ''}
   <div class="footer">SENTINEL AI · Uso oficial restringido · No distribuir sin autorización · alerts@sentinelai-hn.com</div>
 </div>
 </body></html>`;
@@ -27665,7 +27665,7 @@ function exportReporteOncaeCriticaPDF() {
     <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">Monto total</div></div>
     <div class="kpi-box"><div class="kpi-val">${entidades.length}</div><div class="kpi-lbl">Entidades únicas</div></div>
     <div class="kpi-box"><div class="kpi-val">${proveedores.length}</div><div class="kpi-lbl">Proveedores únicos</div></div>
-    <div class="kpi-box"><div class="kpi-val" style="color:var(--print-red);">CRÍTICA</div><div class="kpi-lbl">Severidad</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">CRÍTICA</div><div class="kpi-lbl">Severidad</div></div>
   </div>
   <div class="warning-box">
     ⚠️ <strong>Nota:</strong> Contratos clasificados como CRÍTICA en base a patrones detectados por Sentinel (contratación directa, fraccionamiento, período urgente, licitación privada, entre otros). La clasificación es automatizada y requiere verificación por personal autorizado antes de cualquier acción formal.
@@ -27771,7 +27771,7 @@ function exportReporteSefinCriticaPDF() {
     <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">Monto total</div></div>
     <div class="kpi-box"><div class="kpi-val">${entidades.length}</div><div class="kpi-lbl">Entidades únicas</div></div>
     <div class="kpi-box"><div class="kpi-val">${proveedores.length}</div><div class="kpi-lbl">Proveedores únicos</div></div>
-    <div class="kpi-box"><div class="kpi-val" style="color:var(--print-red);">CRÍTICA</div><div class="kpi-lbl">Severidad</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">CRÍTICA</div><div class="kpi-lbl">Severidad</div></div>
   </div>
   <div class="warning-box">
     ⚠️ <strong>Nota:</strong> Contratos clasificados como CRÍTICA en base a patrones detectados por Sentinel (contratación directa, fraccionamiento, período urgente, licitación privada, entre otros). La clasificación es automatizada y requiere verificación por personal autorizado antes de cualquier acción formal.
@@ -27836,7 +27836,7 @@ function exportReporteParetoPDF() {
 
   const rows = top15.map(([ent, v], i) => {
     const barPct = Math.round((v.count / maxCount) * 100);
-    const riskColor = v.criticos > 5 ? 'var(--print-red)' : v.criticos > 0 ? '#d97706' : '#2563eb';
+    const riskColor = v.criticos > 5 ? '#dc2626' : v.criticos > 0 ? '#d97706' : '#2563eb';
     return `<tr style="background:${i%2===0?'#fff':'#f0f9ff'};border-bottom:1px solid #bae6fd;">
       <td style="padding:7px 8px;font-weight:700;color:#0e7490;font-size:12px;text-align:center;">${i+1}</td>
       <td style="padding:7px 8px;font-size:10px;font-weight:600;max-width:220px;">${esc(ent.length>55?ent.slice(0,54)+'…':ent)}</td>
@@ -27846,7 +27846,7 @@ function exportReporteParetoPDF() {
           <span style="font-size:11px;font-weight:700;color:${riskColor};">${v.count}</span>
         </div>
       </td>
-      <td style="padding:7px 8px;text-align:center;font-size:11px;font-weight:700;color:var(--print-red);">${v.criticos}</td>
+      <td style="padding:7px 8px;text-align:center;font-size:11px;font-weight:700;color:#dc2626;">${v.criticos}</td>
       <td style="padding:7px 8px;text-align:center;font-size:11px;color:#d97706;">${v.altos}</td>
       <td style="padding:7px 8px;text-align:right;font-size:11px;font-weight:600;color:#0e7490;">${fmtL(v.monto)}</td>
       <td style="padding:7px 8px;text-align:center;font-size:10px;color:#666;">${v.sefin > 0 ? v.sefin+' SEFIN' : ''}${v.sefin>0&&v.oncae>0?' · ':''}${v.oncae > 0 ? v.oncae+' ONCAE' : ''}</td>
@@ -27940,7 +27940,7 @@ function exportReporteOncae2025ActoresPDF() {
   const critica2025Monto = critica2025.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
 
   const ACTORES = [
-    { nombre: 'CORINFAR — Corporación Industrial Farmacéutica, S.A.', color:'var(--print-red)', bg:'#fff5f5',
+    { nombre: 'CORINFAR — Corporación Industrial Farmacéutica, S.A.', color:'#dc2626', bg:'#fff5f5',
       match: a => (a.proveedor_nombre||'').toUpperCase().includes('CORINFAR'),
       nota: 'Empresa bajo juicio oral activo (4 imputados). 20 contratos en 2025 detectados. Antecedentes TSC/COVID por sobrecosto en medicamentos.' },
     { nombre: 'GEOCONSULT, S.A. de C.V.', color:'#d97706', bg:'#fffbeb',
@@ -27962,7 +27962,7 @@ function exportReporteOncae2025ActoresPDF() {
     const totalMonto = contratos.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
     const rows = contratos.map((a,i) => {
       const sev = a.severity||a.severidad||'—';
-      const sevColor = normSev(sev)==='critica'?'var(--print-red)':normSev(sev)==='alta'?'#d97706':'#555';
+      const sevColor = normSev(sev)==='critica'?'#dc2626':normSev(sev)==='alta'?'#d97706':'#555';
       const pat = (a.patterns||'').replace(/_ONCAE/g,'').replace(/COMPRA_MENOR/g,'Compra Menor').replace(/,/g,' ·');
       return `<tr style="background:${i%2===0?'#fff':actor.bg};">
         <td style="padding:5px 8px;font-size:10px;">${esc((a.fecha_contrato||a.fecha_adjudicacion||'').substring(0,10))}</td>
@@ -28026,7 +28026,7 @@ function exportReporteOncae2025ActoresPDF() {
   </div>
   <div class="kpi-row">
     <div class="kpi-box"><div class="kpi-val">${oncae2025.length.toLocaleString()}</div><div class="kpi-lbl">Contratos ONCAE 2025</div></div>
-    <div class="kpi-box"><div class="kpi-val" style="color:var(--print-red);">${critica2025.length}</div><div class="kpi-lbl">CRÍTICA</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:#dc2626;">${critica2025.length}</div><div class="kpi-lbl">CRÍTICA</div></div>
     <div class="kpi-box"><div class="kpi-val" style="color:#d97706;">${alta2025.length.toLocaleString()}</div><div class="kpi-lbl">ALTA</div></div>
     <div class="kpi-box"><div class="kpi-val">${fmtL(critica2025Monto)}</div><div class="kpi-lbl">Exposición CRÍTICA</div></div>
     <div class="kpi-box"><div class="kpi-val">${fmtL(total2025Monto)}</div><div class="kpi-lbl">Monto total monitoreado</div></div>
@@ -28082,12 +28082,12 @@ function exportReporteInvestigacionCriticaPDF() {
   const provRows = topProvs.map(([prov,v],i) => {
     const isRilmac = prov.toUpperCase().includes('RILMAC');
     const bg = isRilmac ? '#fff0f0' : (i%2===0?'#ffffff':'#f9fafb');
-    const color = isRilmac ? 'var(--print-red)' : '#111827';
+    const color = isRilmac ? '#dc2626' : '#111827';
     return `<tr style="background:${bg};">
       <td style="padding:6px 10px;font-size:11px;color:${color};font-weight:${isRilmac?'700':'400'};">${esc(prov.length>45?prov.slice(0,45)+'…':prov)}${isRilmac?' ⚠️ VERIFICAR':''}</td>
       <td style="padding:6px 10px;text-align:center;font-size:11px;">${v.count}</td>
-      <td style="padding:6px 10px;text-align:right;font-size:11px;font-weight:${isRilmac?'700':'400'};color:${isRilmac?'var(--print-red)':'#111827'};">${fmtL(v.monto)}</td>
-      <td style="padding:6px 10px;font-size:10px;color:var(--print-grey);">${esc([...v.entidades][0]||'—')}</td>
+      <td style="padding:6px 10px;text-align:right;font-size:11px;font-weight:${isRilmac?'700':'400'};color:${isRilmac?'#dc2626':'#111827'};">${fmtL(v.monto)}</td>
+      <td style="padding:6px 10px;font-size:10px;color:#6b7280;">${esc([...v.entidades][0]||'—')}</td>
     </tr>`;
   }).join('');
 
@@ -28111,21 +28111,21 @@ function exportReporteInvestigacionCriticaPDF() {
   <title>Sentinel-AI — Investigación CRÍTICA ${ds}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0} body{font-family:Arial,sans-serif;font-size:12px;color:#111827;background:#fff;padding:32px}
-    .cover-title{font-size:32px;font-weight:900;color:#0a1628;} .cover-sub{color:#00a8d6;} .cover-label{font-size:11px;color:var(--print-grey);letter-spacing:.08em;text-transform:uppercase;margin-top:24px;}
+    .cover-title{font-size:32px;font-weight:900;color:#0a1628;} .cover-sub{color:#00a8d6;} .cover-label{font-size:11px;color:#6b7280;letter-spacing:.08em;text-transform:uppercase;margin-top:24px;}
     h1{font-size:18px;font-weight:800;color:#0a1628;margin:28px 0 6px;padding-bottom:6px;border-bottom:3px solid #00a8d6;}
     h2{font-size:14px;font-weight:700;color:#00a8d6;margin:20px 0 8px;}
     .kpi-row{display:flex;gap:12px;margin:14px 0;}
-    .kpi{flex:1;border:1px solid var(--print-border);border-radius:8px;padding:12px 16px;text-align:center;}
-    .kpi .val{font-size:24px;font-weight:900;color:#0a1628;} .kpi .lbl{font-size:10px;color:var(--print-grey);text-transform:uppercase;margin-top:3px;}
-    .kpi.red{background:#fff0f0;border-color:#fecaca;} .kpi.red .val{color:var(--print-red);}
+    .kpi{flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;text-align:center;}
+    .kpi .val{font-size:24px;font-weight:900;color:#0a1628;} .kpi .lbl{font-size:10px;color:#6b7280;text-transform:uppercase;margin-top:3px;}
+    .kpi.red{background:#fff0f0;border-color:#fecaca;} .kpi.red .val{color:#dc2626;}
     .kpi.amb{background:#fffbeb;border-color:#fde68a;} .kpi.amb .val{color:#d97706;}
     table{width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;}
     thead th{background:#0a1628;color:#fff;padding:7px 10px;text-align:left;font-size:11px;}
     .alert-box{background:#fff0f0;border:1px solid #fca5a5;border-radius:8px;padding:14px 18px;margin:12px 0;}
-    .alert-box .alert-title{font-size:13px;font-weight:700;color:var(--print-red);margin-bottom:6px;}
-    .folio{font-size:10px;color:var(--print-grey-light);text-align:right;margin-bottom:4px;}
-    .section-note{font-size:11px;color:var(--print-grey);font-style:italic;margin:8px 0 4px;}
-    .disclaimer{font-size:9px;color:var(--print-grey-light);margin-top:32px;padding-top:12px;border-top:1px solid var(--print-border);font-style:italic;}
+    .alert-box .alert-title{font-size:13px;font-weight:700;color:#dc2626;margin-bottom:6px;}
+    .folio{font-size:10px;color:#9ca3af;text-align:right;margin-bottom:4px;}
+    .section-note{font-size:11px;color:#6b7280;font-style:italic;margin:8px 0 4px;}
+    .disclaimer{font-size:9px;color:#9ca3af;margin-top:32px;padding-top:12px;border-top:1px solid #e5e7eb;font-style:italic;}
     @media print{body{padding:16px}}
   </style></head><body>
   <div class="folio">${folio} · ${ds}</div>
@@ -28149,13 +28149,13 @@ function exportReporteInvestigacionCriticaPDF() {
     <table style="margin:0;">
       <tr><td style="padding:3px 8px;font-weight:600;width:180px;">Contrato</td><td style="padding:3px 8px;">CM-INFOP-TGU-0219-2025</td></tr>
       <tr><td style="padding:3px 8px;font-weight:600;">Entidad</td><td style="padding:3px 8px;">INFOP — Unidad Central</td></tr>
-      <tr><td style="padding:3px 8px;font-weight:600;">Monto</td><td style="padding:3px 8px;color:var(--print-red);font-weight:700;">L 5,080,516,000 (~USD 202M)</td></tr>
-      <tr><td style="padding:3px 8px;font-weight:600;">Método</td><td style="padding:3px 8px;color:var(--print-red);">Compra Menor (umbral legal: &lt; L 500K)</td></tr>
+      <tr><td style="padding:3px 8px;font-weight:600;">Monto</td><td style="padding:3px 8px;color:#dc2626;font-weight:700;">L 5,080,516,000 (~USD 202M)</td></tr>
+      <tr><td style="padding:3px 8px;font-weight:600;">Método</td><td style="padding:3px 8px;color:#dc2626;">Compra Menor (umbral legal: &lt; L 500K)</td></tr>
       <tr><td style="padding:3px 8px;font-weight:600;">RTN</td><td style="padding:3px 8px;">HN-RTN-08019008133144</td></tr>
       <tr><td style="padding:3px 8px;font-weight:600;">Representante</td><td style="padding:3px 8px;">Reina Isabel Lopez Gomez</td></tr>
       <tr><td style="padding:3px 8px;font-weight:600;">Fecha</td><td style="padding:3px 8px;">2025-06-03 · Sin fecha de adjudicación registrada</td></tr>
     </table>
-    <p style="font-size:10px;color:var(--print-red);margin-top:8px;font-style:italic;">REQUIERE VERIFICACIÓN URGENTE en portal ONCAE/HonduCompras. Posible error de datos o fraude real. Imprenta con L 5B por Compra Menor a instituto vocacional.</p>
+    <p style="font-size:10px;color:#dc2626;margin-top:8px;font-style:italic;">REQUIERE VERIFICACIÓN URGENTE en portal ONCAE/HonduCompras. Posible error de datos o fraude real. Imprenta con L 5B por Compra Menor a instituto vocacional.</p>
   </div>
 
   <h2>Top 15 Proveedores CRÍTICA Compra Menor (sin RILMAC)</h2>
@@ -28177,7 +28177,7 @@ function exportReporteInvestigacionCriticaPDF() {
   <h2>Entidades con contratos CORINFAR activos en 2025</h2>
   <table>
     <thead><tr><th>Entidad</th><th style="text-align:center;">Contratos</th><th style="text-align:right;">Monto</th></tr></thead>
-    <tbody>${corEntRows||'<tr><td colspan="3" style="padding:10px;text-align:center;color:var(--print-grey);">Sin datos 2025 en carga actual</td></tr>'}</tbody>
+    <tbody>${corEntRows||'<tr><td colspan="3" style="padding:10px;text-align:center;color:#6b7280;">Sin datos 2025 en carga actual</td></tr>'}</tbody>
   </table>
   <p class="section-note">Patrones detectados: FRACCIONAMIENTO_MICRO · COMPRA_EMERGENCIA · ADJUDICACION_DIRECTA · COMPRA_MENOR_ONCAE</p>
 
@@ -28704,9 +28704,9 @@ async function mfExportarPDF() {
       <td style="font-family:monospace;font-size:11px;">${d.id}</td>
       <td><span style="background:#f3e8ff;color:#7c3aed;padding:2px 8px;border-radius:4px;font-size:10px;">${d.canal}</span></td>
       <td style="font-size:12px;">${d.resumen}</td>
-      <td style="font-family:monospace;font-weight:700;color:${d.score>=75?'var(--print-red)':d.score>=50?'#d97706':'var(--print-grey)'};">${d.score}/100</td>
+      <td style="font-family:monospace;font-weight:700;color:${d.score>=75?'#dc2626':d.score>=50?'#d97706':'#6b7280'};">${d.score}/100</td>
       <td style="font-size:11px;">${d.corrobora}</td>
-      <td style="font-weight:600;color:${d.accion==='escalar'?'#7c3aed':d.accion==='investigar'?'#d97706':'var(--print-grey)'};">${d.accion==='escalar'?'Escalar PGR':d.accion==='investigar'?'Investigar':'Archivar'}</td>
+      <td style="font-weight:600;color:${d.accion==='escalar'?'#7c3aed':d.accion==='investigar'?'#d97706':'#6b7280'};">${d.accion==='escalar'?'Escalar PGR':d.accion==='investigar'?'Investigar':'Archivar'}</td>
     </tr>`).join('');
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
@@ -28714,22 +28714,22 @@ async function mfExportarPDF() {
   <style>
     body{font-family:'Segoe UI',sans-serif;color:#1a1a2e;margin:40px;background:#fff;}
     h1{font-size:20px;color:#7c3aed;margin-bottom:4px;}
-    .sub{font-size:12px;color:var(--print-grey);margin-bottom:24px;}
+    .sub{font-size:12px;color:#6b7280;margin-bottom:24px;}
     .kpis{display:flex;gap:16px;margin-bottom:24px;}
-    .kpi{flex:1;border:1px solid var(--print-border);border-radius:8px;padding:12px 16px;text-align:center;}
+    .kpi{flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;text-align:center;}
     .kpi-val{font-size:28px;font-weight:700;color:#7c3aed;}
-    .kpi-lbl{font-size:11px;color:var(--print-grey);margin-top:4px;}
+    .kpi-lbl{font-size:11px;color:#6b7280;margin-top:4px;}
     table{width:100%;border-collapse:collapse;font-size:12px;}
     th{background:#f5f3ff;color:#7c3aed;padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
     td{padding:8px 10px;border-bottom:1px solid #f3f4f6;}
     tr:hover td{background:#fafafa;}
-    .footer{margin-top:24px;font-size:10px;color:var(--print-grey-light);border-top:1px solid var(--print-border);padding-top:12px;}
+    .footer{margin-top:24px;font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px;}
   </style></head><body>
   <h1>Canal Denuncias — Integridad Ciudadana</h1>
   <div class="sub">Reporte generado: ${fecha} · Sistema Sentinel AI · Decreto 54-2015</div>
   <div class="kpis">
     <div class="kpi"><div class="kpi-val">${total}</div><div class="kpi-lbl">Denuncias Recibidas</div></div>
-    <div class="kpi"><div class="kpi-val" style="color:var(--print-red);">${alta}</div><div class="kpi-lbl">Alta Credibilidad &gt;75</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#dc2626;">${alta}</div><div class="kpi-lbl">Alta Credibilidad &gt;75</div></div>
     <div class="kpi"><div class="kpi-val" style="color:#d97706;">${inv}</div><div class="kpi-lbl">En Investigación</div></div>
     <div class="kpi"><div class="kpi-val" style="color:#16a34a;">${esc}</div><div class="kpi-lbl">Escaladas al PGR</div></div>
   </div>
@@ -28898,13 +28898,13 @@ function exportReporteS36PDF() {
   const topConsult  = consultCrit.sort((a,b)=>Number(b.monto_contrato||0)-Number(a.monto_contrato||0))[0];
 
   function contractRow(a, nota) {
-    if (!a) return '<tr><td colspan="5" style="padding:8px;color:var(--print-grey-light);font-size:11px;">Sin datos</td></tr>';
+    if (!a) return '<tr><td colspan="5" style="padding:8px;color:#9ca3af;font-size:11px;">Sin datos</td></tr>';
     const fecha = (a.fecha_contrato||'').substring(0,10)||'—';
     const ent   = (a.entity_name||'—').length>40?(a.entity_name||'—').slice(0,39)+'…':(a.entity_name||'—');
     return `<tr style="background:#fff5f5;">
-      <td style="padding:6px 8px;font-size:10px;font-family:monospace;color:var(--print-grey-light);">${esc((a.title||a.alert_id||'').slice(0,22))}</td>
+      <td style="padding:6px 8px;font-size:10px;font-family:monospace;color:#9ca3af;">${esc((a.title||a.alert_id||'').slice(0,22))}</td>
       <td style="padding:6px 8px;font-size:11px;">${esc(ent)}</td>
-      <td style="padding:6px 8px;font-size:11px;text-align:right;font-weight:700;color:var(--print-red);">${fmtL(Number(a.monto_contrato||0))}</td>
+      <td style="padding:6px 8px;font-size:11px;text-align:right;font-weight:700;color:#dc2626;">${fmtL(Number(a.monto_contrato||0))}</td>
       <td style="padding:6px 8px;font-size:10px;text-align:center;">${fecha}</td>
       <td style="padding:6px 8px;font-size:10px;color:#d97706;font-weight:600;">${esc(nota)}</td>
     </tr>`;
@@ -28919,9 +28919,9 @@ function exportReporteS36PDF() {
     h1{font-size:17px;font-weight:800;color:#0a1628;margin:28px 0 6px;padding-bottom:6px;border-bottom:3px solid #f97316;}
     h2{font-size:13px;font-weight:700;color:#f97316;margin:16px 0 6px;}
     .kpi-row{display:flex;gap:12px;margin:14px 0;}
-    .kpi{flex:1;border:1px solid var(--print-border);border-radius:8px;padding:10px 14px;text-align:center;}
-    .kpi .val{font-size:22px;font-weight:900;color:#0a1628;} .kpi .lbl{font-size:10px;color:var(--print-grey);text-transform:uppercase;margin-top:3px;}
-    .kpi.red{background:#fff0f0;border-color:#fecaca;} .kpi.red .val{color:var(--print-red);}
+    .kpi{flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;text-align:center;}
+    .kpi .val{font-size:22px;font-weight:900;color:#0a1628;} .kpi .lbl{font-size:10px;color:#6b7280;text-transform:uppercase;margin-top:3px;}
+    .kpi.red{background:#fff0f0;border-color:#fecaca;} .kpi.red .val{color:#dc2626;}
     .kpi.amb{background:#fff7ed;border-color:#fed7aa;} .kpi.amb .val{color:#ea580c;}
     .kpi.grn{background:#f0fdf4;border-color:#bbf7d0;} .kpi.grn .val{color:#16a34a;}
     table{width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;}
@@ -28929,9 +28929,9 @@ function exportReporteS36PDF() {
     tr:nth-child(even){background:#f9fafb;}
     .alert-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:14px 18px;margin:14px 0;}
     .alert-box.red{background:#fff0f0;border-color:#fecaca;}
-    .note{font-size:10px;color:var(--print-grey);margin-top:6px;}
+    .note{font-size:10px;color:#6b7280;margin-top:6px;}
     .badge-error{display:inline-block;background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
-    .badge-critico{display:inline-block;background:#fff0f0;border:1px solid #fecaca;color:var(--print-red);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+    .badge-critico{display:inline-block;background:#fff0f0;border:1px solid #fecaca;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
     .page-break{page-break-before:always;margin-top:28px;}
   </style>
   </head><body>
@@ -28940,15 +28940,15 @@ function exportReporteS36PDF() {
   <div style="border-bottom:4px solid #f97316;padding-bottom:24px;margin-bottom:28px;">
     <div class="cover-title">🕵️ SISTEMA SENTINEL</div>
     <div class="cover-sub">Investigación S36 — Verificación de Contratos CRÍTICOS</div>
-    <div style="margin-top:16px;display:flex;gap:32px;font-size:11px;color:var(--print-grey);">
+    <div style="margin-top:16px;display:flex;gap:32px;font-size:11px;color:#6b7280;">
       <span><strong>Folio:</strong> ${folio}</span>
       <span><strong>Fecha:</strong> ${ds}</span>
       <span><strong>Fuente verificada:</strong> ONCAE HC1-2025 JSON</span>
-      <span style="color:var(--print-red);font-weight:700;">RESERVADO</span>
+      <span style="color:#dc2626;font-weight:700;">RESERVADO</span>
     </div>
     <div style="margin-top:12px;font-size:11px;color:#374151;">
       Investigación de tres proveedores con contratos CRÍTICOS detectados por Sentinel. Se verificaron los montos directamente en la fuente HC1-2025 de ONCAE.
-      <strong style="color:var(--print-red);"> Resultado: 2 de 3 contratos tienen errores de datos en ONCAE. 1 contrato real (GREENTEC L54M) requiere investigación.</strong>
+      <strong style="color:#dc2626;"> Resultado: 2 de 3 contratos tienen errores de datos en ONCAE. 1 contrato real (GREENTEC L54M) requiere investigación.</strong>
     </div>
   </div>
 
@@ -29020,7 +29020,7 @@ function exportReporteS36PDF() {
       <tr style="background:#f9fafb"><td>CABLE #10 THHN VERDE</td><td style="text-align:right">200</td><td style="text-align:right">26,592.60</td><td style="text-align:right;font-weight:700;">5,318,520</td></tr>
       <tr><td>CABLE #12 COLOR NEGRO (×3 items)</td><td style="text-align:right">500</td><td style="text-align:right">15.47</td><td style="text-align:right">7,734</td></tr>
       <tr style="background:#f9fafb"><td>CABLE TSJ 3X12</td><td style="text-align:right">2,000</td><td style="text-align:right">61.36</td><td style="text-align:right">122,728</td></tr>
-      <tr style="background:#fff0f0;font-weight:700;"><td colspan="3" style="text-align:right;padding:8px;">TOTAL</td><td style="text-align:right;color:var(--print-red);">L 54,010,089</td></tr>
+      <tr style="background:#fff0f0;font-weight:700;"><td colspan="3" style="text-align:right;padding:8px;">TOTAL</td><td style="text-align:right;color:#dc2626;">L 54,010,089</td></tr>
     </tbody>
   </table>
 
@@ -29048,7 +29048,7 @@ function exportReporteS36PDF() {
   </div>
 
   <h2>Descripción del Item (fuente HC1-2025)</h2>
-  <div style="background:#f9fafb;border:1px solid var(--print-border);border-radius:6px;padding:12px 16px;font-size:11px;line-height:1.6;color:#374151;">
+  <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:12px 16px;font-size:11px;line-height:1.6;color:#374151;">
     <strong>ELABORACION DE 500 MEDALLAS PERSONALIZADAS REDONDAS DE METAL, COLOR PLATEADO, TAMAÑO 3 PULGADAS DE DIÁMETRO CON GROSOR DE 2 MILÍMETROS, FULL SUBLIMINADO, INCLUYE LISTÓN DE COLOR BLANCO DE APROXIMADAMENTE 90 CMS FULL SUBLIMINADO CON LOGOS.</strong><br>
     Contacto IHT: Javier Carías | Tel 2242-7920 ext. 13126<br>
     Contrato firmado: OC 307-2025 | Valor contrato: L 115,000 HNL ✓
@@ -29060,13 +29060,13 @@ function exportReporteS36PDF() {
   <table>
     <thead><tr><th>Proveedor</th><th>Monto BD</th><th>Monto Real</th><th>Diagnóstico</th><th>Acción</th></tr></thead>
     <tbody>
-      <tr><td>RILMAC IMPRESORES</td><td style="color:var(--print-red);font-weight:700;">L 5.08B</td><td style="color:#16a34a;font-weight:700;">~L 5.1M</td><td><span class="badge-error">Error decimal ONCAE</span></td><td>Notificar a ONCAE</td></tr>
-      <tr style="background:#f9fafb"><td>ELECTROMECANICA GREENTEC</td><td style="color:var(--print-red);font-weight:700;">L 54M</td><td style="color:var(--print-red);font-weight:700;">L 54M ✓</td><td><span class="badge-critico">REAL — investigar</span></td><td>Auditoría técnica + ONCAE</td></tr>
-      <tr><td>CONSULTORÍA INTEGRAL</td><td style="color:var(--print-red);font-weight:700;">L 57.5M</td><td style="color:#16a34a;font-weight:700;">L 115K</td><td><span class="badge-error">Precio unitario ≠ total</span></td><td>Notificar a ONCAE</td></tr>
+      <tr><td>RILMAC IMPRESORES</td><td style="color:#dc2626;font-weight:700;">L 5.08B</td><td style="color:#16a34a;font-weight:700;">~L 5.1M</td><td><span class="badge-error">Error decimal ONCAE</span></td><td>Notificar a ONCAE</td></tr>
+      <tr style="background:#f9fafb"><td>ELECTROMECANICA GREENTEC</td><td style="color:#dc2626;font-weight:700;">L 54M</td><td style="color:#dc2626;font-weight:700;">L 54M ✓</td><td><span class="badge-critico">REAL — investigar</span></td><td>Auditoría técnica + ONCAE</td></tr>
+      <tr><td>CONSULTORÍA INTEGRAL</td><td style="color:#dc2626;font-weight:700;">L 57.5M</td><td style="color:#16a34a;font-weight:700;">L 115K</td><td><span class="badge-error">Precio unitario ≠ total</span></td><td>Notificar a ONCAE</td></tr>
     </tbody>
   </table>
 
-  <div style="margin-top:28px;padding-top:16px;border-top:1px solid var(--print-border);text-align:center;font-size:10px;color:var(--print-grey-light);">
+  <div style="margin-top:28px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:10px;color:#9ca3af;">
     Sistema Sentinel — Honduras · ${folio} · ${ds} · Fuente: ONCAE HC1-2025 JSON verificado<br>
     Base de datos: 127,832 registros | SEFIN + ONCAE 2019–2025 | Clasificación: RESERVADO
   </div>
@@ -29506,17 +29506,17 @@ function exportScannerPDF(patternId) {
     .cover-title{font-size:26px;font-weight:800;margin-bottom:8px;}
     .cover-sub{font-size:14px;opacity:.85;margin-bottom:4px;}
     .cover-folio{font-size:11px;opacity:.65;margin-top:16px;font-family:monospace;}
-    .stats{display:flex;gap:24px;padding:24px 50px;background:#f8f9fa;border-bottom:2px solid var(--print-border);}
+    .stats{display:flex;gap:24px;padding:24px 50px;background:#f8f9fa;border-bottom:2px solid #e5e7eb;}
     .stat{text-align:center;}
     .stat-num{font-size:28px;font-weight:800;color:${pattern.color};}
-    .stat-label{font-size:11px;color:var(--print-grey);text-transform:uppercase;letter-spacing:.05em;}
+    .stat-label{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;}
     .content{padding:30px 50px;}
     h2{font-size:16px;font-weight:800;color:${pattern.color};border-bottom:2px solid ${pattern.color};padding-bottom:6px;margin-top:24px;}
     table{width:100%;border-collapse:collapse;font-size:11px;margin-top:12px;}
     th{background:${pattern.color};color:#fff;padding:7px 8px;text-align:left;}
-    td{padding:6px 8px;border-bottom:1px solid var(--print-border);}
+    td{padding:6px 8px;border-bottom:1px solid #e5e7eb;}
     tr:nth-child(even) td{background:#f9fafb;}
-    .footer{margin-top:30px;padding:14px 50px;background:#f3f4f6;font-size:10px;color:var(--print-grey-light);text-align:center;}
+    .footer{margin-top:30px;padding:14px 50px;background:#f3f4f6;font-size:10px;color:#9ca3af;text-align:center;}
   </style></head><body>
   <div class="cover">
     <div style="font-size:11px;opacity:.65;margin-bottom:12px;">SENTINEL-AI · ESCÁNER AUTOMÁTICO · ${ds}</div>
@@ -29536,7 +29536,7 @@ function exportScannerPDF(patternId) {
       <tr><th>#</th><th>Proveedor</th><th>Entidad</th><th>Monto (L)</th><th>Tipo</th><th>Fecha</th></tr>
       ${rows}
     </table>
-    <p style="font-size:11px;color:var(--print-grey-light);margin-top:16px;">⚠️ AVISO LEGAL: Las señales detectadas NO constituyen determinación de responsabilidad penal. Uso investigativo exclusivo. Folio: ${folio}</p>
+    <p style="font-size:11px;color:#9ca3af;margin-top:16px;">⚠️ AVISO LEGAL: Las señales detectadas NO constituyen determinación de responsabilidad penal. Uso investigativo exclusivo. Folio: ${folio}</p>
   </div>
   </body></html>`;
 
@@ -29558,16 +29558,16 @@ function exportReporteFueraGiroPDF() {
   const _totalDyn = _actors.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
   const _dynRows = _actors.slice(0,50).map((r,i) =>
     '<tr style="background:'+(i%2===0?'#fff':'#f9fafb')+'">'+
-    '<td style="padding:5px 8px;font-size:10px;color:var(--print-grey);">'+(i+1)+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+(i+1)+'</td>'+
     '<td style="padding:5px 8px;font-size:10px;">'+_esc((r.entity_name||'').substring(0,42))+'</td>'+
     '<td style="padding:5px 8px;font-size:10px;font-weight:600;">'+_esc((r.proveedor_nombre||'').substring(0,38))+'</td>'+
     '<td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;">'+_fmtL(Number(r.monto_contrato||0))+'</td>'+
-    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'var(--print-red)':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'var(--print-grey)')+';">'+_esc(r.severity||'—')+'</td>'+
-    '<td style="padding:5px 8px;font-size:9px;color:var(--print-grey-light);">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'#dc2626':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+_esc(r.severity||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
     '</tr>'
-  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:var(--print-grey-light);font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
+  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
   const _dynTable = '<h1 style="font-size:15px;font-weight:800;border-bottom:2px solid #1f2937;padding-bottom:6px;margin-top:28px;color:#1f2937;">CONTRATOS EN BASE DE DATOS SENTINEL</h1>'+
-    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>LIGTH TRENDS · VENTA REPUESTOS · VARIEDADES · TIENDA AGROPECUARIA</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:var(--print-grey-light);\">(base de datos no cargada)</em>':'')+'</p>'+
+    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>LIGTH TRENDS · VENTA REPUESTOS · VARIEDADES · TIENDA AGROPECUARIA</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:#9ca3af;\">(base de datos no cargada)</em>':'')+'</p>'+
     '<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;">'+
     '<thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;">N</th><th style="padding:6px 8px;color:#fff;">Entidad</th><th style="padding:6px 8px;color:#fff;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;">Fecha</th></tr></thead>'+
     '<tbody>'+_dynRows+'</tbody></table>';
@@ -29579,22 +29579,22 @@ function exportReporteFueraGiroPDF() {
     .cover-title{font-size:28px;font-weight:800;margin-bottom:10px;}
     .cover-sub{font-size:16px;opacity:.85;margin-bottom:6px;}
     .cover-folio{font-size:12px;opacity:.7;margin-top:20px;font-family:monospace;}
-    .cover-reservado{display:inline-block;background:var(--print-amber);color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
+    .cover-reservado{display:inline-block;background:#fbbf24;color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
     .content{padding:40px 50px;}
     h1{font-size:18px;font-weight:800;color:#6b21a8;border-bottom:3px solid #7c3aed;padding-bottom:8px;margin-top:36px;}
     h2{font-size:15px;font-weight:700;color:#3b0764;margin-top:22px;}
     p{font-size:13px;line-height:1.7;margin:8px 0;}
     table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0;}
     th{background:#6b21a8;color:#fff;padding:8px 10px;text-align:left;}
-    td{padding:7px 10px;border-bottom:1px solid var(--print-border);}
+    td{padding:7px 10px;border-bottom:1px solid #e5e7eb;}
     tr:nth-child(even) td{background:#f5f3ff;}
-    .alert-critica{color:var(--print-red);font-weight:700;}
+    .alert-critica{color:#dc2626;font-weight:700;}
     .alert-alta{color:#ea580c;font-weight:700;}
     .badge-risk{background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
     ul{margin:6px 0;padding-left:20px;}
     li{font-size:13px;margin-bottom:4px;}
     .cluster-box{background:#fdf4ff;border:2px solid #7c3aed;border-radius:8px;padding:16px 20px;margin:16px 0;}
-    .footer{margin-top:40px;padding:16px 50px;background:#f5f3ff;font-size:10px;color:var(--print-grey);text-align:center;border-top:2px solid #6b21a8;}
+    .footer{margin-top:40px;padding:16px 50px;background:#f5f3ff;font-size:10px;color:#6b7280;text-align:center;border-top:2px solid #6b21a8;}
   </style></head><body>
   <div class="cover">
     <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
@@ -29607,7 +29607,7 @@ function exportReporteFueraGiroPDF() {
   <div class="content">
     <h1>I. PATRÓN IDENTIFICADO</h1>
     <p>La búsqueda sistemática en la base de datos Sentinel detectó el patrón <strong>"PROVEEDOR_FUERA_DE_GIRO"</strong>: empresas cuyo giro comercial (inferido por su nombre) es radicalmente distinto al objeto del contrato adjudicado. El caso arquetipo es DICOMARCA S.A. (constructora que recibió L 56.5M de SENACIT para laptops, confirmado por MP y STLCC).</p>
-    <p>La búsqueda identificó <strong>5 casos con señales CRÍTICA</strong> por un total aproximado de <strong style="color:var(--print-red)">L 42 millones</strong>.</p>
+    <p>La búsqueda identificó <strong>5 casos con señales CRÍTICA</strong> por un total aproximado de <strong style="color:#dc2626">L 42 millones</strong>.</p>
     <h1>II. RESUMEN DE CASOS</h1>
     <table>
       <tr><th>#</th><th>Empresa</th><th>Giro Aparente</th><th>Entidad</th><th>Monto (L)</th><th>Señal</th></tr>
@@ -29619,7 +29619,7 @@ function exportReporteFueraGiroPDF() {
     </table>
     <h1>III. CLUSTER SEDESOL NOV-DIC 2022</h1>
     <div class="cluster-box">
-      <p><strong>Hallazgo crítico:</strong> En solo 6 semanas (1 nov – 2 dic 2022), la Secretaría de Desarrollo Social (SEDESOL) adjudicó contratos directos a 3 empresas de giros incompatibles por un total de <strong style="color:var(--print-red)">L 28.9 millones</strong>:</p>
+      <p><strong>Hallazgo crítico:</strong> En solo 6 semanas (1 nov – 2 dic 2022), la Secretaría de Desarrollo Social (SEDESOL) adjudicó contratos directos a 3 empresas de giros incompatibles por un total de <strong style="color:#dc2626">L 28.9 millones</strong>:</p>
       <table>
         <tr><th>Empresa</th><th>Giro</th><th>Monto</th><th>Fecha</th></tr>
         <tr><td>LIGTH, TRENDS & MARKETING (x2)</td><td>Moda/marketing</td><td class="alert-critica">L 18,370,200</td><td>2 dic 2022</td></tr>
@@ -29629,7 +29629,7 @@ function exportReporteFueraGiroPDF() {
       <p><strong>Todos los contratos:</strong> contratación directa + PERIODO_MINIMO_ONCAE. <strong>Acción urgente:</strong> Identificar funcionario firmante en los 4 contratos y cruzar con declaraciones patrimoniales TSC.</p>
     </div>
     <h1>IV. CASO CRÍTICO — VENTA DE REPUESTOS / INFOP</h1>
-    <p>Una tienda de repuestos de vehículos y materiales de ferretería recibió <strong style="color:var(--print-red)">L 13,615,931 de INFOP</strong> (Instituto de Formación Profesional) en julio 2025 vía Compra Menor CRÍTICA — usando este mecanismo para evadir el proceso de licitación pública. La misma empresa aparece en UNAH (12+ contratos), Facultad de Ciencias Médicas, IHT y HONDUCOR.</p>
+    <p>Una tienda de repuestos de vehículos y materiales de ferretería recibió <strong style="color:#dc2626">L 13,615,931 de INFOP</strong> (Instituto de Formación Profesional) en julio 2025 vía Compra Menor CRÍTICA — usando este mecanismo para evadir el proceso de licitación pública. La misma empresa aparece en UNAH (12+ contratos), Facultad de Ciencias Médicas, IHT y HONDUCOR.</p>
     <ul>
       <li>INFOP es el mismo instituto donde operaron RILMAC, GREENTEC y DICOMARCA — <strong>patrón de institución capturada.</strong></li>
       <li>Una ferretería no tiene capacidad técnica para proveer insumos de formación profesional.</li>
@@ -29666,16 +29666,16 @@ function exportReporteSENACITPDF() {
   const _totalDyn = _actors.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
   const _dynRows = _actors.slice(0,50).map((r,i) =>
     '<tr style="background:'+(i%2===0?'#fff':'#f9fafb')+'">'+
-    '<td style="padding:5px 8px;font-size:10px;color:var(--print-grey);">'+(i+1)+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+(i+1)+'</td>'+
     '<td style="padding:5px 8px;font-size:10px;">'+_esc((r.entity_name||'').substring(0,42))+'</td>'+
     '<td style="padding:5px 8px;font-size:10px;font-weight:600;">'+_esc((r.proveedor_nombre||'').substring(0,38))+'</td>'+
     '<td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;">'+_fmtL(Number(r.monto_contrato||0))+'</td>'+
-    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'var(--print-red)':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'var(--print-grey)')+';">'+_esc(r.severity||'—')+'</td>'+
-    '<td style="padding:5px 8px;font-size:9px;color:var(--print-grey-light);">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'#dc2626':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+_esc(r.severity||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
     '</tr>'
-  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:var(--print-grey-light);font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
+  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
   const _dynTable = '<h1 style="font-size:15px;font-weight:800;border-bottom:2px solid #1f2937;padding-bottom:6px;margin-top:28px;color:#1f2937;">CONTRATOS EN BASE DE DATOS SENTINEL</h1>'+
-    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>DICOMARCA · SENACIT</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:var(--print-grey-light);\">(base de datos no cargada)</em>':'')+'</p>'+
+    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>DICOMARCA · SENACIT</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:#9ca3af;\">(base de datos no cargada)</em>':'')+'</p>'+
     '<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;">'+
     '<thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;">N</th><th style="padding:6px 8px;color:#fff;">Entidad</th><th style="padding:6px 8px;color:#fff;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;">Fecha</th></tr></thead>'+
     '<tbody>'+_dynRows+'</tbody></table>';
@@ -29687,19 +29687,19 @@ function exportReporteSENACITPDF() {
     .cover-title{font-size:28px;font-weight:800;margin-bottom:10px;}
     .cover-sub{font-size:16px;opacity:.85;margin-bottom:6px;}
     .cover-folio{font-size:12px;opacity:.7;margin-top:20px;font-family:monospace;}
-    .cover-reservado{display:inline-block;background:var(--print-amber);color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
+    .cover-reservado{display:inline-block;background:#fbbf24;color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
     .content{padding:40px 50px;}
     h1{font-size:18px;font-weight:800;color:#4c1d95;border-bottom:3px solid #4c1d95;padding-bottom:8px;margin-top:36px;}
     h2{font-size:15px;font-weight:700;color:#312e81;margin-top:22px;}
     p{font-size:13px;line-height:1.7;margin:8px 0;}
     table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0;}
     th{background:#312e81;color:#fff;padding:8px 10px;text-align:left;}
-    td{padding:7px 10px;border-bottom:1px solid var(--print-border);}
+    td{padding:7px 10px;border-bottom:1px solid #e5e7eb;}
     tr:nth-child(even) td{background:#f5f3ff;}
-    .alert-critica{color:var(--print-red);font-weight:700;}
+    .alert-critica{color:#dc2626;font-weight:700;}
     .alert-alta{color:#ea580c;font-weight:700;}
     .badge-risk{background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
-    .footer{margin-top:40px;padding:16px 50px;background:#f5f3ff;font-size:10px;color:var(--print-grey);text-align:center;border-top:2px solid #4c1d95;}
+    .footer{margin-top:40px;padding:16px 50px;background:#f5f3ff;font-size:10px;color:#6b7280;text-align:center;border-top:2px solid #4c1d95;}
   </style></head><body>
   <div class="cover">
     <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
@@ -29711,7 +29711,7 @@ function exportReporteSENACITPDF() {
   </div>
   <div class="content">
     <h1>I. RESUMEN EJECUTIVO</h1>
-    <p>La Secretaría de Energía, Recursos Naturales, Ambiente y Minas (SENACIT) adjudicó en 2022 un contrato de adquisición de laptops por <strong style="color:var(--print-red)">L 56.5 millones</strong> a DICOMARCA S.A. — una constructora sin giro tecnológico registrado. El precio unitario pagado por unidad supera en un <strong style="color:var(--print-red)">47–65%</strong> el valor de mercado internacional de los modelos equivalentes.</p>
+    <p>La Secretaría de Energía, Recursos Naturales, Ambiente y Minas (SENACIT) adjudicó en 2022 un contrato de adquisición de laptops por <strong style="color:#dc2626">L 56.5 millones</strong> a DICOMARCA S.A. — una constructora sin giro tecnológico registrado. El precio unitario pagado por unidad supera en un <strong style="color:#dc2626">47–65%</strong> el valor de mercado internacional de los modelos equivalentes.</p>
     <p>La investigación fue publicada originalmente por ICN Digital. El caso fue confirmado por la <strong>Sala de lo Tributario, Laboral y Contencioso Administrativo (STLCC)</strong> del Poder Judicial y el <strong>Ministerio Público (MP)</strong> ha iniciado investigación formal.</p>
     <h1>II. DATOS DEL CONTRATO</h1>
     <table>
@@ -29776,16 +29776,16 @@ function exportReportePJPDF() {
   const _totalDyn = _actors.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
   const _dynRows = _actors.slice(0,50).map((r,i) =>
     '<tr style="background:'+(i%2===0?'#fff':'#f9fafb')+'">'+
-    '<td style="padding:5px 8px;font-size:10px;color:var(--print-grey);">'+(i+1)+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+(i+1)+'</td>'+
     '<td style="padding:5px 8px;font-size:10px;">'+_esc((r.entity_name||'').substring(0,42))+'</td>'+
     '<td style="padding:5px 8px;font-size:10px;font-weight:600;">'+_esc((r.proveedor_nombre||'').substring(0,38))+'</td>'+
     '<td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;">'+_fmtL(Number(r.monto_contrato||0))+'</td>'+
-    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'var(--print-red)':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'var(--print-grey)')+';">'+_esc(r.severity||'—')+'</td>'+
-    '<td style="padding:5px 8px;font-size:9px;color:var(--print-grey-light);">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'#dc2626':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+_esc(r.severity||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
     '</tr>'
-  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:var(--print-grey-light);font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
+  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
   const _dynTable = '<h1 style="font-size:15px;font-weight:800;border-bottom:2px solid #1f2937;padding-bottom:6px;margin-top:28px;color:#1f2937;">CONTRATOS EN BASE DE DATOS SENTINEL</h1>'+
-    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>Poder Judicial · CSJ · SERIN</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:var(--print-grey-light);\">(base de datos no cargada)</em>':'')+'</p>'+
+    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>Poder Judicial · CSJ · SERIN</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:#9ca3af;\">(base de datos no cargada)</em>':'')+'</p>'+
     '<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;">'+
     '<thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;">N</th><th style="padding:6px 8px;color:#fff;">Entidad</th><th style="padding:6px 8px;color:#fff;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;">Fecha</th></tr></thead>'+
     '<tbody>'+_dynRows+'</tbody></table>';
@@ -29793,23 +29793,23 @@ function exportReportePJPDF() {
   <title>Sentinel-AI — Investigación S38 Poder Judicial ${ds}</title>
   <style>
     body{font-family:'Segoe UI',Calibri,sans-serif;margin:0;padding:0;color:#1a1a2e;background:#fff;}
-    .cover{background:linear-gradient(135deg,#7f1d1d 0%,#991b1b 60%,var(--print-red) 100%);color:#fff;padding:60px 50px;min-height:260px;}
+    .cover{background:linear-gradient(135deg,#7f1d1d 0%,#991b1b 60%,#dc2626 100%);color:#fff;padding:60px 50px;min-height:260px;}
     .cover-title{font-size:28px;font-weight:800;margin-bottom:10px;}
     .cover-sub{font-size:16px;opacity:.85;margin-bottom:6px;}
     .cover-folio{font-size:12px;opacity:.7;margin-top:20px;font-family:monospace;}
-    .cover-reservado{display:inline-block;background:var(--print-amber);color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
+    .cover-reservado{display:inline-block;background:#fbbf24;color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
     .content{padding:40px 50px;}
-    h1{font-size:18px;font-weight:800;color:#991b1b;border-bottom:3px solid var(--print-red);padding-bottom:8px;margin-top:36px;}
+    h1{font-size:18px;font-weight:800;color:#991b1b;border-bottom:3px solid #dc2626;padding-bottom:8px;margin-top:36px;}
     h2{font-size:15px;font-weight:700;color:#7f1d1d;margin-top:22px;}
     p{font-size:13px;line-height:1.7;margin:8px 0;}
     table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0;}
     th{background:#991b1b;color:#fff;padding:8px 10px;text-align:left;}
-    td{padding:7px 10px;border-bottom:1px solid var(--print-border);}
+    td{padding:7px 10px;border-bottom:1px solid #e5e7eb;}
     tr:nth-child(even) td{background:#fef2f2;}
-    .alert-critica{color:var(--print-red);font-weight:700;}
+    .alert-critica{color:#dc2626;font-weight:700;}
     .alert-alta{color:#ea580c;font-weight:700;}
     .badge-risk{background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
-    .footer{margin-top:40px;padding:16px 50px;background:#fef2f2;font-size:10px;color:var(--print-grey);text-align:center;border-top:2px solid var(--print-red);}
+    .footer{margin-top:40px;padding:16px 50px;background:#fef2f2;font-size:10px;color:#6b7280;text-align:center;border-top:2px solid #dc2626;}
   </style></head><body>
   <div class="cover">
     <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
@@ -29821,7 +29821,7 @@ function exportReportePJPDF() {
   </div>
   <div class="content">
     <h1>I. HALLAZGO PRINCIPAL — OPACIDAD TOTAL</h1>
-    <p>La base de datos Sentinel (127,832 contratos SEFIN/ONCAE 2019–2025) registra <strong>22 contratos del Poder Judicial</strong> por L 30.2M. Sin embargo, ICN Digital documentó que el Poder Judicial ejecutó contratos de arrendamiento vehicular por <strong style="color:var(--print-red)">L 182 millones</strong> en el mismo período — una brecha de <strong style="color:var(--print-red)">L 151.8M completamente ausente de SEFIN y ONCAE</strong>.</p>
+    <p>La base de datos Sentinel (127,832 contratos SEFIN/ONCAE 2019–2025) registra <strong>22 contratos del Poder Judicial</strong> por L 30.2M. Sin embargo, ICN Digital documentó que el Poder Judicial ejecutó contratos de arrendamiento vehicular por <strong style="color:#dc2626">L 182 millones</strong> en el mismo período — una brecha de <strong style="color:#dc2626">L 151.8M completamente ausente de SEFIN y ONCAE</strong>.</p>
     <p>Esta brecha indica uso sistemático de <strong>contratación directa sin publicación</strong> o pagos fuera del sistema oficial — mecanismo que viola la Ley de Contratación del Estado y permite opacidad total sobre el proveedor, precio y justificación.</p>
     <h1>II. CONTRATOS PJ EN BASE DE DATOS SENTINEL</h1>
     <table>
@@ -29831,7 +29831,7 @@ function exportReportePJPDF() {
       <tr><td>Brecha de opacidad</td><td>—</td><td class="alert-critica">L 151.8M (83%)</td><td class="alert-critica">OPACIDAD CRÍTICA</td></tr>
     </table>
     <h1>III. CASO SERIN — SALONES DE LA PRESIDENTA</h1>
-    <p>Detectado en ONCAE: la Secretaría de la Presidencia del Poder Judicial (SERIN) adjudicó en proceso LICITACION_PRIVADA (señal de riesgo) contratos por <strong style="color:var(--print-red)">L 12.9 millones</strong> para remodelación de salones, identificados en reportes como "salones de la presidenta" — infraestructura de uso personal de la magistratura.</p>
+    <p>Detectado en ONCAE: la Secretaría de la Presidencia del Poder Judicial (SERIN) adjudicó en proceso LICITACION_PRIVADA (señal de riesgo) contratos por <strong style="color:#dc2626">L 12.9 millones</strong> para remodelación de salones, identificados en reportes como "salones de la presidenta" — infraestructura de uso personal de la magistratura.</p>
     <table>
       <tr><th>Campo</th><th>Detalle</th></tr>
       <tr><td>Entidad</td><td>Secretaría Ejecutiva del Poder Judicial (SERIN)</td></tr>
@@ -29884,16 +29884,16 @@ function exportReporteSESEGUPDF() {
   const _totalDyn = _actors.reduce((s,a)=>s+Number(a.monto_contrato||0),0);
   const _dynRows = _actors.slice(0,50).map((r,i) =>
     '<tr style="background:'+(i%2===0?'#fff':'#f9fafb')+'">'+
-    '<td style="padding:5px 8px;font-size:10px;color:var(--print-grey);">'+(i+1)+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;color:#6b7280;">'+(i+1)+'</td>'+
     '<td style="padding:5px 8px;font-size:10px;">'+_esc((r.entity_name||'').substring(0,42))+'</td>'+
     '<td style="padding:5px 8px;font-size:10px;font-weight:600;">'+_esc((r.proveedor_nombre||'').substring(0,38))+'</td>'+
     '<td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;">'+_fmtL(Number(r.monto_contrato||0))+'</td>'+
-    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'var(--print-red)':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'var(--print-grey)')+';">'+_esc(r.severity||'—')+'</td>'+
-    '<td style="padding:5px 8px;font-size:9px;color:var(--print-grey-light);">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;text-align:center;color:'+((r.severity||'').toUpperCase()==='CR\u00cdTICA'?'#dc2626':(r.severity||'').toUpperCase()==='ALTA'?'#ea580c':'#6b7280')+';">'+_esc(r.severity||'—')+'</td>'+
+    '<td style="padding:5px 8px;font-size:9px;color:#9ca3af;">'+((r.fecha_contrato||'').substring(0,10)||'—')+'</td>'+
     '</tr>'
-  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:var(--print-grey-light);font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
+  ).join('') || '<tr><td colspan="6" style="padding:12px;text-align:center;color:#9ca3af;font-size:11px;">Sin contratos en base de datos para estos actores.</td></tr>';
   const _dynTable = '<h1 style="font-size:15px;font-weight:800;border-bottom:2px solid #1f2937;padding-bottom:6px;margin-top:28px;color:#1f2937;">CONTRATOS EN BASE DE DATOS SENTINEL</h1>'+
-    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>ECONO RENT · LAARSA · ELITE EQUIPMENT · RENTAS AMERICAS · SESEGU</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:var(--print-grey-light);\">(base de datos no cargada)</em>':'')+'</p>'+
+    '<p style="font-size:11px;margin:6px 0;color:#374151;">Actores: <strong>ECONO RENT · LAARSA · ELITE EQUIPMENT · RENTAS AMERICAS · SESEGU</strong> &nbsp;·&nbsp; <strong>'+_actors.length+' contratos</strong> &nbsp;·&nbsp; Monto: <strong>'+_fmtL(_totalDyn)+'</strong>'+(!_all.length?' <em style=\"color:#9ca3af;\">(base de datos no cargada)</em>':'')+'</p>'+
     '<table style="width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;">'+
     '<thead><tr style="background:#1f2937;"><th style="padding:6px 8px;color:#fff;">N</th><th style="padding:6px 8px;color:#fff;">Entidad</th><th style="padding:6px 8px;color:#fff;">Proveedor</th><th style="padding:6px 8px;color:#fff;text-align:right;">Monto</th><th style="padding:6px 8px;color:#fff;text-align:center;">Severidad</th><th style="padding:6px 8px;color:#fff;">Fecha</th></tr></thead>'+
     '<tbody>'+_dynRows+'</tbody></table>';
@@ -29905,19 +29905,19 @@ function exportReporteSESEGUPDF() {
     .cover-title{font-size:28px;font-weight:800;margin-bottom:10px;}
     .cover-sub{font-size:16px;opacity:.85;margin-bottom:6px;}
     .cover-folio{font-size:12px;opacity:.7;margin-top:20px;font-family:monospace;}
-    .cover-reservado{display:inline-block;background:var(--print-amber);color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
+    .cover-reservado{display:inline-block;background:#fbbf24;color:#78350f;font-weight:700;font-size:11px;padding:4px 12px;border-radius:4px;margin-top:12px;}
     .content{padding:40px 50px;}
     h1{font-size:18px;font-weight:800;color:#0369a1;border-bottom:3px solid #0369a1;padding-bottom:8px;margin-top:36px;}
     h2{font-size:15px;font-weight:700;color:#0c4a6e;margin-top:22px;}
     p{font-size:13px;line-height:1.7;margin:8px 0;}
     table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0;}
     th{background:#0369a1;color:#fff;padding:8px 10px;text-align:left;}
-    td{padding:7px 10px;border-bottom:1px solid var(--print-border);}
+    td{padding:7px 10px;border-bottom:1px solid #e5e7eb;}
     tr:nth-child(even) td{background:#f0f9ff;}
-    .alert-critica{color:var(--print-red);font-weight:700;}
+    .alert-critica{color:#dc2626;font-weight:700;}
     .alert-alta{color:#ea580c;font-weight:700;}
     .badge-risk{background:#fef3c7;color:#92400e;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
-    .footer{margin-top:40px;padding:16px 50px;background:#f0f9ff;font-size:10px;color:var(--print-grey);text-align:center;border-top:2px solid #0369a1;}
+    .footer{margin-top:40px;padding:16px 50px;background:#f0f9ff;font-size:10px;color:#6b7280;text-align:center;border-top:2px solid #0369a1;}
   </style></head><body>
   <div class="cover">
     <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
@@ -29929,8 +29929,8 @@ function exportReporteSESEGUPDF() {
   </div>
   <div class="content">
     <h1>I. HALLAZGO PRINCIPAL</h1>
-    <p>La Secretaría de Seguridad (SESEGU) adjudicó en febrero 2025 el proceso <strong>SEDS-LPN-GA-2025-004 (Lote 4)</strong> a <strong>ECONO RENT A CAR S. DE R.L.</strong> por <strong style="color:var(--print-red)">L 442,463,734.65</strong> para el arrendamiento de <strong>305 vehículos, incluyendo 71 vehículos blindados</strong>.</p>
-    <p>La base de datos Sentinel identifica al menos <strong>5 empresas privadas</strong> que concentran contratos de arrendamiento vehicular (incluyendo blindados) para el sector seguridad/justicia por un estimado de <strong style="color:var(--print-red)">L 1,300 millones anuales</strong>, sin registro público de propietarios reales, precios de referencia ni auditoría de resultados operativos.</p>
+    <p>La Secretaría de Seguridad (SESEGU) adjudicó en febrero 2025 el proceso <strong>SEDS-LPN-GA-2025-004 (Lote 4)</strong> a <strong>ECONO RENT A CAR S. DE R.L.</strong> por <strong style="color:#dc2626">L 442,463,734.65</strong> para el arrendamiento de <strong>305 vehículos, incluyendo 71 vehículos blindados</strong>.</p>
+    <p>La base de datos Sentinel identifica al menos <strong>5 empresas privadas</strong> que concentran contratos de arrendamiento vehicular (incluyendo blindados) para el sector seguridad/justicia por un estimado de <strong style="color:#dc2626">L 1,300 millones anuales</strong>, sin registro público de propietarios reales, precios de referencia ni auditoría de resultados operativos.</p>
     <h1>II. CONTRATO PRINCIPAL — ECONO RENT A CAR</h1>
     <table>
       <tr><th>Campo</th><th>Detalle</th></tr>
@@ -29953,7 +29953,7 @@ function exportReporteSESEGUPDF() {
       <tr><td><strong>ARRENDADORA DE VEHÍCULOS S.A.</strong></td><td>Secretaría de Seguridad</td><td>L 310K</td><td>FRACCIONAMIENTO_MICRO</td></tr>
     </table>
     <h1>IV. CASO LAARSA — SEÑALES CRÍTICAS</h1>
-    <p><strong>Contratación directa SEDH (CD-SEDH-01-2025):</strong> LAARSA fue contratada directamente por la Secretaría de Derechos Humanos con señal <strong style="color:var(--print-red)">PERIODO_MINIMO_ONCAE</strong> — indicador de adjudicación dirigida según normativa ONCAE. El monto registrado es L 0, práctica de opacidad que oculta el valor real del contrato.</p>
+    <p><strong>Contratación directa SEDH (CD-SEDH-01-2025):</strong> LAARSA fue contratada directamente por la Secretaría de Derechos Humanos con señal <strong style="color:#dc2626">PERIODO_MINIMO_ONCAE</strong> — indicador de adjudicación dirigida según normativa ONCAE. El monto registrado es L 0, práctica de opacidad que oculta el valor real del contrato.</p>
     <p><strong>Fraccionamiento SESEGU (nov 2023):</strong> LAARSA facturó múltiples pagos por "averías" el mismo día (30 nov 2023) — patrón FRACCIONAMIENTO_MICRO para evadir umbrales de aprobación institucional.</p>
     <p><strong>Expansión multi-institucional:</strong> Sin historial previo documentado, LAARSA opera simultáneamente en Secretaría de Seguridad, Instituto Nacional Penitenciario y Secretaría de Derechos Humanos — patrón de empresa políticamente conectada.</p>
     <h1>V. MECANISMO FINANCIERO — TASA DE SEGURIDAD</h1>

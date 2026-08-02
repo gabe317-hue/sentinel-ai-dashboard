@@ -412,7 +412,7 @@ body::after {
   border-radius: 10px; padding: 14px 16px; text-align: center;
 }
 .fuente-stat-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
-.fuente-stat-val.c { color: #ff3d57; }
+.fuente-stat-val.c { color: var(--red); }
 .fuente-stat-val.a { color: var(--amber); }
 .fuente-stat-val.m { color: var(--electric); }
 .fuente-stat-val.b { color: #4caf50; }
@@ -478,7 +478,7 @@ body::after {
 .user-menu-item.danger:hover { background: var(--red-dim); color: var(--red); }
 .user-avatar {
   width: 34px; height: 34px; border-radius: 50%;
-  background: linear-gradient(135deg, #0ea5e9, #00c8ff);
+  background: linear-gradient(135deg, #0ea5e9, var(--electric));
   display: flex; align-items: center; justify-content: center;
   font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
   color: var(--navy); flex-shrink: 0;
@@ -612,7 +612,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 .btn-report-header {
   padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
   letter-spacing: .05em; cursor: pointer; transition: all .2s; border: 1px solid rgba(0,230,118,0.35);
-  background: rgba(0,230,118,0.08); color: #00e676;
+  background: rgba(0,230,118,0.08); color: var(--green);
 }
 .btn-report-header:hover { background: rgba(0,230,118,0.22); box-shadow: 0 0 14px rgba(0,230,118,0.15); }
 .btn-report-header:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -1330,7 +1330,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   text-transform: uppercase;
 }
 .ps-card-ejecutivo .ps-card-title { color: var(--cyan); }
-.ps-card-analista .ps-card-title { color: #a855f7; }
+.ps-card-analista .ps-card-title { color: var(--purple); }
 .ps-card-desc {
   font-size: 12px; color: rgba(160,180,210,0.6); line-height: 1.5;
 }
@@ -1511,7 +1511,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   font-size: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 900;
   letter-spacing: .1em; padding: 3px 9px; border-radius: 10px; margin-bottom: 6px;
 }
-.t5-nivel-max  { background: rgba(255,61,87,0.12);  color: #ff3d57; border: 1px solid rgba(255,61,87,0.35); }
+.t5-nivel-max  { background: rgba(255,61,87,0.12);  color: var(--red); border: 1px solid rgba(255,61,87,0.35); }
 .t5-nivel-alto { background: rgba(251,146,60,0.12); color: #fb923c; border: 1px solid rgba(251,146,60,0.35); }
 .t5-nivel-elev { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.35); }
 
@@ -1530,7 +1530,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   font-size: 10px; font-family: 'JetBrains Mono', monospace;
   color: rgba(160,180,210,0.6); line-height: 1.6;
 }
-.t5-insight strong { color: #ff3d57; }
+.t5-insight strong { color: var(--red); }
 
 /* ═══ INVESTIGACIÓN POR PROYECTO — S85 ══════════════════════════════════════ */
 #investigacionProyectoPanel {
@@ -2549,7 +2549,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       ⚠ Este sistema contiene información clasificada. El acceso no autorizado constituye delito conforme al la legislación vigente. Toda sesión es registrada.
     </div>
     <div class="login-institutions">
-      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.06 — HND</span>
+      <span class="login-inst-tag" data-app-version="© Sentinel-AI {v} — HND">© Sentinel-AI v2.07 — HND</span>
     </div>
     <div class="login-footer">Acceso restringido — Solo personal autorizado · Derechos reservados</div>
   </div>
@@ -2589,7 +2589,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
   </div>
-  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.06 — HND · SEFIN Fiscal 2023–2025</div>
+  <div class="ps-footer" data-app-version="{v} — HND · SEFIN Fiscal 2023–2025">v2.07 — HND · SEFIN Fiscal 2023–2025</div>
 </div>
 
 <!-- ═══════════════════ INVESTIGACIÓN POR PROYECTO — S85 ═══════════════════ -->
@@ -4087,7 +4087,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="status-label" id="statusLabel">CONECTANDO...</span>
     </div>
     <div class="logo-ip">Sistema Confidencial · Uso Interno</div>
-    <div class="logo-version" data-app-version="{v} — HND">v2.06 — HND</div>
+    <div class="logo-version" data-app-version="{v} — HND">v2.07 — HND</div>
   </div>
 
   <div class="nav">
@@ -4234,7 +4234,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);">Portal Principal</div>
       </div>
       <div class="po-meta">
-        <span class="po-badge electric" data-app-version="{v} — HND">v2.06 — HND</span>
+        <span class="po-badge electric" data-app-version="{v} — HND">v2.07 — HND</span>
         <span class="po-badge dim" id="po-db-badge">Cargando datos…</span>
         <span id="po-delta-badge" style="display:none;background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.35);border-radius:12px;padding:3px 10px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;"></span>
         <!-- S285 · R-08 — píldora de frescura del DATO (H-12). Distinta del delta badge de arriba:
@@ -7726,7 +7726,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.06';
+const APP_VERSION = 'v2.07';
 const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {

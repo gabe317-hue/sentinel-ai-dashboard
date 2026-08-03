@@ -4512,7 +4512,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             <option value="alerta-sobrepresupuesto">⚠️ Ritmo Acelerado SEFIN</option>
             <option value="tsc-sync">⚖️ TSC Sync</option>
             <option value="alerta-vencimiento-expedientes">📋 Vencimiento Expedientes</option>
-            <option value="health-check-semanal">🩺 Health Check Semanal</option>
           </select>
           <button onclick="event.stopPropagation();const s=document.getElementById('notif-select');dispararNotificacion(s.value,s.options[s.selectedIndex].text.replace(/^[^\w\s]+\s*/,'').trim())" style="width:100%;padding:10px;background:var(--electric-dim);border:1px solid var(--electric);border-radius:8px;color:var(--electric);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,200,255,0.15)'" onmouseout="this.style.background='var(--electric-dim)'">Disparar ›</button>
           <div id="notif-status" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);display:none;"></div>
@@ -30858,7 +30857,6 @@ async function idLoadKPI() {
 
 </body>
 </html>
-
 
 
 

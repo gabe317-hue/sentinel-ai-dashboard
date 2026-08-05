@@ -30671,9 +30671,13 @@ function idRender() {
     const color = sevColor[r.severidad] || '#888';
     const rtnEsc = (r.rtn || '').replace(/\\/g,'\\\\').replace(/'/g, "\\'");
     const nombresStr = (r.nombres_lista || []).join(' | ');
-    const acroTag = r.posible_acronimo ? `<span title="Posible acrónimo — puede ser falso positivo" style="margin-left:5px;font-size:9px;padding:1px 5px;border-radius:8px;background:rgba(160,160,255,0.15);color:#a0a0ff;border:1px solid rgba(160,160,255,0.3);">ACRÓNIMO?</span>` : '';
+    // ago 2026: el chip "ACRÓNIMO?" nunca podía renderizar -- posible_acronimo=true
+    // solo ocurre cuando identidades=1 (severidad='SIN SEÑAL'), y esta consulta pide
+    // p_severidad=NULL, que EXCLUYE 'SIN SEÑAL' por diseño (get_identidad_duplicada).
+    // Reemplazado por el conteo real de identidades distintas (siempre poblado).
+    const identTag = `<span title="Identidades distintas detectadas bajo este RTN" style="margin-left:5px;font-size:9px;padding:1px 5px;border-radius:8px;background:rgba(160,160,255,0.15);color:#a0a0ff;border:1px solid rgba(160,160,255,0.3);">${r.identidades ?? '—'} identidad${r.identidades === 1 ? '' : 'es'}</span>`;
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;" onclick="idShowDrilldown('${rtnEsc}')" title="${nombresStr}">
-      <td style="padding:8px 10px;color:var(--electric);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;">${r.rtn}${acroTag} <span style="font-size:9px;color:var(--text-dim);font-weight:400;">▸ ver nombres</span></td>
+      <td style="padding:8px 10px;color:var(--electric);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;">${r.rtn}${identTag} <span style="font-size:9px;color:var(--text-dim);font-weight:400;">▸ ver nombres</span></td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--red);font-weight:700;">${r.total_nombres}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${r.instituciones}</td>
       <td style="padding:8px 10px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--text-dim);">${r.total_registros}</td>
@@ -30760,13 +30764,15 @@ function idGenerarReportePDF() {
   const hoy = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
   const folio = 'SEN-NS11-' + rtn.slice(-6) + '-' + new Date().toISOString().slice(0,10).replace(/-/g,'');
 
-  // Severidad real del caso (Regla #28: nunca asumir CRÍTICA por defecto) + flag de acrónimo (Regla #30)
+  // Severidad real del caso (Regla #28: nunca asumir CRÍTICA por defecto)
   const caso = gIdData.find(r => r.rtn === rtn) || {};
   const severidad = caso.severidad || 'SIN CLASIFICAR';
-  const esAcronimo = !!caso.posible_acronimo;
   const sevColorMap = { 'CRÍTICA':'#c0392b', 'ALTA':'#e67e22', 'MEDIA':'#d4a017' };
   const sevColor = sevColorMap[severidad] || '#888';
-  const acronimoHtml = esAcronimo ? `<div class="alerta" style="background:#e8eaf6;border-left-color:#7986cb;">🔎 <b>Nota de verificación:</b> este RTN está marcado como posible variante de nombre o acrónimo legítimo de una misma empresa — revisar antes de tratarlo como suplantación real (Regla de validación NS-11).</div>` : '';
+  // ago 2026: la nota de "posible acrónimo" nunca podía aparecer aquí -- solo se marca
+  // posible_acronimo=true cuando identidades=1 (severidad='SIN SEÑAL'), y este panel
+  // excluye 'SIN SEÑAL' por diseño (Regla #30, get_identidad_duplicada). Reemplazada
+  // por el conteo real de identidades en el meta-grid de abajo.
 
   const html = `<!DOCTYPE html>
 <html lang="es">
@@ -30802,9 +30808,9 @@ function idGenerarReportePDF() {
   <div><b>RTN investigado:</b> ${rtn}</div>
   <div><b>Señal:</b> <span class="badge">NS-11 ${severidad}</span></div>
   <div><b>Nombres distintos:</b> ${nombres.length}</div>
+  <div><b>Identidades distintas:</b> ${caso.identidades ?? '—'}</div>
   <div><b>Fuente:</b> Portal IAIP — iaip_providers</div>
 </div>
-${acronimoHtml}
 <div class="alerta">
   ⚠️ <b>Hallazgo:</b> El RTN <b>${rtn}</b> aparece registrado bajo <b>${nombres.length} nombres de empresa distintos</b> en documentos de adquisiciones publicados por instituciones del Estado hondureño. Esta discrepancia es incompatible con un uso tributario esperado y constituye un indicador de posible suplantación de identidad o uso irregular del RTN — no una determinación jurídica.
 </div>

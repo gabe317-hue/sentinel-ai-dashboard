@@ -30695,9 +30695,15 @@ function idRender() {
 
 async function idShowDrilldown(rtn) {
   const nombres = gIdMap[rtn] || [];
-  document.getElementById('id-drilldown').style.display = 'block';
+  const drillEl = document.getElementById('id-drilldown');
+  drillEl.style.display = 'block';
   document.getElementById('id-drill-title').textContent = `🪪 RTN ${rtn} — ${nombres.length} nombres distintos`;
   document.getElementById('id-drill-nombres').innerHTML = '<div style="color:var(--text-dim);font-size:11px;padding:8px;">Cargando contexto…</div>';
+  // ago 2026: el drilldown SÍ abría, pero queda debajo de la tabla completa (hasta
+  // 3000 filas) -- si se hace clic cerca del inicio, aparece a miles de px de distancia
+  // sin scroll automático, y parece que el clic "no hace nada". Se agrega scroll al
+  // elemento para que el resultado sea visible de inmediato.
+  drillEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   // Query iaip_providers for this RTN — get name + institution + year
   let rows = [];

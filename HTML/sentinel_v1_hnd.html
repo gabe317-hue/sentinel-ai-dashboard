@@ -7862,15 +7862,11 @@ document.readyState === 'loading'
 // ════════════════════════════════════════════════════════════
 const SUPABASE_URL      = 'https://yxvfpeigwthtokqsarvs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmZwZWlnd3RodG9rcXNhcnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MzM5MjksImV4cCI6MjA4OTAwOTkyOX0.L0PseYDJV41A1OWzlO0zrth_EJzJCcp5qz8bA8dFl9k';
-// S221: secreto compartido con la función server-side otorgar-acceso-demo.
-// Mitigación de contención (ver CLAUDE_state.md P — no reemplaza migración a Supabase Auth real).
-const DEMO_ACCESS_SECRET = 'RqGHwy1Pc-wZd_XJyhLAO_6Xoxup2iAN';
-// S228: secreto compartido con la función server-side denuncia-admin (delete/update_estado
-// sobre la tabla denuncias — RLS exige authenticated, la anon key sola no puede escribir).
-const DENUNCIA_ADMIN_SECRET = 'xXHzGdYywAePJymuKkTqVnBAqDmPuJyd';
-// S231: secreto compartido con la función server-side casos-admin (insert/update/delete sobre
-// expedientes, expedientes_master, investigaciones + insert de audit_log — mismo patrón de
-// contención P4, policies anon de escritura eliminadas en estas 4 tablas).
+// P9 (ago 2026): DEMO_ACCESS_SECRET y DENUNCIA_ADMIN_SECRET retirados — otorgar-acceso-demo
+// y denuncia-admin ya no aceptan secretos compartidos, solo JWT real (_authToken()) o
+// service_role. Ver _demoAccessCall()/_denunciaAdminCall().
+// CASOS_ADMIN_SECRET se conserva: sigue en uso por ingest-oncae e ingest-sefin, que
+// todavía NO están migrados a JWT (P9, Nivel 2 del roadmap, pendiente).
 const CASOS_ADMIN_SECRET = 'Kj4nWpQz9RstV2xLbMdF7yEcTuAgHo1i';
 
 // ════════════════════════════════════════════════════════════
@@ -21350,6 +21346,8 @@ async function doLogin() {
 }
 
 // ── Disparar notificación manual (S91) ──────────────────────────────────────
+// P9 (ago 2026): usa el token real de la sesión (_authToken()) en vez del
+// secreto fijo CASOS_ADMIN_SECRET, que las funciones migradas ya no aceptan.
 async function dispararNotificacion(fnName, label) {
   const statusEl = document.getElementById('notif-status');
   const btns = document.querySelectorAll('.notif-trigger-btn');
@@ -21357,11 +21355,12 @@ async function dispararNotificacion(fnName, label) {
   if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = `⏳ Enviando ${label}…`; }
 
   try {
+    const token = await _authToken();
     const url = `${SUPABASE_URL}/functions/v1/${fnName}`;
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ secret: CASOS_ADMIN_SECRET })
+      headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
     });
     const ok = res.ok || res.status === 200 || res.status === 202;
     if (statusEl) {
@@ -22678,13 +22677,7 @@ async function admCrearUsuario() {
   }
   statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
   try {
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/otorgar-acceso-demo`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, password: pw, name, expira, role, org, secret: DEMO_ACCESS_SECRET })
-    });
-    const result = await resp.json();
-    if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }
+    const result = await _demoAccessCall({ email, password: pw, name, expira, role, org });
     statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ Usuario ${email} creado correctamente.`;
     document.getElementById('adm-email').value = '';
     document.getElementById('adm-pw').value = '';
@@ -22890,13 +22883,10 @@ async function caCrearUsuario() {
   }
   statusEl.style.color = 'var(--text-dim)'; statusEl.textContent = 'Guardando…';
   try {
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/otorgar-acceso-demo`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, password: pw, name, expira, role, org: currentUser.org, secret: DEMO_ACCESS_SECRET })
-    });
-    const result = await resp.json();
-    if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }
+    // P9: solo gabe317@gmail.com está autorizado en el servidor (otorgar-acceso-demo);
+    // un client-admin recibirá "No autorizado" aquí — es el comportamiento esperado
+    // hasta que se decida ampliar el guard server-side a roles client-admin.
+    const result = await _demoAccessCall({ email, password: pw, name, expira, role, org: currentUser.org });
     statusEl.style.color = 'var(--green)'; statusEl.textContent = `✅ Usuario ${email} creado correctamente.`;
     document.getElementById('ca-email').value = '';
     document.getElementById('ca-pw').value = '';
@@ -28646,14 +28636,16 @@ function mfToggleDetail(id) {
   row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
 }
 
-// S228 — helper: llama la Edge Function denuncia-admin (service_role + secreto).
-// Necesario porque RLS de `denuncias` exige authenticated para UPDATE/DELETE,
-// y el dashboard solo tiene la anon key (sin login real) — ver denuncia-admin/index.ts.
+// S228 — helper: llama la Edge Function denuncia-admin (service_role o JWT admin).
+// Necesario porque RLS de `denuncias` exige authenticated para UPDATE/DELETE.
+// P9 (ago 2026): usa el token real de la sesión (_authToken()) en vez del
+// secreto fijo DENUNCIA_ADMIN_SECRET, que el servidor ya no acepta.
 async function _denunciaAdminCall(payload) {
+  const token = await _authToken();
   const resp = await fetch(`${SUPABASE_URL}/functions/v1/denuncia-admin`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-    body: JSON.stringify({ ...payload, secret: DENUNCIA_ADMIN_SECRET })
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify(payload)
   });
   const result = await resp.json();
   if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); throw err; }

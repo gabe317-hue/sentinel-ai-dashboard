@@ -954,15 +954,17 @@ async function _demoAccessCall(payload) {
   return result;
 }
 
-// S251 — reintento manual de ingestas desde el Hub. Mismo SHARED_SECRET que usan
-// los crons (verificado contra el guard real de cada Edge Function antes de exponerlo:
-// ingest-oncae, ingest-sefin, ingest-sicc, backfill-sefin y tsc-sync aceptan
-// Bearer service_role O { secret: SHARED_SECRET } en el body — es el mismo valor
-// que CASOS_ADMIN_SECRET arriba, reutilizado tal cual).
+// S251 — reintento manual de ingestas desde el Hub.
+// P9 (ago 2026): ingest-sicc y tsc-sync ya migraron a JWT real y rechazan el
+// secreto viejo — se manda el JWT de la sesión (_authToken()) como Bearer,
+// que esas dos aceptan. ingest-oncae, ingest-sefin y backfill-sefin siguen
+// sin migrar y solo aceptan { secret: CASOS_ADMIN_SECRET } en el body — se
+// conserva también en el body para que sigan funcionando sin tocarlas.
 async function _ingestaCall(fnName, payload) {
+  const token = await _authToken();
   const resp = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON_KEY },
     body: JSON.stringify({ ...payload, secret: CASOS_ADMIN_SECRET })
   });
   const result = await resp.json().catch(() => ({}));

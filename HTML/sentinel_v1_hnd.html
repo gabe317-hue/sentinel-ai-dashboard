@@ -22622,13 +22622,26 @@ async function admLoadUsuarios() {
   }
 }
 
+/// P9 (ago 2026): token real de la sesión Supabase Auth del usuario logueado
+// (existe desde P7/P8, S233) — reemplaza los secretos fijos que antes viajaban
+// en texto plano en este archivo. Si no hay sesión, cae a la anon key (que el
+// servidor ahora rechaza) en vez de romper con una excepción no controlada.
+async function _authToken() {
+  try {
+    const { data } = await db.auth.getSession();
+    if (data?.session?.access_token) return data.session.access_token;
+  } catch (e) {}
+  return SUPABASE_ANON_KEY;
+}
+
 // S221: helper compartido — todas las escrituras a sentinel_demo_access pasan
-// por la función server-side otorgar-acceso-demo (ver DEMO_ACCESS_SECRET arriba).
+// por la función server-side otorgar-acceso-demo.
 async function _demoAccessCall(payload) {
+  const token = await _authToken();
   const resp = await fetch(`${SUPABASE_URL}/functions/v1/otorgar-acceso-demo`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-    body: JSON.stringify({ ...payload, secret: DEMO_ACCESS_SECRET })
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify(payload)
   });
   const result = await resp.json();
   if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }
@@ -22637,10 +22650,11 @@ async function _demoAccessCall(payload) {
 
 // S231 — helper para casos-admin (expedientes/expedientes_master/investigaciones/audit_log)
 async function _casosAdminCall(payload) {
+  const token = await _authToken();
   const resp = await fetch(`${SUPABASE_URL}/functions/v1/casos-admin`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-    body: JSON.stringify({ ...payload, secret: CASOS_ADMIN_SECRET })
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify(payload)
   });
   const result = await resp.json();
   if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }

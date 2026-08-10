@@ -918,29 +918,36 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // S233 (P8): persistSession:false + manejo manual de tokens en sessionStorage —
 // mismo patrón que sentinel_v1_hnd.html, evita el DataCloneError del broadcast interno.
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
-// S231: secreto compartido con la función server-side casos-admin — mismo patrón que
-// sentinel_v1_hnd.html (P4, ver CLAUDE_state.md). Usado para archivar/eliminar expedientes_master.
-const CASOS_ADMIN_SECRET = 'Kj4nWpQz9RstV2xLbMdF7yEcTuAgHo1i';
+// P9 (ago 2026): token real de la sesión Supabase Auth del usuario logueado —
+// reemplaza los secretos fijos que antes viajaban en texto plano en este archivo.
+async function _authToken() {
+  try {
+    const { data } = await db.auth.getSession();
+    if (data?.session?.access_token) return data.session.access_token;
+  } catch (e) {}
+  return SUPABASE_ANON_KEY;
+}
+
+// S231: helper para casos-admin — usado para archivar/eliminar expedientes_master.
 async function _casosAdminCall(payload) {
+  const token = await _authToken();
   const resp = await fetch(`${SUPABASE_URL}/functions/v1/casos-admin`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-    body: JSON.stringify({ ...payload, secret: CASOS_ADMIN_SECRET })
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify(payload)
   });
   const result = await resp.json();
   if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }
   return result;
 }
-// S229 — secreto compartido con la función server-side otorgar-acceso-demo (S221).
-// RLS de sentinel_demo_access exige service_role para INSERT/UPDATE/DELETE — la anon key
-// sola no puede escribir. Mismo patrón ya usado en sentinel_v1_hnd.html.
-const DEMO_ACCESS_SECRET = 'RqGHwy1Pc-wZd_XJyhLAO_6Xoxup2iAN';
-
+// S229 — helper para otorgar-acceso-demo (S221). RLS de sentinel_demo_access
+// exige service_role para INSERT/UPDATE/DELETE — la anon key sola no puede escribir.
 async function _demoAccessCall(payload) {
+  const token = await _authToken();
   const resp = await fetch(`${SUPABASE_URL}/functions/v1/otorgar-acceso-demo`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY },
-    body: JSON.stringify({ ...payload, secret: DEMO_ACCESS_SECRET })
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify(payload)
   });
   const result = await resp.json();
   if (!resp.ok || result.error) { const err = new Error(result.error || 'Error desconocido'); err.code = result.code; throw err; }

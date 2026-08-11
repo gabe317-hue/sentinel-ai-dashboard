@@ -957,12 +957,25 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 .sev-badge.media   { color: var(--amber);  background: var(--amber-dim);  border: 1px solid rgba(255,171,0,0.25); }
 .sev-badge.baja    { color: var(--green);  background: var(--green-dim);  border: 1px solid rgba(0,230,118,0.25); }
 
-/* S326 (ago 2026): chip/panel/PDF de OFAC removidos — el cruce exacto contra
-   los 17,333 nombres/alias de la lista OFAC-SDN dio 4 coincidencias, 3 de
-   nombre genérico (no verificables como la misma entidad) y 1 candidato
-   (SUMILAB) sin RTN para confirmar. Decisión de Gabe: sin señal suficiente
-   para justificar UI dedicada. `international_sanctions` se mantiene cargada
-   en Supabase (17,333 filas) por si Fase 2 la usa — ver memoria de sesión. */
+/* OFAC Sanctions filter button — distinct red styling */
+.filter-btn-sancionado {
+  border-color: rgba(255,61,87,0.5) !important;
+  color: var(--red) !important;
+}
+.filter-btn-sancionado:hover, .filter-btn-sancionado.active {
+  background: var(--red-dim) !important;
+  border-color: var(--red) !important;
+  color: var(--red) !important;
+}
+/* S295 (MS-R04) — el chip OFAC está deshabilitado por falta de datos, no por estado
+   de la UI: anular el hover para que no sugiera que es pulsable. */
+.filter-btn-sancionado[disabled]:hover {
+  background: transparent !important;
+  border-color: rgba(255,61,87,0.5) !important;
+}
+/* Contenedor del chip deshabilitado — existe solo para portar el title (un
+   <button disabled> no dispara eventos de mouse). */
+.chip-wrap { display: inline-flex; }
 /* Lista Engel filter button — purple styling */
 .filter-btn-engel {
   border-color: rgba(168,85,247,0.5) !important;
@@ -1066,6 +1079,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;
   letter-spacing: .03em; font-family: 'JetBrains Mono', monospace;
 }
+.adp-pattern-tag.PROVEEDOR_SANCIONADO    { background:var(--red-dim);     color:var(--red);      border:1px solid var(--red); }
 .adp-pattern-tag.PROVEEDOR_ENGEL        { background:var(--purple-dim,rgba(168,85,247,0.12)); color:var(--purple); border:1px solid var(--purple); }
 .adp-pattern-tag.SOBRECOSTO              { background:var(--amber-dim);   color:var(--amber);    border:1px solid var(--amber); }
 .adp-pattern-tag.MONTO_FRACCIONADO       { background:var(--electric-dim);color:var(--electric); border:1px solid var(--electric); }
@@ -4540,6 +4554,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <button class="po-item" onclick="poGo(showEngelPanel)">
             <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg></span><span class="po-item-label">Lista Engel</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
           </button>
+          <button class="po-item" onclick="poGo(showOfacPanel)">
+            <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></span><span class="po-item-label">Sanciones OFAC</span><span class="po-item-tag tag-c">PDF</span><span class="po-arrow">›</span>
+          </button>
           <div class="po-divider"></div>
           <button class="po-item" onclick="poGo(showReportesPanel)">
             <span class="po-item-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span><span class="po-item-label">Panel de Reportes</span><span class="po-item-tag tag-n" id="badge-reportes-panel">10 PDF</span><span class="po-arrow">›</span>
@@ -4769,14 +4786,16 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-sub" id="exec-altos-monto">L —</div>
         <div class="exec-card-note">▸ Escalada legal recomendada</div>
       </div>
-      <!-- Lista Engel -->
+      <!-- Listas Internacionales combinada -->
       <div class="exec-card exec-card-purple" onclick="showListasPanel()" style="cursor:pointer;">
-        <div class="exec-card-label">Lista Engel</div>
+        <div class="exec-card-label">Listas Internacionales</div>
         <div style="display:flex;gap:14px;align-items:baseline;margin:4px 0 2px;">
           <span style="font-size:10px;color:var(--purple);letter-spacing:.04em;">ENGEL</span>
           <span class="exec-card-value" id="exec-engel" style="font-size:22px;">—</span>
+          <span style="font-size:10px;color:var(--red);letter-spacing:.04em;">OFAC</span>
+          <span class="exec-card-value" id="exec-ofac" style="font-size:22px;color:var(--red);">—</span>
         </div>
-        <div class="exec-card-sub">Ley RENACER · EE.UU.</div>
+        <div class="exec-card-sub">EE.UU. · Engel · OFAC-SDN</div>
         <div class="exec-card-note">▸ Alerta máxima</div>
       </div>
       <!-- ONCAE CRÍTICA -->
@@ -4822,7 +4841,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="exec-card exec-card-purple" onclick="showListasPanel()" style="cursor:pointer;" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor=''">
         <div class="exec-card-label">Proveedores en Lista Negra</div>
         <div class="exec-card-value" id="exec-lista-negra">—</div>
-        <div class="exec-card-sub">Lista Engel · EE.UU.</div>
+        <div class="exec-card-sub">Engel + OFAC-SDN · EE.UU.</div>
         <div class="exec-card-note">▸ Sancionados internacionalmente</div>
       </div>
 
@@ -4980,6 +4999,11 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-source-dot green"></div>
         <div class="exec-source-name">ONCAE / Honducompras</div>
         <div class="exec-source-val" id="src-oncae">Cargando...</div>
+      </div>
+      <div class="exec-source active">
+        <div class="exec-source-dot green"></div>
+        <div class="exec-source-name">OFAC SDN List</div>
+        <div class="exec-source-val" title="Tamaño de la lista publicada por OFAC — referencia externa, no se calcula desde la base de datos de Sentinel">~16,885 entradas (lista externa)</div>
       </div>
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
@@ -5172,6 +5196,16 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn"        data-p="ADJUDICACION_DIRECTA"   onclick="setPatternFilter('ADJUDICACION_DIRECTA')" aria-label="Filtrar por patrón: adjudicación directa">DIRECTA</button>
     <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')" aria-label="Filtrar por patrón: proveedor sin historial">SIN HISTORIAL</button>
     <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')" aria-label="Filtrar por patrón: monto fraccionado">MONTO FRACCIONADO</button>
+    <!-- S295 (MS-R04) — Chip OFAC honestamente deshabilitado. La tabla
+         `international_sanctions` tiene 0 filas: antes este chip filtraba por el patrón
+         PROVEEDOR_SANCIONADO, que no aparece en NINGUNA de las 176,819 alertas
+         (verificado en patterns, patterns_norm y patterns_ctx), así que devolvía
+         siempre vacío sin explicar por qué — el usuario concluía "no hay proveedores
+         sancionados" cuando lo correcto es "no hay datos cargados".
+         El title va en el <span> contenedor porque un <button disabled> no dispara
+         eventos de mouse y el tooltip no se mostraría de forma confiable.
+         NO simular resultados: se habilita cuando se ingeste la lista SDN del Tesoro. -->
+    <span class="chip-wrap" title="Sin datos OFAC cargados — pendiente de ingesta"><button class="filter-btn filter-btn-sancionado" data-p="PROVEEDOR_SANCIONADO" disabled aria-disabled="true" style="opacity:.4;cursor:not-allowed;" aria-label="Filtrar por patrón: sancionado OFAC (sin datos cargados)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg> SANCIONADO OFAC <span class="lf-count" style="opacity:.55;">0</span></button></span>
     <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')" title="Contratos cuyo proveedor, entidad o descripción coincide con un nombre de la Lista Engel (52 entradas). Una coincidencia de nombre no constituye por sí sola evidencia de irregularidad." aria-label="Filtrar por patrón: Lista Engel"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg> LISTA ENGEL <span class="lf-count" style="opacity:.55;">—</span></button>
   </div>
 
@@ -6964,22 +6998,21 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
   <!-- ═══════════════════ ENGEL PANEL ═══════════════════ -->
-  <!-- ═══════════════════ LISTAS INTERNACIONALES (Engel) ═══════════════════ -->
-  <!-- S326 (ago 2026): sección OFAC removida — ver comentario de cabecera cerca
-       de la línea 960 sobre por qué. -->
+  <!-- ═══════════════════ LISTAS INTERNACIONALES (Engel + OFAC) ═══════════════════ -->
   <div class="fuente-panel" id="listasPanel">
     <button class="fuente-back" onclick="hideListasPanel()">← Contratos</button>
 
     <div class="fuente-header">
       <div class="fuente-title" style="display:flex;align-items:center;gap:12px;">
         <span>🇺🇸</span>
-        <span>Lista Engel — EE.UU.</span>
+        <span>Listas Internacionales — EE.UU.</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Lista Engel (Ley RENACER) · Proveedores señalados con contratos activos en Honduras
+        Lista Engel (Ley RENACER) · Sanciones OFAC-SDN (Tesoro EE.UU.) · Proveedores señalados con contratos activos en Honduras
       </div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <button class="pdf-btn" onclick="exportEngelPDF()" style="background:rgba(168,85,247,0.12);color:var(--purple);border-color:rgba(168,85,247,0.35);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF Engel</button>
+        <button class="pdf-btn" onclick="exportOfacPDF()" style="background:rgba(255,61,87,0.08);color:var(--red);border-color:rgba(255,61,87,0.3);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF OFAC</button>
       </div>
     </div>
 
@@ -6997,6 +7030,20 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
       <div id="engelBody" style="margin-top:12px;">
         <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos Engel...</div>
+      </div>
+    </div>
+
+    <!-- OFAC SECTION -->
+    <div style="margin-top:36px;">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--red);text-transform:uppercase;padding:0 2px 8px;border-bottom:1px solid rgba(255,61,87,0.2);margin-bottom:12px;">🚨 Sanciones OFAC — Tesoro EE.UU.</div>
+      <div id="ofacSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:0 0 6px;padding:14px 18px;background:rgba(255,61,87,0.05);border:1px solid rgba(255,61,87,0.2);border-radius:10px;">
+        <div><span style="font-size:11px;color:var(--muted);">PROVEEDORES SANCIONADOS</span><br><span id="ofac-stat-proveedores" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">CONTRATOS DETECTADOS</span><br><span id="ofac-stat-contratos" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="ofac-stat-monto" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">ENTIDADES AFECTADAS</span><br><span id="ofac-stat-entidades" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
+      </div>
+      <div id="ofacBody" style="margin-top:12px;">
+        <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos OFAC...</div>
       </div>
     </div>
   </div>
@@ -7799,8 +7846,8 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.13';
-const APP_BUILD   = '2026-08-11';
+const APP_VERSION = 'v2.12';
+const APP_BUILD   = '2026-07-29';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
     el.textContent = el.dataset.appVersion.replace('{v}', APP_VERSION).replace('{b}', APP_BUILD);
@@ -8752,10 +8799,13 @@ function updateReviewFilterCounts() {
   });
 }
 
-// S295 (MS-R04) — Contador junto al chip de Lista Engel.
+// S295 (MS-R04) — Contador junto a los chips de listas internacionales.
 // Mismo criterio que updateReviewFilterCounts(): el número sale de la MISMA fuente
 // que el filtro aplica (_engelMatchedIds), no de una consulta aparte, para que no
 // puedan divergir. El estado debe ser visible ANTES de pulsar el chip.
+// OFAC no se calcula a propósito: `international_sanctions` tiene 0 filas y el chip
+// está deshabilitado con su explicación — un 0 calculado y un 0 por falta de datos
+// se ven igual en pantalla y significan cosas distintas.
 function updateListFilterCounts() {
   const el = document.querySelector('.filter-btn-engel .lf-count');
   if (el) el.textContent = _engelMatchedIds.size.toLocaleString('es-HN');
@@ -11346,6 +11396,7 @@ function exportVistaEjecutivaPDF() {
     { lbl:'Investigaciones Activas', val: g('exec-inv-activas-count'), sub: 'casos SEN-INV', color:'#a78bfa' },
     { lbl:'Candidatos Detectados', val: g('exec-candidatos-val'), sub: '≥3 patrones · ≥L 10M', color:'#00c8ff' },
     { lbl:'Lista Negra (Engel)', val: g('exec-engel'), sub: 'EE.UU. · Engel', color:'#ff3d57' },
+    { lbl:'Lista OFAC-SDN', val: g('exec-ofac'), sub: 'EE.UU. · OFAC-SDN', color:'#ff3d57' },
   ];
   const kpiHtml = kpis.map(k => `
     <div style="border:1px solid var(--print-border);border-radius:8px;padding:14px 18px;min-width:160px;flex:1;">
@@ -19097,7 +19148,7 @@ function ipGenerarLTAIP(contratos, entidad) {
       `¿Cuál es el estado de ejecución presupuestaria de ${entidad} y qué medidas se han tomado ante el sobrepresupuesto detectado? Proporcionar reportes de ejecución del período.`,
       'Ley Orgánica del Presupuesto Art. 42');
 
-  if (pm['PROVEEDOR_ENGEL'])
+  if (pm['PROVEEDOR_ENGEL'] || pm['PROVEEDOR_SANCIONADO'])
     add('Verificación de Inhabilidades',
       `¿Se verificó el estado de los proveedores adjudicados en el Registro de Proveedores del Estado, listas de inhabilitados de ONCAE y listas internacionales de sanciones antes de las adjudicaciones? Proporcionar constancias de verificación.`,
       'Art. 36 LCE; Ley de Transparencia');
@@ -19301,7 +19352,7 @@ function ipMemoEjecutivo() {
     'COMPRA_MENOR_ONCAE':'Compra Menor','CONTRATACION_DIRECTA_ONCAE':'Contratación Directa',
     'PERIODO_MINIMO_ONCAE':'Período Mínimo','FRACCIONAMIENTO_ONCAE':'Fraccionamiento',
     'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD',
-    'PROVEEDOR_ENGEL':'Lista Engel EE.UU.',
+    'PROVEEDOR_ENGEL':'Lista Engel EE.UU.','PROVEEDOR_SANCIONADO':'Proveedor Sancionado',
     'CONTRATACION_DIRECTA_SICC':'Contratación Directa (SICC)','FRACCIONAMIENTO_SICC':'Fraccionamiento (SICC)',
     'CIERRE_EJERCICIO':'Cierre de Ejercicio','RAFAGA_7D':'Ráfaga 7 Días',   // S292 — contextuales
   };
@@ -20859,7 +20910,7 @@ async function renderTop5() {
       { label: 'PATRONES',   val: Number(r.d_patron),  color: '#a78bfa', texto: `${r.n_patrones} señal${r.n_patrones!==1?'es':''}` },
       { label: 'ALCANCE',    val: Number(r.d_alcance), color: '#60a5fa', texto: `${r.entidades_count} entidad${r.entidades_count!==1?'es':''}` },
       { label: 'RECENCIA',   val: Number(r.d_recente), color: '#34d399', texto: `${r.n_reciente} contratos ult. 18m` },
-      { label: 'EXT',        val: Number(r.d_externo), color: '#fbbf24', texto: r.d_externo >= 50 ? 'Lista Engel' : r.d_externo >= 30 ? 'Confirmado ONCAE' : r.d_externo > 0 ? 'SEN-INV activo' : '—' },
+      { label: 'EXT',        val: Number(r.d_externo), color: '#fbbf24', texto: r.d_externo >= 50 ? 'Lista Engel/OFAC' : r.d_externo >= 30 ? 'Confirmado ONCAE' : r.d_externo > 0 ? 'SEN-INV activo' : '—' },
       { label: 'NS SIGNALS', val: Number(r.d_signals), color: '#e879f9', texto: (r.ns_count||0) > 0 ? `${r.ns_count} señal${r.ns_count!==1?'es':''}` : 'Sin señales NS',
         nsDetail: nsLabels.length > 0 ? nsLabels.join(' · ') : '—' },
     ];
@@ -21061,6 +21112,7 @@ function poUpdateIndicators() {
       return hasSEFIN || hasPattern;
     }).length;
     const engel = data.filter(a => a.tags && a.tags.includes('LISTA_ENGEL')).length;
+    const ofac  = data.filter(a => a.tags && a.tags.includes('PROVEEDOR_SANCIONADO')).length;
     // S285 · R-08 — los indicadores po-ind-crit / po-ind-sob / po-ind-total se retiraron de la
     // banda del portal (duplicaban la tarjeta Consultas y el badge del header). Sus asignaciones
     // se quitaron de aquí junto con el markup: estaban SIN guarda (getElementById(...).textContent
@@ -21071,7 +21123,7 @@ function poUpdateIndicators() {
     // po-ind-crit, así que quedaba como un filtro completo sobre todo el dataset en cada
     // carga del portal sin que nadie leyera el resultado.
     document.getElementById('po-ind-alto').textContent  = alto.toLocaleString('es-HN');
-    document.getElementById('po-ind-intl').textContent  = engel.toLocaleString('es-HN');
+    document.getElementById('po-ind-intl').textContent  = (engel + ofac).toLocaleString('es-HN');
     const poTagSob = document.getElementById('po-tag-sobrecosto');
     if (poTagSob) poTagSob.textContent = sob.toLocaleString('es-HN') + ' casos';
     const displayTotal = window._bdTotalCount || data.length;
@@ -21763,6 +21815,7 @@ const CPC_INHABILITADOS_HND = [
 ];
 
 const PATTERN_LABELS = {
+  PROVEEDOR_SANCIONADO:        '🚨 Proveedor Sancionado OFAC',
   FRACCIONAMIENTO_MICRO:       'Fraccionamiento de Contratos',
   COMPRA_EMERGENCIA:           'Compra de Emergencia',
   ADJUDICACION_DIRECTA:        'Adjudicación Directa',
@@ -21835,7 +21888,7 @@ function addPrintBtn(html) {
   const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
   const disclaimer = `<div style="margin-top:40px;padding:16px 20px;border-top:2px solid var(--print-red);background:#fff8f8;font-family:Arial,sans-serif;font-size:10px;color:#555;line-height:1.6;">
     <div style="font-weight:700;color:var(--print-red);font-size:11px;letter-spacing:.05em;margin-bottom:6px;">⚠ AVISO LEGAL — DOCUMENTO CONFIDENCIAL</div>
-    <p style="margin:0 0 6px 0;">Este documento ha sido generado por <strong>SENTINEL-AI</strong>, sistema de análisis de riesgo en contratación pública de Honduras, con base en registros públicos de la Secretaría de Finanzas (SEFIN), la Oficina Normativa de Contratación y Adquisiciones del Estado (ONCAE) y el Instituto de Acceso a la Información Pública (IAIP). Los datos comprenden el período 2019–2026. Los patrones de riesgo asociados a listas internacionales de sanciones (Lista Engel) se generan por cruce de nombres contra dichas listas públicas, no como fuente de registros de contratación.</p>
+    <p style="margin:0 0 6px 0;">Este documento ha sido generado por <strong>SENTINEL-AI</strong>, sistema de análisis de riesgo en contratación pública de Honduras, con base en registros públicos de la Secretaría de Finanzas (SEFIN), la Oficina Normativa de Contratación y Adquisiciones del Estado (ONCAE) y el Instituto de Acceso a la Información Pública (IAIP). Los datos comprenden el período 2019–2026. Los patrones de riesgo asociados a listas internacionales de sanciones (Lista Engel, OFAC) se generan por cruce de nombres contra dichas listas públicas, no como fuente de registros de contratación.</p>
     <p style="margin:0 0 6px 0;"><strong>Los hallazgos contenidos en este reporte son indicadores estadísticos de riesgo — no constituyen prueba de irregularidad, fraude o responsabilidad penal o administrativa.</strong> La presencia de un contrato o proveedor en este análisis no implica determinación de culpabilidad. Los datos de fuente pueden contener errores de captura, duplicados o registros incompletos que afecten los montos reportados.</p>
     <p style="margin:0 0 6px 0;">Toda acción formal — incluyendo investigación administrativa, referido a autoridad competente o apertura de proceso penal — requiere verificación independiente por la autoridad correspondiente conforme a la Ley de Contratación del Estado (Decreto 74-2001) y demás normativa aplicable. SENTINEL-AI no es un órgano jurisdiccional ni emite resoluciones vinculantes.</p>
     <p style="margin:0;">Documento generado el <strong>${ts}</strong> · Uso restringido a destinatarios autorizados · Prohibida su reproducción o divulgación sin autorización expresa de SentinelAI Intelligence.</p>
@@ -24397,8 +24450,8 @@ function showDashboardEjecutivo() {
   // S224 QA — "Fuentes Activas: 4 (SEFIN·ONCAE·RNP·CNA)" y "Edge Functions: 3" estaban fijos
   // desde el diseño original de este panel. RNP está "En integración" (pendiente) en el panel
   // Fuentes de Datos, y CNA nunca fue una fuente real. Fuentes activas reales (verificadas S223):
-  // SEFIN, ONCAE, Lista Engel, SIAFI2, TSC, IAIP = 6. OFAC removida S326 (sin cruce activo).
-  const FUENTES_ACTIVAS = ['SEFIN','ONCAE','Engel','SIAFI2','TSC','IAIP'];
+  // SEFIN, ONCAE, OFAC, Lista Engel, SIAFI2, TSC, IAIP = 7.
+  const FUENTES_ACTIVAS = ['SEFIN','ONCAE','OFAC','Engel','SIAFI2','TSC','IAIP'];
   document.getElementById('dbe-fuentes-count').textContent = FUENTES_ACTIVAS.length;
   document.getElementById('dbe-fuentes-sub').textContent = FUENTES_ACTIVAS.join(' · ');
   document.getElementById('dbe-fns-count').textContent = EDGE_FNS.length;
@@ -24730,6 +24783,7 @@ function renderEjecutiva() {
   // Counts by severity
   const criticos  = alerts.filter(a => normSevLocal(a.severity) === 'critica');
   const altos     = alerts.filter(a => normSevLocal(a.severity) === 'alta');
+  const ofac      = alerts.filter(a => a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SANCIONADO')));
   const sobrecosto= alerts.filter(a => {
     // Pattern-based (legacy) OR budget_amount-based (SEFIN PIEP data)
     const mc = Number(a.monto_contrato || 0);
@@ -24765,8 +24819,10 @@ function renderEjecutiva() {
   document.getElementById('exec-criticos-monto').textContent = fmtL(sumMonto(criticos));
   document.getElementById('exec-altos').textContent          = altos.length.toLocaleString();
   document.getElementById('exec-altos-monto').textContent    = fmtL(sumMonto(altos));
+  document.getElementById('exec-ofac').textContent           = ofac.length.toLocaleString();
   document.getElementById('exec-engel').textContent          = _engelMatchedIds.size.toLocaleString();
-  document.getElementById('exec-lista-negra').textContent    = _engelMatchedIds.size.toLocaleString();
+  const listaNegra = new Set([...ofac.map(a=>a.id), ..._engelMatchedIds]);
+  document.getElementById('exec-lista-negra').textContent    = listaNegra.size.toLocaleString();
   document.getElementById('exec-total').textContent          = alerts.length.toLocaleString();
   const totalMontoAlerts = sumMonto(alerts);
   document.getElementById('exec-total-monto').textContent    = fmtL(totalMontoAlerts);
@@ -25230,6 +25286,7 @@ function showListasPanel() {
   _closeAllFuentePanels();
   document.getElementById('listasPanel').classList.add('open');
   renderEngelPanel();
+  renderOfacPanel();
 }
 function hideListasPanel() {
   document.getElementById('listasPanel').classList.remove('open');
@@ -25568,7 +25625,231 @@ function exportEngelPDF() {
   pw.addEventListener('load', () => pw.focus());
 }
 
-// S326: panel y export PDF de OFAC removidos — ver comentario de cabecera cerca de línea 960.
+// ── OFAC PANEL — show / hide / render / PDF ───────────────────────────────────
+function showOfacPanel() { showListasPanel(); }
+function hideOfacPanel()  { hideListasPanel(); }
+
+function renderOfacPanel() {
+  if (!window.allAlerts || !window.allAlerts.length) {
+    document.getElementById('ofacBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">No hay datos cargados.</div>';
+    return;
+  }
+  const fmtL = n => { if (!n) return 'L. —'; if (n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+
+  const ofacAlerts = window.allAlerts.filter(a => {
+    const pats = Array.isArray(a.patterns) ? a.patterns : [a.patterns||''];
+    return pats.some(p => String(p).includes('SANCIONADO'));
+  });
+
+  // Update nav chip
+  const chip = document.getElementById('nav-ofac-chip');
+  if (chip) chip.textContent = ofacAlerts.length || '—';
+
+  // Group by proveedor
+  const provMap = {};
+  ofacAlerts.forEach(a => {
+    const prov = a.proveedor_nombre||a.supplier_name||a.proveedor||'PROVEEDOR DESCONOCIDO';
+    if (!provMap[prov]) provMap[prov] = [];
+    provMap[prov].push(a);
+  });
+  const provList = Object.entries(provMap).sort((a,b) => b[1].length - a[1].length);
+
+  const totalMonto = ofacAlerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+  const totalCriticos = ofacAlerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
+  const entidades = new Set(ofacAlerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean));
+
+  // Update summary bar
+  document.getElementById('ofac-stat-proveedores').textContent = provList.length || '—';
+  document.getElementById('ofac-stat-contratos').textContent = ofacAlerts.length.toLocaleString() || '—';
+  document.getElementById('ofac-stat-monto').textContent = fmtL(totalMonto);
+  document.getElementById('ofac-stat-entidades').textContent = entidades.size || '—';
+
+  if (ofacAlerts.length === 0) {
+    document.getElementById('ofacBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">No se detectaron contratos con patrón SANCIONADO OFAC en la base de datos.</div>';
+    return;
+  }
+
+  let html = '';
+  provList.forEach(([prov, alerts]) => {
+    const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+    const criticos = alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
+    const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
+    html += `
+    <div style="margin-bottom:28px;border:1px solid rgba(255,61,87,0.3);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;background:rgba(255,61,87,0.07);border-bottom:1px solid rgba(255,61,87,0.15);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--red);">🚨 ${prov}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px;">Proveedor sancionado OFAC SDN List</div>
+        </div>
+        <div style="display:flex;gap:14px;font-size:12px;">
+          <span style="color:var(--text-dim);">${alerts.length} contratos</span>
+          <span style="color:var(--text-dim);">${fmtL(monto)}</span>
+          ${criticos?`<span style="color:var(--red);font-weight:700;">${criticos} CRÍTICOS</span>`:''}
+          ${altos?`<span style="color:var(--amber);">${altos} ALTOS</span>`:''}
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:rgba(255,255,255,0.03);">
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">ID</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Entidad Compradora</th>
+          <th style="padding:8px 12px;text-align:right;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Monto</th>
+          <th style="padding:8px 12px;text-align:center;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Severidad</th>
+          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Fecha</th>
+        </tr></thead>
+        <tbody>
+          ${alerts.slice(0,50).map(a => {
+            const sev=(a.severity||a.severidad||'').toUpperCase();
+            const sevColor=sev==='CRÍTICA'?'var(--red)':sev==='ALTA'?'var(--amber)':sev==='MEDIA'?'#4d9de0':'var(--muted)';
+            const ent=a.entity_name||a.entidad_nombre||'—';
+            const id=a.alert_id||a.id||'—';
+            const mc=Number(a.monto_contrato||0);
+            const fecha=a.fecha_contrato||a.created_at||'';
+            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="openAlertDetail(${a.id}, event)">
+              <td style="padding:7px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;">${String(id).slice(0,12)}…</td>
+              <td style="padding:7px 12px;color:var(--text);">${ent.length>40?ent.slice(0,40)+'…':ent}</td>
+              <td style="padding:7px 12px;text-align:right;color:var(--electric);">${fmtL(mc)}</td>
+              <td style="padding:7px 12px;text-align:center;color:${sevColor};font-weight:700;font-size:10px;">${sev||'—'}</td>
+              <td style="padding:7px 12px;color:var(--text-dim);font-size:11px;">${fecha?fecha.slice(0,10):'—'}</td>
+            </tr>`;
+          }).join('')}
+          ${alerts.length>50?`<tr><td colspan="5" style="padding:10px 12px;text-align:center;color:var(--muted);font-size:11px;">… y ${alerts.length-50} contratos más</td></tr>`:''}
+        </tbody>
+      </table>
+    </div>`;
+  });
+  document.getElementById('ofacBody').innerHTML = html;
+}
+
+function exportOfacPDF() {
+  if (!window.allAlerts || !window.allAlerts.length) { alert('Datos no cargados.'); return; }
+  const fmtL = n => { if (!n) return 'L. —'; if (n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
+  const fmtUSD2 = n => { if (!n) return '—'; const u=n/USD_RATE; if(u>=1e6) return '$'+(u/1e6).toFixed(1)+'M USD'; return '$'+Math.round(u).toLocaleString('en-US')+' USD'; };
+  const today = new Date(); const ds = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
+  const folio = `SEN-OFAC-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+
+  const ofacAlerts = window.allAlerts.filter(a => {
+    const pats = Array.isArray(a.patterns) ? a.patterns : [a.patterns||''];
+    return pats.some(p => String(p).includes('SANCIONADO'));
+  });
+
+  const provMap = {};
+  ofacAlerts.forEach(a => {
+    const prov = a.proveedor_nombre||a.supplier_name||a.proveedor||'PROVEEDOR DESCONOCIDO';
+    if (!provMap[prov]) provMap[prov] = [];
+    provMap[prov].push(a);
+  });
+  const provList = Object.entries(provMap).sort((a,b) => b[1].length - a[1].length);
+  const totalMonto = ofacAlerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+  const totalCriticos = ofacAlerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
+  const entidades = new Set(ofacAlerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean));
+
+  const provRows = provList.map(([prov, alerts]) => {
+    const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
+    const criticos = alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
+    const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
+    const entsInv = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
+    const detRows = alerts.slice(0,15).map(a => {
+      const sev=(a.severity||a.severidad||'').toUpperCase();
+      const sc=sev==='CRÍTICA'?'var(--print-red)':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
+      const ent=a.entity_name||a.entidad_nombre||'—';
+      const id=a.alert_id||a.id||'—';
+      const fecha=a.fecha_contrato||a.created_at||'';
+      return `<tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:5px 8px;font-family:monospace;font-size:9px;color:#666;">${String(id).slice(0,14)}</td>
+        <td style="padding:5px 8px;font-size:10px;">${ent.length>45?ent.slice(0,45)+'…':ent}</td>
+        <td style="padding:5px 8px;text-align:right;font-size:10px;">${fmtL(Number(a.monto_contrato||0))}</td>
+        <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:9px;color:${sc};">${sev}</td>
+        <td style="padding:5px 8px;font-size:9px;color:#666;">${fecha?fecha.slice(0,10):'—'}</td>
+      </tr>`;
+    }).join('');
+    return `
+    <div style="margin-bottom:28px;border:2px solid var(--print-red);border-radius:8px;overflow:hidden;page-break-inside:avoid;">
+      <div style="background:var(--print-red);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">🚨 ${prov}</div>
+          <div style="font-size:11px;opacity:0.85;margin-top:2px;">Proveedor Sancionado — OFAC SDN List</div>
+        </div>
+        <div style="text-align:right;font-size:11px;">
+          <div style="font-weight:700;">${alerts.length} contratos · ${fmtL(monto)}</div>
+          ${criticos?`<div style="color:#fca5a5;">${criticos} CRÍTICOS</div>`:''}
+          ${altos?`<div style="color:#fde68a;">${altos} ALTOS</div>`:''}
+        </div>
+      </div>
+      <div style="padding:10px 16px;background:#fff5f5;font-size:11px;color:#555;border-bottom:1px solid #fecaca;">
+        <strong>Entidades compraron a este proveedor:</strong> ${entsInv.slice(0,5).join(' · ')}${entsInv.length>5?' · …':''}
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead style="background:#fef2f2;">
+          <tr>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">ID</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Entidad Compradora</th>
+            <th style="padding:6px 8px;text-align:right;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Monto</th>
+            <th style="padding:6px 8px;text-align:center;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Sev.</th>
+            <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--print-red);border-bottom:1px solid #fecaca;">Fecha</th>
+          </tr>
+        </thead>
+        <tbody>${detRows}${alerts.length>15?`<tr><td colspan="5" style="padding:8px;text-align:center;color:#888;font-size:10px;">… y ${alerts.length-15} contratos adicionales</td></tr>`:''}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Sentinel — Reporte Sanciones OFAC</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
+    @page{size:A4 portrait;margin:18mm 15mm;}
+    @media print{body{margin:0;}}
+    .header{background:linear-gradient(135deg,#7f1d1d,var(--print-red));color:#fff;padding:24px 28px 20px;margin-bottom:20px;}
+    .kpi-row{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+    .kpi-box{flex:1;min-width:100px;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;background:#fff5f5;text-align:center;}
+    .kpi-val{font-size:22px;font-weight:700;color:var(--print-red);}
+    .kpi-lbl{font-size:10px;color:#888;margin-top:4px;letter-spacing:.05em;}
+    .warning-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:#92400e;}
+    .footer{margin-top:30px;padding-top:12px;border-top:2px solid var(--print-red);display:flex;justify-content:space-between;font-size:10px;color:#888;}
+    .classification{background:var(--print-red);color:#fff;text-align:center;padding:6px;font-size:10px;font-weight:700;letter-spacing:.12em;margin-top:16px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:6px;">SISTEMA SENTINEL — HONDURAS</div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:4px;">🚨 Reporte: Sanciones OFAC</div>
+        <div style="font-size:11px;opacity:.8;">Specially Designated Nationals · Tesoro de los Estados Unidos · SDN List</div>
+      </div>
+      <div style="text-align:right;font-size:10px;opacity:.8;">
+        <div style="font-size:13px;font-weight:700;opacity:1;">${folio}</div>
+        <div style="margin-top:4px;">${ds}</div>
+        <div style="margin-top:2px;">Base: ${(window.allAlerts||[]).length.toLocaleString()} contratos SEFIN</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kpi-val">${provList.length}</div><div class="kpi-lbl">PROVEEDORES SANCIONADOS</div></div>
+    <div class="kpi-box"><div class="kpi-val">${ofacAlerts.length.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS DETECTADOS</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:var(--print-red);">${totalCriticos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
+    <div class="kpi-box"><div class="kpi-val">${entidades.size}</div><div class="kpi-lbl">ENTIDADES AFECTADAS</div></div>
+    <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">MONTO TOTAL</div></div>
+  </div>
+
+  <div class="warning-box">
+    ⚠️ <strong>Nota metodológica:</strong> Este reporte identifica contratos de compra pública de Honduras cuyos proveedores presentan el patrón PROVEEDOR_SANCIONADO_OFAC en el sistema Sentinel. La designación OFAC implica que el proveedor aparece en la lista SDN del Tesoro de los EE.UU., lo que puede constituir violación de sanciones internacionales. Requiere verificación y acción inmediata por parte de las autoridades competentes.
+  </div>
+
+  ${ofacAlerts.length === 0 ? '<div style="text-align:center;padding:40px;color:#888;">No se detectaron contratos con patrón SANCIONADO OFAC en la base de datos.</div>' : provRows}
+
+  <div class="footer">
+    <div>Sistema Sentinel — Monitoreo de Contratación Pública</div>
+    <div>Generado: ${ds} · ${folio}</div>
+  </div>
+  <div class="classification">USO OFICIAL — RESERVADO — NO DISTRIBUIR SIN AUTORIZACIÓN</div>
+  </body></html>`;
+
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Por favor permita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write(addPrintBtn(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
 
 // ══════════════════════════════════════════════════════════════
 // RED FLAGS PDF EXPORT — CNA / UFERCO / MP Honduras

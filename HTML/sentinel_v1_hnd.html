@@ -963,16 +963,13 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
    (SUMILAB) sin RTN para confirmar. Decisión de Gabe: sin señal suficiente
    para justificar UI dedicada. `international_sanctions` se mantiene cargada
    en Supabase (17,333 filas) por si Fase 2 la usa — ver memoria de sesión. */
-/* Lista Engel filter button — purple styling */
-.filter-btn-engel {
-  border-color: rgba(168,85,247,0.5) !important;
-  color: var(--purple) !important;
-}
-.filter-btn-engel:hover, .filter-btn-engel.active {
-  background: var(--purple-dim, rgba(168,85,247,0.12)) !important;
-  border-color: var(--purple) !important;
-  color: var(--purple) !important;
-}
+/* S329 (ago 2026): chip/exec-card/filtro de cruce Engel removidos — mismo motivo
+   que OFAC (S326): el cruce de texto por apellido dio 39 "coincidencias" activas
+   y NINGUNA correspondía al actor real (todas homónimos, personas distintas con
+   los mismos 2 apellidos). Decisión de Gabe: sin identificador único verificable
+   (RTN/cédula) no hay señal defendible para cruzar contra la base de datos. El
+   panel Lista Engel (showListasPanel) se mantiene como lista de referencia de
+   los 52 nombres/cargos de state.gov — SIN cruce contra `alerts`. */
 .filter-btn-sobrecosto {
   border-color: rgba(255,171,0,0.5) !important;
   color: var(--amber) !important;
@@ -4783,16 +4780,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-sub" id="exec-altos-monto">L —</div>
         <div class="exec-card-note">▸ Escalada legal recomendada</div>
       </div>
-      <!-- Lista Engel -->
-      <div class="exec-card exec-card-purple" onclick="showListasPanel()" style="cursor:pointer;" title="Coincidencias de apellido — identidad no confirmada, requiere verificación manual">
-        <div class="exec-card-label">Posible Homónimo (Engel)</div>
-        <div style="display:flex;gap:14px;align-items:baseline;margin:4px 0 2px;">
-          <span style="font-size:10px;color:var(--amber);letter-spacing:.04em;">ENGEL</span>
-          <span class="exec-card-value" id="exec-engel" style="font-size:22px;">—</span>
-        </div>
-        <div class="exec-card-sub">Ley RENACER · EE.UU. · sin confirmar</div>
-        <div class="exec-card-note">▸ Requiere verificación manual</div>
-      </div>
       <!-- ONCAE CRÍTICA -->
       <div class="exec-card exec-card-red">
         <div class="exec-card-label">ONCAE CRÍTICA (2025–2026)</div>
@@ -4830,14 +4817,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-value" id="exec-candidatos-val">—</div>
         <div class="exec-card-sub">≥3 patrones · ≥L 10M acumulado</div>
         <div class="exec-card-note">▸ Clic para ver ranking →</div>
-      </div>
-
-      <!-- KPI: Proveedores en Lista Negra -->
-      <div class="exec-card exec-card-purple" onclick="showListasPanel()" style="cursor:pointer;" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor=''">
-        <div class="exec-card-label">Proveedores en Lista Negra</div>
-        <div class="exec-card-value" id="exec-lista-negra">—</div>
-        <div class="exec-card-sub">Lista Engel · EE.UU.</div>
-        <div class="exec-card-note">▸ Sancionados internacionalmente</div>
       </div>
 
       <!-- KPI: Contratos Sin Licitación -->
@@ -4998,7 +4977,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
         <div class="exec-source-name">Lista Engel (RENACER)</div>
-        <div class="exec-source-val" id="src-engel">Cargando...</div>
+        <div class="exec-source-val" id="src-engel">52 personas (referencia, sin cruce)</div>
       </div>
       <div class="exec-source active">
         <div class="exec-source-dot green"></div>
@@ -5186,7 +5165,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <button class="filter-btn"        data-p="ADJUDICACION_DIRECTA"   onclick="setPatternFilter('ADJUDICACION_DIRECTA')" aria-label="Filtrar por patrón: adjudicación directa">DIRECTA</button>
     <button class="filter-btn"        data-p="PROVEEDOR_SIN_HISTORIAL" onclick="setPatternFilter('PROVEEDOR_SIN_HISTORIAL')" aria-label="Filtrar por patrón: proveedor sin historial">SIN HISTORIAL</button>
     <button class="filter-btn"        data-p="MONTO_FRACCIONADO"      onclick="setPatternFilter('MONTO_FRACCIONADO')" aria-label="Filtrar por patrón: monto fraccionado">MONTO FRACCIONADO</button>
-    <button class="filter-btn filter-btn-engel" data-p="ENGEL" onclick="setPatternFilter('ENGEL')" title="Contratos cuyo proveedor, entidad o descripción coincide con un nombre de la Lista Engel (52 entradas). Una coincidencia de nombre no constituye por sí sola evidencia de irregularidad." aria-label="Filtrar por patrón: Lista Engel"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg> LISTA ENGEL <span class="lf-count" style="opacity:.55;">—</span></button>
   </div>
 
   <!-- Estado de revisión — S288 (R-05, punto A.4). Cada chip lleva su contador para
@@ -6998,7 +6976,11 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   <!-- ═══════════════════ ENGEL PANEL ═══════════════════ -->
   <!-- ═══════════════════ LISTAS INTERNACIONALES (Engel) ═══════════════════ -->
   <!-- S326 (ago 2026): sección OFAC removida — ver comentario de cabecera cerca
-       de la línea 960 sobre por qué. -->
+       de la línea 960 sobre por qué.
+       S329 (ago 2026): el cruce Engel↔alerts (texto por apellido) se removió por
+       el mismo motivo — 39 "coincidencias" activas, 0 correspondían al actor real
+       (todos homónimos). Este panel es ahora SOLO la lista de referencia de las
+       52 personas de state.gov, sin cruce contra la base de datos. -->
   <div class="fuente-panel" id="listasPanel">
     <button class="fuente-back" onclick="hideListasPanel()">← Contratos</button>
 
@@ -7008,7 +6990,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span>Lista Engel — EE.UU.</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Lista Engel (Ley RENACER) · Posibles homónimos de apellido en contratos públicos — identidad NO confirmada
+        Lista Engel (Ley RENACER, Sección 353) · Lista de referencia — 52 personas de Honduras designadas por el Depto. de Estado
       </div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <button class="pdf-btn" onclick="exportEngelPDF()" style="background:rgba(168,85,247,0.12);color:var(--purple);border-color:rgba(168,85,247,0.35);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF Engel</button>
@@ -7019,16 +7001,10 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div style="margin-top:22px;">
       <div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--purple);text-transform:uppercase;padding:0 2px 8px;border-bottom:1px solid rgba(168,85,247,0.2);margin-bottom:12px;">🇺🇸 Lista Engel — Depto. de Estado EE.UU.</div>
       <div style="font-size:11px;color:#92400e;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;">
-        ⚠️ <strong style="color:var(--amber);">Metodología (léase antes de citar esto en un expediente):</strong> Sentinel busca los apellidos de la Lista Engel dentro del texto de proveedor/entidad/descripción de cada contrato. Esto detecta <strong>coincidencias de apellido, no identidad confirmada</strong> — la gran mayoría son personas distintas que comparten los mismos dos apellidos (ej. "Hernández Alvarado" es un apellido común, no exclusivo del actor señalado). Honduras no publica cédula/RTN para funcionarios en esta lista, así que Sentinel no puede confirmar identidad automáticamente. Cada caso requiere verificación manual antes de citarse como hallazgo.
-      </div>
-      <div id="engelSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:0 0 6px;padding:14px 18px;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:10px;">
-        <div><span style="font-size:11px;color:var(--muted);">COINCIDENCIAS DE APELLIDO</span><br><span id="engel-stat-actores" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
-        <div><span style="font-size:11px;color:var(--muted);">CONTRATOS CON POSIBLE HOMÓNIMO</span><br><span id="engel-stat-contratos" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
-        <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="engel-stat-monto" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
-        <div><span style="font-size:11px;color:var(--muted);">CONTRATOS CRÍTICOS</span><br><span id="engel-stat-criticos" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
+        ℹ️ <strong style="color:var(--amber);">Nota:</strong> Esta es la lista de referencia tal como la publica el Departamento de Estado de EE.UU. (Sección 353 — Ley RENACER, autoridad expirada dic. 2023, sin designaciones nuevas). <strong>Sentinel NO la cruza contra la base de datos de contratos</strong>: Honduras no publica cédula/RTN para estas personas, y un cruce por nombre/apellido produce falsos positivos por homonimia (verificado — ver nota de sesión). Si necesita verificar si alguno de estos actores aparece como proveedor, hágalo manualmente contra el Registro de Proveedores del Estado.
       </div>
       <div id="engelBody" style="margin-top:12px;">
-        <div style="color:var(--muted);padding:40px;text-align:center;">Cargando datos Engel...</div>
+        <div style="color:var(--muted);padding:40px;text-align:center;">Cargando lista Engel...</div>
       </div>
     </div>
   </div>
@@ -7832,7 +7808,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
 
-const APP_VERSION = 'v2.18';
+const APP_VERSION = 'v2.19';
 const APP_BUILD   = '2026-08-11';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -8360,7 +8336,6 @@ async function loadAlerts() {
     updateConsultasMetrics(allAlerts);
     buildNewsMatchIndex();
     buildHighRiskIndex();
-    buildEngelIndex();
     buildRedFlagIndex();
     loadRedFlagsFromSupabase();
     renderCandidatosDetectados();
@@ -8524,11 +8499,7 @@ function render() {
     ? allAlerts
     : allAlerts.filter(a => (a._sev || normSev(a.severity)) === activeFilter); // S170
   if (activePattern !== 'all') {
-    if (activePattern === 'ENGEL') {
-      filtered = filtered.filter(a => _engelMatchedIds.has(a.alert_id || a.id));
-    } else {
-      filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
-    }
+    filtered = filtered.filter(a => (a.patterns || '').includes(activePattern));
   }
   // S288 (R-05 A.4) — filtro por estado de revisión. 'sin' es el más útil en la
   // práctica: es la cola de trabajo del analista, lo que todavía no se ha revisado.
@@ -8783,15 +8754,6 @@ function updateReviewFilterCounts() {
     el.textContent = k === 'all' ? allAlerts.length.toLocaleString('es-HN')
                                  : (t[k] ?? 0).toLocaleString('es-HN');
   });
-}
-
-// S295 (MS-R04) — Contador junto al chip de Lista Engel.
-// Mismo criterio que updateReviewFilterCounts(): el número sale de la MISMA fuente
-// que el filtro aplica (_engelMatchedIds), no de una consulta aparte, para que no
-// puedan divergir. El estado debe ser visible ANTES de pulsar el chip.
-function updateListFilterCounts() {
-  const el = document.querySelector('.filter-btn-engel .lf-count');
-  if (el) el.textContent = _engelMatchedIds.size.toLocaleString('es-HN');
 }
 
 function setPage(n) {
@@ -11378,7 +11340,6 @@ function exportVistaEjecutivaPDF() {
     { lbl:'Riesgo Sobrepresupuesto', val: g('exec-sobrecosto'), sub: g('exec-sobrecosto-monto'), color:'#f97316' },
     { lbl:'Investigaciones Activas', val: g('exec-inv-activas-count'), sub: 'casos SEN-INV', color:'#a78bfa' },
     { lbl:'Candidatos Detectados', val: g('exec-candidatos-val'), sub: '≥3 patrones · ≥L 10M', color:'#00c8ff' },
-    { lbl:'Lista Negra (Engel)', val: g('exec-engel'), sub: 'EE.UU. · Engel', color:'#ff3d57' },
   ];
   const kpiHtml = kpis.map(k => `
     <div style="border:1px solid var(--print-border);border-radius:8px;padding:14px 18px;min-width:160px;flex:1;">
@@ -20933,8 +20894,6 @@ async function renderTop5() {
     const rankClass = rank <= 3 ? ' rank-'+rank : '';
     const entLista = [...c.entidades].slice(0, 3).join(' · ') + (c.entidades.size > 3 ? ` +${c.entidades.size-3}` : '');
     const patArr   = [...c.patrones].slice(0, 4);
-    const hay = c.proveedor.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    const esEngel = (typeof ENGEL_LIST_HND !== 'undefined') && ENGEL_LIST_HND.some(e => hay.includes(e.search));
     const invKey  = [...investigados.keys()].find(inv => inv.length > 4 && (c.proveedor.toUpperCase().includes(inv) || inv.includes(c.proveedor.toUpperCase().slice(0,12))));
     const invEstado = invKey ? investigados.get(invKey) : null;
     const dimRows = c.dims.map(d => `
@@ -20954,7 +20913,6 @@ async function renderTop5() {
           ${patArr.map(p=>`<span class="t5-tag t5-tag-patron">${esc(p)}</span>`).join('')}
           <span class="t5-tag t5-tag-n">${c.n} contrato${c.n!==1?'s':''}</span>
           <span class="t5-sector">${esc(c.sector)}</span>
-          ${esEngel   ? '<span class="t5-tag t5-tag-externo" title="Coincidencia de apellido con Lista Engel — identidad no confirmada">⚠ Posible homónimo (Engel)</span>' : ''}
           ${invEstado ? `<span class="t5-tag t5-tag-sent">SEN-INV ${esc(invEstado)}</span>` : ''}
         </div>
         ${c.sig.labels && c.sig.labels.length > 0 ? `<div style="margin:6px 0 4px;display:flex;flex-wrap:wrap;gap:4px;">
@@ -24822,8 +24780,6 @@ function renderEjecutiva() {
   document.getElementById('exec-criticos-monto').textContent = fmtL(sumMonto(criticos));
   document.getElementById('exec-altos').textContent          = altos.length.toLocaleString();
   document.getElementById('exec-altos-monto').textContent    = fmtL(sumMonto(altos));
-  document.getElementById('exec-engel').textContent          = _engelMatchedIds.size.toLocaleString();
-  document.getElementById('exec-lista-negra').textContent    = _engelMatchedIds.size.toLocaleString();
   document.getElementById('exec-total').textContent          = alerts.length.toLocaleString();
   const totalMontoAlerts = sumMonto(alerts);
   document.getElementById('exec-total-monto').textContent    = fmtL(totalMontoAlerts);
@@ -25109,7 +25065,6 @@ function matchNewsToContracts(title, summary) {
 // When a news article mentions one of these actors, shows a red alert bar.
 // NOTE: Designed to upgrade to time-based filter once real-time data is available.
 let _highRiskIndex = null;
-let _engelMatchedIds = new Set(); // P4 — Lista Engel cross-reference
 
 function buildHighRiskIndex() {
   const highRisk = allAlerts.filter(a => {
@@ -25255,39 +25210,6 @@ function rfToggle(idx) {
   if (chv) chv.style.transform = open ? 'rotate(90deg)' : '';
 }
 
-// ── P4: LISTA ENGEL — Cross-reference contra allAlerts ─────────────────────────
-// Busca coincidencias de apellidos normalizados de la Lista Engel contra
-// proveedor_nombre, entity_name y descripción de cada contrato.
-// ⚠️ S329: esto es un match de TEXTO (2 apellidos), no de identidad. Verificado
-// contra la base — de 39 "coincidencias" activas ninguna corresponde al actor
-// real, todas son homónimos (personas distintas con los mismos 2 apellidos).
-// Honduras no publica cédula/RTN para políticos, así que no hay forma de
-// confirmar identidad automáticamente. Tratar SIEMPRE como "posible homónimo,
-// requiere verificación manual" — nunca como match confirmado.
-function buildEngelIndex() {
-  if (!window.allAlerts || !window.allAlerts.length) return;
-  const norm = s => (s || '').toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '');
-  _engelMatchedIds = new Set();
-  window.allAlerts.forEach(a => {
-    const haystack = norm([
-      a.proveedor_nombre, a.supplier_name, a.proveedor,
-      a.entity_name, a.entidad_nombre,
-      a.descripcion, a.object_contract
-    ].join(' '));
-    if (ENGEL_LIST_HND.some(e => haystack.includes(e.search))) {
-      _engelMatchedIds.add(a.alert_id || a.id);
-    }
-  });
-  const srcEl = document.getElementById('src-engel');
-  if (srcEl) srcEl.textContent = `${_engelMatchedIds.size} coincidencia${_engelMatchedIds.size !== 1 ? 's' : ''}`;
-  // Update nav chip
-  const chip = document.getElementById('nav-engel-chip');
-  if (chip) chip.textContent = _engelMatchedIds.size || '—';
-  // S295 (MS-R04) — mismo índice alimenta el contador del chip de filtro.
-  try { updateListFilterCounts(); } catch(e) {}
-}
-
 // ── ENGEL PANEL — show / hide / render / PDF ──────────────────────────────────
 function showListasPanel() {
   _closeAllFuentePanels();
@@ -25412,179 +25334,54 @@ async function rechazarRedFlag(id) {
   } catch(e) { alert('Error: ' + e.message); }
 }
 
+
+// S326: panel y export PDF de OFAC removidos — ver comentario de cabecera cerca de línea 960.
+
+// ── ENGEL PANEL — lista de referencia, SIN cruce contra alerts (S329) ──────────
+// Ver comentario de cabecera cerca de línea 960 sobre por qué se removió el cruce.
 function renderEngelPanel() {
-  if (!window.allAlerts || !window.allAlerts.length) {
-    document.getElementById('engelBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">No hay datos cargados.</div>';
-    return;
-  }
-  const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const fmtL = n => { if (!n) return 'L. —'; if (n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
-
-  // Build per-actor buckets
-  const actorMap = {};
-  ENGEL_LIST_HND.forEach(e => { actorMap[e.search] = { meta: e, alerts: [] }; });
-
-  window.allAlerts.forEach(a => {
-    const hay = norm([a.proveedor_nombre, a.supplier_name, a.proveedor, a.entity_name, a.entidad_nombre, a.descripcion, a.object_contract].join(' '));
-    ENGEL_LIST_HND.forEach(e => {
-      if (hay.includes(e.search)) actorMap[e.search].alerts.push(a);
-    });
-  });
-
-  const activeActors = Object.values(actorMap).filter(b => b.alerts.length > 0);
-  const totalContratos = activeActors.reduce((s,b) => s + b.alerts.length, 0);
-  const totalMonto = activeActors.reduce((s,b) => s + b.alerts.reduce((ss,a) => ss + Number(a.monto_contrato||0), 0), 0);
-  const totalCriticos = activeActors.reduce((s,b) => s + b.alerts.filter(a => gNormSev(a.severity||a.severidad)==='critica').length, 0);
-
-  // Update summary bar
-  document.getElementById('engel-stat-actores').textContent = activeActors.length || '—';
-  document.getElementById('engel-stat-contratos').textContent = totalContratos.toLocaleString() || '—';
-  document.getElementById('engel-stat-monto').textContent = fmtL(totalMonto);
-  document.getElementById('engel-stat-criticos').textContent = totalCriticos.toLocaleString() || '—';
-
-  if (activeActors.length === 0) {
-    document.getElementById('engelBody').innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;">Sin coincidencias detectadas en los contratos monitoreados.</div>';
-    return;
-  }
-
-  let html = '';
-  activeActors.sort((a,b) => b.alerts.length - a.alerts.length).forEach(bucket => {
-    const { meta, alerts } = bucket;
-    const monto = alerts.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
-    const criticos = alerts.filter(a => gNormSev(a.severity||a.severidad)==='critica').length;
-    const altos = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'ALTA').length;
-    html += `
-    <div style="margin-bottom:28px;border:1px solid rgba(245,158,11,0.3);border-radius:12px;overflow:hidden;">
-      <div style="padding:14px 18px;background:rgba(245,158,11,0.08);border-bottom:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <div>
-          <div style="font-size:14px;font-weight:700;color:var(--amber);">🇺🇸 ${meta.full} <span style="font-size:10px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);border-radius:10px;padding:2px 8px;margin-left:6px;">⚠ POSIBLE HOMÓNIMO — NO CONFIRMADO</span></div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px;">${meta.role}</div>
-        </div>
-        <div style="display:flex;gap:14px;font-size:12px;">
-          <span style="color:var(--text-dim);">${alerts.length} contratos</span>
-          <span style="color:var(--text-dim);">${fmtL(monto)}</span>
-          ${criticos ? `<span style="color:var(--red);font-weight:700;">${criticos} CRÍTICOS</span>` : ''}
-          ${altos ? `<span style="color:var(--amber);">${altos} ALTOS</span>` : ''}
-        </div>
-      </div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px;">
-        <thead><tr style="background:rgba(255,255,255,0.03);">
-          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">ID</th>
-          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Entidad</th>
-          <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Proveedor</th>
-          <th style="padding:8px 12px;text-align:right;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Monto</th>
-          <th style="padding:8px 12px;text-align:center;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Severidad</th>
-        </tr></thead>
-        <tbody>
-          ${alerts.slice(0,50).map(a => {
-            const sev = (a.severity||a.severidad||'').toUpperCase();
-            const sevColor = sev==='CRÍTICA'?'var(--red)':sev==='ALTA'?'var(--amber)':sev==='MEDIA'?'#4d9de0':'var(--muted)';
-            const prov = a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
-            const ent  = a.entity_name||a.entidad_nombre||'—';
-            const id   = a.alert_id||a.id||'—';
-            const mc   = Number(a.monto_contrato||0);
-            return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="openAlertDetail(${a.id}, event)">
-              <td style="padding:7px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;">${String(id).slice(0,12)}…</td>
-              <td style="padding:7px 12px;color:var(--text);">${ent.length>35?ent.slice(0,35)+'…':ent}</td>
-              <td style="padding:7px 12px;color:var(--text-dim);">${prov.length>30?prov.slice(0,30)+'…':prov}</td>
-              <td style="padding:7px 12px;text-align:right;color:var(--electric);">${fmtL(mc)}</td>
-              <td style="padding:7px 12px;text-align:center;color:${sevColor};font-weight:700;font-size:10px;">${sev||'—'}</td>
-            </tr>`;
-          }).join('')}
-          ${alerts.length>50?`<tr><td colspan="5" style="padding:10px 12px;text-align:center;color:var(--muted);font-size:11px;">… y ${alerts.length-50} contratos más</td></tr>`:''}
-        </tbody>
-      </table>
-      <div style="padding:8px 14px;font-size:10px;color:var(--muted);border-top:1px solid var(--border);background:rgba(255,255,255,0.02);">
-        ⚠️ <strong>L. —</strong> indica contrato sin monto registrado. Los contratos del portal IAIP (prefijo <code style="color:var(--text-dim);">IAIP-</code>) no incluyen montos en formato estructurado — requieren análisis de documentos PDF individuales (Fase 2).
-      </div>
-    </div>`;
-  });
+  const rows = ENGEL_LIST_HND.slice().sort((a, b) => (b.year || 0) - (a.year || 0) || a.full.localeCompare(b.full));
+  const html = `
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">${rows.length} personas · fuente: U.S. Department of State (Sección 353 / Ley RENACER)</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:rgba(255,255,255,0.03);">
+        <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Nombre</th>
+        <th style="padding:8px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Cargo / rol</th>
+        <th style="padding:8px 12px;text-align:center;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Año designación</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(e => `<tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:7px 12px;color:var(--text);">🇺🇸 ${esc(e.full)}</td>
+          <td style="padding:7px 12px;color:var(--text-dim);">${esc(e.role || '—')}</td>
+          <td style="padding:7px 12px;text-align:center;color:var(--muted);">${e.year || '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
   document.getElementById('engelBody').innerHTML = html;
 }
 
 function exportEngelPDF() {
-  if (!window.allAlerts || !window.allAlerts.length) { alert('Datos no cargados.'); return; }
-  const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const fmtL = n => { if (!n) return 'L. —'; if (n>=1e9) return 'L. '+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return 'L. '+(n/1e6).toFixed(1)+'M'; return 'L. '+Math.round(n).toLocaleString('es-HN'); };
-  const fmtUSD2 = n => { if (!n) return '—'; const u=n/USD_RATE; if(u>=1e6) return '$'+(u/1e6).toFixed(1)+'M USD'; return '$'+Math.round(u).toLocaleString('en-US')+' USD'; };
   const today = new Date(); const ds = today.toLocaleDateString('es-HN',{year:'numeric',month:'long',day:'numeric'});
   const folio = `SEN-ENGEL-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-001`;
+  const rows = ENGEL_LIST_HND.slice().sort((a, b) => (b.year || 0) - (a.year || 0) || a.full.localeCompare(b.full));
 
-  // Build actor map
-  const actorMap = {};
-  ENGEL_LIST_HND.forEach(e => { actorMap[e.search] = { meta: e, alerts: [] }; });
-  window.allAlerts.forEach(a => {
-    const hay = norm([a.proveedor_nombre,a.supplier_name,a.proveedor,a.entity_name,a.entidad_nombre,a.descripcion,a.object_contract].join(' '));
-    ENGEL_LIST_HND.forEach(e => { if (hay.includes(e.search)) actorMap[e.search].alerts.push(a); });
-  });
-  const activeActors = Object.values(actorMap).filter(b => b.alerts.length > 0).sort((a,b) => b.alerts.length - a.alerts.length);
-  const totalContratos = activeActors.reduce((s,b) => s+b.alerts.length, 0);
-  const totalMonto = activeActors.reduce((s,b) => s+b.alerts.reduce((ss,a) => ss+Number(a.monto_contrato||0),0), 0);
-  const totalCriticos = activeActors.reduce((s,b) => s+b.alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length, 0);
-
-  const actorRows = activeActors.map(bucket => {
-    const { meta, alerts } = bucket;
-    const monto = alerts.reduce((s,a) => s+Number(a.monto_contrato||0), 0);
-    const criticos = alerts.filter(a=>gNormSev(a.severity||a.severidad)==='critica').length;
-    const altos = alerts.filter(a=>(a.severity||a.severidad||'').toUpperCase()==='ALTA').length;
-    const entidades = [...new Set(alerts.map(a=>a.entity_name||a.entidad_nombre||'').filter(Boolean))];
-    const detRows = alerts.slice(0,20).map(a => {
-      const sev=(a.severity||a.severidad||'').toUpperCase();
-      const sc=sev==='CRÍTICA'?'var(--print-red)':sev==='ALTA'?'#d97706':sev==='MEDIA'?'#2563eb':'#666';
-      const prov=a.proveedor_nombre||a.supplier_name||a.proveedor||'—';
-      const ent=a.entity_name||a.entidad_nombre||'—';
-      const id=a.alert_id||a.id||'—';
-      return `<tr style="border-bottom:1px solid #f0f0f0;">
-        <td style="padding:5px 8px;font-family:monospace;font-size:9px;color:#666;">${String(id).slice(0,14)}</td>
-        <td style="padding:5px 8px;font-size:10px;">${ent.length>40?ent.slice(0,40)+'…':ent}</td>
-        <td style="padding:5px 8px;font-size:10px;">${prov.length>35?prov.slice(0,35)+'…':prov}</td>
-        <td style="padding:5px 8px;text-align:right;font-size:10px;">${fmtL(Number(a.monto_contrato||0))}</td>
-        <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:9px;color:${sc};">${sev}</td>
-      </tr>`;
-    }).join('');
-    return `
-    <div style="margin-bottom:28px;border:2px solid #7c3aed;border-radius:8px;overflow:hidden;page-break-inside:avoid;">
-      <div style="background:#7c3aed;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start;">
-        <div>
-          <div style="font-size:14px;font-weight:700;">🇺🇸 ${meta.full} <span style="font-size:10px;font-weight:700;opacity:.9;">(⚠ posible homónimo — no confirmado)</span></div>
-          <div style="font-size:11px;opacity:0.85;margin-top:2px;">${meta.role}</div>
-        </div>
-        <div style="text-align:right;font-size:11px;">
-          <div style="font-weight:700;">${alerts.length} contratos · ${fmtL(monto)}</div>
-          ${criticos?`<div style="color:#fca5a5;">${criticos} CRÍTICOS</div>`:''}
-          ${altos?`<div style="color:#fde68a;">${altos} ALTOS</div>`:''}
-        </div>
-      </div>
-      <div style="padding:10px 16px;background:#faf5ff;font-size:11px;color:#555;border-bottom:1px solid #e9d5ff;">
-        <strong>Entidades involucradas:</strong> ${entidades.slice(0,5).join(' · ')}${entidades.length>5?' · …':''}
-      </div>
-      <table style="width:100%;border-collapse:collapse;">
-        <thead style="background:#f5f0ff;">
-          <tr>
-            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;">ID</th>
-            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;">Entidad</th>
-            <th style="padding:6px 8px;text-align:left;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;">Proveedor</th>
-            <th style="padding:6px 8px;text-align:right;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;">Monto</th>
-            <th style="padding:6px 8px;text-align:center;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;">Sev.</th>
-          </tr>
-        </thead>
-        <tbody>${detRows}${alerts.length>20?`<tr><td colspan="5" style="padding:8px;text-align:center;color:#888;font-size:10px;">… y ${alerts.length-20} contratos adicionales</td></tr>`:''}</tbody>
-      </table>
-    </div>`;
-  }).join('');
+  const tableRows = rows.map(e => `<tr style="border-bottom:1px solid #f0f0f0;">
+    <td style="padding:6px 8px;font-size:10px;">🇺🇸 ${e.full}</td>
+    <td style="padding:6px 8px;font-size:10px;color:#555;">${e.role || '—'}</td>
+    <td style="padding:6px 8px;text-align:center;font-size:10px;color:#555;">${e.year || '—'}</td>
+  </tr>`).join('');
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Sentinel — Reporte Lista Engel</title>
+  <title>Sentinel — Lista Engel (referencia)</title>
   <style>
     body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;color:#1a1a2e;font-size:12px;}
     @page{size:A4 portrait;margin:18mm 15mm;}
     @media print{body{margin:0;}}
     .header{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;padding:24px 28px 20px;margin-bottom:20px;}
-    .kpi-row{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
-    .kpi-box{flex:1;min-width:100px;border:1px solid #e9d5ff;border-radius:8px;padding:12px 14px;background:#faf5ff;text-align:center;}
-    .kpi-val{font-size:22px;font-weight:700;color:#7c3aed;}
-    .kpi-lbl{font-size:10px;color:#888;margin-top:4px;letter-spacing:.05em;}
     .warning-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:#92400e;}
+    table{width:100%;border-collapse:collapse;}
+    thead{background:#f5f0ff;}
+    th{padding:6px 8px;text-align:left;font-size:10px;color:#7c3aed;border-bottom:1px solid #e9d5ff;}
     .footer{margin-top:30px;padding-top:12px;border-top:2px solid #7c3aed;display:flex;justify-content:space-between;font-size:10px;color:#888;}
     .classification{background:#7c3aed;color:#fff;text-align:center;padding:6px;font-size:10px;font-weight:700;letter-spacing:.12em;margin-top:16px;}
   </style></head><body>
@@ -25592,30 +25389,25 @@ function exportEngelPDF() {
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div>
         <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:6px;">SISTEMA SENTINEL — HONDURAS</div>
-        <div style="font-size:20px;font-weight:700;margin-bottom:4px;">🇺🇸 Reporte: Posibles Homónimos — Lista Engel EE.UU.</div>
-        <div style="font-size:11px;opacity:.8;">Ley RENACER · Depto. de Estado de los Estados Unidos · Corrupción Pública</div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:4px;">🇺🇸 Lista Engel EE.UU. — Referencia</div>
+        <div style="font-size:11px;opacity:.8;">Ley RENACER (Sección 353) · Depto. de Estado de los Estados Unidos</div>
       </div>
       <div style="text-align:right;font-size:10px;opacity:.8;">
         <div style="font-size:13px;font-weight:700;opacity:1;">${folio}</div>
         <div style="margin-top:4px;">${ds}</div>
-        <div style="margin-top:2px;">Base: ${(window.allAlerts||[]).length.toLocaleString()} contratos SEFIN</div>
+        <div style="margin-top:2px;">${rows.length} personas</div>
       </div>
     </div>
   </div>
 
-  <div class="kpi-row">
-    <div class="kpi-box"><div class="kpi-val">${activeActors.length}</div><div class="kpi-lbl">COINCIDENCIAS DE APELLIDO</div></div>
-    <div class="kpi-box"><div class="kpi-val">${totalContratos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CON POSIBLE HOMÓNIMO</div></div>
-    <div class="kpi-box"><div class="kpi-val" style="color:var(--print-red);">${totalCriticos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
-    <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">MONTO TOTAL</div></div>
-    <div class="kpi-box"><div class="kpi-val">${fmtUSD2(totalMonto)}</div><div class="kpi-lbl">EQUIVALENTE USD</div></div>
-  </div>
-
   <div class="warning-box">
-    ⚠️ <strong>Nota metodológica:</strong> Esta lista fue generada mediante cruce automatizado de apellidos normalizados de la Lista Engel del Departamento de Estado de EE.UU. (Ley RENACER) contra los registros de contratación pública de SEFIN-EDCA. Un "match" indica presencia del apellido en campos de proveedor, entidad o descripción — <strong>NO confirma que se trate de la misma persona</strong>. Honduras no publica cédula/RTN para los funcionarios de esta lista, por lo que la mayoría de coincidencias son personas distintas que comparten los mismos apellidos. Cada caso requiere verificación manual de identidad por parte de personal autorizado antes de citarse como hallazgo.
+    ⚠️ <strong>Nota:</strong> Esta es la lista de referencia tal como la publica el Departamento de Estado de EE.UU. (autoridad expirada dic. 2023, sin designaciones nuevas). <strong>Este documento NO cruza estos nombres contra la base de datos de contratos de Sentinel.</strong> Honduras no publica cédula/RTN para estas personas, y un cruce automatizado por apellido produce falsos positivos por homonimia. Cualquier vínculo con un proveedor específico requiere verificación manual de identidad.
   </div>
 
-  ${actorRows}
+  <table>
+    <thead><tr><th>Nombre</th><th>Cargo / rol</th><th style="text-align:center;">Año</th></tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
 
   <div class="footer">
     <div>Sistema Sentinel — Monitoreo de Contratación Pública</div>
@@ -25630,8 +25422,6 @@ function exportEngelPDF() {
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());
 }
-
-// S326: panel y export PDF de OFAC removidos — ver comentario de cabecera cerca de línea 960.
 
 // ══════════════════════════════════════════════════════════════
 // RED FLAGS PDF EXPORT — CNA / UFERCO / MP Honduras

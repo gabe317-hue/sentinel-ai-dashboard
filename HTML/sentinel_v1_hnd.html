@@ -6612,6 +6612,24 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
 
+    <!-- ── SALUD DE FUENTES (S328) — distingue "el cron corrió" de "el cron
+         trajo datos". "Última Ingesta" arriba solo lee max(alerts.created_at)
+         y no avisa si una fuente lleva semanas fallando en silencio (caso real:
+         ONCAE, certificado SSL vencido desde el 5 jul, 45+ días sin éxito, y el
+         cron de Postgres seguía marcando "succeeded"). Lee sentinel_fuentes_salud(),
+         que a su vez lee cron_logs — hoy solo cron-oncae y cron-sefin-sync
+         loguean ahí; SICC/IAIP/TSC no tienen este detalle todavía, así que no
+         aparecen aquí (no se inventa cobertura que no existe). ─────────────── -->
+    <div style="margin-bottom:28px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;margin-bottom:12px;">SALUD DE FUENTES</div>
+      <div id="fuentes-salud-wrap" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 20px;">
+        <div style="color:var(--text-dim);font-size:13px;">Cargando…</div>
+      </div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:6px;opacity:0.6;">
+        ⓘ Solo cubre fuentes que loguean en cron_logs (SEFIN, ONCAE hoy). SICC/IAIP/TSC no están instrumentadas aún.
+      </div>
+    </div>
+
     <!-- Crear nuevo usuario -->
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:20px;margin-bottom:28px;">
       <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;margin-bottom:14px;">➕ NUEVO USUARIO DEMO</div>
@@ -7799,7 +7817,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.14';
+const APP_VERSION = 'v2.15';
 const APP_BUILD   = '2026-08-11';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -22494,6 +22512,7 @@ function showAdminPanel() {
   admLoadUsuarios();
   pedCargar();
   loadSysHealth(); // S240 P10.7: Salud del Sistema ahora vive aquí (admin-only)
+  loadFuentesSalud(); // S328: Salud de Fuentes
 }
 
 function hideAdminPanel() {
@@ -29975,6 +29994,45 @@ async function loadSysHealth() {
   } catch(e) {
     document.getElementById('sh-total').textContent = 'Error';
     console.warn('loadSysHealth:', e);
+  }
+}
+
+// ─── SALUD DE FUENTES (S328) ─────────────────────────────────────────────────
+// Lee sentinel_fuentes_salud() (lee cron_logs) — muestra si una fuente de
+// ingesta lleva días fallando aunque el cron de Postgres siga marcando
+// "succeeded" (el wrapper de la fuente atrapa el error y solo lo deja en
+// cron_logs). Caso que motivó esto: ONCAE, cert SSL vencido, 45+ días.
+const FUENTE_LABELS = { 'cron-oncae': 'ONCAE', 'cron-sefin-sync': 'SEFIN' };
+
+async function loadFuentesSalud() {
+  const wrap = document.getElementById('fuentes-salud-wrap');
+  try {
+    const { data, error } = await db.rpc('sentinel_fuentes_salud');
+    if (error) throw error;
+    if (!data || !data.length) {
+      wrap.innerHTML = '<div style="color:var(--text-dim);font-size:13px;">Sin datos de cron_logs todavía.</div>';
+      return;
+    }
+    wrap.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+      ${data.map(f => {
+        const dias = Number(f.dias_desde_ultimo_exito);
+        const fallando = f.corridas_fallando_seguidas > 0;
+        const color = !fallando ? 'var(--green)' : dias >= 7 ? 'var(--red)' : 'var(--amber)';
+        const estadoTxt = !fallando ? '✅ OK' : `⚠ Fallando (${f.corridas_fallando_seguidas} corridas seguidas)`;
+        const nombre = FUENTE_LABELS[f.fuente] || f.fuente;
+        return `<div style="border:1px solid ${color}40;border-radius:8px;padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--text);">${nombre}</span>
+            <span style="font-size:11px;font-weight:700;color:${color};">${estadoTxt}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-dim);">Último éxito: hace ${dias.toFixed(1)}d</div>
+          ${fallando ? `<div style="font-size:10px;color:${color};margin-top:4px;opacity:0.85;word-break:break-word;">${(f.ultimo_error || 'Sin detalle de error').slice(0,180)}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  } catch(e) {
+    wrap.innerHTML = `<div style="color:var(--red);font-size:13px;">Error al cargar salud de fuentes: ${e.message}</div>`;
+    console.warn('loadFuentesSalud:', e);
   }
 }
 

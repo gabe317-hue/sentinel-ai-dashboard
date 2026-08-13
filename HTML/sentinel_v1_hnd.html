@@ -4264,6 +4264,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></span> Ingesta
         <span class="nav-chip" style="background:rgba(0,230,118,0.12);color:var(--green);border-color:rgba(0,230,118,0.3);">LIVE</span>
       </button>
+      <!-- S328-b: "Nueva Alerta" — movida del header de Registro de Contratos
+           (se veía fuera de lugar junto a Pareto/Todo/Presentar) y, antes de
+           eso, se probó en el Panel Admin — mal ahí porque nav-admin está
+           restringido a 3 correos (SENTINEL_ADMIN_EMAILS) y esta acción la
+           usa un analista, no un admin. Deliberadamente SIN adminOnly: debe
+           verse para cualquier rol logueado, admin o analista. -->
+      <button class="nav-item" id="nav-nueva-alerta" onclick="openModal()" aria-label="Registrar alerta manual">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span> Nueva Alerta
+      </button>
       <button class="nav-item" id="nav-admin" onclick="showAdminPanel()" aria-label="Ir a Administración">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Admin
         <span class="nav-chip" style="background:rgba(99,102,241,0.15);color:#818cf8;border-color:rgba(99,102,241,0.3);">USR</span>
@@ -6690,18 +6699,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <div style="color:var(--text-dim);font-size:13px;padding:20px 0;">Cargando usuarios…</div>
     </div>
 
-    <!-- Registro manual de alertas (S328-b, movida del header) -->
-    <div style="margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,0.08);">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <span style="font-size:16px;">➕</span>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.06em;">REGISTRAR ALERTA MANUAL</div>
-          <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">Escribe directo a la tabla alerts — para casos de prensa o tips ya verificados que no vienen de las fuentes automatizadas (ONCAE/IAIP/SEFIN/SICC). No tiene relación con la tabla de Denuncia Ciudadana.</div>
-        </div>
-      </div>
-      <button class="btn-header-primary" onclick="openModal()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Nueva Alerta</button>
-    </div>
-
     <!-- Proveedores Error de Datos (S113) -->
     <div style="margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,0.08);">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
@@ -7835,7 +7832,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
 
-const APP_VERSION = 'v2.16';
+const APP_VERSION = 'v2.17';
 const APP_BUILD   = '2026-08-11';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {

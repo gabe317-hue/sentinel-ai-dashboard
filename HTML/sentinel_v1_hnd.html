@@ -7799,7 +7799,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // lateral y v1.94 en el portal, el login y el pie del splash. En una
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
-const APP_VERSION = 'v2.13';
+const APP_VERSION = 'v2.14';
 const APP_BUILD   = '2026-08-11';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -22576,10 +22576,33 @@ async function admLoadUsuarios() {
 // (existe desde P7/P8, S233) — reemplaza los secretos fijos que antes viajaban
 // en texto plano en este archivo. Si no hay sesión, cae a la anon key (que el
 // servidor ahora rechaza) en vez de romper con una excepción no controlada.
+// S320: el cliente se crea con autoRefreshToken:false (línea ~7833, evita el
+// DataCloneError del broadcast interno) — sin esto, el access_token vence
+// (~1h, default de Supabase Auth) y nadie lo renueva: cualquier llamada
+// gateada por _authToken() (Panel Admin, casos-admin, notificaciones…)
+// empieza a devolver 401 "No autorizado" a mitad de sesión, con la sesión
+// visualmente activa. Se refresca a mano con el refresh_token guardado
+// cuando el access_token está vencido o vence en <30s.
 async function _authToken() {
   try {
     const { data } = await db.auth.getSession();
-    if (data?.session?.access_token) return data.session.access_token;
+    let session = data?.session;
+    const now = Math.floor(Date.now() / 1000);
+    if (session?.expires_at && session.expires_at <= now + 30 && session.refresh_token) {
+      try {
+        const { data: refreshed, error } = await db.auth.refreshSession({ refresh_token: session.refresh_token });
+        if (!error && refreshed?.session) {
+          session = refreshed.session;
+          try {
+            sessionStorage.setItem(SENTINEL_SESSION_KEY, JSON.stringify({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token
+            }));
+          } catch (e) {}
+        }
+      } catch (e) {}
+    }
+    if (session?.access_token) return session.access_token;
   } catch (e) {}
   return SUPABASE_ANON_KEY;
 }

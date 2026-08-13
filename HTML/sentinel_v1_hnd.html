@@ -1066,7 +1066,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;
   letter-spacing: .03em; font-family: 'JetBrains Mono', monospace;
 }
-.adp-pattern-tag.PROVEEDOR_ENGEL        { background:var(--purple-dim,rgba(168,85,247,0.12)); color:var(--purple); border:1px solid var(--purple); }
+.adp-pattern-tag.PROVEEDOR_ENGEL        { background:var(--amber-dim,rgba(245,158,11,0.12)); color:var(--amber); border:1px solid var(--amber); }
 .adp-pattern-tag.SOBRECOSTO              { background:var(--amber-dim);   color:var(--amber);    border:1px solid var(--amber); }
 .adp-pattern-tag.MONTO_FRACCIONADO       { background:var(--electric-dim);color:var(--electric); border:1px solid var(--electric); }
 .adp-pattern-tag.ADJUDICACION_DIRECTA    { background:var(--orange-dim);  color:var(--orange);   border:1px solid var(--orange); }
@@ -4784,14 +4784,14 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-note">▸ Escalada legal recomendada</div>
       </div>
       <!-- Lista Engel -->
-      <div class="exec-card exec-card-purple" onclick="showListasPanel()" style="cursor:pointer;">
-        <div class="exec-card-label">Lista Engel</div>
+      <div class="exec-card exec-card-purple" onclick="showListasPanel()" style="cursor:pointer;" title="Coincidencias de apellido — identidad no confirmada, requiere verificación manual">
+        <div class="exec-card-label">Posible Homónimo (Engel)</div>
         <div style="display:flex;gap:14px;align-items:baseline;margin:4px 0 2px;">
-          <span style="font-size:10px;color:var(--purple);letter-spacing:.04em;">ENGEL</span>
+          <span style="font-size:10px;color:var(--amber);letter-spacing:.04em;">ENGEL</span>
           <span class="exec-card-value" id="exec-engel" style="font-size:22px;">—</span>
         </div>
-        <div class="exec-card-sub">Ley RENACER · EE.UU.</div>
-        <div class="exec-card-note">▸ Alerta máxima</div>
+        <div class="exec-card-sub">Ley RENACER · EE.UU. · sin confirmar</div>
+        <div class="exec-card-note">▸ Requiere verificación manual</div>
       </div>
       <!-- ONCAE CRÍTICA -->
       <div class="exec-card exec-card-red">
@@ -7008,7 +7008,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span>Lista Engel — EE.UU.</span>
       </div>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">
-        Lista Engel (Ley RENACER) · Proveedores señalados con contratos activos en Honduras
+        Lista Engel (Ley RENACER) · Posibles homónimos de apellido en contratos públicos — identidad NO confirmada
       </div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <button class="pdf-btn" onclick="exportEngelPDF()" style="background:rgba(168,85,247,0.12);color:var(--purple);border-color:rgba(168,85,247,0.35);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF Engel</button>
@@ -7018,13 +7018,13 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <!-- ENGEL SECTION -->
     <div style="margin-top:22px;">
       <div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--purple);text-transform:uppercase;padding:0 2px 8px;border-bottom:1px solid rgba(168,85,247,0.2);margin-bottom:12px;">🇺🇸 Lista Engel — Depto. de Estado EE.UU.</div>
-      <div style="font-size:11px;color:var(--text-dim);background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;">
-        ℹ️ <strong style="color:var(--purple);">Metodología:</strong> Sentinel identifica contratos donde el nombre del proveedor coincide con el actor señalado o con personas que comparten sus apellidos (familiares registrados como proveedores del Estado). Esta coincidencia es un indicador de posible conflicto de interés bajo la Ley RENACER — no una conclusión jurídica.
+      <div style="font-size:11px;color:#92400e;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;">
+        ⚠️ <strong style="color:var(--amber);">Metodología (léase antes de citar esto en un expediente):</strong> Sentinel busca los apellidos de la Lista Engel dentro del texto de proveedor/entidad/descripción de cada contrato. Esto detecta <strong>coincidencias de apellido, no identidad confirmada</strong> — la gran mayoría son personas distintas que comparten los mismos dos apellidos (ej. "Hernández Alvarado" es un apellido común, no exclusivo del actor señalado). Honduras no publica cédula/RTN para funcionarios en esta lista, así que Sentinel no puede confirmar identidad automáticamente. Cada caso requiere verificación manual antes de citarse como hallazgo.
       </div>
-      <div id="engelSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:0 0 6px;padding:14px 18px;background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.2);border-radius:10px;">
-        <div><span style="font-size:11px;color:var(--muted);">ACTORES EN LISTA</span><br><span id="engel-stat-actores" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
-        <div><span style="font-size:11px;color:var(--muted);">CONTRATOS VINCULADOS</span><br><span id="engel-stat-contratos" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
-        <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="engel-stat-monto" style="font-size:22px;font-weight:700;color:var(--purple);font-family:'Syne',sans-serif;">—</span></div>
+      <div id="engelSummaryBar" style="display:flex;gap:20px;flex-wrap:wrap;margin:0 0 6px;padding:14px 18px;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:10px;">
+        <div><span style="font-size:11px;color:var(--muted);">COINCIDENCIAS DE APELLIDO</span><br><span id="engel-stat-actores" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">CONTRATOS CON POSIBLE HOMÓNIMO</span><br><span id="engel-stat-contratos" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
+        <div><span style="font-size:11px;color:var(--muted);">MONTO TOTAL</span><br><span id="engel-stat-monto" style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Syne',sans-serif;">—</span></div>
         <div><span style="font-size:11px;color:var(--muted);">CONTRATOS CRÍTICOS</span><br><span id="engel-stat-criticos" style="font-size:22px;font-weight:700;color:var(--red);font-family:'Syne',sans-serif;">—</span></div>
       </div>
       <div id="engelBody" style="margin-top:12px;">
@@ -7832,7 +7832,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
 
-const APP_VERSION = 'v2.17';
+const APP_VERSION = 'v2.18';
 const APP_BUILD   = '2026-08-11';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -19334,7 +19334,7 @@ function ipMemoEjecutivo() {
     'COMPRA_MENOR_ONCAE':'Compra Menor','CONTRATACION_DIRECTA_ONCAE':'Contratación Directa',
     'PERIODO_MINIMO_ONCAE':'Período Mínimo','FRACCIONAMIENTO_ONCAE':'Fraccionamiento',
     'SOBRECOSTO':'Sobrepresupuesto','CLUSTER_CD':'Cluster CD',
-    'PROVEEDOR_ENGEL':'Lista Engel EE.UU.',
+    'PROVEEDOR_ENGEL':'Posible Homónimo (Lista Engel)',
     'CONTRATACION_DIRECTA_SICC':'Contratación Directa (SICC)','FRACCIONAMIENTO_SICC':'Fraccionamiento (SICC)',
     'CIERRE_EJERCICIO':'Cierre de Ejercicio','RAFAGA_7D':'Ráfaga 7 Días',   // S292 — contextuales
   };
@@ -20954,7 +20954,7 @@ async function renderTop5() {
           ${patArr.map(p=>`<span class="t5-tag t5-tag-patron">${esc(p)}</span>`).join('')}
           <span class="t5-tag t5-tag-n">${c.n} contrato${c.n!==1?'s':''}</span>
           <span class="t5-sector">${esc(c.sector)}</span>
-          ${esEngel   ? '<span class="t5-tag t5-tag-externo">⚠ ENGEL</span>' : ''}
+          ${esEngel   ? '<span class="t5-tag t5-tag-externo" title="Coincidencia de apellido con Lista Engel — identidad no confirmada">⚠ Posible homónimo (Engel)</span>' : ''}
           ${invEstado ? `<span class="t5-tag t5-tag-sent">SEN-INV ${esc(invEstado)}</span>` : ''}
         </div>
         ${c.sig.labels && c.sig.labels.length > 0 ? `<div style="margin:6px 0 4px;display:flex;flex-wrap:wrap;gap:4px;">
@@ -21803,7 +21803,7 @@ const PATTERN_LABELS = {
   MONTO_FRACCIONADO:           'Monto Fraccionado',
   SOBRECOSTO:                  '📈 Sobrepresupuesto Presupuestario',
   URGENCIA_INJUSTIFICADA:      'Urgencia Injustificada',
-  ENGEL:                       '🇺🇸 Lista Engel EE.UU.',
+  ENGEL:                       '🇺🇸 Posible Homónimo (Lista Engel)',
   // ONCAE patterns
   CONTRATACION_DIRECTA_ONCAE:  '⚡ Contratación Directa (ONCAE)',
   PERIODO_URGENTE_ONCAE:       '🔴 Período Urgente (ONCAE)',
@@ -25258,6 +25258,12 @@ function rfToggle(idx) {
 // ── P4: LISTA ENGEL — Cross-reference contra allAlerts ─────────────────────────
 // Busca coincidencias de apellidos normalizados de la Lista Engel contra
 // proveedor_nombre, entity_name y descripción de cada contrato.
+// ⚠️ S329: esto es un match de TEXTO (2 apellidos), no de identidad. Verificado
+// contra la base — de 39 "coincidencias" activas ninguna corresponde al actor
+// real, todas son homónimos (personas distintas con los mismos 2 apellidos).
+// Honduras no publica cédula/RTN para políticos, así que no hay forma de
+// confirmar identidad automáticamente. Tratar SIEMPRE como "posible homónimo,
+// requiere verificación manual" — nunca como match confirmado.
 function buildEngelIndex() {
   if (!window.allAlerts || !window.allAlerts.length) return;
   const norm = s => (s || '').toLowerCase()
@@ -25448,10 +25454,10 @@ function renderEngelPanel() {
     const criticos = alerts.filter(a => gNormSev(a.severity||a.severidad)==='critica').length;
     const altos = alerts.filter(a => (a.severity||a.severidad||'').toUpperCase() === 'ALTA').length;
     html += `
-    <div style="margin-bottom:28px;border:1px solid rgba(168,85,247,0.25);border-radius:12px;overflow:hidden;">
-      <div style="padding:14px 18px;background:rgba(168,85,247,0.08);border-bottom:1px solid rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div style="margin-bottom:28px;border:1px solid rgba(245,158,11,0.3);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;background:rgba(245,158,11,0.08);border-bottom:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
         <div>
-          <div style="font-size:14px;font-weight:700;color:var(--purple);">🇺🇸 ${meta.full}</div>
+          <div style="font-size:14px;font-weight:700;color:var(--amber);">🇺🇸 ${meta.full} <span style="font-size:10px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);border-radius:10px;padding:2px 8px;margin-left:6px;">⚠ POSIBLE HOMÓNIMO — NO CONFIRMADO</span></div>
           <div style="font-size:11px;color:var(--muted);margin-top:3px;">${meta.role}</div>
         </div>
         <div style="display:flex;gap:14px;font-size:12px;">
@@ -25540,7 +25546,7 @@ function exportEngelPDF() {
     <div style="margin-bottom:28px;border:2px solid #7c3aed;border-radius:8px;overflow:hidden;page-break-inside:avoid;">
       <div style="background:#7c3aed;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-start;">
         <div>
-          <div style="font-size:14px;font-weight:700;">🇺🇸 ${meta.full}</div>
+          <div style="font-size:14px;font-weight:700;">🇺🇸 ${meta.full} <span style="font-size:10px;font-weight:700;opacity:.9;">(⚠ posible homónimo — no confirmado)</span></div>
           <div style="font-size:11px;opacity:0.85;margin-top:2px;">${meta.role}</div>
         </div>
         <div style="text-align:right;font-size:11px;">
@@ -25586,7 +25592,7 @@ function exportEngelPDF() {
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div>
         <div style="font-size:10px;letter-spacing:.12em;opacity:.8;margin-bottom:6px;">SISTEMA SENTINEL — HONDURAS</div>
-        <div style="font-size:20px;font-weight:700;margin-bottom:4px;">🇺🇸 Reporte: Lista Engel EE.UU.</div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:4px;">🇺🇸 Reporte: Posibles Homónimos — Lista Engel EE.UU.</div>
         <div style="font-size:11px;opacity:.8;">Ley RENACER · Depto. de Estado de los Estados Unidos · Corrupción Pública</div>
       </div>
       <div style="text-align:right;font-size:10px;opacity:.8;">
@@ -25598,15 +25604,15 @@ function exportEngelPDF() {
   </div>
 
   <div class="kpi-row">
-    <div class="kpi-box"><div class="kpi-val">${activeActors.length}</div><div class="kpi-lbl">ACTORES EN LISTA</div></div>
-    <div class="kpi-box"><div class="kpi-val">${totalContratos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS VINCULADOS</div></div>
+    <div class="kpi-box"><div class="kpi-val">${activeActors.length}</div><div class="kpi-lbl">COINCIDENCIAS DE APELLIDO</div></div>
+    <div class="kpi-box"><div class="kpi-val">${totalContratos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CON POSIBLE HOMÓNIMO</div></div>
     <div class="kpi-box"><div class="kpi-val" style="color:var(--print-red);">${totalCriticos.toLocaleString()}</div><div class="kpi-lbl">CONTRATOS CRÍTICOS</div></div>
     <div class="kpi-box"><div class="kpi-val">${fmtL(totalMonto)}</div><div class="kpi-lbl">MONTO TOTAL</div></div>
     <div class="kpi-box"><div class="kpi-val">${fmtUSD2(totalMonto)}</div><div class="kpi-lbl">EQUIVALENTE USD</div></div>
   </div>
 
   <div class="warning-box">
-    ⚠️ <strong>Nota metodológica:</strong> Esta lista fue generada mediante cruce automatizado de apellidos normalizados de la Lista Engel del Departamento de Estado de EE.UU. (Ley RENACER) contra los registros de contratación pública de SEFIN-EDCA. Un "match" indica presencia del apellido en campos de proveedor, entidad o descripción — no constituye prueba de participación directa. Se requiere verificación manual por parte de personal autorizado.
+    ⚠️ <strong>Nota metodológica:</strong> Esta lista fue generada mediante cruce automatizado de apellidos normalizados de la Lista Engel del Departamento de Estado de EE.UU. (Ley RENACER) contra los registros de contratación pública de SEFIN-EDCA. Un "match" indica presencia del apellido en campos de proveedor, entidad o descripción — <strong>NO confirma que se trate de la misma persona</strong>. Honduras no publica cédula/RTN para los funcionarios de esta lista, por lo que la mayoría de coincidencias son personas distintas que comparten los mismos apellidos. Cada caso requiere verificación manual de identidad por parte de personal autorizado antes de citarse como hallazgo.
   </div>
 
   ${actorRows}

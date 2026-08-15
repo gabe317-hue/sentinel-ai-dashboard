@@ -2849,12 +2849,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <p>ANÁLISIS MULTI-DIMENSIONAL · MONTO × COMPORTAMIENTO · DATOS EN TIEMPO REAL</p>
     </div>
     <div style="display:flex;gap:10px;">
-      <button onclick="exportarRegla30PDF()"
-        style="padding:8px 14px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.08em;
-        background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);border-radius:8px;cursor:pointer;"
-        title="Guardar o imprimir el resumen de certeza (Regla #30)">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Resumen Certeza
-      </button>
       <button onclick="exportarTop10PDF()"
         style="padding:8px 14px;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.08em;
         background:rgba(255,61,87,0.1);color:#ff3d57;border:1px solid rgba(255,61,87,0.3);border-radius:8px;cursor:pointer;">
@@ -7814,7 +7808,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
 
-const APP_VERSION = 'v2.20';
+const APP_VERSION = 'v2.19';
 const APP_BUILD   = '2026-08-11';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -20779,102 +20773,6 @@ function exportarTop10PDF() {
   pw.addEventListener('load', () => pw.focus());
 }
 
-// S346 — Revisión de certeza (Regla #30) sobre el Top 10 vigente al 15 ago 2026.
-// Es una revisión narrativa manual (Claude-desk-review, no verificación documental),
-// igual convención que project_precision_review_baseline_s334 / S336. Se referencia por
-// substring del nombre de proveedor porque el Top 10 se refresca cada 30 min (mv_sentinel_score)
-// y el orden/composición puede moverse — si un proveedor nuevo entra sin match aquí, se
-// muestra sin clasificación (no se inventa una). Repetir esta revisión periódicamente,
-// no asumir que sigue vigente indefinidamente.
-const REGLA30_TOP10_FECHA = '15 de agosto, 2026';
-const REGLA30_TOP10 = [
-  { match: 'PRODUCTOS DE DIAGNOSTICO', clasif: 'ESCALADO', motivo: '16 contratos en 4 instituciones (Hospital Escuela, MP, SESAL, UNAH), fraccionamiento + contratación directa recurrente. Ya en investigación (AUTO-2026-505).' },
-  { match: 'SINOHYDRO', clasif: 'LEGÍTIMO (probable)', motivo: '1 contrato, 0 patrones de riesgo activados. Contratista chino de infraestructura de gran escala (ENEE) — el monto alto por sí solo no es evidencia. No verificado de forma independiente.' },
-  { match: 'CONTRATISTAS CONSULTORES DE LA CONSTRUCCION', clasif: 'ESCALADO', motivo: '3 contratos directos grandes a la misma entidad (SIT), mismo día — concentración temporal.' },
-  { match: 'SERVICIOS DE MANTENIMIENTO Y CONSTRUCCION', clasif: 'INDETERMINADO', motivo: '1 contrato bajo licitación privada (mecanismo legal) — evidencia insuficiente en un solo episodio para concluir.' },
-  { match: 'EQUIPOS INDUSTRIALES', clasif: 'ESCALADO', motivo: '22 contratos en 6 instituciones, 5 patrones de riesgo activos incluido fraccionamiento. Ya en investigación (AUTO-2026-568, Activa).' },
-  { match: 'IVETTE AZRAK', clasif: 'INDETERMINADO', motivo: '1 contrato directo grande, sin corroboración adicional aún. En revisión (AUTO-2026-508).' },
-  { match: 'AMPLUS', clasif: 'INDETERMINADO', motivo: '1 contrato directo (reciclado de pavimento, AMDC) — episodio único, amerita verificación antes de concluir.' },
-  { match: 'BENDICION Y SALUD', clasif: 'ESCALADO', motivo: '3 contratos de alto monto por contratación directa a IHSS — patrón ya documentado en sesión de datos previa.' },
-  { match: 'BENHARMA', clasif: 'ESCALADO', motivo: 'Contrato CRÍTICO de alto monto a INP. En investigación (AUTO-2026-516).' },
-  { match: 'SERRANO COLINDRES', clasif: 'ESCALADO', motivo: '17 contratos en 4 instituciones distintas, 12 CRÍTICA — evidencia nacional fuerte. (Un cruce más angosto de este mismo proveedor bajo "Dirección General de Carreteras" fue verificado y descartado por fusión de nombres — AUTO-2026-512, corregido esta sesión; no afecta esta evidencia más amplia.)' },
-];
-function getRegla30(proveedor) {
-  const up = (proveedor||'').toUpperCase();
-  return REGLA30_TOP10.find(r => up.includes(r.match)) || null;
-}
-function regla30Badge(clasif) {
-  const c = clasif==='ESCALADO' ? '#ff3d57' : clasif && clasif.startsWith('LEGÍTIMO') ? '#34d399' : '#fbbf24';
-  return `<span style="font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:800;letter-spacing:.06em;padding:2px 8px;border-radius:8px;background:${c}22;color:${c};border:1px solid ${c}55;white-space:nowrap;">${clasif}</span>`;
-}
-function buildRegla30SummaryHtml(top10) {
-  const rows = top10.map(c => ({ c, r: getRegla30(c.proveedor) })).filter(x => x.r);
-  if (!rows.length) return '';
-  const nEsc = rows.filter(x => x.r.clasif==='ESCALADO').length;
-  const nInd = rows.filter(x => x.r.clasif==='INDETERMINADO').length;
-  const nLeg = rows.filter(x => x.r.clasif.startsWith('LEGÍTIMO')).length;
-  const pct = Math.round(((nEsc+nInd)/rows.length)*100);
-  const listHtml = rows.map(({c,r}) => `
-    <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-      ${regla30Badge(r.clasif)}
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:11px;font-weight:700;color:#e2e8f0;">${c.proveedor}</div>
-        <div style="font-size:10px;color:rgba(160,180,210,0.65);margin-top:2px;">${r.motivo}</div>
-      </div>
-    </div>`).join('');
-  return `<div id="regla30Summary" style="background:rgba(96,165,250,0.05);border:1px solid rgba(96,165,250,0.2);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#60a5fa;font-weight:800;">🔍 Revisión de Certeza — Regla #30 (${REGLA30_TOP10_FECHA})</div>
-      <div style="font-size:11px;color:rgba(160,180,210,0.7);">${nEsc} ESCALADO · ${nInd} INDETERMINADO · ${nLeg} LEGÍTIMO(probable) &nbsp;—&nbsp; <strong style="color:#e2e8f0;">${pct}% amerita tiempo de analista</strong></div>
-    </div>
-    <div style="font-size:9px;color:rgba(160,180,210,0.45);margin-bottom:8px;">Revisión narrativa manual, no verificación documental caso por caso. Puede quedar desactualizada si el Top 10 se refresca — repetir periódicamente.</div>
-    ${listHtml}
-  </div>`;
-}
-
-function exportarRegla30PDF() {
-  const summary = document.getElementById('regla30Summary');
-  if (!summary) { alert('El resumen de certeza aún no está disponible — espera a que cargue el Top 10.'); return; }
-  const ts = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
-  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-  <title>Resumen de Certeza — Top 10 (Regla #30) — Sentinel AI</title>
-  <style>
-    body { background:#fff; color:#111; font-family: 'Segoe UI', Arial, sans-serif; margin:0; padding:32px; }
-    h1 { font-size:18px; font-weight:900; margin:0 0 4px; }
-    .sub { font-size:10px; color:#666; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; }
-    .disclaimer { font-size:9px; color:#999; margin-bottom:20px; font-style:italic; }
-    .tally { font-size:12px; color:#333; margin-bottom:20px; padding:10px 14px; background:#f8fafc; border-left:3px solid #60a5fa; border-radius:4px; }
-    .row { display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-bottom:1px solid #eee; }
-    .badge { font-size:8px; font-weight:800; letter-spacing:.05em; padding:3px 9px; border-radius:8px; white-space:nowrap; margin-top:1px; }
-    .b-esc { background:#fee2e2; color:var(--print-red); }
-    .b-ind { background:#fef3c7; color:#b45309; }
-    .b-leg { background:#dcfce7; color:#15803d; }
-    .prov { font-size:12px; font-weight:800; margin-bottom:2px; }
-    .motivo { font-size:10px; color:#555; }
-    .footer { margin-top:24px; font-size:9px; color:#999; text-align:center; border-top:1px solid #f3f4f6; padding-top:12px; }
-    @media print { body { padding:16px; } }
-  </style></head><body>
-  <h1>Resumen de Certeza — Top 10 Investigación Prioritaria</h1>
-  <div class="sub">Revisión Regla #30 · ${ts}</div>
-  <div class="disclaimer">Revisión narrativa manual (Claude), no verificación documental caso por caso. Refleja el Top 10 vigente al momento de la revisión (${REGLA30_TOP10_FECHA}) — puede no coincidir con la lista actual si esta se refrescó desde entonces.</div>
-  <div class="tally">${summary.querySelector('div[style*="justify-content"] > div:nth-child(2)') ? summary.querySelector('div[style*="justify-content"] > div:nth-child(2)').innerText : ''}</div>
-  ${[...summary.querySelectorAll('div[style*="border-bottom"]')].map(row => {
-    const badgeEl = row.querySelector('span');
-    const clasif = badgeEl ? badgeEl.innerText : '';
-    const bCls = clasif==='ESCALADO' ? 'b-esc' : clasif.startsWith('LEGÍTIMO') ? 'b-leg' : 'b-ind';
-    const prov = row.querySelector('div > div:first-child') ? row.querySelector('div > div:first-child').innerText : '';
-    const motivo = row.querySelector('div > div:last-child') ? row.querySelector('div > div:last-child').innerText : '';
-    return `<div class="row"><span class="badge ${bCls}">${clasif}</span><div><div class="prov">${prov}</div><div class="motivo">${motivo}</div></div></div>`;
-  }).join('')}
-  <div class="footer">Sentinel AI · Sistema Anticorrupción · ${ts} · CONFIDENCIAL — Solo personal autorizado</div>
-  </body></html>`;
-  const pw = window.open('', '_blank', 'width=900,height=800');
-  if (!pw) { alert('Habilita ventanas emergentes para exportar.'); return; }
-  pw.document.write(addPrintBtn(html));
-  pw.document.close();
-  pw.addEventListener('load', () => pw.focus());
-}
-
 async function renderTop5() {
   const body = document.getElementById('top5Body');
   if (!allAlerts || !allAlerts.length) {
@@ -20991,9 +20889,7 @@ async function renderTop5() {
     rank <= 7  ? '<span class="t5-nivel t5-nivel-alto">● RIESGO ALTO</span>' :
                  '<span class="t5-nivel t5-nivel-elev">● RIESGO ELEVADO</span>';
 
-  const regla30Html = buildRegla30SummaryHtml(top10);
-
-  body.innerHTML = regla30Html + insightHtml + top10.map((c, i) => {
+  body.innerHTML = insightHtml + top10.map((c, i) => {
     const rank = i + 1;
     const rankClass = rank <= 3 ? ' rank-'+rank : '';
     const entLista = [...c.entidades].slice(0, 3).join(' · ') + (c.entidades.size > 3 ? ` +${c.entidades.size-3}` : '');
@@ -21018,7 +20914,6 @@ async function renderTop5() {
           <span class="t5-tag t5-tag-n">${c.n} contrato${c.n!==1?'s':''}</span>
           <span class="t5-sector">${esc(c.sector)}</span>
           ${invEstado ? `<span class="t5-tag t5-tag-sent">SEN-INV ${esc(invEstado)}</span>` : ''}
-          ${(() => { const r30 = getRegla30(c.proveedor); return r30 ? `<span title="${esc(r30.motivo)}">${regla30Badge(r30.clasif)}</span>` : ''; })()}
         </div>
         ${c.sig.labels && c.sig.labels.length > 0 ? `<div style="margin:6px 0 4px;display:flex;flex-wrap:wrap;gap:4px;">
           ${c.sig.labels.map(l => `<span style="font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.07em;padding:2px 7px;border-radius:10px;background:rgba(232,121,249,0.15);color:#e879f9;border:1px solid rgba(232,121,249,0.35);">⬡ ${l}</span>`).join('')}

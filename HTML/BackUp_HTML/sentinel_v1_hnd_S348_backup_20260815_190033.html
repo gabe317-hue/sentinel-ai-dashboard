@@ -4432,10 +4432,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <div><div class="po-card-title">Análisis</div><div class="po-card-desc">5 módulos · Riesgo cuantitativo</div></div>
           <div class="po-chevron">▼</div>
         </div>
-        <div class="exec-metrics" style="grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0 0;">
+        <div class="exec-metrics" style="grid-template-columns:repeat(2,1fr);gap:6px;margin:8px 0 0;">
           <div class="exec-metric"><div class="exec-metric-val v-amber" id="exec-m-an-alto">—</div><div class="exec-metric-label">Riesgo alto</div></div>
           <div class="exec-metric"><div class="exec-metric-val v-amber" id="exec-m-an-sobre">—</div><div class="exec-metric-label">Sobrepresupuesto</div></div>
-          <div class="exec-metric" title="Instituciones ejecutando muy por debajo del ritmo esperado del año — riesgo de compresión de gasto en el cierre de ejercicio (ago-dic)."><div class="exec-metric-val v-amber" id="exec-m-an-cierre">—</div><div class="exec-metric-label">Riesgo cierre</div></div>
         </div>
         <div class="po-submenu">
           <button class="po-item" onclick="poGo(showAnalyticsPanel)">
@@ -7823,7 +7822,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
 
-const APP_VERSION = 'v2.27';
+const APP_VERSION = 'v2.26';
 const APP_BUILD   = '2026-08-11';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -21176,27 +21175,6 @@ async function updateInvestigacionAnalisisMetrics() {
       if (elSob) elSob.textContent = sob.toLocaleString('es-HN');
     }
   } catch(e) { console.warn('updateInvestigacionAnalisisMetrics (analisis):', e); }
-
-  // S348 — KPI "Riesgo cierre" = espejo de Sobrepresupuesto. Motivado por articulo La Prensa
-  // "Instituciones baja ejecucion presupuesto 2026" (12 ago 2026): instituciones ejecutando
-  // MUY por debajo del ritmo esperado (subejecucion_flag en sefin_presupuesto, ingest-sefin
-  // v29) — riesgo de que compriman el gasto en los ultimos meses del año. Consulta directa
-  // a sefin_presupuesto (no allAlerts) porque es un dato a nivel institucion/presupuesto,
-  // no a nivel contrato. Alcance acotado a pedido de Gabe: solo KPI visual, sin alerta por
-  // correo ni conexion a alerts.severity.
-  try {
-    const { data: periodos } = await db.from('sefin_presupuesto')
-      .select('periodo').order('periodo', { ascending: false }).limit(1);
-    const ultimoPeriodo = periodos && periodos[0] ? periodos[0].periodo : null;
-    if (ultimoPeriodo) {
-      const { data: sef, error: eSef } = await db.from('sefin_presupuesto')
-        .select('subejecucion_flag').eq('periodo', ultimoPeriodo);
-      const elCierre = document.getElementById('exec-m-an-cierre');
-      if (!eSef && sef && elCierre) {
-        elCierre.textContent = sef.filter(r => r.subejecucion_flag).length.toLocaleString('es-HN');
-      }
-    }
-  } catch(e) { console.warn('updateInvestigacionAnalisisMetrics (cierre):', e); }
 }
 
 function poUpdateIndicators() {

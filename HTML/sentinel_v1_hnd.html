@@ -1300,6 +1300,14 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 .toast.show { transform: translateY(0); opacity: 1; }
 
 /* Responsive */
+/* Tablet (iPad, S359): sin este bloque, las fuentes grandes del dashboard
+   (números de KPI y título de página) usaban el tamaño de escritorio en
+   pantallas más angostas y se veían muy grandes / se corrían. */
+@media (max-width: 1024px) {
+  .page-title { font-size: 22px; }
+  .stat-value { font-size: 22px; }
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }
   .main { margin-left: 0; padding: 20px; }

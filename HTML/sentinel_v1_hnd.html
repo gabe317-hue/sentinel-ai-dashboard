@@ -3720,6 +3720,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </div>
     <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:#a5b4fc;line-height:1.6;">
       <strong>Metodología:</strong> se agrupan proveedores por componentes conexas — si A comparte socio con B y B con C, los tres forman un grupo. La fuente societaria es el Registro Mercantil vía Empresas Abiertas. Los contratos se agregan por nombre normalizado, porque una misma empresa aparece en los portales con varias grafías.<br>
+      Cuando un socio muestra <strong style="color:#fbbf24;">🏢 +N</strong>, el Registro Mercantil también lo registra en otras N empresas fuera de este grupo (pasar el cursor para verlas) — dato informativo, no afecta el puntaje de riesgo.<br>
       <strong style="color:#fbbf24;">Lectura correcta:</strong> compartir un socio <u>no</u> constituye evidencia de colusión ni de irregularidad. Es un indicador que requiere verificación por la autoridad competente. Muchas empresas comparten socios de forma enteramente legítima.
     </div>
     <div id="rs-cobertura" style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.25);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#fbbf24;line-height:1.6;">
@@ -11554,7 +11555,7 @@ function hideRedesCorporativasPanel() { document.getElementById('redesCorporativ
 // Fuente: RPC sentinel_red_socios(p_solo_verificados) — las guardas contra vínculos
 // falsos (centinela "sin dato", mismo ea_company_id, misma empresa con dos grafías)
 // viven en la vista v_socios_aristas, del lado de la base. Aquí no se replican.
-let _rsData = [], _rsFiltered = [], _rsCobertura = null;
+let _rsData = [], _rsFiltered = [], _rsCobertura = null, _rsOtrasEmpresas = {};
 
 async function showRedSociosPanel() {
   document.getElementById('redSociosPanel').classList.add('open');
@@ -11589,6 +11590,7 @@ async function loadRedSocios() {
     document.getElementById('rs-stat-contratos').textContent = contratos.toLocaleString('es-HN');
 
     await rsCargarCobertura();
+    await rsCargarOtrasEmpresas();
     rsRender();
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--red);">Error: ${e.message}</td></tr>`;
@@ -11614,6 +11616,23 @@ async function rsCargarCobertura() {
   } catch (e) {
     el.textContent = 'la consulta societaria cubre una fracción del padrón de proveedores (no se pudo leer la cifra exacta).';
   }
+}
+
+// S-04 ampliación informativa (31 ago 2026): para cada socio ya mostrado en el
+// panel, busca si el Registro Mercantil lo registra también en OTRAS empresas
+// (fuera de las de este grupo). Puramente informativo para el investigador —
+// no afecta el agrupamiento ni el puntaje de riesgo. Fuente: mv_ea_persona_empresas
+// vía RPC sentinel_socio_otras_empresas(). Si falla, el panel sigue funcionando
+// normalmente sin este dato adicional.
+async function rsCargarOtrasEmpresas() {
+  _rsOtrasEmpresas = {};
+  const nombres = [...new Set(_rsData.flatMap(r => r.socios_vinculo || []))];
+  if (!nombres.length) return;
+  try {
+    const { data, error } = await db.rpc('sentinel_socio_otras_empresas', { p_socios: nombres });
+    if (error) throw error;
+    (data || []).forEach(row => { _rsOtrasEmpresas[row.socio] = row; });
+  } catch (e) { /* informativo — no bloquea el panel */ }
 }
 
 function rsFiltrar() {
@@ -11642,7 +11661,15 @@ function rsRender() {
       ? '<span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-family:\'JetBrains Mono\',monospace;letter-spacing:.05em;background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);">VERIFICADO</span>'
       : '<span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-family:\'JetBrains Mono\',monospace;letter-spacing:.05em;background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);" title="El cruce con el Registro Mercantil no ha sido confirmado por un revisor. Interpretar con reserva.">SIN REVISAR</span>';
     const empresas = (r.empresas || []).map(e => `<div style="padding:1px 0;">${_esc(e)}</div>`).join('');
-    const socios   = (r.socios_vinculo || []).map(s => `<div style="padding:1px 0;">${_esc(s)}</div>`).join('');
+    const socios   = (r.socios_vinculo || []).map(s => {
+      const otras = _rsOtrasEmpresas[s];
+      let extra = '';
+      if (otras && otras.empresas && otras.empresas.length) {
+        const lista = otras.empresas.join(' · ');
+        extra = ` <span title="Este socio también figura en el Registro Mercantil en: ${_esc(lista)}" style="cursor:help;color:#fbbf24;font-size:9px;border:1px solid rgba(251,191,36,0.3);border-radius:3px;padding:0 4px;">🏢 +${otras.n_empresas}</span>`;
+      }
+      return `<div style="padding:1px 0;">${_esc(s)}${extra}</div>`;
+    }).join('');
     const ar = Number(r.alertas_alto_riesgo || 0);
     return `
     <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">

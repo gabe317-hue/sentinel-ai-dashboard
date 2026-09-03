@@ -7832,7 +7832,7 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
 
-const APP_VERSION = 'v2.30';
+const APP_VERSION = 'v2.29';
 const APP_BUILD   = '2026-08-11';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -20805,12 +20805,6 @@ function exportarTop10PDF() {
     .monto-val { font-size:18px; font-weight:900; color:var(--print-red); text-align:right; }
     .monto-lbl { font-size:8px; color:var(--print-grey-light); text-align:right; text-transform:uppercase; letter-spacing:.07em; }
     .right { text-align:right; }
-    .score-box { margin-bottom:8px; }
-    .score-val { font-size:22px; font-weight:900; color:var(--print-red); font-variant-numeric:tabular-nums; }
-    .score-label { font-size:7px; letter-spacing:.1em; color:var(--print-grey-light); text-transform:uppercase; }
-    .ns-chips { display:flex; flex-wrap:wrap; gap:4px; margin:4px 0 2px; }
-    .ns-chip { font-size:7px; font-weight:700; letter-spacing:.05em; padding:2px 7px; border-radius:10px; background:#faf5ff; color:#a21caf; border:1px solid #e9d5ff; }
-    .dim-val { font-size:8px; font-weight:700; color:var(--print-grey); width:20px; text-align:right; }
     .footer { margin-top:28px; font-size:9px; color:var(--print-grey-light); text-align:center; border-top:1px solid #f3f4f6; padding-top:12px; }
     @media print { body { padding:16px; } }
   </style></head><body>
@@ -20826,9 +20820,6 @@ function exportarTop10PDF() {
     const ents  = card.querySelector('.t5-entidades')  ? card.querySelector('.t5-entidades').innerText  : '';
     const dom   = card.querySelector('.t5-badge-dominante') ? card.querySelector('.t5-badge-dominante').innerText : '';
     const monto = card.querySelector('.t5-monto-val') ? card.querySelector('.t5-monto-val').innerText : '';
-    const scoreVal = card.querySelector('.t5-score-val') ? card.querySelector('.t5-score-val').innerText : '';
-    const nsChips = [...(card.querySelectorAll('.t5-ns-chip')||[])].map(s =>
-      `<span class="ns-chip">${s.innerText}</span>`).join('');
     const tags  = [...(card.querySelectorAll('.t5-tag, .t5-sector')||[])].map(t =>
       `<span class="tag tag-p">${t.innerText}</span>`).join('');
     const dims  = [...(card.querySelectorAll('.t5-dim-row')||[])].map(d => {
@@ -20836,14 +20827,13 @@ function exportarTop10PDF() {
       const val = d.querySelector('.t5-dim-val')   ? parseInt(d.querySelector('.t5-dim-val').innerText)||0 : 0;
       const fill= d.querySelector('.t5-dim-fill');
       const color = fill ? fill.style.background : 'var(--print-red)';
-      return '<div class="dim-row"><span class="dim-label">'+lbl+'</span><div class="dim-track"><div class="dim-fill" style="width:'+val+'%;background:'+color+';"></div></div><span class="dim-val">'+val+'</span></div>';
+      return '<div class="dim-row"><span class="dim-label">'+lbl+'</span><div class="dim-track"><div class="dim-fill" style="width:'+val+'%;background:'+color+';"></div></div></div>';
     }).join('');
     return '<div class="case"><div class="rank '+rCls+'">'+(rank<10?'0'+rank:rank)+'</div>'
       +'<div><span class="nivel '+nivelCls+'">'+nivel+'</span><div class="proveedor">'+prov+'</div>'
       +'<div class="entidades">'+ents+'</div><div class="tags">'+tags+'</div>'
-      +(nsChips ? '<div class="ns-chips">'+nsChips+'</div>' : '')
       +'<div class="dominante">'+dom+'</div>'+dims+'</div>'
-      +'<div class="right"><div class="score-box"><div class="score-val">'+scoreVal+'</div><div class="score-label">Sentinel Score™</div></div><div class="monto-val">'+monto+'</div><div class="monto-lbl">monto en riesgo</div></div></div>';
+      +'<div class="right"><div class="monto-val">'+monto+'</div><div class="monto-lbl">monto en riesgo</div></div></div>';
   }).join('')}
   <div class="footer">Sentinel AI · Sistema Anticorrupción · ${ts} · CONFIDENCIAL — Solo personal autorizado</div>
   </body></html>`;
@@ -21061,16 +21051,16 @@ async function renderTop5() {
           <span class="t5-sector">${esc(c.sector)}</span>
           ${invEstado ? `<span class="t5-tag t5-tag-sent">SEN-INV ${esc(invEstado)}</span>` : ''}
         </div>
-        ${c.sig.labels && c.sig.labels.length > 0 ? `<div class="t5-ns-chips" style="margin:6px 0 4px;display:flex;flex-wrap:wrap;gap:4px;">
-          ${c.sig.labels.map(l => `<span class="t5-ns-chip" style="font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.07em;padding:2px 7px;border-radius:10px;background:rgba(232,121,249,0.15);color:#e879f9;border:1px solid rgba(232,121,249,0.35);">⬡ ${l}</span>`).join('')}
+        ${c.sig.labels && c.sig.labels.length > 0 ? `<div style="margin:6px 0 4px;display:flex;flex-wrap:wrap;gap:4px;">
+          ${c.sig.labels.map(l => `<span style="font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.07em;padding:2px 7px;border-radius:10px;background:rgba(232,121,249,0.15);color:#e879f9;border:1px solid rgba(232,121,249,0.35);">⬡ ${l}</span>`).join('')}
         </div>` : ''}
         <div class="t5-badge-dominante">▲ ${esc(c.dominante.label)}: ${esc(c.dominante.texto)}</div>
         <div class="t5-dims">${dimRows}</div>
       </div>
       <div class="t5-right">
-        <div class="t5-score-box" style="text-align:right;margin-bottom:6px;">
-          <div class="t5-score-val" style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:900;color:${c.score>=70?'#ff3d57':c.score>=45?'#ff6400':'#fbbf24'};line-height:1;">${c.score}</div>
-          <div class="t5-score-label" style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.12em;color:rgba(232,121,249,0.7);text-transform:uppercase;">Sentinel Score™</div>
+        <div style="text-align:right;margin-bottom:6px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:900;color:${c.score>=70?'#ff3d57':c.score>=45?'#ff6400':'#fbbf24'};line-height:1;">${c.score}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.12em;color:rgba(232,121,249,0.7);text-transform:uppercase;">Sentinel Score™</div>
         </div>
         <div class="t5-monto-val">${fmtM(c.monto)}</div>
         <div class="t5-monto-label">monto en riesgo</div>

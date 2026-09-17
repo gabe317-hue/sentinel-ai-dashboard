@@ -458,33 +458,6 @@ body::after {
   box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
   z-index: 10010;
 }
-/* S373 — búsqueda global de proveedor, accesible desde cualquier pantalla porque
-   vive dentro de .nav-footer (mismo mecanismo fixed de P10.4). Abre hacia arriba
-   porque el nav-footer está pegado al fondo. */
-.nav-search-wrap { position: relative; margin-bottom: 8px; }
-#navSearchInput {
-  width: 100%; box-sizing: border-box; padding: 7px 10px; border-radius: 6px;
-  border: 1px solid var(--border); background: var(--navy-light); color: var(--text);
-  font-family: 'JetBrains Mono', monospace; font-size: 11px; outline: none;
-  transition: border-color .2s;
-}
-#navSearchInput:focus { border-color: var(--electric); }
-.nav-search-results {
-  display: none; position: absolute; bottom: calc(100% + 6px); left: 0; right: 0;
-  max-height: 220px; overflow-y: auto; background: rgba(10,22,40,0.98);
-  backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 8px;
-  box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
-}
-.nav-search-results.show { display: block; }
-.nav-search-item {
-  padding: 7px 10px; font-size: 11px; color: var(--text); cursor: pointer;
-  border-bottom: 1px solid rgba(255,255,255,0.04); display: flex;
-  justify-content: space-between; align-items: center; gap: 8px;
-}
-.nav-search-item span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nav-search-item span:last-child { color: var(--text-dim); flex-shrink: 0; font-family: 'JetBrains Mono', monospace; }
-.nav-search-item:hover { background: var(--glass); }
-.nav-search-empty { padding: 8px 10px; font-size: 10px; color: var(--text-dim); text-align: center; }
 .user-card {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 10px; border-radius: 8px;
@@ -4327,14 +4300,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
   <div class="nav-footer hidden" id="navFooter">
-    <div class="nav-search-wrap" id="navSearchWrap">
-      <input id="navSearchInput" type="text" placeholder="🔍 Buscar proveedor..." autocomplete="off"
-        aria-label="Buscar proveedor por nombre, desde cualquier pantalla"
-        oninput="_navSearchInput(this.value)"
-        onkeydown="if(event.key==='Enter'){_navSearchEnter();} else if(event.key==='Escape'){_navSearchClear();}"
-      />
-      <div id="navSearchResults" class="nav-search-results" role="listbox"></div>
-    </div>
     <button onclick="showPortal()" style="width:100%;margin-bottom:8px;padding:8px 12px;background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.25);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:all .2s;" onmouseover="this.style.background='rgba(255,61,87,0.2)'" onmouseout="this.style.background='rgba(255,61,87,0.12)'">⊞ Portal Principal</button>
     <div class="user-card" id="userMenuTrigger" onclick="toggleUserMenu(event)">
       <div class="user-avatar" id="userAvatar">—</div>
@@ -21562,64 +21527,6 @@ async function dispararNotificacion(fnName, label) {
     btns.forEach(b => b.disabled = false);
     setTimeout(() => { if (statusEl) statusEl.style.display = 'none'; }, 8000);
   }
-}
-
-// S373 — búsqueda global de proveedor, disponible desde cualquier pantalla porque
-// vive en .nav-footer (visible siempre desde S240/P10.4). Busca por proveedor_nombre
-// sobre allAlerts ya cargado en memoria (sin llamada nueva a Supabase).
-// NOTA: NO busca por RTN todavía — verificado contra el esquema (S373): la tabla
-// alerts no tiene columna de RTN; el RTN solo vive en honducompras.contractor_rtn
-// y oncae_anotaciones.rtn, sin cruzar a alerts. Habilitar búsqueda por RTN requiere
-// esa fuente adicional (RPC o columna nueva) — pendiente aparte, no incluido aquí.
-let _navSearchDebounce = null;
-let _navSearchLastMatches = [];
-function _navSearchInput(q) {
-  clearTimeout(_navSearchDebounce);
-  _navSearchDebounce = setTimeout(() => _navSearchRun(q), 150);
-}
-function _navSearchNorm(s) {
-  return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-}
-function _navSearchRun(q) {
-  const box = document.getElementById('navSearchResults');
-  if (!box) return;
-  const query = (q || '').trim();
-  if (query.length < 2) { box.classList.remove('show'); box.innerHTML = ''; _navSearchLastMatches = []; return; }
-
-  const nq = _navSearchNorm(query);
-  const counts = {};
-  (window.allAlerts || []).forEach(a => {
-    const p = a.proveedor_nombre || '';
-    if (!p || !_navSearchNorm(p).includes(nq)) return;
-    counts[p] = (counts[p] || 0) + 1;
-  });
-
-  const matches = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  _navSearchLastMatches = matches;
-  if (!matches.length) {
-    box.innerHTML = '<div class="nav-search-empty">Sin coincidencias</div>';
-    box.classList.add('show');
-    return;
-  }
-  box.innerHTML = matches.map(([nombre, n]) => `
-    <div class="nav-search-item" role="option" onclick="_navSearchOpenVendor('${nombre.replace(/'/g, "\\'")}')">
-      <span>${nombre}</span><span>${n}c</span>
-    </div>`).join('');
-  box.classList.add('show');
-}
-function _navSearchEnter() {
-  if (_navSearchLastMatches.length === 1) _navSearchOpenVendor(_navSearchLastMatches[0][0]);
-}
-function _navSearchOpenVendor(nombre) {
-  document.querySelectorAll('.fuente-panel.open').forEach(p => p.classList.remove('open'));
-  _navSearchClear();
-  poGo(() => showVendorPanel(nombre));
-}
-function _navSearchClear() {
-  const inp = document.getElementById('navSearchInput'); if (inp) inp.value = '';
-  const box = document.getElementById('navSearchResults');
-  if (box) { box.classList.remove('show'); box.innerHTML = ''; }
-  _navSearchLastMatches = [];
 }
 
 // S240 P10.4: menú de usuario persistente — toggle del dropdown en nav-footer

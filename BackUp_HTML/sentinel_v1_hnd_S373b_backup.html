@@ -9410,6 +9410,123 @@ function showToast(msg, type) {
 let fuenteChartSev = null;
 let fuenteChartMonto = null;
 
+function showFuentePanel(fuente) {
+  // Update sidebar active state
+  document.querySelectorAll('[id^="fnav-"]').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById('fnav-' + fuente);
+  if (navEl) navEl.classList.add('active');
+
+  // News Sources groups press/media outlets (Reportero Ciudadano is a separate denuncia channel)
+  const NEWS_SOURCES = ['La Prensa', 'El Heraldo', 'Proceso Digital', 'Criterio', 'Fuentes Editoriales'];
+  const data = fuente === 'News Sources'
+    ? allAlerts.filter(a => NEWS_SOURCES.includes(a.data_source || ''))
+    : allAlerts.filter(a => (a.data_source || '') === fuente);
+
+  // Counts by severity
+  const counts = { critica: 0, alta: 0, media: 0, baja: 0 };
+  const montos  = { critica: 0, alta: 0, media: 0, baja: 0 };
+  data.forEach(a => {
+    const s = normSev(a.severity);
+    if (s.includes('critica'))     { counts.critica++; montos.critica += Number(a.monto_contrato||0); }
+    else if (s.includes('alta'))   { counts.alta++;    montos.alta    += Number(a.monto_contrato||0); }
+    else if (s.includes('media'))  { counts.media++;   montos.media   += Number(a.monto_contrato||0); }
+    else if (s.includes('baja'))   { counts.baja++;    montos.baja    += Number(a.monto_contrato||0); }
+  });
+
+  // Populate stat cards
+  const displayName = fuente === 'News Sources' ? 'News Sources'
+    : fuente === 'Reportero Ciudadano' ? '📡 Canal de Integridad Ciudadana'
+    : fuente;
+  const panelLabel = fuente === 'Reportero Ciudadano' ? 'Denuncias' : 'Alertas';
+  const fpMonto = Object.values(montos).reduce((s, v) => s + v, 0);
+  const fmtShort = n => {
+    if (n >= 1e6) return 'L ' + (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return 'L ' + (n / 1e3).toFixed(0) + 'K';
+    return n > 0 ? 'L ' + n.toFixed(0) : 'L —';
+  };
+  document.getElementById('fp-title').innerHTML       = `<span>${displayName}</span> — Resumen`;
+  document.getElementById('fp-total').textContent     = data.length;
+  document.getElementById('fp-critica').textContent   = counts.critica;
+  document.getElementById('fp-alta').textContent      = counts.alta;
+  document.getElementById('fp-media').textContent     = counts.media;
+  document.getElementById('fp-baja').textContent      = counts.baja;
+  document.getElementById('fp-monto-total').textContent = fmtShort(fpMonto);
+
+  // Recent alerts list (last 5)
+  const recent = [...data].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0,5);
+  const sevColor = s => {
+    const n = normSev(s);
+    if (n.includes('critica')) return '#ff3d57';
+    if (n.includes('alta'))    return 'var(--amber)';
+    if (n.includes('media'))   return 'var(--electric)';
+    return '#4caf50';
+  };
+  document.getElementById('fp-recent').innerHTML = recent.length
+    ? recent.map(a => `
+        <div class="fuente-recent-item">
+          <span class="fri-id">${a.alert_id || '#'+a.id}</span>
+          <span class="fri-desc" title="${(a.description||'').replace(/"/g,'&quot;')}">${a.description||'—'}</span>
+          <span class="fri-sev" style="color:${sevColor(a.severity)}">${a.severity||'—'}</span>
+        </div>`).join('')
+    : `<div style="color:var(--text-dim);font-size:13px;padding:10px">Sin ${panelLabel.toLowerCase()} registradas para esta fuente.</div>`;
+
+  // Draw charts — destroy previous instances first
+  if (fuenteChartSev)   { fuenteChartSev.destroy();   fuenteChartSev   = null; }
+  if (fuenteChartMonto) { fuenteChartMonto.destroy();  fuenteChartMonto = null; }
+
+  const labels  = ['Crítica', 'Alta', 'Media', 'Baja'];
+  const colors  = ['#ff3d57', '#f59e0b', '#00c8ff', '#4caf50'];
+  const bgAlpha = colors.map(c => c + '33');
+
+  fuenteChartSev = new Chart(document.getElementById('chartSeveridad').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: panelLabel,
+        data: [counts.critica, counts.alta, counts.media, counts.baja],
+        backgroundColor: bgAlpha,
+        borderColor: colors,
+        borderWidth: 2, borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8899aa' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#8899aa', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+      }
+    }
+  });
+
+  fuenteChartMonto = new Chart(document.getElementById('chartMonto').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Monto (L)',
+        data: [montos.critica, montos.alta, montos.media, montos.baja],
+        backgroundColor: bgAlpha,
+        borderColor: colors,
+        borderWidth: 2, borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8899aa' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#8899aa', callback: v => 'L ' + v.toLocaleString('es-HN') }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Show panel, hide main table view + ejecutiva
+  document.getElementById('vistaEjecutiva').style.display = 'none';
+  document.getElementById('fuentePanel').classList.add('open');
+  document.querySelector('.stats-grid').style.display    = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+  document.getElementById('mainTableContainer').style.display = 'none';
+}
 
 // ════════════════════════════════════════════════════════════
 // ENTITY PANEL — click entity name in table to open
@@ -15990,6 +16107,15 @@ function showTimelinePanel(origin) {
   }, 80);
 }
 
+function toggleCasoDetail(id) {
+  const detail = document.getElementById('detail-' + id);
+  const btn    = detail.previousElementSibling;
+  const isOpen = detail.classList.contains('open');
+  detail.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  btn.querySelector('.arrow').style.transform = isOpen ? '' : 'rotate(180deg)';
+  btn.innerHTML = (isOpen ? 'VER MÁS' : 'VER MENOS') + ' <span class="arrow" style="display:inline-block;transform:' + (isOpen?'':'rotate(180deg)') + '">' + (isOpen?'▼':'▲') + '</span>';
+}
 
 function hideTimelinePanel() {
   if (_timelineChart) { _timelineChart.destroy(); _timelineChart = null; }
@@ -18137,6 +18263,8 @@ async function testPaymentAPIEndpoint(documentId = '1') {
   }
 }
 
+async function discoverPaymentAPIStructure() {
+}
 
 // ════════════════════════════════════════════════════════════
 // PHASE 3c: PAYMENT DATA INTEGRATION
@@ -24360,6 +24488,47 @@ function detectSEFINRisk(monto, budget) {
 // DEBUG FUNCTIONS — for console testing
 // ════════════════════════════════════════════════════════════
 
+function debugSobrecosto() {
+  console.clear();
+
+
+  if (allAlerts.length === 0) {
+    console.warn('⚠️  NO HAY DATOS EN allAlerts');
+    return;
+  }
+
+  // Check monto_pagado
+  const with_pagado = allAlerts.filter(a => a.monto_pagado != null).length;
+  const with_budget = allAlerts.filter(a => a.budget_amount != null).length;
+
+  // List entities
+  const entities = new Set(allAlerts.map(a => a.entity_name || a.entidad || 'UNKNOWN'));
+  entities.forEach(e => {
+    const count = allAlerts.filter(a => (a.entity_name || a.entidad) === e).length;
+  });
+
+  // Check SOBRECOSTO detection
+  const sobrecostos = allAlerts.filter(a => {
+    const mc = Number(a.monto_contrato || 0);
+    const mp = Number(a.monto_pagado || 0);
+    const budget = Number(a.budget_amount || 0);
+    return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
+  });
+
+  if (sobrecostos.length > 0) {
+    sobrecostos.slice(0, 5).forEach(s => {
+      const mc = Number(s.monto_contrato || 0);
+      const mp = Number(s.monto_pagado || 0);
+      const budget = Number(s.budget_amount || 0);
+      const comp = mp > 0 ? mp : budget;
+      const pct = ((comp / mc - 1) * 100).toFixed(1);
+    });
+  } else {
+    console.warn('⚠️  NINGÚN SOBRECOSTO ENCONTRADO');
+  }
+
+  // Sample record
+}
 
 // ════════════════════════════════════════════════════════════
 // DEBUG: INSERT TEST SOBRECOSTO DATA
@@ -24491,6 +24660,12 @@ async function checkDatabaseHealth() {
   }
 }
 
+async function showDatabaseOptimizationStatus() {
+
+
+
+
+}
 
 init();
 

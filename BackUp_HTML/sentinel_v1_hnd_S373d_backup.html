@@ -9195,7 +9195,7 @@ async function saveAlert() {
     // Generate human-readable alert_id — A-2026-XXXX
     const alertId = `A-2026-${String(allAlerts.length + 1).padStart(4, '0')}`;
 
-    const { data, error } = await db.from('alerts').insert([{
+    const { error } = await db.from('alerts').insert([{
       alert_id:    alertId,
       description: description,
       entity_name: entity_name,
@@ -9207,7 +9207,7 @@ async function saveAlert() {
       risk_score:      null,
       status:          'Pendiente'
       // created_at: handled by Supabase DEFAULT CURRENT_TIMESTAMP
-    }]).select().single();
+    }]);
 
     if (error) throw error;
 
@@ -9217,14 +9217,7 @@ async function saveAlert() {
 
     closeModal();
     showToast(`✅ Alerta ${alertId} registrada`);
-    // C14 (S373) — actualizacion local en vez de recargar todo (era 10-30s)
-    if (data) {
-      data._sev = normSev(data.severity);
-      allAlerts.unshift(data);
-      render();
-    } else {
-      await loadAlerts(); // fallback si Supabase no devolvio la fila
-    }
+    await loadAlerts(); // Reload from Supabase — confirms real persistence
 
   } catch (err) {
     console.error('❌ saveAlert failed:', err.message);
@@ -9292,12 +9285,10 @@ async function confirmSend() {
   const statusStr = 'Enviado: ' + selected.join(', ');
 
   try {
-    const { data, error } = await db
+    const { error } = await db
       .from('alerts')
       .update({ status: statusStr })
-      .eq('id', sendTargetId)
-      .select()
-      .single();
+      .eq('id', sendTargetId);
 
     if (error) throw error;
 
@@ -9313,15 +9304,7 @@ async function confirmSend() {
 
     closeSendModal();
     showToast(`📤 Alerta enviada a: ${selected.join(', ')}`);
-    // C14 (S373) — actualizacion local en vez de recargar todo
-    const _csIdx = allAlerts.findIndex(a => a.id === sendTargetId);
-    if (_csIdx !== -1) {
-      allAlerts[_csIdx] = { ...allAlerts[_csIdx], ...(data || { status: statusStr }) };
-      allAlerts[_csIdx]._sev = normSev(allAlerts[_csIdx].severity);
-      render();
-    } else {
-      await loadAlerts();
-    }
+    await loadAlerts();
 
   } catch (err) {
     console.error('❌ confirmSend failed:', err.message);
@@ -9362,9 +9345,7 @@ async function deleteAlert(id) {
     }
 
     showToast('🗑️ Alerta eliminada');
-    // C14 (S373) — actualizacion local en vez de recargar todo
-    allAlerts = allAlerts.filter(a => a.id !== id);
-    render();
+    await loadAlerts();
 
   } catch (err) {
     console.error('❌ deleteAlert failed:', err.message);

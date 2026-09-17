@@ -7947,21 +7947,6 @@ function normSev(s) {
 }
 
 // ════════════════════════════════════════════════════════════
-// PARSE DESC FIELD — consolidado (C05). Reemplaza 5 implementaciones casi
-// identicas: parseDesc, parseDesc_for, parseDescField-local, parseDescBD,
-// _parseDescFieldR. Verificado contra datos reales antes de consolidar:
-// 0 filas con "Proveedor:"/"Entidad compradora:" que contengan "|" o
-// capitalizacion distinta -> unificar no cambia ningun resultado real.
-// ════════════════════════════════════════════════════════════
-const _descFieldRxCache = {};
-function parseDescField(desc, key, fallback = '') {
-  if (!desc) return fallback;
-  if (!_descFieldRxCache[key]) _descFieldRxCache[key] = new RegExp(key + '[:\\s]+([^\\n|]+)', 'i');
-  const m = desc.match(_descFieldRxCache[key]);
-  return m ? m[1].trim() : fallback;
-}
-
-// ════════════════════════════════════════════════════════════
 // DATE FORMAT — DD/MM/YYYY HH:MM in local time
 // ════════════════════════════════════════════════════════════
 function fmtDate(iso) {
@@ -8665,8 +8650,12 @@ function render() {
 
     // Parse named fields from the structured description text
     // Format: "Proveedor: X\nEntidad compradora: Y\n..."
-    const proveedorDisplay = _sanitize(parseDescField(a.description, 'Proveedor') || a.proveedor_nombre || '—');
-    const entidadDisplay   = _sanitize(parseDescField(a.description, 'Entidad compradora') || a.entity_name || '—');
+    const parseDesc = (key) => {
+      const m = (a.description || '').match(new RegExp(key + ':\\s*([^\\n]+)'));
+      return m ? m[1].trim() : null;
+    };
+    const proveedorDisplay = _sanitize(parseDesc('Proveedor') || a.proveedor_nombre || '—');
+    const entidadDisplay   = _sanitize(parseDesc('Entidad compradora') || a.entity_name || '—');
 
     // Review badge — lookup en _reviewCache por alerts.id (S288: antes era la terna)
     // Los 4 estados son visibles en la fila: sin ellos, ESCALADO y PENDIENTE eran
@@ -9568,7 +9557,7 @@ function showVendorPanel(vendorName) {
 
   // Filter by proveedor_nombre or parsed description (no entity_name fallback)
   const data = allAlerts.filter(a => {
-    const p = a.proveedor_nombre || parseDescField(a.description, 'Proveedor') || '';
+    const p = a.proveedor_nombre || parseDesc_for('Proveedor', a.description) || '';
     return p === vendorName;
   });
   _epCurrentEntity = vendorName;
@@ -10475,7 +10464,7 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   document.getElementById('adp-contract-id').textContent = a.contract_id || '—';
 
   // Parse structured description for display values
-  const pdFor = (key) => parseDescField(a.description, key);
+  const pdFor = (key) => parseDesc_for(key, a.description);
   const proveedorDisplay = a.proveedor_nombre || pdFor('Proveedor') || a.entity_name || '—';
   const entidadDisplay   = pdFor('Entidad compradora') || a.entity_name || '—';
 
@@ -10582,7 +10571,7 @@ function openAlertDetail(alertId, event, source = 'tabla') {
   const entityAlertsFull = allAlerts
     .filter(x => {
       if (x.id === alertId) return false;
-      const eKey = parseDescField(x.description, 'Entidad compradora') || x.entity_name;
+      const eKey = parseDesc_for('Entidad compradora', x.description) || x.entity_name;
       return eKey && eKey === entityKey;
     })
     .sort((x, y) => new Date(y.created_at) - new Date(x.created_at));
@@ -10914,6 +10903,11 @@ function _sevColor(s) {
 }
 
 // Helper used by showVendorPanel to parse legacy description field
+function parseDesc_for(key, desc) {
+  if (!desc) return '';
+  const m = desc.match(new RegExp(key + ':\\s*([^\\n]+)'));
+  return m ? m[1].trim() : '';
+}
 
 // Tracks where the entity/vendor panel was opened from
 // so the back button returns to the right place
@@ -12495,6 +12489,12 @@ function renderCandidatosDetectados() {
   }
 
   // Helpers
+  const parseDescField = (desc, key) => {
+    if (!desc) return '';
+    const rx = new RegExp(key + '[:\\s]+([^\\n|]+)', 'i');
+    const m  = desc.match(rx);
+    return m ? m[1].trim() : '';
+  };
   const getProveedor = a => a.proveedor_nombre || parseDescField(a.description, 'Proveedor') || '—';
   const fmtL = v => {
     const n = Number(v || 0);
@@ -12793,6 +12793,11 @@ async function ejecutarBusquedaBD() {
       const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
       return raw ? raw.substring(0, 4) : '';
     };
+    const parseDescBD = (desc, key) => {
+      if (!desc) return '';
+      const m = desc.match(new RegExp(key + '[:\\s]+([^\\n|]+)', 'i'));
+      return m ? m[1].trim() : '';
+    };
     const SEV_COLOR = { 'crítica':'var(--red)', 'critica':'var(--red)', 'alta':'var(--amber)', 'media':'#60a5fa', 'baja':'var(--text-dim)' };
     const PAT_LABELS_BD = {
       'FRACCIONAMIENTO':'Fraccionamiento','FRACCIONAMIENTO_ONCAE':'Fracc. ONCAE',
@@ -12804,8 +12809,8 @@ async function ejecutarBusquedaBD() {
     };
 
     inner.innerHTML = results.map(a => {
-      const entidad  = a.entity_name || a.entidad || parseDescField(a.description, 'Entidad compradora') || '—';
-      const empresa  = a.proveedor_nombre || a.proveedor || parseDescField(a.description, 'Proveedor') || '—';
+      const entidad  = a.entity_name || a.entidad || parseDescBD(a.description, 'Entidad compradora') || '—';
+      const empresa  = a.proveedor_nombre || a.proveedor || parseDescBD(a.description, 'Proveedor') || '—';
       const contrato = a.contract_id || '—';
       const monto    = fmtLBD(a.monto_contrato);
       const anio     = getYear(a) || '—';
@@ -13560,14 +13565,18 @@ function exportSectorSummaryPDF() {
 
 let _referModalData = null;
 
+function _parseDescFieldR(desc, key) {
+  const m = (desc || '').match(new RegExp(key + ':\\s*([^\\n]+)'));
+  return m ? m[1].trim() : null;
+}
 
 function openReferModal(id) {
   const a = (window.allAlerts || []).find(x => String(x.id) === String(id));
   if (!a) return;
   const desc = a.description || '';
-  const proveedor = parseDescField(desc, 'Proveedor') || a.proveedor_nombre || '—';
-  const entidad   = parseDescField(desc, 'Entidad compradora') || a.entity_name || '—';
-  const patrones  = parseDescField(desc, 'Patrones') || parseDescField(desc, 'Patrón') || '—';
+  const proveedor = _parseDescFieldR(desc, 'Proveedor') || a.proveedor_nombre || '—';
+  const entidad   = _parseDescFieldR(desc, 'Entidad compradora') || a.entity_name || '—';
+  const patrones  = _parseDescFieldR(desc, 'Patrones') || _parseDescFieldR(desc, 'Patrón') || '—';
   const fmtL = n => n != null ? 'L ' + Number(n).toLocaleString('es-HN',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
   _referModalData = {
     alertId:  a.alert_id || ('#' + a.id),
@@ -13596,14 +13605,14 @@ function openReferModalEntity() {
   const alta    = data.filter(a => normSev(a.severity) === 'alta').length;
   const patSet  = new Set();
   data.forEach(a => {
-    const p = parseDescField(a.description||'','Patrones') || parseDescField(a.description||'','Patrón');
+    const p = _parseDescFieldR(a.description||'','Patrones') || _parseDescFieldR(a.description||'','Patrón');
     if (p) p.split(',').forEach(x => patSet.add(x.trim()));
   });
   const patrones = patSet.size > 0 ? [...patSet].slice(0,5).join(', ') : '—';
   _referModalData = {
     alertId:  topAlert ? (topAlert.alert_id || ('#' + topAlert.id)) : '—',
     entity:   entity,
-    vendor:   topAlert ? (parseDescField(topAlert.description||'','Proveedor') || topAlert.proveedor_nombre || '—') : '— (múltiples)',
+    vendor:   topAlert ? (_parseDescFieldR(topAlert.description||'','Proveedor') || topAlert.proveedor_nombre || '—') : '— (múltiples)',
     severity: `${critica} Crítica(s), ${alta} Alta(s) de ${data.length} contratos`,
     monto:    fmtL(totalMonto),
     fecha:    new Date().toISOString().substring(0,10),

@@ -22117,8 +22117,8 @@ function renderAnalytics() {
 
   document.getElementById('analyticsEntityBody').innerHTML = topEntities.map(([name, d]) => `
     <tr>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${_sanitize(name)}">
-        <button class="cell-entity-link" onclick="showEntityPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${_sanitize(name)}</button>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">
+        <button class="cell-entity-link" onclick="showEntityPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${name}</button>
       </td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
@@ -22139,8 +22139,8 @@ function renderAnalytics() {
 
   document.getElementById('analyticsVendorBody').innerHTML = topVendors.map(([name, d]) => `
     <tr>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${_sanitize(name)}">
-        <button class="cell-entity-link" onclick="showVendorPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${_sanitize(name)}</button>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">
+        <button class="cell-entity-link" onclick="showVendorPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${name}</button>
       </td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
@@ -22156,8 +22156,8 @@ function renderAnalytics() {
     const patternList = (a.patterns || '').split(',')
       .map(p => PATTERN_LABELS[p] || p).join(' + ');
     return `<tr>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${_sanitize(a.proveedor_nombre)}">${_sanitize(a.proveedor_nombre) || '—'}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${_sanitize(a.entity_name)}">${_sanitize(a.entity_name) || '—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.proveedor_nombre}">${a.proveedor_nombre || '—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.entity_name}">${a.entity_name || '—'}</td>
       <td style="font-size:11px;color:var(--electric);">${patternList}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(Number(a.monto_contrato))}</td>
     </tr>`;
@@ -22318,8 +22318,8 @@ function showPatternDetail(patternCode) {
 
   document.getElementById('patternDetailEntityBody').innerHTML = topEnt.map(([name, d]) =>
     `<tr>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${_sanitize(name)}">
-        <button class="cell-entity-link" onclick="showEntityPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${_sanitize(name)}</button>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">
+        <button class="cell-entity-link" onclick="showEntityPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${name}</button>
       </td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>
@@ -22327,8 +22327,8 @@ function showPatternDetail(patternCode) {
 
   document.getElementById('patternDetailVendorBody').innerHTML = topVen.map(([name, d]) =>
     `<tr>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${_sanitize(name)}">
-        <button class="cell-entity-link" onclick="showVendorPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${_sanitize(name)}</button>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${name}">
+        <button class="cell-entity-link" onclick="showVendorPanelFromAnalytics('${name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${name}</button>
       </td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${d.count.toLocaleString()}</td>
       <td style="text-align:right;font-family:'JetBrains Mono',monospace;">${fmtLarge(d.monto)}</td>

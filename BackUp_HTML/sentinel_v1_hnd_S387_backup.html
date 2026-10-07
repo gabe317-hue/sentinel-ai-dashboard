@@ -20863,21 +20863,9 @@ async function renderTop5() {
 
   // ── Investigaciones confirmadas (solo para el tag "SEN-INV" — no afecta el score,
   // esa corroboración ya viene incluida en d_externo desde el servidor)
-  // S387: match exacto por nombre normalizado (sin acentos, puntuación ni sufijo societario).
-  // Antes: includes() + slice(0,12) — cualquier "CONSTRUCTORA …" heredaba la investigación
-  // de otra constructora (mismo error corregido en el servidor en S386).
-  const invNorm = s => (s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
-    .replace(/\(.*?\)/g,'').replace(/[^A-Z0-9]/g,'')
-    .replace(/(SOCIEDADANONIMADECAPITALVARIABLE|SOCIEDADANONIMA|SADECV|SDERLDECV|SDERL|SA)$/,'');
   let investigados = new Map();
   if (invResult.status === 'fulfilled' && invResult.value?.data) {
-    // Un proveedor puede tener varias investigaciones: una no-descartada (Activa, Borrador…) gana
-    // sobre "Descartada"; antes quedaba la última fila leída (arbitrario).
-    invResult.value.data.forEach(r => {
-      const k = invNorm(r.proveedor); if (k.length <= 4) return;
-      const prev = investigados.get(k);
-      if (!prev || (prev === 'Descartada' && r.estado !== 'Descartada')) investigados.set(k, r.estado);
-    });
+    invResult.value.data.forEach(r => investigados.set((r.proveedor||'').toUpperCase().trim(), r.estado));
   }
 
   if (scoreResult.status !== 'fulfilled' || scoreResult.value?.error) {
@@ -20929,8 +20917,7 @@ async function renderTop5() {
       { label: 'PATRONES',   val: Number(r.d_patron),  color: '#a78bfa', texto: `${r.n_patrones} señal${r.n_patrones!==1?'es':''}` },
       { label: 'ALCANCE',    val: Number(r.d_alcance), color: '#60a5fa', texto: `${r.entidades_count} entidad${r.entidades_count!==1?'es':''}` },
       { label: 'RECENCIA',   val: Number(r.d_recente), color: '#34d399', texto: `${r.n_reciente} contratos ult. 18m` },
-      // S387: >=50 = patrón SANCIONADO (Engel se quitó de d_externo en S330; el texto había quedado viejo)
-      { label: 'EXT',        val: Number(r.d_externo), color: '#fbbf24', texto: r.d_externo >= 50 ? 'Proveedor sancionado' : r.d_externo >= 30 ? 'Confirmado ONCAE' : r.d_externo > 0 ? 'SEN-INV activo' : '—' },
+      { label: 'EXT',        val: Number(r.d_externo), color: '#fbbf24', texto: r.d_externo >= 50 ? 'Lista Engel' : r.d_externo >= 30 ? 'Confirmado ONCAE' : r.d_externo > 0 ? 'SEN-INV activo' : '—' },
       { label: 'NS SIGNALS', val: Number(r.d_signals), color: '#e879f9', texto: (r.ns_count||0) > 0 ? `${r.ns_count} señal${r.ns_count!==1?'es':''}` : 'Sin señales NS',
         nsDetail: nsLabels.length > 0 ? nsLabels.join(' · ') : '—' },
     ];
@@ -20939,7 +20926,6 @@ async function renderTop5() {
     return {
       proveedor: r.proveedor, monto: Number(r.monto), n: r.n_contratos,
       entidades, patrones, sig: { count: r.ns_count||0, labels: nsLabels },
-      verificar: r.ns_verificar || [],
       score: Number(r.score), dims, dominante, sector,
     };
   });
@@ -20974,7 +20960,8 @@ async function renderTop5() {
     const rankClass = rank <= 3 ? ' rank-'+rank : '';
     const entLista = [...c.entidades].slice(0, 3).join(' · ') + (c.entidades.size > 3 ? ` +${c.entidades.size-3}` : '');
     const patArr   = [...c.patrones].slice(0, 4);
-    const invEstado = investigados.get(invNorm(c.proveedor)) || null;
+    const invKey  = [...investigados.keys()].find(inv => inv.length > 4 && (c.proveedor.toUpperCase().includes(inv) || inv.includes(c.proveedor.toUpperCase().slice(0,12))));
+    const invEstado = invKey ? investigados.get(invKey) : null;
     const dimRows = c.dims.map(d => `
       <div class="t5-dim-row"${d.nsDetail ? ` title="${esc(d.nsDetail)}"` : ''}>
         <span class="t5-dim-label">${d.label}</span>
@@ -20997,7 +20984,6 @@ async function renderTop5() {
         ${c.sig.labels && c.sig.labels.length > 0 ? `<div class="t5-ns-chips" style="margin:6px 0 4px;display:flex;flex-wrap:wrap;gap:4px;">
           ${c.sig.labels.map(l => `<span class="t5-ns-chip" style="font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.07em;padding:2px 7px;border-radius:10px;background:rgba(232,121,249,0.15);color:#e879f9;border:1px solid rgba(232,121,249,0.35);">⬡ ${l}</span>`).join('')}
         </div>` : ''}
-        ${c.verificar.length > 0 ? `<div class="t5-verificar" title="Señal con valor extremo (más de 5 desviaciones estándar). Puede ser un error de datos o un conteo inflado: verificar en la fuente antes de citar. Mientras no se verifique, su peso en el score está limitado." style="margin:2px 0 6px;display:inline-block;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.07em;padding:2px 8px;border-radius:10px;background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.45);">⚠️ VERIFICAR DATOS · ${c.verificar.map(esc).join(' · ')}</div>` : ''}
         <div class="t5-badge-dominante">▲ ${esc(c.dominante.label)}: ${esc(c.dominante.texto)}</div>
         <div class="t5-dims">${dimRows}</div>
       </div>

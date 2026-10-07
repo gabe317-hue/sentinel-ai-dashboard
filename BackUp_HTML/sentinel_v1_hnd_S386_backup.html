@@ -3368,7 +3368,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div id="dr-stat-personas" style="font-size:22px;font-weight:700;color:#f97316;">—</div>
       </div>
       <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
-        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;" title="Mismo organismo empleador y contratante, 5+ contratos (S386)">CRÍTICA</div>
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Mismo Organismo</div>
         <div id="dr-stat-critica" style="font-size:22px;font-weight:700;color:var(--red);">—</div>
       </div>
       <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:110px;">
@@ -11105,7 +11105,7 @@ async function showDobleRolPanel() {
   }
   _drData = data;
   const total = data.length;
-  const critica = data.filter(r => r.severidad === 'CRÍTICA').length; // S386: severidad graduada en mv_doble_rol
+  const critica = data.filter(r => r.mismo_organismo).length;
   const totalCttos = data.reduce((s, r) => s + (r.contratos_iaip || 0), 0);
   document.getElementById('dr-stat-personas').textContent = total;
   document.getElementById('dr-stat-critica').textContent = critica;
@@ -11148,10 +11148,9 @@ function _renderDobleRolTabla() {
   const rows = _drFiltro === 'TODOS' ? _drData : _drData.filter(r => r.severidad === _drFiltro);
   if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados.</td></tr>'; return; }
   tb.innerHTML = rows.map((r, i) => {
-    // S386: color por severidad (CRÍTICA/ALTA/MEDIA), ya no por mismo_organismo
-    const sevColor = r.severidad === 'CRÍTICA' ? 'var(--red)' : r.severidad === 'ALTA' ? '#f97316' : '#fbbf24';
-    const sevBg = r.severidad === 'CRÍTICA' ? 'rgba(255,61,87,0.12)' : r.severidad === 'ALTA' ? 'rgba(249,115,22,0.12)' : 'rgba(251,191,36,0.12)';
-    const sevBorder = r.severidad === 'CRÍTICA' ? 'rgba(255,61,87,0.3)' : r.severidad === 'ALTA' ? 'rgba(249,115,22,0.3)' : 'rgba(251,191,36,0.3)';
+    const sevColor = r.mismo_organismo ? 'var(--red)' : '#f97316';
+    const sevBg = r.mismo_organismo ? 'rgba(255,61,87,0.12)' : 'rgba(249,115,22,0.12)';
+    const sevBorder = r.mismo_organismo ? 'rgba(255,61,87,0.3)' : 'rgba(249,115,22,0.3)';
     const inst_emp = (r.instituciones_empleador || '').split(' | ')[0];
     const inst_cnt = (r.instituciones_contratante || '').split(' | ')[0];
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2?'background:rgba(255,255,255,0.02)':''};cursor:pointer;transition:background .12s;" onclick="drShowDrilldown(${i})" onmouseover="this.style.background='rgba(249,115,22,0.08)'" onmouseout="this.style.background='${i%2?'rgba(255,255,255,0.02)':'transparent'}'">
@@ -11211,12 +11210,12 @@ async function drShowDrilldown(rowIdx) {
       if (d.institution_name) grouped[n].instituciones.add(d.institution_name);
       if (d.doc_year) grouped[n].años.add(d.doc_year);
     });
-    const sevC = r.severidad === 'CRÍTICA' ? '#ff3d57' : r.severidad === 'ALTA' ? '#f97316' : '#fbbf24';
+    const sevC = r.mismo_organismo ? '#ff3d57' : '#f97316';
     bodyEl.innerHTML = `
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
         <span style="background:rgba(249,115,22,0.1);color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:6px;padding:3px 10px;font-size:10px;">RTN: ${r.id_num}</span>
         <span style="background:rgba(249,115,22,0.1);color:#f97316;border:1px solid rgba(249,115,22,0.3);border-radius:6px;padding:3px 10px;font-size:10px;">${r.contratos_iaip} contratos IAIP</span>
-        <span style="background:${sevC}1a;color:${sevC};border:1px solid ${sevC}44;border-radius:6px;padding:3px 10px;font-size:10px;">${r.severidad}${r.mismo_organismo?' · Mismo Organismo':''}</span>
+        <span style="background:${r.mismo_organismo?'rgba(255,61,87,0.1)':'rgba(249,115,22,0.1)'};color:${sevC};border:1px solid ${sevC}44;border-radius:6px;padding:3px 10px;font-size:10px;">${r.severidad}${r.mismo_organismo?' · Mismo Organismo':''}</span>
       </div>
       <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Nombres encontrados en registros IAIP</div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;">
@@ -11248,12 +11247,11 @@ function exportDobleRolPDF() {
   const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const ts = new Date().toLocaleDateString('es-HN', {year:'numeric',month:'long',day:'numeric'});
   const rows = _drData;
-  const nCritica = rows.filter(r => r.severidad === 'CRÍTICA').length;
-  const nAlta = rows.filter(r => r.severidad === 'ALTA').length;
-  const nMedia = rows.filter(r => r.severidad === 'MEDIA').length;
+  const nCritica = rows.filter(r => r.mismo_organismo).length;
+  const nAlta = rows.filter(r => !r.mismo_organismo).length;
   const totalCttos = rows.reduce((s,r) => s + (r.contratos_iaip||0), 0);
   const tableRows = rows.map((r,i) => {
-    const c = r.severidad === 'CRÍTICA' ? 'var(--print-red)' : r.severidad === 'ALTA' ? '#ea580c' : '#ca8a04';
+    const c = r.mismo_organismo ? 'var(--print-red)' : '#ea580c';
     const inst_emp = (r.instituciones_empleador||'').split(' | ')[0];
     const inst_cnt = (r.instituciones_contratante||'').split(' | ')[0];
     return `<tr style="${i%2?'background:#f9fafb':''}">
@@ -11285,9 +11283,8 @@ function exportDobleRolPDF() {
   <h1>NS-13 — Doble Rol</h1>
   <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: IAIP + SEFIN 2019–2026</div>
   <div class="kpis">
-    <div class="kpi"><div class="kpi-lbl">CRÍTICA (mismo organismo · 5+ contratos)</div><div class="kpi-val" style="color:var(--print-red);">${nCritica}</div></div>
-    <div class="kpi"><div class="kpi-lbl">ALTA</div><div class="kpi-val" style="color:#ea580c;">${nAlta}</div></div>
-    <div class="kpi"><div class="kpi-lbl">MEDIA</div><div class="kpi-val" style="color:#ca8a04;">${nMedia}</div></div>
+    <div class="kpi"><div class="kpi-lbl">CRÍTICA (mismo organismo)</div><div class="kpi-val" style="color:var(--print-red);">${nCritica}</div></div>
+    <div class="kpi"><div class="kpi-lbl">ALTA (distinto organismo)</div><div class="kpi-val" style="color:#ea580c;">${nAlta}</div></div>
     <div class="kpi"><div class="kpi-lbl">Total detectados</div><div class="kpi-val" style="color:#0bc;">${rows.length}</div></div>
     <div class="kpi"><div class="kpi-lbl">Contratos IAIP</div><div class="kpi-val" style="color:#0bc;">${totalCttos}</div></div>
   </div>

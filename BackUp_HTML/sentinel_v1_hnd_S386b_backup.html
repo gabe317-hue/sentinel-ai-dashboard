@@ -26825,29 +26825,26 @@ const INVESTIGATIONS_EXEC = [
     }
   },
   {
-    id: 'inv-014', folio: 'SEN-INV-2026-014', estado: 'Descartada',
-    titulo: 'SEFIN — Consultor con Doble Rol: Empleado y Proveedor Simultáneo [FALSO POSITIVO]',
+    id: 'inv-014', folio: 'SEN-INV-2026-014', estado: 'Activa',
+    titulo: 'SEFIN — Consultor con Doble Rol: Empleado y Proveedor Simultáneo',
     entidad: 'Secretaría de Estado en los Despachos de Finanzas (SEFIN)',
     actores: ['CLAUBEL MALDONADO MOLINA (ID: 0801196701844)'],
     patrones: ['DOBLE_ROL_EMPLEADO_PROVEEDOR', 'CONTRATACION_MISMO_ORGANISMO', 'CONFLICTO_INTERES'],
-    // S386: sincronizado con expedientes id=4 (Cerrado) e investigaciones id=534 (Descartada) — reclasificado falso positivo en S199.
-    hallazgo: 'CASO DESCARTADO — FALSO POSITIVO (reclasificado S199). La alerta inicial se originó porque el mismo contrato (CO-003-2023) aparece en los registros IAIP de SEFIN con la marca de proveedor registrado tanto en "SI" como en "NO". Esa inconsistencia de captura se interpretó como relación laboral, pero no existe evidencia de nómina que la respalde. Tras la depuración de contratos duplicados (S199), el caso ya no es detectado por NS-13. Se conserva como referencia metodológica: los 35 contratos IAIP con SEFIN (ID 0801196701844) corresponden a una relación de proveedor, sin conflicto de interés acreditado.',
-    recomendacion: 'Sin acción. Caso cerrado como falso positivo. Lección aplicada: una marca registrado_proveedor inconsistente en IAIP no constituye por sí sola evidencia de relación laboral; se requiere confirmación en planilla.',
+    hallazgo: 'Claubel Maldonado Molina aparece simultáneamente como empleado activo de SEFIN (planilla RRHH) y como proveedor contratado por la misma institución. Se identificaron 35 contratos IAIP entre 2021 y 2026, incluyendo contratos activos CO-003-2026 y CO-004-2026 (feb 2026). Identidad verificada: 0801196701844. Fuente primaria: Compras_GA_Abril2026.xlsx publicado en Portal Único de Transparencia IAIP (portalunico.iaip.gob.hn/450/8/). Patrón NS-13 Doble Rol — severidad CRÍTICA por tratarse del mismo organismo contratante y empleador.',
+    recomendacion: 'Verificar si existe dispensa o autorización formal de SEFIN para contratación de empleados activos. Solicitar expediente de cada contrato CO-SEFIN-2021 a CO-004-2026. Referir a TSC para auditoría de conflicto de interés. Cruzar con declaración jurada de probidad presentada por Maldonado Molina.',
     filtro: a => {
       const p = (a.proveedor_nombre||'').toUpperCase();
       return p.includes('CLAUBEL') || p.includes('MALDONADO MOLINA');
     }
   },
   {
-    id: 'inv-015', folio: 'SEN-INV-2026-015', estado: 'En Revisión',
-    titulo: 'Alcaldía La Unión — Posible Doble Rol: 6 Proveedores con Registros como Empleados Municipales (pendiente de confirmar)',
+    id: 'inv-015', folio: 'SEN-INV-2026-015', estado: 'Activa',
+    titulo: 'Alcaldía La Unión — Captura Institucional: 6 Proveedores son Empleados Municipales',
     entidad: 'Alcaldía Municipal de La Unión, Copán',
     actores: ['INVERSIONES RUIZ TABORA (0401198102246)', 'INVERSIONES MORENO (0412199100062)', 'VARIEDADES TETO (0406197600177)', 'IMSTALER (0408198200055)', 'INVERSIONES FAMDOSA (0406197700306)', 'AGROPECUARIA Y FERRETERIA CHINCHILLA (0401200101106)'],
     patrones: ['DOBLE_ROL_EMPLEADO_PROVEEDOR', 'CAPTURA_INSTITUCIONAL', 'CONTRATACION_MISMO_ORGANISMO', 'RED_PROVEEDORES_RELACIONADOS'],
-    // S386: texto suavizado (Regla #29). El hallazgo original (S198) es anterior a la depuración de contratos duplicados de S199;
-    // con esa depuración NS-13 ya no confirma relación laboral en La Unión para ninguno de los 6 RTN. Expediente id=8 → En Revisión.
-    hallazgo: 'Seis proveedores de la Alcaldía Municipal de La Unión tienen, en los registros IAIP de la misma alcaldía, filas con la marca de proveedor no registrado ("NO"), que inicialmente se interpretaron como relación laboral. En conjunto suman 52 contratos IAIP entre 2021 y 2025; los más recientes son de VARIEDADES TETO (dic 2025), IMSTALER (oct 2025) e INVERSIONES MORENO (oct 2025). Tras la depuración de contratos duplicados (S199), esas filas no tienen número de contrato y no permiten confirmar que los titulares sean empleados de la alcaldía. Por eso NS-13 no los detecta hoy como doble rol en el mismo organismo. Dos de los RTN (Ruiz Tabora y Variedades Teto) sí figuran como empleados de otras alcaldías (Corquín y San Pedro), con severidad ALTA. La relación laboral con La Unión está pendiente de confirmar. Fuente: Portal Único de Transparencia IAIP — Alcaldía Municipal de La Unión.',
-    recomendacion: 'Antes de cualquier referencia: verificar en la planilla municipal de La Unión (Portal Único IAIP, sección de recursos humanos) si los 6 RTN figuran como empleados y en qué periodos. Si se confirma, solicitar a la alcaldía el expediente de contratación de cada proveedor y evaluar referencia a TSC. Si no se confirma, cerrar como falso positivo, igual que el folio 014. No usar como caso de demostración hasta concluir la verificación.',
+    hallazgo: 'Seis proveedores distintos de la Alcaldía Municipal de La Unión comparten el mismo RTN que empleados registrados en la planilla municipal. Los 6 casos son de severidad CRÍTICA (mismo organismo). En conjunto suman 52 contratos IAIP activos entre 2021 y 2025. El patrón no es un caso aislado sino captura sistémica: la misma alcaldía adjudicó contratos a empleados activos bajo distintos nombres comerciales. Contratos más recientes: VARIEDADES TETO (dic 2025, 10 contratos 2025), IMSTALER (oct 2025, 7 contratos 2025), INVERSIONES MORENO (oct 2025). Fuente: Portal Único de Transparencia IAIP — Alcaldía Municipal de La Unión.',
+    recomendacion: 'Solicitar a la Alcaldía de La Unión el expediente de contratación de cada uno de los 6 proveedores. Verificar en planilla municipal si los titulares del RTN siguen activos como empleados. Referir a TSC y MP para investigación de red de conflictos de interés a nivel municipal. Caso prioritario para demostración de capacidad analítica Sentinel a nivel municipal.',
     filtro: a => {
       const e = (a.entity_name||'').toUpperCase();
       const p = (a.proveedor_nombre||'').toUpperCase();

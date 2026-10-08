@@ -19607,10 +19607,8 @@ async function ccAnalizarIAIP(entidad, proveedor, rtn, esquema) {
     monto: 0,
     fecha_contrato: r.fecha_contratacion ? String(r.fecha_contratacion).substring(0,10) : null,
     created_at: r.fecha_contratacion,
-    // S395: antes patterns ['DOBLE_ROL_EMPLEADO_PROVEEDOR'] + severity 'CRITICA' fijos — afirmaban un
-    // doble rol que NS-13 no mide (suspendida). Los contratos IAIP entran sin patrón ni severidad.
-    patterns: [],
-    severity: '',
+    patterns: ['DOBLE_ROL_EMPLEADO_PROVEEDOR'],
+    severity: 'CRITICA',
     _iaip: true, _doc_year: r.doc_year, _doc_month: r.doc_month, _file_id: r.file_id
   }));
   const vendorContratos = iaipContracts;
@@ -19632,7 +19630,7 @@ async function ccAnalizarIAIP(entidad, proveedor, rtn, esquema) {
       const b = document.createElement('div');
       b.className = 'cc-iaip-banner';
       b.style.cssText = 'background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.35);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:rgba(200,160,255,0.95);font-family:inherit;';
-      b.innerHTML = `🔍 <strong>Fuente: Portal IAIP</strong> · Este proveedor no aparece en SEFIN SIGEF. Los <strong>${vendorContratos.length}</strong> contratos provienen de <em>iaip_providers</em> (Portal Único de Transparencia). RTN: <code style="color:#c084fc;">${rtn}</code>. Montos no disponibles. Sin clasificación de riesgo: el Portal IAIP no trae severidad ni patrones para estos contratos.`;
+      b.innerHTML = `🔍 <strong>Fuente: Portal IAIP</strong> · Este proveedor no aparece en SEFIN SIGEF. Los <strong>${vendorContratos.length}</strong> contratos provienen de <em>iaip_providers</em> (Portal Único de Transparencia). RTN: <code style="color:#c084fc;">${rtn}</code>. Montos no disponibles.`;
       box.prepend(b);
     }
   }, 80);

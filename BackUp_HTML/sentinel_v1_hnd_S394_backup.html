@@ -26854,14 +26854,15 @@ const INVESTIGATIONS_EXEC = [
     }
   },
   {
-    id: 'inv-015', folio: 'SEN-INV-2026-015', estado: 'Descartada',
-    titulo: 'Alcaldía La Unión — Posible Doble Rol de 6 Proveedores [FALSO POSITIVO]',
+    id: 'inv-015', folio: 'SEN-INV-2026-015', estado: 'En Revisión',
+    titulo: 'Alcaldía La Unión — Posible Doble Rol: 6 Proveedores con Registros como Empleados Municipales (pendiente de confirmar)',
     entidad: 'Alcaldía Municipal de La Unión, Copán',
     actores: ['INVERSIONES RUIZ TABORA (0401198102246)', 'INVERSIONES MORENO (0412199100062)', 'VARIEDADES TETO (0406197600177)', 'IMSTALER (0408198200055)', 'INVERSIONES FAMDOSA (0406197700306)', 'AGROPECUARIA Y FERRETERIA CHINCHILLA (0401200101106)'],
     patrones: ['DOBLE_ROL_EMPLEADO_PROVEEDOR', 'CAPTURA_INSTITUCIONAL', 'CONTRATACION_MISMO_ORGANISMO', 'RED_PROVEEDORES_RELACIONADOS'],
-    // S394: sincronizado con expedientes id=8 (Cerrado) e investigaciones id=535 (Descartada) — falso positivo NS-13, igual que el 014.
-    hallazgo: 'CASO DESCARTADO — FALSO POSITIVO (reclasificado S394). La alerta inicial se originó porque seis proveedores de la Alcaldía Municipal de La Unión aparecen en los registros IAIP de proveedores con la marca "NO" en la casilla "¿Está registrado como proveedor?". Esa marca indica que el proveedor no está inscrito en el registro de ONCAE; no indica relación laboral. Las filas marcadas "NO" corresponden al mismo negocio (mismo nombre y RTN) en las hojas de proveedores de La Unión y de Corquín, y no existe evidencia de nómina que respalde un doble rol. Se conserva como referencia metodológica: los 52 contratos IAIP (2021–2025) corresponden a relaciones de proveedor, sin conflicto de interés acreditado. Fuente: Portal Único de Transparencia IAIP.',
-    recomendacion: 'Sin acción. Caso cerrado como falso positivo. Lección aplicada (igual que el folio 014): la marca registrado_proveedor = "NO" en IAIP no constituye evidencia de relación laboral; se requiere confirmación en planilla.',
+    // S386: texto suavizado (Regla #29). El hallazgo original (S198) es anterior a la depuración de contratos duplicados de S199;
+    // con esa depuración NS-13 ya no confirma relación laboral en La Unión para ninguno de los 6 RTN. Expediente id=8 → En Revisión.
+    hallazgo: 'Seis proveedores de la Alcaldía Municipal de La Unión tienen, en los registros IAIP de la misma alcaldía, filas con la marca de proveedor no registrado ("NO"), que inicialmente se interpretaron como relación laboral. En conjunto suman 52 contratos IAIP entre 2021 y 2025; los más recientes son de VARIEDADES TETO (dic 2025), IMSTALER (oct 2025) e INVERSIONES MORENO (oct 2025). Tras la depuración de contratos duplicados (S199), esas filas no tienen número de contrato y no permiten confirmar que los titulares sean empleados de la alcaldía. Por eso NS-13 no los detecta hoy como doble rol en el mismo organismo. Dos de los RTN (Ruiz Tabora y Variedades Teto) sí figuran como empleados de otras alcaldías (Corquín y San Pedro), con severidad ALTA. La relación laboral con La Unión está pendiente de confirmar. Fuente: Portal Único de Transparencia IAIP — Alcaldía Municipal de La Unión.',
+    recomendacion: 'Antes de cualquier referencia: verificar en la planilla municipal de La Unión (Portal Único IAIP, sección de recursos humanos) si los 6 RTN figuran como empleados y en qué periodos. Si se confirma, solicitar a la alcaldía el expediente de contratación de cada proveedor y evaluar referencia a TSC. Si no se confirma, cerrar como falso positivo, igual que el folio 014. No usar como caso de demostración hasta concluir la verificación.',
     filtro: a => {
       const e = (a.entity_name||'').toUpperCase();
       const p = (a.proveedor_nombre||'').toUpperCase();

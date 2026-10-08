@@ -3139,8 +3139,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <span class="pe-card-tag" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.35);">NS-12</span>
     </div>
 
-    <!-- Card 26 — Doble Rol (NS-13) — S395: SUSPENDIDA (mv_doble_rol no mide doble rol; ver showDobleRolPanel) -->
-    <div class="pe-card" onclick="irDesdeEjecutivo(showDobleRolPanel)" style="display:none;">
+    <!-- Card 26 — Doble Rol (NS-13) -->
+    <div class="pe-card" onclick="irDesdeEjecutivo(showDobleRolPanel)">
       <div class="pe-card-num">26</div>
       <div class="pe-card-icon">🎭</div>
       <div class="pe-card-title">Doble Rol</div>
@@ -3386,8 +3386,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <button id="dr-fil-critica" onclick="filtrarDobleRol('CRÍTICA')" style="background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Solo CRÍTICA</button>
       <button id="dr-fil-alta" onclick="filtrarDobleRol('ALTA')" style="background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Solo ALTA</button>
     </div>
-    <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.35);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--text);">
-      ⚠️ <b style="color:#fbbf24;">Señal suspendida — en revisión (S395, oct-2026).</b> La detección automática cruzaba dos registros de la hoja de <i>proveedores</i> del Portal IAIP (inscrito / no inscrito en ONCAE); no compara planillas de empleados, por lo que no mide doble rol. Se reactivará cuando se integren planillas nominales. Los casos documentados manualmente (abajo) no dependen de esta detección.
+    <div style="background:rgba(0,200,255,0.06);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--text-dim);">
+      ✅ <b style="color:var(--electric);">Detección NS-13 automatizada:</b> mv_doble_rol · cruce IAIP registros empleado (NO) vs. proveedor (SI) por número de identidad. Actualiza con pg_cron.
     </div>
     <!-- Tabla IAIP detectados -->
     <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Detectados Automáticamente — IAIP</div>
@@ -4957,8 +4957,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-note">▸ Captura institucional por proveedor →</div>
       </div>
 
-      <!-- KPI: Doble Rol (NS-13) — S395: SUSPENDIDO -->
-      <div class="exec-card exec-card-red" style="display:none;cursor:pointer;border-color:rgba(249,115,22,0.35);" onclick="irDesdeEjecutivo(showDobleRolPanel)" title="Ver doble rol NS-13" onmouseover="this.style.borderColor='#f97316'" onmouseout="this.style.borderColor='rgba(249,115,22,0.35)'">
+      <!-- KPI: Doble Rol (NS-13) -->
+      <div class="exec-card exec-card-red" style="cursor:pointer;border-color:rgba(249,115,22,0.35);" onclick="irDesdeEjecutivo(showDobleRolPanel)" title="Ver doble rol NS-13" onmouseover="this.style.borderColor='#f97316'" onmouseout="this.style.borderColor='rgba(249,115,22,0.35)'">
         <div class="exec-card-label" style="display:flex;align-items:center;justify-content:space-between;">
           <span>Doble Rol NS-13</span>
           <span style="background:rgba(249,115,22,0.8);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;">🎭</span>
@@ -7538,7 +7538,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Precios inflados (pagado &gt;15% sobre contratado)</span><span style="font-family:'JetBrains Mono',monospace;color:var(--amber)" id="ti-sobrecosto-val">—</span></div>
             <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div id="ti-sobrecosto-bar" style="width:0%;height:100%;background:var(--amber);border-radius:3px;transition:width .4s;"></div></div>
           </div>
-          <div style="display:none;"><!-- S395: NS-13 suspendida -->
+          <div>
             <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Conflicto de interés documentado (NS-13 Doble Rol)</span><span style="font-family:'JetBrains Mono',monospace;color:var(--electric)" id="ti-conflicto-val">—</span></div>
             <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;"><div id="ti-conflicto-bar" style="width:0%;height:100%;background:var(--electric);border-radius:3px;transition:width .4s;"></div></div>
           </div>
@@ -8161,12 +8161,18 @@ async function loadTiposIrregularidad() {
       const mc = Number(a.monto_contrato || 0), budget = Number(a.budget_amount || 0);
       return mc > 0 && budget > mc * 1.15;
     }).length;
-    // S395: barra "Conflicto de interés (NS-13)" retirada — mv_doble_rol no mide doble rol
-    // (ver NS13_SUSPENDIDA). Ya no se llama get_doble_rol aquí.
+    let conflicto = 0;
+    try {
+      // Mismo RPC que usa el panel NS-13 (Regla: reusar patrón probado, no leer la MV directo — RLS)
+      const { data: dobleRolData } = await db.rpc('get_doble_rol');
+      conflicto = Array.isArray(dobleRolData) ? dobleRolData.length : 0;
+    } catch (_) {}
+
     const items = [
       { id: 'ti-fracc',      count: fracc,      unidad: 'contratos' },
       { id: 'ti-hist',       count: hist,       unidad: 'contratos' },
       { id: 'ti-sobrecosto', count: sobrecosto, unidad: 'contratos' },
+      { id: 'ti-conflicto',  count: conflicto,  unidad: 'casos' },
       { id: 'ti-sobre',      count: sobrePresu, unidad: 'contratos' },
     ];
     const maxCount = Math.max(...items.map(i => i.count), 1);
@@ -11079,10 +11085,6 @@ async function monLoadKPI() {
 // ════════════════════════════════════════════════════════════
 let _drData = null;
 let _drFiltro = 'TODOS';
-// S395: NS-13 suspendida. mv_doble_rol toma como "empleado" la fila de PROVEEDORES IAIP con
-// registrado_proveedor='NO' (no inscrito en ONCAE) — no hay planillas nominales en la base.
-// Sin cifras, tabla ni KPI hasta reconstruir con planillas reales. false = comportamiento anterior.
-const NS13_SUSPENDIDA = true;
 
 async function showDobleRolPanel() {
   _closeAllFuentePanels();
@@ -11094,13 +11096,6 @@ async function showDobleRolPanel() {
   if (_drBb) {
     if (window._fromPanelEjecutivo) { _drBb.textContent = '← Panel Ejecutivo'; _drBb.onclick = volverAPanelEjecutivo; }
     else { _drBb.textContent = '← Contratos'; _drBb.onclick = hideDobleRolPanel; }
-  }
-  if (NS13_SUSPENDIDA) {
-    ['dr-stat-personas','dr-stat-critica','dr-stat-contratos'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
-    ['dr-fil-todos','dr-fil-critica','dr-fil-alta'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-    document.getElementById('dr-iaip-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-dim);">Detección automática suspendida — ver aviso arriba.</td></tr>';
-    _loadDrExpManuales();
-    return;
   }
   if (_drData) { _renderDobleRolTabla(); return; }
   const { data, error } = await db.rpc('get_doble_rol');
@@ -11124,7 +11119,6 @@ async function showDobleRolPanel() {
 // S251 — carga proactiva del KPI NS-13 para Vista Ejecutiva (antes solo se
 // poblaba al abrir el panel de detalle vía showDobleRolPanel)
 async function drLoadKPI() {
-  if (NS13_SUSPENDIDA) return; // S395
   try {
     if (!_drData) {
       const { data, error } = await db.rpc('get_doble_rol');
@@ -15021,8 +15015,9 @@ ${iaipSujetoRows.length > 0 ? `
 <div class="page-break"></div>
 <h2>Anexo B — Contratos del Sujeto Investigado (Fuente: Portal IAIP)</h2>
 <div style="background:#f3e8ff;border:2px solid #9333ea;border-radius:6px;padding:10px 14px;margin:10px 0 14px 0;font-family:Arial,sans-serif;font-size:9.5pt;color:#581c87;">
-  <strong>Contratos IAIP del sujeto</strong> · Los siguientes contratos corresponden al sujeto investigado
+  <strong>NS-13 — Doble Rol Empleado/Proveedor</strong> · Los siguientes contratos corresponden al sujeto investigado
   <strong>${iaipSujetoNombre}</strong> (RTN: <code>${_sujRTN}</code>) según el Portal Único de Transparencia IAIP.
+  Este sujeto aparece simultáneamente como empleado y proveedor de la institución, lo que configura un indicador de posible conflicto de interés.
   Los montos no están disponibles en fuente IAIP — solicitar a SEFIN/ONCAE para cuantificación.
 </div>
 <table style="font-size:9pt;">
@@ -19591,7 +19586,7 @@ function ccAnalizar() {
 }
 
 async function ccAnalizarIAIP(entidad, proveedor, rtn, esquema) {
-  showToast('Buscando en fuente IAIP…', 'ok');
+  showToast('Buscando en fuente IAIP (NS-13)…', 'ok');
   const { data, error } = await db.from('iaip_providers')
     .select('*').eq('numero_identificacion', rtn)
     .order('fecha_contratacion', { ascending: false }).limit(100);
@@ -19630,7 +19625,7 @@ async function ccAnalizarIAIP(entidad, proveedor, rtn, esquema) {
       const b = document.createElement('div');
       b.className = 'cc-iaip-banner';
       b.style.cssText = 'background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.35);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:rgba(200,160,255,0.95);font-family:inherit;';
-      b.innerHTML = `🔍 <strong>Fuente: Portal IAIP</strong> · Este proveedor no aparece en SEFIN SIGEF. Los <strong>${vendorContratos.length}</strong> contratos provienen de <em>iaip_providers</em> (Portal Único de Transparencia). RTN: <code style="color:#c084fc;">${rtn}</code>. Montos no disponibles.`;
+      b.innerHTML = `🔍 <strong>Fuente: Portal IAIP — NS-13 Doble Rol</strong> · Este proveedor no aparece en SEFIN SIGEF. Los <strong>${vendorContratos.length}</strong> contratos provienen de <em>iaip_providers</em> (Portal Único de Transparencia). RTN: <code style="color:#c084fc;">${rtn}</code>. Montos no disponibles.`;
       box.prepend(b);
     }
   }, 80);

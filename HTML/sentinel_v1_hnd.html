@@ -13384,7 +13384,7 @@ function exportNSPanelPDF(panelId, title) {
     @media print{body{padding:14px;}}
   </style></head><body>
   <h1>${esc(title)}</h1>
-  <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE 2019–2026</div>
+  <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: ${_fuentesLabel(window.allAlerts || [])}</div>
   ${statsHtml}
   ${tablesHtml || '<p style="color:#888;">Sin datos de tabla disponibles en este momento.</p>'}
   ${extraHtml}
@@ -13434,7 +13434,7 @@ function exportFraccionamientoPDF() {
     @media print{body{padding:14px;}}
   </style></head><body>
   <h1>Detección de Fraccionamiento</h1>
-  <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE 2019–2026</div>
+  <div class="meta">Sentinel AI — Honduras Procurement Intelligence · Generado: ${ts} · Fuente: ${_fuentesLabel(window.allAlerts || [])}</div>
   <div class="kpis">
     <div class="kpi"><div class="kpi-lbl">Casos Críticos</div><div class="kpi-val" style="color:var(--print-red);">${nCritica}</div></div>
     <div class="kpi"><div class="kpi-lbl">Casos Altos</div><div class="kpi-val" style="color:#ea580c;">${nAlta}</div></div>
@@ -22084,7 +22084,7 @@ function renderAnalytics() {
 
   // ── Headline cards ──
   document.getElementById('analyticsHeadline').innerHTML = [
-    { label: 'Contratos Monitoreados', value: (window._bdTotalCount || totalAlerts).toLocaleString('es-HN'), sub: 'SEFIN + ONCAE 2019–2026 · bajo análisis activo' },
+    { label: 'Contratos Monitoreados', value: (window._bdTotalCount || totalAlerts).toLocaleString('es-HN'), sub: _fuentesLabel(window.allAlerts || []) + ' · bajo análisis activo' },
     { label: 'Con Alerta CRÍTICA / ALTA', value: (() => { const n = alerts.filter(a => { const s=(a.severity||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); return s==='critica'||s==='alta'; }).length; return n.toLocaleString('es-HN') + ' (' + ((n/(window._bdTotalCount||totalAlerts||1))*100).toFixed(1) + '%)'; })(), sub: 'contratos con riesgo elevado' },
     { label: 'Exposición Total',     value: fmtLarge(totalMonto), sub: fmtUSD(totalMonto) + ' USD estimado' },
   ].map(c => `
@@ -28917,7 +28917,7 @@ function exportReporteS36PDF() {
 
   <div style="margin-top:28px;padding-top:16px;border-top:1px solid var(--print-border);text-align:center;font-size:10px;color:var(--print-grey-light);">
     Sistema Sentinel — Honduras · ${folio} · ${ds} · Fuente: ONCAE HC1-2025 JSON verificado<br>
-    Base de datos: 127,832 registros | SEFIN + ONCAE 2019–2025 | Clasificación: RESERVADO
+    Base de datos: ${(window._bdTotalCount || (window.allAlerts || []).length).toLocaleString('es-HN')} registros | ${_fuentesLabel(window.allAlerts || [])} | Clasificación: RESERVADO
   </div>
   </body></html>`;
 

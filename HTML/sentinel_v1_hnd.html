@@ -7310,7 +7310,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div class="fuente-header">
       <div class="fuente-title">🔎 <span>Búsqueda en Base de Datos</span></div>
       <div class="fuente-subtitle" style="font-size:11px;color:var(--text-dim);margin-top:4px;">
-        Consulta los <span id="bd-total-registros">127,832</span> registros de SEFIN y ONCAE con filtros combinados.
+        Consulta los <span id="bd-total-registros">—</span> registros de <span id="bd-fuentes-label">las fuentes integradas</span> con filtros combinados.
       </div>
     </div>
 
@@ -21113,6 +21113,9 @@ function updateConsultasMetrics(all) {
     if (elM && r.critica_monto) elM.textContent = fmtM(Number(r.critica_monto));
   }, () => {});
   if (elS) elS.textContent = sobre.length > 0 ? sobre.length.toLocaleString('es-HN') : '—';
+  // S403: fuentes del buscador calculadas de los datos (antes fijo "SEFIN y ONCAE")
+  const elFuentes = document.getElementById('bd-fuentes-label');
+  if (elFuentes) elFuentes.textContent = _fuentesLabel(all);
   // Actualizar contadores de BD en reportes/dashboard
   const totalStr = (window._bdTotalCount || all.length).toLocaleString('es-HN');
   const dbeCont = document.getElementById('dbe-contratos');
@@ -29371,7 +29374,7 @@ function exportScannerPDF(patternId) {
     <div style="font-size:11px;opacity:.65;margin-bottom:12px;">SENTINEL-AI · ESCÁNER AUTOMÁTICO · ${ds}</div>
     <div class="cover-title">${pattern.icon} ${pattern.title}</div>
     <div class="cover-sub">${pattern.desc}</div>
-    <div class="cover-folio">Folio: ${folio} | Base: 127,832 contratos SEFIN/ONCAE 2019–2025</div>
+    <div class="cover-folio">Folio: ${folio} | Base al momento del análisis: 127,832 contratos SEFIN/ONCAE 2019–2025</div>
   </div>
   <div class="stats">
     <div class="stat"><div class="stat-num">${results.length}</div><div class="stat-label">Registros Detectados</div></div>
@@ -29448,7 +29451,7 @@ function exportReporteFueraGiroPDF() {
   <div class="cover">
     <div style="font-size:12px;opacity:.7;margin-bottom:16px;">SISTEMA SENTINEL-AI · REPÚBLICA DE HONDURAS</div>
     <div class="cover-title">🏪 INVESTIGACIÓN ESPECIAL — EMPRESAS FUERA DE GIRO</div>
-    <div class="cover-sub">Patrón DICOMARCA Generalizado · Búsqueda Sistemática en 127,832 Contratos</div>
+    <div class="cover-sub">Patrón DICOMARCA Generalizado · Búsqueda Sistemática en 127,832 Contratos (base al momento del análisis)</div>
     <div class="cover-sub">5 Casos CRÍTICA · L 42M+ · Cluster SEDESOL 2022 · INFOP · UNAH · Hospital Sur</div>
     <div class="cover-folio">Folio: ${folio} | Fecha: ${ds} | Base de datos: SEFIN/ONCAE 2019–2025</div>
     <div class="cover-reservado">🔒 RESERVADO — USO INVESTIGATIVO</div>
@@ -29670,7 +29673,7 @@ function exportReportePJPDF() {
   </div>
   <div class="content">
     <h1>I. HALLAZGO PRINCIPAL — OPACIDAD TOTAL</h1>
-    <p>La base de datos Sentinel (127,832 contratos SEFIN/ONCAE 2019–2025) registra <strong>22 contratos del Poder Judicial</strong> por L 30.2M. Sin embargo, ICN Digital documentó que el Poder Judicial ejecutó contratos de arrendamiento vehicular por <strong style="color:var(--print-red)">L 182 millones</strong> en el mismo período — una brecha de <strong style="color:var(--print-red)">L 151.8M completamente ausente de SEFIN y ONCAE</strong>.</p>
+    <p>La base de datos Sentinel al momento del análisis (127,832 contratos SEFIN/ONCAE 2019–2025) registraba <strong>22 contratos del Poder Judicial</strong> por L 30.2M. Sin embargo, ICN Digital documentó que el Poder Judicial ejecutó contratos de arrendamiento vehicular por <strong style="color:var(--print-red)">L 182 millones</strong> en el mismo período — una brecha de <strong style="color:var(--print-red)">L 151.8M completamente ausente de SEFIN y ONCAE</strong>.</p>
     <p>Esta brecha indica uso sistemático de <strong>contratación directa sin publicación</strong> o pagos fuera del sistema oficial — mecanismo que viola la Ley de Contratación del Estado y permite opacidad total sobre el proveedor, precio y justificación.</p>
     <h1>II. CONTRATOS PJ EN BASE DE DATOS SENTINEL</h1>
     <table>

@@ -7979,6 +7979,17 @@ function fmtDate(iso) {
 // ════════════════════════════════════════════════════════════
 // S126 — Configuración global: arrays de filtrado (movidos a scope global en S170)
 // S92 — Exclusiones quirúrgicas: pares proveedor+entidad con justificación operacional legítima.
+// S403 — SOBREPRESUPUESTO = Pagado > Contratado (+15%). Decisión de Gabe S403: UNA sola
+// definición para tarjetas, panel global, drill-down por entidad y exports. Antes se mezclaban
+// 3 criterios: monto_pagado, budget_amount > contrato (presupuesto PIEP mayor al contrato —
+// eso es ritmo de ejecución, no sobrepresupuesto) y el patrón SOBRECOSTO; la tarjeta Consultas
+// mostraba 112 cuando los contratos con pago mayor al contrato son 39.
+// "Ritmo Acelerado institucional" (budget_amount) es otra métrica y NO usa esta función.
+function esSobrepresupuesto(a) {
+  const mc = Number(a.monto_contrato || 0);
+  return mc > 0 && Number(a.monto_pagado || 0) > mc * 1.15;
+}
+
 const EXCLUSIONES_OPERACIONALES = [
   { proveedor: 'ASTRO TOUR',    entidad: 'EJERCITO DE HONDURAS'      },
   { proveedor: 'ASTRO TOUR',    entidad: 'ESTADO MAYOR CONJUNTO'     },
@@ -9706,17 +9717,9 @@ function populateEntitySobrecosto(entityName) {
   const _sovVariants = getEntityVariants(entityName);
   const data = allAlerts.filter(a => _sovVariants.includes(a.entity_name || a.entidad || ''));
 
-  // Filter to contracts with sobrecosto
-  // Checks BOTH monto_pagado (manual) and budget_amount (SEFIN)
+  // S403: criterio único esSobrepresupuesto() (Pagado > Contratado)
   const sobrecostos = data
-    .filter(a => {
-      const mc = Number(a.monto_contrato || 0);
-      const mp = Number(a.monto_pagado || 0);
-      const budget = Number(a.budget_amount || 0);
-
-      // SOBRECOSTO if either field exceeds contract by >15%
-      return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
-    })
+    .filter(esSobrepresupuesto)
     .map(a => {
       const mc = Number(a.monto_contrato);
       const mp = Number(a.monto_pagado || 0);
@@ -14045,15 +14048,19 @@ async function loadInvestigacionesDB() {
     const { data, error } = await db
       .from('investigaciones')
       .select('folio,proveedor,entidad,monto,estado,destino_referido,fecha_referido,origen')
-      .not('estado', 'in', '("Borrador-Auto","Descartado")')
+      .not('estado', 'in', '("Borrador-Auto","Descartado","Descartada")')
       .order('id', { ascending: false })
       .limit(20);
 
     if (error || !data) throw error;
 
-    const activas = data.filter(r => r.estado === 'Activa').length;
-    const nuevas  = data.filter(r => r.estado === 'Nuevo').length;
-    const total   = data.length;
+    // S403: la tarjeta mostraba data.length (siempre 20 por el .limit) y "Descartada"
+    // (575 filas) no estaba excluida. Los conteos salen de la tabla completa, no de la lista.
+    const { data: _estados } = await db.from('investigaciones').select('estado');
+    const _base   = _estados || data;
+    const activas = _base.filter(r => r.estado === 'Activa').length;
+    const nuevas  = _base.filter(r => r.estado === 'Nuevo').length;
+    const total   = activas + nuevas;
 
     if (badge) badge.textContent = `${activas} activa${activas!==1?'s':''} · ${nuevas} nueva${nuevas!==1?'s':''}`;
     if (metricEl) metricEl.textContent = total;
@@ -16060,6 +16067,14 @@ function renderTimeline() {
     ? allAlerts.filter(a => a.entity_name === entityFilter)
     : allAlerts;
 
+  // S403: contratos con fecha posterior a hoy (errores de captura en la fuente, p. ej. SICC
+  // SEDENA con proceso "-2025" y fecha nov/dic-2026) no se grafican como meses futuros.
+  const _tlHoy = new Date().toISOString().slice(0, 10);
+  filtered = filtered.filter(a => {
+    const raw = a.fecha_contrato || a.fecha_adjudicacion || a.fecha_publicacion || a.created_at || '';
+    return !raw || raw.slice(0, 10) <= _tlHoy;
+  });
+
   // Filtro de año
   if (_tlYear) {
     filtered = filtered.filter(a => {
@@ -16995,13 +17010,7 @@ function hideGlobalSobrecostos() {
 function populateGlobalSobrecostos() {
   // Filter all alerts for SOBRECOSTOS using same logic as entity drill-down
   const sobrecostos = allAlerts
-    .filter(a => {
-      const mc = Number(a.monto_contrato || 0);
-      const mp = Number(a.monto_pagado || 0);
-      const budget = Number(a.budget_amount || 0);
-      // SOBRECOSTO if either field exceeds contract by >15%
-      return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
-    })
+    .filter(esSobrepresupuesto)
     .map(a => {
       const mc = Number(a.monto_contrato);
       const mp = Number(a.monto_pagado || 0);
@@ -17467,12 +17476,7 @@ function exportSobrecostoRealPDF() {
 
   // Recalculate sobrecostos (same logic as populateGlobalSobrecostos)
   const sobrecostos = allAlerts
-    .filter(a => {
-      const mc = Number(a.monto_contrato || 0);
-      const mp = Number(a.monto_pagado || 0);
-      const budget = Number(a.budget_amount || 0);
-      return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
-    })
+    .filter(esSobrepresupuesto)
     .map(a => {
       const mc = Number(a.monto_contrato);
       const mp = Number(a.monto_pagado || 0);
@@ -18043,12 +18047,7 @@ function exportGlobalSobrecostos(format = 'csv') {
   }
 
   // Filter sobrecostos
-  const sobrecostos = allAlerts.filter(a => {
-    const mc = Number(a.monto_contrato || 0);
-    const mp = Number(a.monto_pagado || 0);
-    const budget = Number(a.budget_amount || 0);
-    return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
-  });
+  const sobrecostos = allAlerts.filter(esSobrepresupuesto);
 
   if (format === 'csv') {
     exportSobrecostosCSV(sobrecostos);
@@ -18097,12 +18096,7 @@ function showPerformanceMetrics() {
       const pct = ((count / allAlerts.length) * 100).toFixed(1);
     });
 
-    const sobrecostos = allAlerts.filter(a => {
-      const mc = Number(a.monto_contrato || 0);
-      const mp = Number(a.monto_pagado || 0);
-      const budget = Number(a.budget_amount || 0);
-      return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
-    });
+    const sobrecostos = allAlerts.filter(esSobrepresupuesto);
 
   }
 
@@ -21102,21 +21096,22 @@ function updateConsultasMetrics(all) {
   const criticos = all.filter(a => normSev(a.severity||a.severidad) === 'critica');
   const monto = criticos.reduce((s,a) => s + Number(a.monto_contrato||0), 0);
   const fmtM = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(1) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(0) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
-  // S222: unificado con el conteo usado en poUpdateIndicators()/populateGlobalSobrecostos()
-  // (contratos con SEFIN o patrón SOBRECOSTO) — antes contaba instituciones con solo el
-  // filtro SEFIN, dando un número distinto ("—") al resto del dashboard ("39 casos").
-  const sobre = all.filter(a => {
-    const mc = Number(a.monto_contrato||0);
-    const budget = Number(a.budget_amount||0);
-    const hasSEFIN = mc > 0 && budget > mc * 1.15;
-    const hasPattern = a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SOBRECOSTO'));
-    return hasSEFIN || hasPattern;
-  });
+  // S403: criterio único esSobrepresupuesto() (Pagado > Contratado), igual que el resto del dashboard.
+  const sobre = all.filter(esSobrepresupuesto);
   const elC = document.getElementById('exec-m-criticos');
   const elM = document.getElementById('exec-m-monto');
   const elS = document.getElementById('exec-m-sobre');
   if (elC) elC.textContent = criticos.length.toLocaleString('es-HN');
   if (elM) elM.textContent = fmtM(monto);
+  // S403: la cifra de la tarjeta debe ser la oficial (4,698), no el conteo del cliente, que
+  // aplica EXCLUSIONES_OPERACIONALES (ASTRO TOUR / Unidad Central) y daba 4,697.
+  // Fuente: landing_cifras (snapshot de sentinel_cifras_oficiales). Si falla, queda el del cliente.
+  db.from('landing_cifras').select('critica_n,critica_monto').limit(1).then(({ data }) => {
+    const r = data && data[0];
+    if (!r) return;
+    if (elC && r.critica_n) elC.textContent = Number(r.critica_n).toLocaleString('es-HN');
+    if (elM && r.critica_monto) elM.textContent = fmtM(Number(r.critica_monto));
+  }, () => {});
   if (elS) elS.textContent = sobre.length > 0 ? sobre.length.toLocaleString('es-HN') : '—';
   // Actualizar contadores de BD en reportes/dashboard
   const totalStr = (window._bdTotalCount || all.length).toLocaleString('es-HN');
@@ -21147,16 +21142,8 @@ async function updateInvestigacionAnalisisMetrics() {
     if (all.length) {
       const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
       const alto = all.filter(a => normSev(a.severity||a.severidad) === 'alta').length;
-      // Mismo criterio de sobrepresupuesto que updateConsultasMetrics — una sola
-      // definición repetida en 3 lugares del archivo (Consultas/poUpdateIndicators/aquí);
-      // si se corrige en uno, corregir en los 3.
-      const sob = all.filter(a => {
-        const mc = Number(a.monto_contrato||0);
-        const budget = Number(a.budget_amount||0);
-        const hasSEFIN = mc > 0 && budget > mc * 1.15;
-        const hasPattern = a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SOBRECOSTO'));
-        return hasSEFIN || hasPattern;
-      }).length;
+      // S403: criterio único esSobrepresupuesto() (Pagado > Contratado).
+      const sob = all.filter(esSobrepresupuesto).length;
       const elAlto = document.getElementById('exec-m-an-alto');
       const elSob = document.getElementById('exec-m-an-sobre');
       if (elAlto) elAlto.textContent = alto.toLocaleString('es-HN');
@@ -21195,13 +21182,7 @@ function poUpdateIndicators() {
     if (!data.length) return;
     const normSevP = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
     const alto  = data.filter(a => normSevP(a.severity) === 'alta').length;
-    const sob   = data.filter(a => {
-      const mc = Number(a.monto_contrato||0);
-      const budget = Number(a.budget_amount||0);
-      const hasSEFIN = mc > 0 && budget > mc * 1.15;
-      const hasPattern = a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SOBRECOSTO'));
-      return hasSEFIN || hasPattern;
-    }).length;
+    const sob   = data.filter(esSobrepresupuesto).length;
     const engel = data.filter(a => a.tags && a.tags.includes('LISTA_ENGEL')).length;
     // S285 · R-08 — los indicadores po-ind-crit / po-ind-sob / po-ind-total se retiraron de la
     // banda del portal (duplicaban la tarjeta Consultas y el badge del header). Sus asignaciones
@@ -24411,12 +24392,7 @@ async function checkDatabaseHealth() {
 
 
     // 2. Check SOBRECOSTO count
-    const sobrecostos = window.globalAlerts.filter(a => {
-      const mc = Number(a.monto_contrato || 0);
-      const mp = Number(a.monto_pagado || 0);
-      const budget = Number(a.budget_amount || 0);
-      return mc > 0 && (mp > mc * 1.15 || budget > mc * 1.15);
-    });
+    const sobrecostos = window.globalAlerts.filter(esSobrepresupuesto);
 
     // 3. Check data source distribution
     const sources = {};
@@ -24838,14 +24814,7 @@ function renderEjecutiva() {
   // Counts by severity
   const criticos  = alerts.filter(a => normSevLocal(a.severity) === 'critica');
   const altos     = alerts.filter(a => normSevLocal(a.severity) === 'alta');
-  const sobrecosto= alerts.filter(a => {
-    // Pattern-based (legacy) OR budget_amount-based (SEFIN PIEP data)
-    const mc = Number(a.monto_contrato || 0);
-    const budget = Number(a.budget_amount || 0);
-    const hasSEFIN = mc > 0 && budget > mc * 1.15;
-    const hasPattern = a.patterns && (Array.isArray(a.patterns) ? a.patterns : [a.patterns]).some(p => String(p).includes('SOBRECOSTO'));
-    return hasSEFIN || hasPattern;
-  });
+  const sobrecosto= alerts.filter(esSobrepresupuesto);
 
   const fmtL = n => n > 0 ? 'L ' + (n >= 1e6 ? (n/1e6).toFixed(1)+'M' : (n/1e3).toFixed(0)+'K') : 'L —';
   const sumMonto = arr => arr.reduce((s,a) => s + (parseFloat(a.monto_contrato)||0), 0);
@@ -26492,6 +26461,7 @@ const PLAYBOOK_QUERIES = [
         const p = a.proveedor_nombre; if (!p || p.trim() === '') return;
         const f = a.fecha_contrato || '';
         if (!f) return;
+        if (f.slice(0, 10) > new Date().toISOString().slice(0, 10)) return; // S403: fechas futuras = error de captura
         if (!provMap[p]) provMap[p] = { fechas: [], contratos: [], monto: 0 };
         provMap[p].fechas.push(f);
         provMap[p].contratos.push(a);
@@ -26583,18 +26553,20 @@ const PLAYBOOK_QUERIES = [
         const e = a.entity_name || '—';
         if (!entMap[e]) entMap[e] = { criticos: 0, altos: 0, total: 0, monto: 0 };
         entMap[e].total++;
-        entMap[e].monto += Number(a.monto_contrato || 0);
         const sev = normSev(a.severity || a.severidad);
-        if (sev === 'critica') entMap[e].criticos++;
+        // S403: "Monto expuesto" = monto CRÍTICA, misma definición que la tarjeta Consultas
+        // (antes sumaba todos los contratos, BAJA incluida). Orden por alertas, no por monto.
+        if (sev === 'critica') { entMap[e].criticos++; entMap[e].monto += Number(a.monto_contrato || 0); }
         else if (sev === 'alta') entMap[e].altos++;
       });
       const results = Object.entries(entMap)
-        .sort((a, b) => b[1].monto - a[1].monto)
+        .sort((a, b) => (b[1].criticos - a[1].criticos) || (b[1].altos - a[1].altos) || (b[1].monto - a[1].monto))
         .slice(0, 25);
       return { titulo: 'Instituciones con más Alertas', filas: results.map(([ent, v], i) => ({
         num: i+1, entidad: ent, criticos: v.criticos, altos: v.altos,
         total: v.total, monto: fmtL(v.monto)
-      })), cols: ['#','Institución','Críticos','Altos','Total alertas','Monto expuesto'] };
+      })), cols: ['#','Institución','Críticos','Altos','Total contratos','Monto expuesto (CRÍTICA)'],
+      nota: 'Orden: contratos CRÍTICA, luego ALTA. Monto expuesto = suma de contratos CRÍTICA de la institución.' };
     }
   },
   {
@@ -27003,6 +26975,17 @@ th{padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transfor
   pw.addEventListener('load', () => pw.focus());
 }
 
+// S403: etiqueta de fuentes calculada de los datos cargados (antes fija "SEFIN + ONCAE 2019–2026",
+// omitía IAIP y SICC). Años: rango de fecha_contrato hasta hoy.
+function _fuentesLabel(all) {
+  const fam = s => /^ONCAE/i.test(s) ? 'ONCAE' : /^IAIP/i.test(s) ? 'IAIP' : /EDCA|SEFIN/i.test(s) ? 'SEFIN/EDCA' : /^SICC/i.test(s) ? 'SICC' : s;
+  const fuentes = [...new Set(all.map(a => a.data_source).filter(Boolean).map(fam))].sort();
+  const hoy = new Date().toISOString().slice(0, 10);
+  const anios = all.map(a => (a.fecha_contrato || '').slice(0, 10)).filter(f => f && f >= '2019' && f <= hoy).map(f => f.slice(0, 4)).sort();
+  const rango = anios.length ? (anios[0] === anios[anios.length - 1] ? anios[0] : anios[0] + '–' + anios[anios.length - 1]) : '';
+  return fuentes.join(' + ') + (rango ? ' ' + rango : '');
+}
+
 function executePlaybookQuery(id) {
   const q = PLAYBOOK_QUERIES.find(x => x.id === id);
   if (!q) return;
@@ -27015,14 +26998,10 @@ function executePlaybookQuery(id) {
   const colWidths = result.cols.map(() => Math.floor(100 / result.cols.length) + '%').join(' ');
 
   const headerRow = result.cols.map(c => `<th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-bottom:2px solid #1e3a5f;color:#1e3a5f;">${c}</th>`).join('');
+  // S403: cada fila trae sus campos en el mismo orden que result.cols — se toman por posición.
+  // Antes se emparejaban por parecido de nombre (podía cruzar columnas) y el 0 salía como "—".
   const dataRows = result.filas.map((fila, idx) => {
-    const vals = result.cols.map(col => {
-      const key = Object.keys(fila).find(k => {
-        const kl = k.toLowerCase(); const cl = col.toLowerCase().replace(/[^a-z]/g,'');
-        return kl === cl || kl.includes(cl.substring(0,5)) || cl.includes(kl.substring(0,5));
-      });
-      return fila[key !== undefined ? key : Object.keys(fila)[result.cols.indexOf(col)]] || '—';
-    });
+    const vals = Object.values(fila).slice(0, result.cols.length).map(v => (v === null || v === undefined || v === '') ? '—' : v);
     const bg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
     const cells = vals.map(v => `<td style="padding:5px 8px;font-size:11px;border-bottom:1px solid var(--print-border);color:#374151;">${v}</td>`).join('');
     return `<tr style="background:${bg};">${cells}</tr>`;
@@ -27052,7 +27031,7 @@ function executePlaybookQuery(id) {
 <div class="body">
   <div class="meta">
     <span class="meta-pill">BD: ${(window._bdTotalCount || (window.allAlerts||[]).length).toLocaleString('es-HN')} registros</span>
-    <span class="meta-pill">Fuente: SEFIN + ONCAE 2019–2026</span>
+    <span class="meta-pill">Fuente: ${_fuentesLabel(all)}</span>
     <span class="meta-pill">Generado: ${now}</span>
   </div>
   <table>

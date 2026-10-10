@@ -26518,29 +26518,22 @@ const PLAYBOOK_QUERIES = [
   {
     id: 'top10-riesgo',
     nombre: 'Top 10 proveedores de riesgo',
-    desc: 'Score de riesgo = (contratos CRÍTICA × 3) + total contratos. Mayor score = mayor exposición.',
+    desc: 'Top 10 del Sentinel Score™ — mismo ranking que la tarjeta 1 del Panel Ejecutivo (get_sentinel_score_full).',
     severidad: 'alta',
-    run: function(all) {
+    // S403: antes era score = críticos×3 + total de contratos (premiaba volumen, no riesgo) y no
+    // coincidía con el Top 10 del Sentinel Score de la tarjeta 1. Ahora usa el mismo RPC del servidor.
+    run: async function(all) {
       const fmtL = n => n >= 1e9 ? 'L ' + (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? 'L ' + (n/1e6).toFixed(1) + 'M' : 'L ' + Math.round(n).toLocaleString('es-HN');
-      const normSev = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-      const provMap = {};
-      all.forEach(a => {
-        const p = a.proveedor_nombre; if (!p || p.trim() === '') return;
-        if (!provMap[p]) provMap[p] = { criticos: 0, total: 0, monto: 0, entidades: new Set() };
-        provMap[p].total++;
-        provMap[p].monto += Number(a.monto_contrato || 0);
-        if (normSev(a.severity || a.severidad) === 'critica') provMap[p].criticos++;
-        provMap[p].entidades.add(a.entity_name || '');
-      });
-      const results = Object.entries(provMap)
-        .map(([nombre, v]) => ({ nombre, ...v, score: v.criticos * 3 + v.total }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 10);
-      return { titulo: 'Top 10 Proveedores de Riesgo', filas: results.map((r, i) => ({
-        num: i+1, proveedor: r.nombre, criticos: r.criticos, totalContratos: r.total,
-        entidades: r.entidades.size, monto: fmtL(r.monto), score: r.score
-      })), cols: ['#','Proveedor','Críticos','Total contratos','Entidades','Monto','Score'],
-      nota: 'Score = (contratos Críticos × 3) + total contratos del proveedor. Mayor score = mayor exposición al riesgo.' };
+      const { data, error } = await db.rpc('get_sentinel_score_full', { p_limit: 10, p_min_monto: 100000000 });
+      if (error) throw error;
+      const rows = data || [];
+      return { titulo: 'Top 10 Proveedores de Riesgo — Sentinel Score™', filas: rows.map((r, i) => ({
+        num: i+1, proveedor: r.proveedor, score: Number(r.score) + '/100',
+        senales: ((r.ns_labels && r.ns_labels.length) ? r.ns_labels.join(' · ') : '—')
+          + ((r.ns_verificar && r.ns_verificar.length) ? ' (verificar datos: ' + r.ns_verificar.join(', ') + ')' : ''),
+        contratos: r.n_contratos, entidades: (r.entidades_arr || []).length, monto: fmtL(Number(r.monto))
+      })), cols: ['#','Proveedor','Score','Señales NS','Contratos','Entidades','Monto'],
+      nota: 'Sentinel Score™ (0–100): monto, patrones, alcance institucional, recencia, antecedentes externos y señales NS independientes. Candidatos con monto ≥ L100M. Mismo ranking que la tarjeta 1 del Panel Ejecutivo.' };
     }
   },
   {
@@ -26989,13 +26982,26 @@ function _fuentesLabel(all) {
   return fuentes.join(' + ') + (rango ? ' ' + rango : '');
 }
 
-function executePlaybookQuery(id) {
+async function executePlaybookQuery(id) {
   const q = PLAYBOOK_QUERIES.find(x => x.id === id);
   if (!q) return;
   const all = window.allAlerts || [];
   if (!all.length) { alert('Datos no cargados aún. Espera un momento y vuelve a intentar.'); return; }
 
-  const result = q.run(all);
+  // S403: la ventana se abre ANTES de esperar al servidor (Top 10 usa un RPC); si se abre
+  // después del await, el navegador la bloquea como pop-up porque ya no viene del clic.
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.write('<p style="font-family:Arial,sans-serif;padding:24px;color:#1e3a5f;">Generando consulta…</p>');
+
+  let result;
+  try {
+    result = await q.run(all);
+  } catch (e) {
+    console.warn('executePlaybookQuery:', e);
+    pw.document.body.innerHTML = '<p style="font-family:Arial,sans-serif;padding:24px;color:#b91c1c;">No se pudo generar la consulta. Intente de nuevo en unos segundos.</p>';
+    return;
+  }
   const now = new Date().toLocaleDateString('es-HN', { year:'numeric', month:'long', day:'numeric' });
 
   const colWidths = result.cols.map(() => Math.floor(100 / result.cols.length) + '%').join(' ');
@@ -27046,8 +27052,7 @@ function executePlaybookQuery(id) {
 </div>
 </body></html>`;
 
-  const pw = window.open('', '_blank', 'width=1100,height=800');
-  if (!pw) { alert('Habilita ventanas emergentes para exportar el PDF.'); return; }
+  pw.document.open();
   pw.document.write(typeof addPrintBtn === 'function' ? addPrintBtn(html) : html);
   pw.document.close();
   pw.addEventListener('load', () => pw.focus());

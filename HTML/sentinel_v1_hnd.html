@@ -5991,6 +5991,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
           <span class="adp-field-label">Patrones Detectados</span>
           <div class="adp-pattern-list" id="adp-patterns"></div>
         </div>
+        <!-- S404 0(j) — Fraccionamiento por grupo: lo llena _adpRenderFraccGrupo() -->
+        <div class="adp-field" id="adp-fracc-section" style="display:none;">
+          <span class="adp-field-label">Fraccionamiento por grupo</span>
+          <div id="adp-fracc-resumen" style="font-size:12px;line-height:1.5;"></div>
+          <div id="adp-fracc-lista" style="margin-top:6px;"></div>
+        </div>
       </div>
     </div>
 
@@ -8298,11 +8304,14 @@ async function loadAlerts() {
     // Sin ella el usuario veía un contrato subir a CRÍTICA sin poder ver por qué.
     // patterns_norm sigue FUERA a propósito: es la normalización interna de patterns
     // que usa el trigger para puntuar — no aporta nada que el cliente no tenga ya.
+    // S404 — fracc_rep_id AGREGADA (26ª columna). La escribe sentinel_fracc_tope_aplicar()
+    // (cron 86): arma los grupos de fraccionamiento y deja una sola CRÍTICA por grupo.
+    // La lee _adpRenderFraccGrupo() para mostrar "N contratos · L suma del grupo".
     const ALERT_COLS = [
       'id','alert_id','description','entity_name','severity','risk_score','data_source',
       'status','created_at','monto_contrato','monto_pagado','fecha_contrato','contract_id',
       'patterns','patterns_ctx','pattern_count','entidad','monto','tipo_contratacion','proveedor_nombre',
-      'fecha_publicacion','fecha_adjudicacion','source','title','budget_amount'
+      'fecha_publicacion','fecha_adjudicacion','source','title','budget_amount','fracc_rep_id'
     ].join(',');
 
     // Una página = un intervalo cerrado de id. lo_id NULL en la última (sin cota inferior),
@@ -10443,6 +10452,61 @@ let _adpRawFecha = null; // fecha_contrato raw del alert actual (descriptivo; ya
 let _adpAlertRowId = null; // S288 — alerts.id del alert abierto: LA llave de la revisión
 let _adpHistoryFull = { vendor: [], entity: [] }; // listas completas (sin cortar a 5) para el modal "ver más"
 
+// S404 0(j) — Fraccionamiento por grupo. alerts.fracc_rep_id (lo escribe la DB, cron 86):
+//   NULL        → sin tope. Si otras filas apuntan a esta, ES el representante del caso (CRÍTICA).
+//   = otro id   → fragmento con tope ALTA; su monto suma al caso del representante.
+//   = propio id → cabeza de un grupo que no califica: todo el grupo queda con tope ALTA.
+// Grupo = proveedor + institución + año (sentinel_fracc_tope_aplicar). Acá solo se lee.
+// El monto usa `monto` (la columna de sentinel_cifras_oficiales), no monto_contrato.
+function _adpRenderFraccGrupo(a, fmtL) {
+  const sec = document.getElementById('adp-fracc-section');
+  if (!sec) return;
+  // Las filas de Búsqueda BD vienen de una RPC sin fracc_rep_id: se toma de allAlerts.
+  const self   = allAlerts.find(x => x.id === a.id) || a;
+  const repId  = self.fracc_rep_id ?? null;
+  const headId = repId ?? self.id;
+  const grupo  = allAlerts.filter(x => x.id === headId || x.fracc_rep_id === headId);
+  if (repId == null && grupo.length < 2) { sec.style.display = 'none'; return; }
+
+  const esc   = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const head  = grupo.find(x => x.id === headId);
+  const suma  = grupo.reduce((s, x) => s + (Number(x.monto ?? x.monto_contrato) || 0), 0);
+  const n     = grupo.length;
+  const headCritica = head && normSev(head.severity).includes('critica');
+  const linkHead = head
+    ? `<a href="#" onclick="openAlertDetail(${head.id}, event, _alertDetailSource);return false;" style="color:var(--electric)">${esc(head.alert_id || '#' + head.id)}</a>`
+    : '#' + headId;
+
+  let resumen;
+  if (repId == null) {
+    resumen = `<b style="color:var(--red)">Caso CRÍTICA: ${n} contratos · ${fmtL(suma)}</b><br>` +
+      `<span style="color:var(--text-dim)">Este contrato representa el caso. Los otros ${n - 1} quedan en ALTA como fragmentos: el caso se cuenta una sola vez y su monto es la suma del grupo.</span>`;
+  } else if (repId !== self.id && headCritica) {
+    resumen = `<b style="color:var(--amber)">Fragmento del caso ${linkHead}: ${n} contratos · ${fmtL(suma)}</b><br>` +
+      `<span style="color:var(--text-dim)">Queda en ALTA porque el caso se cuenta una sola vez, en el contrato representante.</span>`;
+  } else {
+    resumen = `<b style="color:var(--amber)">Grupo de ${n} contratos · ${fmtL(suma)} — no califica como CRÍTICA</b><br>` +
+      `<span style="color:var(--text-dim)">Ningún contrato del grupo suma más de L 300,000 con otros del mismo proveedor en la misma unidad de compra en ±30 días. Todo el grupo queda en ALTA.</span>`;
+  }
+
+  // fecha_contrato es date (yyyy-mm-dd): no pasa por fmtDate, que la lee como UTC y en
+  // Honduras (UTC−6) la muestra un día antes.
+  const fFecha = s => s ? String(s).slice(0, 10).split('-').reverse().join('/') : '—';
+  const orden = [...grupo].sort((x, y) => String(x.fecha_contrato||'').localeCompare(String(y.fecha_contrato||'')));
+  const MAX = 10;
+  const items = orden.slice(0, MAX).map(x => `
+    <div class="adp-history-item" style="cursor:pointer" onclick="openAlertDetail(${x.id}, event, _alertDetailSource)">
+      <span class="adp-hi-id">${esc(x.alert_id || '#' + x.id)}${x.id === a.id ? ' ◀' : ''}</span>
+      <span class="adp-hi-sev" style="color:${_sevColor(x.severity)}">${esc(x.severity || '—')}</span>
+      <span class="adp-hi-desc">${fFecha(x.fecha_contrato)} · ${fmtL(Number(x.monto ?? x.monto_contrato))}</span>
+    </div>`).join('');
+  const mas = n > MAX ? `<div style="color:var(--text-dim);font-size:11px;padding:4px">+${n - MAX} contratos más en el grupo</div>` : '';
+
+  document.getElementById('adp-fracc-resumen').innerHTML = resumen;
+  document.getElementById('adp-fracc-lista').innerHTML = items + mas;
+  sec.style.display = '';
+}
+
 function openAlertDetail(alertId, event, source = 'tabla') {
   // Ignore right-clicks / modifier-clicks
   if (event && (event.ctrlKey || event.metaKey || event.shiftKey)) return;
@@ -10551,6 +10615,9 @@ function openAlertDetail(alertId, event, source = 'tabla') {
         `<span class="adp-pattern-tag ${p}">${PATTERN_LABELS[p] || p}</span>`
       ).join('')
     : '<span style="color:var(--text-dim);font-size:12px">Sin patrones</span>';
+
+  // -- S404 0(j): fraccionamiento por grupo --
+  _adpRenderFraccGrupo(a, fmtL);
 
   // -- Vendor history (same proveedor_nombre, exclude current alert, newest 5 + total real) --
   const vendorAlertsFull = allAlerts

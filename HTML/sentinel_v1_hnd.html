@@ -7972,6 +7972,11 @@ function parseDescField(desc, key, fallback = '') {
 // ════════════════════════════════════════════════════════════
 function fmtDate(iso) {
   if (!iso) return '—';
+  // S404 — una fecha sin hora (columnas date como fecha_contrato: 'yyyy-mm-dd') se formatea
+  // tal cual. new Date('2023-05-02') la lee como medianoche UTC y en Honduras (UTC−6)
+  // salía '01/05/2023 18:00': un día antes y con una hora que el dato no tiene.
+  const soloFecha = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso));
+  if (soloFecha) return `${soloFecha[3]}/${soloFecha[2]}/${soloFecha[1]}`;
   const d = new Date(iso);
   const pad = n => String(n).padStart(2, '0');
   return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -8962,7 +8967,7 @@ async function generateReport(mode = 'todo') {
     const alertRowsHtml = detailAlerts.slice(0, CAP).map((a, i) => {
       const sev   = a.severity || 'Media';
       const pats  = (a.patterns||'').split(',').filter(Boolean).map(p => PATTERN_LABELS[p]||p).join(' + ');
-      const fecha = a.fecha_contrato ? new Date(a.fecha_contrato).toLocaleDateString('es-HN') : '—';
+      const fecha = fmtDate(a.fecha_contrato); // S404: sin new Date → no corre un día en HN
       return `<tr style="background:${i%2===0?'#fff':'#f4f8ff'}">
         <td style="text-align:center">${i+1}</td>
         <td>${esc(getProveedor(a))}</td>
@@ -14769,7 +14774,8 @@ async function generarMemoPGR(folio, entidad) {
     // 3. Calcular métricas
     const totalMonto = sorted.reduce((s,a) => s + (parseFloat(a.monto)||0), 0);
     const fmtL = v => v >= 1e9 ? 'L ' + (v/1e9).toFixed(2) + 'B' : v >= 1e6 ? 'L ' + (v/1e6).toFixed(1) + 'M' : 'L ' + v.toLocaleString('es-HN');
-    const fmtDate = d => { if (!d) return '—'; const x = new Date(d); return isNaN(x)?d:x.toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+    // S404 — 'yyyy-mm-dd' se formatea tal cual (new Date lo lee como UTC → un día antes en HN).
+    const fmtDate = d => { if (!d) return '—'; const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d)); if (m) return `${m[3]}/${m[2]}/${m[1]}`; const x = new Date(d); return isNaN(x)?d:x.toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'}); };
     const hoy = new Date().toLocaleDateString('es-HN',{day:'2-digit',month:'long',year:'numeric'});
     const memoFolio = 'SENT-MEM-PGR-2026-' + String(Math.floor(Math.random()*900)+100);
 
@@ -15170,7 +15176,8 @@ async function exportarListaCompleta(folio, entidad) {
     const sorted = criticas.sort((a,b) => (parseFloat(b.monto)||0) - (parseFloat(a.monto)||0));
 
     const fmtL = v => v >= 1e9 ? 'L ' + (v/1e9).toFixed(2) + 'B' : v >= 1e6 ? 'L ' + (v/1e6).toFixed(1) + 'M' : 'L ' + v.toLocaleString('es-HN');
-    const fmtDate = d => { if (!d) return '—'; const x = new Date(d); return isNaN(x)?d:x.toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+    // S404 — 'yyyy-mm-dd' se formatea tal cual (new Date lo lee como UTC → un día antes en HN).
+    const fmtDate = d => { if (!d) return '—'; const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d)); if (m) return `${m[3]}/${m[2]}/${m[1]}`; const x = new Date(d); return isNaN(x)?d:x.toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'}); };
     const hoy = new Date().toLocaleDateString('es-HN',{day:'2-digit',month:'long',year:'numeric'});
     const totalMonto = sorted.reduce((s,a) => s + (parseFloat(a.monto)||0), 0);
 

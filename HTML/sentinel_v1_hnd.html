@@ -14205,7 +14205,9 @@ async function loadBorradoresAuto() {
     // 60 Borrador-Auto pendientes (97 medido en vivo el 15 ago 2026) el número mostrado
     // quedaba subestimado en silencio. Conteo exacto aparte (head:true, no trae filas),
     // mismo filtro que el listado (estado + exclusión RILMAC vía ilike en el servidor).
-    const [{ data, error }, { count: totalPend, error: countError }] = await Promise.all([
+    // S410 — `let`, no `const`: el filtro RILMAC de abajo reasigna `data`. Con `const` lanzaba
+    // TypeError → catch → la tarjeta "Detecciones Automáticas" quedaba en "—" (roto desde S347-b).
+    let [{ data, error }, { count: totalPend, error: countError }] = await Promise.all([
       db.from('investigaciones')
         .select('folio,proveedor,entidad,monto,origen,patrones,notas')
         .eq('estado', 'Borrador-Auto')

@@ -4023,7 +4023,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><button class="fuente-back" style="margin-bottom:0;" onclick="hideOperadorInvisiblePanel()">← Panel Ejecutivo</button><button onclick="exportNSPanelPDF('operadorInvisiblePanel','NS-8 — Operador Invisible')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button></div>
     <div class="fuente-header">
       <div class="fuente-title">👁️ <span>Operador Invisible</span></div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con contratos activos en SEFIN pero con monto opaco (NULL o L0) en más del 70% de sus registros — presencia oficial sin valor trazable. Indicador de Opacidad Sistémica Nivel 1.</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Proveedores con 3 o más contratos ONCAE en una misma institución y monto opaco (NULL o L0) en más del 50% de ellos — presencia oficial sin valor trazable. Indicador de Opacidad Sistémica Nivel 1.</div>
     </div>
     <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
       <div style="background:rgba(255,61,87,0.08);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
@@ -4040,7 +4040,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
     <div style="background:rgba(255,61,87,0.06);border:1px solid rgba(255,61,87,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#f87171;">
-      👁️ <strong>Señal NS-8 — Opacidad Sistémica N1:</strong> Un proveedor con contratos registrados en SEFIN pero sin monto reportado no es un error de datos — es una decisión. La opacidad deliberada en el valor de un contrato impide auditoría, comparación de precios y detección de sobreprecios. Caso modelo: LAARSA (L0 en contrato SEDH-01-2025).
+      👁️ <strong>Señal NS-8 — Opacidad Sistémica N1:</strong> Un proveedor con contratos registrados en ONCAE pero sin monto reportado no es un error de datos — es una decisión. La opacidad deliberada en el valor de un contrato impide auditoría, comparación de precios y detección de sobreprecios. Caso modelo: LAARSA (L0 en contrato SEDH-01-2025).
     </div>
     <div style="margin-bottom:10px;">
       <input type="text" id="oi-search" placeholder="Filtrar por proveedor o institución..." oninput="oiFiltrar()"

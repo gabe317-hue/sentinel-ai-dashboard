@@ -21278,14 +21278,17 @@ function poUpdateIndicators() {
     document.getElementById('po-db-badge').textContent  = displayTotal.toLocaleString('es-HN') + ' contratos monitoreados';
 
     // Delta counter — compara contra último conteo guardado
+    // S410 — solo con el conteo real de la DB (_bdTotalCount). Antes caía a data.length: si el
+    // portal se pintaba con el caché top-300 (S152) antes de que llegara el HEAD count, guardaba
+    // 300 y la visita siguiente mostraba "+182,165 nuevos". Claves _v2 para ignorar el 300 ya guardado.
     try {
-      const LS_COUNT = 'sentinel_prev_count';
-      const LS_DATE  = 'sentinel_prev_date';
+      const LS_COUNT = 'sentinel_prev_count_v2';
+      const LS_DATE  = 'sentinel_prev_date_v2';
       const prevCount = parseInt(localStorage.getItem(LS_COUNT) || '0', 10);
       const prevDate  = localStorage.getItem(LS_DATE) || '';
-      const curCount  = displayTotal;
+      const curCount  = window._bdTotalCount || 0;
       const deltaBadge = document.getElementById('po-delta-badge');
-      if (deltaBadge) {
+      if (deltaBadge && curCount > 0) {
         if (prevCount > 0 && curCount > prevCount) {
           const delta = curCount - prevCount;
           const fmtPrev = new Date(prevDate).toLocaleDateString('es-HN',{day:'2-digit',month:'2-digit',year:'numeric'});
@@ -21319,8 +21322,8 @@ function poUpdateIndicators() {
         }
         deltaBadge.style.display = 'inline-block';
       }
-      // Actualizar localStorage solo si el conteo cambió (o es primera vez)
-      if (curCount !== prevCount) {
+      // Actualizar localStorage solo si el conteo cambió (o es primera vez) y es el conteo real de la DB
+      if (curCount > 0 && curCount !== prevCount) {
         localStorage.setItem(LS_COUNT, curCount);
         localStorage.setItem(LS_DATE, new Date().toISOString());
       }

@@ -400,6 +400,35 @@ body::after {
   color: var(--text-dim); opacity: .5; flex-shrink: 0;
 }
 
+/* ─── S439 fase B: menú por grupos + pestañas ─── */
+.sg-sistema > summary { cursor: pointer; list-style: none; }
+.sg-sistema > summary::-webkit-details-marker { display: none; }
+.sg-sistema > summary::after { content: ' ▸'; }
+.sg-sistema[open] > summary::after { content: ' ▾'; }
+#sgTabs {
+  display: none; position: fixed; top: 0; left: var(--sidebar-w); right: 0; z-index: 1000;
+  background: rgba(10,22,40,0.97); border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px); padding: 8px 28px 6px;
+}
+body.sg-tabs-on #sgTabs { display: block; }
+body.sg-panel-open #sgTabs { left: 0; }
+body.sg-tabs-on .main,
+body.sg-tabs-on .fuente-panel.open { padding-top: calc(32px + var(--sg-h, 48px)); }
+body.modo-demo #sgTabs { display: none !important; }
+.sg-tabs-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.sg-tabs-titulo { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-dim); margin-right: 10px; }
+.sg-tab {
+  background: none; border: 1px solid transparent; border-radius: 6px; color: var(--text-dim);
+  padding: 5px 10px; font-size: 12px; font-family: 'Inter', sans-serif; cursor: pointer;
+}
+.sg-tab:hover { background: var(--glass-hover); color: var(--text); }
+.sg-tab.active { background: var(--electric-dim); color: var(--electric); border-color: rgba(0,200,255,0.15); }
+.sg-tab.sg-accion { border-color: var(--border); }
+.sg-tab .nav-code { font-family: 'JetBrains Mono', monospace; font-size: 9px; opacity: .55; margin-left: 4px; }
+.sg-banner { margin-top: 6px; font-size: 11px; color: var(--amber); }
+.sg-banner code { font-size: 10px; }
+@media (max-width: 768px) { #sgTabs { left: 0; padding: 8px 12px 6px; } }
+
 /* ─── FUENTE PANEL ─── */
 .fuente-panel { display: none; }
 .fuente-panel.open { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; overflow-y: auto; background: var(--navy); padding: 32px; box-sizing: border-box; }
@@ -4203,18 +4232,67 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
   <div class="nav">
+    <!-- S439 fase B (rediseño S436 §2): menú de 26 → 7 entradas + Sistema.
+         Cada entrada abre su primera pestaña; la barra #sgTabs muestra las demás.
+         Los botones originales siguen en #navLegacy (ocultos): las funciones
+         show…Panel() les ponen .active y sgSync() lo traduce al grupo.
+         Detección entra en la fase C. Noticias y Canal Denuncias quedan
+         archivadas (sin entrada, el código se conserva). -->
     <div class="nav-section">
-      <div class="nav-section-label">Operación</div>
+      <div class="nav-section-label">Investigación</div>
+      <button class="nav-item" id="nav-g-panorama" onclick="sgAbrirGrupo('panorama')" aria-label="Ir a Panorama">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 7-7"/><path d="M15 8h5v5"/></svg></span> Panorama
+      </button>
+      <button class="nav-item" id="nav-g-casos" onclick="sgAbrirGrupo('casos')" aria-label="Ir a Casos">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="m9 14 2 2 4-4"/></svg></span> Casos
+      </button>
+      <button class="nav-item" id="nav-g-contratos" onclick="sgAbrirGrupo('contratos')" aria-label="Ir a Contratos">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg></span> Contratos
+      </button>
+      <button class="nav-item" id="nav-g-senales" onclick="sgAbrirGrupo('senales')" aria-label="Ir a Señales">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span> Señales
+      </button>
+      <button class="nav-item" id="nav-g-instituciones" onclick="sgAbrirGrupo('instituciones')" aria-label="Ir a Instituciones">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 21 8H3z"/></svg></span> Instituciones
+      </button>
+      <button class="nav-item" id="nav-g-cruces" onclick="sgAbrirGrupo('cruces')" aria-label="Ir a Cruces">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="3"/><circle cx="19" cy="18" r="3"/><path d="M12 6h5a2 2 0 0 1 2 2v7"/><path d="M12 18H7a2 2 0 0 1-2-2V9"/></svg></span> Cruces
+      </button>
+      <button class="nav-item" id="nav-g-validacion" onclick="sgAbrirGrupo('validacion')" aria-label="Ir a Validación">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></span> Validación
+      </button>
+    </div>
+
+    <details class="nav-section sg-sistema">
+      <summary class="nav-section-label">Sistema</summary>
+      <button class="nav-item" id="nav-audit" onclick="showAuditPanel()" aria-label="Ir a Auditoría">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span> Auditoría
+        <span class="nav-chip">LOG</span>
+      </button>
+      <button class="nav-item" id="nav-ingest" onclick="showIngestPanel()" aria-label="Ir a Ingesta">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></span> Ingesta
+        <span class="nav-chip" style="background:rgba(0,230,118,0.12);color:var(--green);border-color:rgba(0,230,118,0.3);">LIVE</span>
+      </button>
+      <button class="nav-item" id="nav-admin" onclick="showAdminPanel()" aria-label="Ir a Administración">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Admin
+        <span class="nav-chip" style="background:rgba(99,102,241,0.15);color:#818cf8;border-color:rgba(99,102,241,0.3);">USR</span>
+      </button>
+      <button class="nav-item" id="nav-client-admin" onclick="showClientAdminPanel()" style="display:none;" aria-label="Ir a Mi Organización">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg></span> Mi Org
+        <span class="nav-chip" style="background:rgba(16,185,129,0.15);color:#10b981;border-color:rgba(16,185,129,0.3);">ORG</span>
+      </button>
+      <a class="nav-item" href="https://sentinelai-hn.com" target="_blank" aria-label="Ir al sitio público de Sentinel-AI (se abre en pestaña nueva)">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span> Inicio
+      </a>
+    </details>
+
+    <div id="navLegacy" hidden aria-hidden="true">
       <button class="nav-item" id="nav-ejecutiva" onclick="showVistaEjecutiva()" aria-label="Ir a Vista Ejecutiva">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg></span> Vista Ejecutiva
       </button>
       <button class="nav-item active" id="nav-contratos" onclick="hideAllPanels()" aria-label="Ir a Contratos">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg></span> Contratos
       </button>
-    </div>
-
-    <div class="nav-section">
-      <div class="nav-section-label">Análisis Transversal</div>
       <button class="nav-item" id="nav-analytics" onclick="showAnalyticsPanel()" aria-label="Ir a Panorama General">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 7-7"/><path d="M15 8h5v5"/></svg></span> Panorama General
       </button>
@@ -4233,10 +4311,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <button class="nav-item" id="nav-sector" onclick="showSectorPanel()" aria-label="Ir a Sectores Institucionales">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 21 8H3z"/></svg></span> Sectores Institucionales
       </button>
-    </div>
-
-    <div class="nav-section">
-      <div class="nav-section-label">Señales de Riesgo</div>
       <button class="nav-item" id="nav-consultoria" onclick="showConsultoriaPanel()" aria-label="Ir a Consultorías" title="Señal NS-10 — Consultorías">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span> Consultorías <span class="nav-code">NS-10</span>
       </button>
@@ -4252,10 +4326,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       <button class="nav-item" id="nav-cpcinh" onclick="showCpcInhabPanel()" aria-label="Ir a Proveedores Inhabilitados" title="Señal NS-14 — Proveedores Inhabilitados">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg></span> Proveedores Inhabilitados <span class="nav-code">NS-14</span>
       </button>
-    </div>
-
-    <div class="nav-section">
-      <div class="nav-section-label">Investigación</div>
       <button class="nav-item" id="nav-candidatos" onclick="showCandidatosPanel()" aria-label="Ir a Candidatos">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span> Candidatos
         <span class="nav-chip" id="nav-candidatos-chip" style="background:rgba(255,61,87,0.1);color:var(--red);border-color:rgba(255,61,87,0.25);">—</span>
@@ -4275,11 +4345,6 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span> Escáner
         <span class="nav-chip" style="background:rgba(124,58,237,0.15);color:#a78bfa;border-color:rgba(124,58,237,0.3);">AUTO</span>
       </button>
-
-    </div>
-
-    <div class="nav-section">
-      <div class="nav-section-label">Sistema</div>
       <button class="nav-item" id="nav-reportes" onclick="showReportesPanel()" aria-label="Ir a Reportes">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 18v-2"/><path d="M12 18v-4"/><path d="M16 18v-6"/></svg></span> Reportes
       </button>
@@ -4295,34 +4360,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></span> Validación
         <span class="nav-chip" id="nav-validacion-chip" style="background:rgba(16,185,129,0.12);color:#10b981;border-color:rgba(16,185,129,0.3);">—</span>
       </button>
-      <button class="nav-item" id="nav-audit" onclick="showAuditPanel()" aria-label="Ir a Auditoría">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span> Auditoría
-        <span class="nav-chip">LOG</span>
-      </button>
-      <button class="nav-item" id="nav-ingest" onclick="showIngestPanel()" aria-label="Ir a Ingesta">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></span> Ingesta
-        <span class="nav-chip" style="background:rgba(0,230,118,0.12);color:var(--green);border-color:rgba(0,230,118,0.3);">LIVE</span>
-      </button>
-      <!-- S328-b: "Nueva Alerta" — movida del header de Registro de Contratos
-           (se veía fuera de lugar junto a Pareto/Todo/Presentar) y, antes de
-           eso, se probó en el Panel Admin — mal ahí porque nav-admin está
-           restringido a 3 correos (SENTINEL_ADMIN_EMAILS) y esta acción la
-           usa un analista, no un admin. Deliberadamente SIN adminOnly: debe
-           verse para cualquier rol logueado, admin o analista. -->
       <button class="nav-item" id="nav-nueva-alerta" onclick="openModal()" aria-label="Registrar alerta manual">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span> Nueva Alerta
       </button>
-      <button class="nav-item" id="nav-admin" onclick="showAdminPanel()" aria-label="Ir a Administración">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Admin
-        <span class="nav-chip" style="background:rgba(99,102,241,0.15);color:#818cf8;border-color:rgba(99,102,241,0.3);">USR</span>
-      </button>
-      <button class="nav-item" id="nav-client-admin" onclick="showClientAdminPanel()" style="display:none;" aria-label="Ir a Mi Organización">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M12 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg></span> Mi Org
-        <span class="nav-chip" style="background:rgba(16,185,129,0.15);color:#10b981;border-color:rgba(16,185,129,0.3);">ORG</span>
-      </button>
-      <a class="nav-item" href="https://sentinelai-hn.com" target="_blank" aria-label="Ir al sitio público de Sentinel-AI (se abre en pestaña nueva)">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span> Inicio
-      </a>
     </div>
   </div>
 
@@ -4707,6 +4747,12 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 </div><!-- /portalOverlay -->
 
 <!-- ═══════════════════ MAIN ═══════════════════ -->
+<!-- S439 fase B: pestañas del grupo activo (ver sgSync) -->
+<div id="sgTabs" role="tablist" aria-label="Pestañas de la sección">
+  <div class="sg-tabs-row" id="sgTabsRow"></div>
+  <div class="sg-banner" id="sgBanner" hidden>Basado en <code>alerts</code>: cobertura parcial de ONCAE 2019–2022. Son <b>alertas que requieren revisión</b>, no hallazgos.</div>
+</div>
+
 <main class="main" id="main-content">
 
   <!-- Error banner — shown only on Supabase failure, never silent -->
@@ -7873,8 +7919,146 @@ const _sanitize = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // herramienta cuyo argumento es la trazabilidad, eso se paga caro.
 // Cualquier cambio de versión de aquí en adelante: SOLO estas dos líneas.
 
-const APP_VERSION = 'v2.31';
-const APP_BUILD   = '2026-09-16';
+// ════════════════════════════════════════════════════════════
+// S439 fase B — menú por grupos (rediseño S436 §2–3)
+// Cada pestaña llama a la función show…Panel() que ya existía; los paneles
+// no cambian por dentro. `nav` = id del botón original (en #navLegacy) que
+// esa función marca .active; null = acción que no cambia de panel.
+// ════════════════════════════════════════════════════════════
+const SG_GRUPOS = {
+  panorama: { titulo: 'Panorama', banner: true, tabs: [
+    { label: 'Resumen ejecutivo', nav: 'nav-ejecutiva', fn: () => showVistaEjecutiva() },
+    { label: 'Panorama general',  nav: 'nav-analytics', fn: () => showAnalyticsPanel() },
+    { label: 'Cronología',        nav: 'nav-timeline',  fn: () => showTimelinePanel() },
+  ]},
+  casos: { titulo: 'Casos', tabs: [
+    { label: 'Candidatos',          nav: 'nav-candidatos', fn: () => showCandidatosPanel() },
+    { label: 'Reportes',            nav: 'nav-reportes',   fn: () => showReportesPanel() },
+    { label: 'Constructor de Caso', nav: null, accion: true, fn: () => abrirConstructorCaso(() => sgAbrirGrupo('casos')) },
+  ]},
+  contratos: { titulo: 'Contratos', tabs: [
+    { label: 'Registro',       nav: 'nav-contratos', fn: () => hideAllPanels() },
+    { label: 'Escáner',        nav: 'nav-scanner',   fn: () => showScannerPanel() },
+    { label: '+ Nueva alerta', nav: null, accion: true, fn: () => openModal() },
+  ]},
+  senales: { titulo: 'Señales', banner: true, tabs: [
+    { label: 'Fraccionamiento',              code: 'NS-9',  nav: 'nav-fraccionamiento',      fn: () => showFraccionamientoPanel() },
+    { label: 'Consultorías',                 code: 'NS-10', nav: 'nav-consultoria',          fn: () => showConsultoriaPanel() },
+    { label: 'Identidad duplicada',          code: 'NS-11', nav: 'nav-identidad',            fn: () => showIdentidadPanel() },
+    { label: 'Concentración por proveedor',  code: 'NS-12', nav: 'nav-monopolio',            fn: () => showMonopolioPanel() },
+    { label: 'Doble rol',                    code: 'NS-13', nav: 'nav-doblerol',             fn: () => showDobleRolPanel() },
+    { label: 'Inhabilitados',                code: 'NS-14', nav: 'nav-cpcinh',               fn: () => showCpcInhabPanel() },
+    { label: 'Concentración de proveedores',                nav: 'nav-vendor-concentration', fn: () => showVendorConcentrationPanel() },
+    { label: 'Sobrepresupuesto',                            nav: 'nav-sobrecostos',          fn: () => showGlobalSobrecostos() },
+    { label: 'Anomalías SEFIN',                             nav: 'nav-phase4',               fn: () => showPhase4Detection() },
+  ]},
+  instituciones: { titulo: 'Instituciones', banner: true, tabs: [
+    { label: 'Sectores', nav: 'nav-sector', fn: () => showSectorPanel() },
+  ]},
+  cruces: { titulo: 'Cruces', tabs: [
+    { label: 'OCDS / Cruce',  nav: 'nav-ocds',        fn: () => showOcdsPanel() },
+    { label: 'ONCAE × SEFIN', nav: 'nav-cruce-sefin', fn: () => showCruceSefinPanel() },
+  ]},
+  validacion: { titulo: 'Validación', tabs: [
+    { label: 'Validación', nav: 'nav-validacion', fn: () => showValidacionPanel() },
+  ]},
+};
+const SG_NAV_A_GRUPO = {};
+Object.entries(SG_GRUPOS).forEach(([g, def]) => def.tabs.forEach(t => { if (t.nav) SG_NAV_A_GRUPO[t.nav] = g; }));
+let _sgGrupo = null;
+let _sgTabIdx = 0;
+let _sgHuerfanoDesde = 0;
+
+function sgAbrirGrupo(g) {
+  const i = SG_GRUPOS[g] ? SG_GRUPOS[g].tabs.findIndex(t => !t.accion) : -1;
+  if (i >= 0) sgTab(g, i);
+}
+
+function sgTab(g, i) {
+  const t = SG_GRUPOS[g] && SG_GRUPOS[g].tabs[i];
+  if (!t) return;
+  if (!t.accion) {
+    // Al saltar entre pestañas, los paneles (overlays) se apilarían: no todas
+    // las show…Panel() cierran a las demás ni limpian el .active anterior.
+    document.querySelectorAll('.fuente-panel.open').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.nav-item.active').forEach(n => n.classList.remove('active'));
+    _sgGrupo = g;
+    _sgTabIdx = i;
+  }
+  t.fn();
+  sgSync();
+}
+
+function sgSync() {
+  // Grupo según el botón original activo (lo marcan las funciones show…Panel)
+  const act = document.querySelector('#navLegacy .nav-item.active, .sg-sistema .nav-item.active');
+  let navActivo = act ? act.id : null;
+  const hayPanel = !!document.querySelector('.fuente-panel.open');
+  const ve = document.getElementById('vistaEjecutiva');
+  const mt = document.getElementById('mainTableContainer');
+  const enEjecutiva = ve && ve.style.display === 'block';
+  // Muchos hide…Panel() cierran su panel sin quitar su .active, y dos
+  // (Concentración por proveedor, ONCAE×SEFIN) tampoco vuelven a mostrar la
+  // tabla. Algunas show…Panel() abren su panel después de un await, así que
+  // el estado "sin panel" se corrige solo si dura más de 1 s.
+  const cc = document.getElementById('constructorCasoPanel');
+  const tapado = cc && !cc.classList.contains('hidden');
+  const huerfano = !hayPanel && !enEjecutiva && !tapado &&
+    ((navActivo && SG_NAV_A_GRUPO[navActivo] && navActivo !== 'nav-contratos') || (mt && mt.style.display === 'none'));
+  if (!huerfano) _sgHuerfanoDesde = 0;
+  else if (!_sgHuerfanoDesde) { _sgHuerfanoDesde = Date.now(); setTimeout(sgSync, 1100); }
+  else if (Date.now() - _sgHuerfanoDesde >= 1000) {
+    _sgHuerfanoDesde = 0;
+    hideAllPanels();                                          // → nav-contratos; el observer vuelve a llamar sgSync
+    return;
+  }
+  if (navActivo && SG_NAV_A_GRUPO[navActivo]) {
+    _sgGrupo = SG_NAV_A_GRUPO[navActivo];
+    _sgTabIdx = SG_GRUPOS[_sgGrupo].tabs.findIndex(t => t.nav === navActivo);
+  } else if (navActivo) _sgGrupo = null;                     // Sistema (Auditoría, Ingesta, Admin…)
+  else if (!hayPanel && !huerfano) { _sgGrupo = enEjecutiva ? 'panorama' : 'contratos'; _sgTabIdx = 0; }
+  // (sin botón activo pero con panel abierto — p. ej. showMonopolioPanel() no
+  //  marca ninguno — se conservan el grupo y la pestaña de la última sgTab)
+  document.querySelectorAll('[id^="nav-g-"]').forEach(b =>
+    b.classList.toggle('active', b.id === 'nav-g-' + _sgGrupo));
+
+  const def = _sgGrupo && SG_GRUPOS[_sgGrupo];
+  const mostrar = !!def && !tapado;
+  document.body.classList.toggle('sg-tabs-on', mostrar);
+  document.body.classList.toggle('sg-panel-open', !!document.querySelector('.fuente-panel.open'));
+  if (!mostrar) return;
+
+  const row = document.getElementById('sgTabsRow');
+  const html = '<span class="sg-tabs-titulo">' + def.titulo + '</span>' + (def.tabs.length > 1 ? def.tabs.map((t, i) =>
+    `<button class="sg-tab${t.accion ? ' sg-accion' : ''}${i === _sgTabIdx ? ' active' : ''}" role="tab"` +
+    ` aria-selected="${i === _sgTabIdx}" onclick="sgTab('${_sgGrupo}',${i})">${t.label}` +
+    (t.code ? `<span class="nav-code">${t.code}</span>` : '') + '</button>').join('') : '');
+  if (row.innerHTML !== html) row.innerHTML = html;
+  document.getElementById('sgBanner').hidden = !def.banner;
+  const bar = document.getElementById('sgTabs');
+  document.documentElement.style.setProperty('--sg-h', bar.offsetHeight + 'px');
+}
+
+// Las funciones existentes cambian clases (.active / .open / .hidden) por su
+// cuenta; un observer mantiene el grupo y la barra al día sin tocarlas.
+(function _sgObservar() {
+  let pend = false;
+  const obs = new MutationObserver(() => {
+    if (pend) return;
+    pend = true;
+    setTimeout(() => { pend = false; sgSync(); }, 0);   // no rAF: se pausa con la pestaña en segundo plano
+  });
+  const iniciar = () => {
+    obs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    sgSync();
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+  else iniciar();
+  window.addEventListener('resize', () => sgSync());
+})();
+
+const APP_VERSION = 'v2.32';
+const APP_BUILD   = '2026-10-22';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
     el.textContent = el.dataset.appVersion.replace('{v}', APP_VERSION).replace('{b}', APP_BUILD);

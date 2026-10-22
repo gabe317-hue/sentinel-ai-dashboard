@@ -1,0 +1,5 @@
+# S438 — Los respaldos siguen en el repo y en Drive; solo dejan de publicarse en
+# app.sentinelai-hn.com (se descargaban por URL directa con secretos viejos).
+BackUp_HTML/
+HTML/BackUp_HTML/
+*_backup*.html

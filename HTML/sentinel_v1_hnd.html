@@ -7892,9 +7892,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // P9 (ago 2026): DEMO_ACCESS_SECRET y DENUNCIA_ADMIN_SECRET retirados — otorgar-acceso-demo
 // y denuncia-admin ya no aceptan secretos compartidos, solo JWT real (_authToken()) o
 // service_role. Ver _demoAccessCall()/_denunciaAdminCall().
-// CASOS_ADMIN_SECRET se conserva: sigue en uso por ingest-oncae e ingest-sefin, que
-// todavía NO están migrados a JWT (P9, Nivel 2 del roadmap, pendiente).
-const CASOS_ADMIN_SECRET = 'Kj4nWpQz9RstV2xLbMdF7yEcTuAgHo1i';
+// S438: CASOS_ADMIN_SECRET retirado. ingest-oncae (v29) e ingest-sefin (v30) ya
+// aceptan el JWT de la sesión admin (_authToken()), igual que el resto desde P9.
 
 // ════════════════════════════════════════════════════════════
 // SUPABASE CLIENT INIT
@@ -29200,14 +29199,15 @@ async function runIngest() {
     log(`[${new Date().toLocaleTimeString('es-HN')}] Conectando con Edge Function...`);
     setProgress(25);
 
+    const token = await _authToken();
     const res = await fetch(edgeFnUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${token}`,
         'apikey': SUPABASE_ANON_KEY,
       },
-      body: JSON.stringify({ year, secret: CASOS_ADMIN_SECRET }),
+      body: JSON.stringify({ year }),
     });
 
     setProgress(85);
@@ -29291,8 +29291,9 @@ async function runSEFINIngest() {
   document.getElementById('sefinError').style.display = 'none';
   btn.textContent = '⏳ Procesando SEFIN...';
   try {
-    const url = `${SUPABASE_URL}/functions/v1/ingest-sefin?periodo=${periodo}&secret=${encodeURIComponent(CASOS_ADMIN_SECRET)}`;
-    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY } });
+    const token = await _authToken();
+    const url = `${SUPABASE_URL}/functions/v1/ingest-sefin?periodo=${periodo}`;
+    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON_KEY } });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
     const sobreList = (data.sobrepresupuestos || []).map(s =>

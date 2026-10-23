@@ -8774,7 +8774,7 @@ function casosCartaReplica(id) {
   }));
 }
 
-const APP_VERSION = 'v2.39';
+const APP_VERSION = 'v2.40';
 const APP_BUILD   = '2026-10-22';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -21593,6 +21593,7 @@ async function ccConfirmarGuardar() {
         senales:       d.esquema ? [d.esquema] : [],
         hallazgo:      notas || nombre,
         estado:        'Activo',
+        estado_caso:   'DETECTADA',   // S443: sin esto el panel Casos no lo muestra (filtra estado_caso no nulo)
         cc_id:         ccId,
       };
       await _casosAdminCall({ action: 'expm_insert', record: masterPayload });

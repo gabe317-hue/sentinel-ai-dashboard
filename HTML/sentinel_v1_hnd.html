@@ -8766,7 +8766,7 @@ function casosCartaReplica(id) {
   }));
 }
 
-const APP_VERSION = 'v2.35';
+const APP_VERSION = 'v2.36';
 const APP_BUILD   = '2026-10-22';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -24489,6 +24489,15 @@ window.vcPaginationState = {
   allEntities: []
 };
 
+// S439 — proveedores con SOLO pagos SEFIN (EDCA/CSV/F01): suelen ser pagos bajo
+// PPA de energía o contratos marco, no compras ONCAE (mismo criterio que
+// isSEFINOnly en Candidatos). Se excluyen por defecto con nota y botón para
+// incluirlos; incluidos, llevan una marca. Caso que lo motivó: LUZ Y FUERZA DE
+// SAN LORENZO (generadora que vende a ENEE) salía #1 por monto.
+let _vcIncluirSefin = false;
+const _vcEsFuenteSefin = s => s.includes('EDCA-SEFIN') || s.includes('SEFIN-CSV') || s.includes('SEFIN_F') || s === '';
+function vcToggleSefin() { _vcIncluirSefin = !_vcIncluirSefin; renderVendorConcentration(); }
+
 function calculateAndDisplayVendorConcentration(alerts) {
   if (!alerts || alerts.length === 0) {
     document.getElementById('vc-vendor-list').innerHTML = '<div style="color:var(--text-dim);font-size:12px;">Sin datos disponibles</div>';
@@ -24510,15 +24519,25 @@ function calculateAndDisplayVendorConcentration(alerts) {
     if (vendor === 'Desconocido') return;
 
     if (!vendors[vendor]) {
-      vendors[vendor] = { name: vendor, alerts: 0, monto: 0, entities: new Set() };
+      vendors[vendor] = { name: vendor, alerts: 0, monto: 0, entities: new Set(), sources: new Set() };
     }
     vendors[vendor].alerts += 1;
     vendors[vendor].monto += monto;
     vendors[vendor].entities.add(entity);
-    totalMonto += monto;
+    vendors[vendor].sources.add(alert.data_source || '');
   });
 
-  const vendorArray = Object.values(vendors).sort((a, b) => b.monto - a.monto);
+  const todos = Object.values(vendors);
+  todos.forEach(v => { v.soloSefin = [...v.sources].every(_vcEsFuenteSefin); });
+  const sefin = todos.filter(v => v.soloSefin);
+  const vendorArray = (_vcIncluirSefin ? todos : todos.filter(v => !v.soloSefin)).sort((a, b) => b.monto - a.monto);
+  totalMonto = vendorArray.reduce((s, v) => s + v.monto, 0);
+  const montoSefin = sefin.reduce((s, v) => s + v.monto, 0);
+  const notaSefin = sefin.length ? `
+      <div style="background:rgba(255,165,0,0.08);border:1px solid rgba(255,165,0,0.35);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span>${_vcIncluirSefin ? 'Incluidos' : 'Excluidos'} <b>${sefin.length.toLocaleString('es-HN')} proveedores con solo pagos SEFIN</b> (${fmtLpsCompact(montoSefin)}): suelen ser pagos bajo PPA de energía o contratos marco, no compras ONCAE. Algunos sí son contratos de obra: revisar antes de descartarlos.</span>
+        <button class="cs-btn" onclick="vcToggleSefin()">${_vcIncluirSefin ? 'Excluirlos' : 'Incluirlos'}</button>
+      </div>` : '';
 
   // Calculate HHI
   const hhi = calculateHHI(vendorArray, totalMonto);
@@ -24550,6 +24569,7 @@ function calculateAndDisplayVendorConcentration(alerts) {
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
           <span style="font-size:18px;">${riskEmoji}</span>
           <span style="font-weight:600;color:var(--text);">${v.name}</span>
+          ${v.soloSefin ? '<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(255,165,0,0.15);color:var(--amber);border:1px solid rgba(255,165,0,0.35);white-space:nowrap;">solo pagos SEFIN · posible PPA o contrato marco</span>' : ''}
           <span style="color:var(--text-dim);font-size:11px;margin-left:auto;">${v.alerts} contratos • L. ${(v.monto/1000).toFixed(0)}K</span>
           ${sgBtnCaso('', v.name, 'CAPTURA_INSTITUCIONAL', 'showVendorConcentrationPanel')}
         </div>
@@ -24563,7 +24583,7 @@ function calculateAndDisplayVendorConcentration(alerts) {
     `;
   }).join('');
 
-  document.getElementById('vc-vendor-list').innerHTML = vendorListHTML;
+  document.getElementById('vc-vendor-list').innerHTML = notaSefin + vendorListHTML;
 
   // Store data for export
   window.vendorConcentrationData = {

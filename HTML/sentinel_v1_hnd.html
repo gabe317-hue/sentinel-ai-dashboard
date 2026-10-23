@@ -865,6 +865,13 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
 }
 .risk-band-item.rb-critica .risk-band-item-val { color: var(--red); }
 .risk-band-item.rb-alta    .risk-band-item-val { color: var(--orange); }
+/* S441 — banda de Panorama como "alertas que requieren revisión" (diseño S436 §2, OK de Gabe):
+   ámbar en lugar de rojo; el número de alertas manda y el monto queda en segundo plano. */
+#risk-band-exec { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.28); border-left-color: #fbbf24; }
+#risk-band-exec .risk-band-label { color: #fbbf24; }
+#risk-band-exec .risk-band-amount { color: #fbbf24; font-size: 30px; text-shadow: none; }
+#risk-band-exec .risk-band-monto { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); margin-bottom: 6px; }
+#risk-band-exec .risk-band-budget { opacity: 0.8; line-height: 1.5; }
 
 /* ── S285 · R-04 del Dictamen UX/UI — franja del panel a registro forense ──
    Contención por defecto: la cifra deja de ser el elemento más pesado de la pantalla
@@ -4894,24 +4901,25 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </div>
     </div>
 
-    <!-- P1 inside Vista Ejecutiva — monto total alto riesgo (prominent for PGR) -->
+    <!-- S441: alertas que requieren revisión (diseño S436 §2). Los casos con documentos van arriba (#panCasos). -->
     <div class="risk-band" id="risk-band-exec" style="margin-bottom:20px;">
       <div class="risk-band-main">
-        <div class="risk-band-label">⚠ CONTRATOS DE ALTO RIESGO — SISTEMA SENTINEL</div>
-        <div class="risk-band-amount" id="exec-risk-total">L —</div>
-        <div class="risk-band-sub">Monto acumulado en contratos con señales de irregularidad (Críticos + Altos)</div>
+        <div class="risk-band-label">ALERTAS QUE REQUIEREN REVISIÓN — SISTEMA SENTINEL</div>
+        <div class="risk-band-amount" id="exec-risk-total">—</div>
+        <div class="risk-band-monto" id="exec-risk-monto">L —</div>
+        <div class="risk-band-sub">Son señales automáticas para revisar, no hallazgos verificados. Los casos con documentos están arriba.</div>
         <div class="risk-band-budget" id="exec-risk-budget"></div>
       </div>
       <div class="risk-band-breakdown">
         <div class="risk-band-item rb-critica">
-          <div class="risk-band-item-label">⬤ Críticos</div>
-          <div class="risk-band-item-val" id="exec-risk-critica">L —</div>
-          <div class="risk-band-item-cnt" id="exec-risk-critica-cnt">— contratos</div>
+          <div class="risk-band-item-label">⬤ Críticas</div>
+          <div class="risk-band-item-val" id="exec-risk-critica">—</div>
+          <div class="risk-band-item-cnt" id="exec-risk-critica-cnt">L —</div>
         </div>
         <div class="risk-band-item rb-alta">
-          <div class="risk-band-item-label">⬤ Altos</div>
-          <div class="risk-band-item-val" id="exec-risk-alta">L —</div>
-          <div class="risk-band-item-cnt" id="exec-risk-alta-cnt">— contratos</div>
+          <div class="risk-band-item-label">⬤ Altas</div>
+          <div class="risk-band-item-val" id="exec-risk-alta">—</div>
+          <div class="risk-band-item-cnt" id="exec-risk-alta-cnt">L —</div>
         </div>
       </div>
     </div>
@@ -4933,14 +4941,14 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <div class="exec-card-label">Contratos Críticos</div>
         <div class="exec-card-value" id="exec-criticos">—</div>
         <div class="exec-card-sub" id="exec-criticos-monto">L —</div>
-        <div class="exec-card-note">▸ Referir a PGR inmediatamente</div>
+        <div class="exec-card-note">▸ Revisión prioritaria</div>
       </div>
       <!-- High risk box -->
       <div class="exec-card exec-card-orange">
         <div class="exec-card-label">Riesgo Alto</div>
         <div class="exec-card-value" id="exec-altos">—</div>
         <div class="exec-card-sub" id="exec-altos-monto">L —</div>
-        <div class="exec-card-note">▸ Escalada legal recomendada</div>
+        <div class="exec-card-note">▸ Revisión</div>
       </div>
       <!-- ONCAE CRÍTICA -->
       <div class="exec-card exec-card-red">
@@ -8766,7 +8774,7 @@ function casosCartaReplica(id) {
   }));
 }
 
-const APP_VERSION = 'v2.38';
+const APP_VERSION = 'v2.39';
 const APP_BUILD   = '2026-10-22';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -12308,13 +12316,14 @@ function exportVistaEjecutivaPDF() {
   <h1>Vista Ejecutiva — Sentinel AI</h1>
   <div class="meta">Honduras Procurement Intelligence · Generado: ${ts} · Fuente: SEFIN + ONCAE + IAIP 2019–2026</div>
   <div class="risk-box">
-    <div class="risk-lbl">⚠ Contratos de Alto Riesgo — Sistema Sentinel</div>
+    <div class="risk-lbl">Alertas que requieren revisión — Sistema Sentinel</div>
     <div class="risk-val">${g('exec-risk-total')}</div>
+    <div style="font-size:12px;color:#444;">${g('exec-risk-monto')}. Son señales automáticas para revisar, no hallazgos verificados.</div>
     <div class="risk-sub">
-      <span>🔴 Críticos: <strong>${g('exec-risk-critica')}</strong> · ${g('exec-risk-critica-cnt')}</span>
-      <span>🟠 Altos: <strong>${g('exec-risk-alta')}</strong> · ${g('exec-risk-alta-cnt')}</span>
-      <span>${g('exec-risk-budget')}</span>
+      <span>Críticas: <strong>${g('exec-risk-critica')}</strong> · ${g('exec-risk-critica-cnt')}</span>
+      <span>Altas: <strong>${g('exec-risk-alta')}</strong> · ${g('exec-risk-alta-cnt')}</span>
     </div>
+    <div style="font-size:10px;color:#666;margin-top:8px;">${g('exec-risk-budget')}</div>
   </div>
   <div class="kpi-grid">${kpiHtml}</div>
   <div class="footer"><span>Vista Ejecutiva — Sentinel AI</span><span>app.sentinelai-hn.com · Confidencial</span></div>
@@ -16382,20 +16391,20 @@ function generarEjecutivaPDF() {
 <!-- Risk Alert Band -->
 <div class="risk-alert">
   <div>
-    <div class="risk-lbl">⚠ Alerta Sistema Sentinel — Contratos de Alto Riesgo</div>
+    <div class="risk-lbl">Alertas que requieren revisión — Sistema Sentinel</div>
     <div class="risk-monto">${esc(riskTotal)}</div>
-    <div class="risk-sub">Monto acumulado en contratos con señales de irregularidad (Críticos + Altos)</div>
+    <div class="risk-sub">${esc(g('exec-risk-monto'))}. Son señales automáticas para revisar, no hallazgos verificados.</div>
     <div class="risk-budget">${esc(riskBudget)}</div>
   </div>
   <div class="risk-breakdown">
     <div class="risk-bk-item">
       <div class="risk-bk-val" style="color:#ff3d57;">${esc(riskCritica)}</div>
-      <div style="font-size:9px;color:#ff3d57;font-weight:700;margin-top:2px;">⬤ Críticos</div>
+      <div style="font-size:9px;color:#ff3d57;font-weight:700;margin-top:2px;">⬤ Críticas</div>
       <div class="risk-bk-cnt">${esc(riskCritCnt)}</div>
     </div>
     <div class="risk-bk-item">
       <div class="risk-bk-val" style="color:#ffab00;">${esc(riskAlta)}</div>
-      <div style="font-size:9px;color:#ffab00;font-weight:700;margin-top:2px;">⬤ Altos</div>
+      <div style="font-size:9px;color:#ffab00;font-weight:700;margin-top:2px;">⬤ Altas</div>
       <div class="risk-bk-cnt">${esc(riskAltCnt)}</div>
     </div>
   </div>
@@ -24564,8 +24573,49 @@ function calculateAndDisplayVendorConcentration(alerts) {
   document.getElementById('vc-top3-share').textContent = (isNaN(top3Share) || !isFinite(top3Share) ? '0.0' : top3Share.toFixed(1)) + '%';
   document.getElementById('vc-risk-level').textContent = riskLevel;
 
-  // Render vendor list
-  const vendorListHTML = vendorArray.map((v, idx) => {
+  // S441: la lista se pinta por páginas (~51 mil proveedores); HHI y top 3 ya se calcularon arriba sobre la lista completa.
+  _vcNotaSefin = notaSefin;
+  _vcPagina = 0;
+
+  // Store data for export
+  window.vendorConcentrationData = {
+    vendors: vendorArray,
+    totalMonto: totalMonto,
+    hhi: hhi,
+    hhhiLabel: getHHILabel(hhi),
+    riskLevel: riskLevel,
+    top3Share: top3Share,
+    timestamp: new Date().toISOString()
+  };
+  _vcPintarPagina();
+}
+
+const _VC_POR_PAGINA = 100;
+let _vcPagina = 0, _vcNotaSefin = '';
+function vcIrPagina(delta) {
+  _vcPagina += delta;
+  _vcPintarPagina();
+  document.getElementById('vc-vendor-list')?.scrollIntoView({ block: 'start' });
+}
+function _vcPintarPagina() {
+  const data = window.vendorConcentrationData;
+  if (!data) return;
+  const vendorArray = data.vendors, totalMonto = data.totalMonto;
+  const paginas = Math.max(1, Math.ceil(vendorArray.length / _VC_POR_PAGINA));
+  _vcPagina = Math.min(Math.max(_vcPagina, 0), paginas - 1);
+  const desde = _vcPagina * _VC_POR_PAGINA;
+  const hasta = Math.min(desde + _VC_POR_PAGINA, vendorArray.length);
+  const pager = vendorArray.length > _VC_POR_PAGINA ? `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">
+        <span>Proveedores ${(desde + 1).toLocaleString('es-HN')}–${hasta.toLocaleString('es-HN')} de ${vendorArray.length.toLocaleString('es-HN')} · página ${(_vcPagina + 1).toLocaleString('es-HN')} de ${paginas.toLocaleString('es-HN')}</span>
+        <span style="display:flex;gap:6px;">
+          <button class="cs-btn" onclick="vcIrPagina(-${_vcPagina})" ${_vcPagina === 0 ? 'disabled' : ''}>« Inicio</button>
+          <button class="cs-btn" onclick="vcIrPagina(-1)" ${_vcPagina === 0 ? 'disabled' : ''}>← Anterior</button>
+          <button class="cs-btn" onclick="vcIrPagina(1)" ${_vcPagina >= paginas - 1 ? 'disabled' : ''}>Siguiente →</button>
+        </span>
+      </div>` : '';
+
+  const vendorListHTML = vendorArray.slice(desde, hasta).map((v, idx) => {
     const share = (v.monto / totalMonto * 100);
     const riskEmoji = share > 50 ? '🔴' : share > 30 ? '🟡' : '🟢';
     const barWidth = Math.min(share * 2, 100); // Scale bar width
@@ -24592,18 +24642,7 @@ function calculateAndDisplayVendorConcentration(alerts) {
     `;
   }).join('');
 
-  document.getElementById('vc-vendor-list').innerHTML = notaSefin + vendorListHTML;
-
-  // Store data for export
-  window.vendorConcentrationData = {
-    vendors: vendorArray,
-    totalMonto: totalMonto,
-    hhi: hhi,
-    hhhiLabel: getHHILabel(hhi),
-    riskLevel: riskLevel,
-    top3Share: top3Share,
-    timestamp: new Date().toISOString()
-  };
+  document.getElementById('vc-vendor-list').innerHTML = _vcNotaSefin + pager + vendorListHTML + pager;
 }
 
 function calculateHHI(vendors, totalMonto) {
@@ -25831,19 +25870,17 @@ function renderEjecutiva() {
   const presupuestoNacE = window._presupuestoNacionalTotal || null;
   const presupuestoAnioE = window._presupuestoNacionalPeriodo ? window._presupuestoNacionalPeriodo.slice(0,4) : null;
   const riskMontoE  = sumMonto(criticos) + sumMonto(altos);
-  const riskPctE    = (riskMontoE > 0 && presupuestoNacE) ? (riskMontoE / presupuestoNacE * 100).toFixed(2) : null;
   const fmtLfull = n => n > 0 ? 'L ' + n.toLocaleString('es-HN', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : 'L —';
   const _re = id => document.getElementById(id);
-  if (_re('exec-risk-total'))       _re('exec-risk-total').textContent       = fmtLfull(riskMontoE);
-  if (_re('exec-risk-critica'))     _re('exec-risk-critica').textContent     = fmtLfull(sumMonto(criticos));
-  if (_re('exec-risk-alta'))        _re('exec-risk-alta').textContent        = fmtLfull(sumMonto(altos));
-  if (_re('exec-risk-critica-cnt')) _re('exec-risk-critica-cnt').textContent = criticos.length.toLocaleString() + ' contratos';
-  if (_re('exec-risk-alta-cnt'))    _re('exec-risk-alta-cnt').textContent    = altos.length.toLocaleString() + ' contratos';
-  if (_re('exec-risk-budget')) {
-    _re('exec-risk-budget').textContent = riskPctE
-      ? `≈ ${riskPctE}% del Presupuesto General de la República (${fmtLfull(presupuestoNacE)} aprobado ${presupuestoAnioE})`
-      : 'Cargando presupuesto nacional…';
-  }
+  // S441: el número de alertas manda; el monto va en segundo plano y sin % del presupuesto (diseño S436 §2).
+  if (_re('exec-risk-total'))       _re('exec-risk-total').textContent       = (criticos.length + altos.length).toLocaleString() + ' alertas';
+  if (_re('exec-risk-monto'))       _re('exec-risk-monto').textContent       = fmtLfull(riskMontoE) + ' en contratos con señales Críticas + Altas';
+  if (_re('exec-risk-critica'))     _re('exec-risk-critica').textContent     = criticos.length.toLocaleString();
+  if (_re('exec-risk-alta'))        _re('exec-risk-alta').textContent        = altos.length.toLocaleString();
+  if (_re('exec-risk-critica-cnt')) _re('exec-risk-critica-cnt').textContent = fmtLfull(sumMonto(criticos));
+  if (_re('exec-risk-alta-cnt'))    _re('exec-risk-alta-cnt').textContent    = fmtLfull(sumMonto(altos));
+  if (_re('exec-risk-budget'))      _re('exec-risk-budget').textContent      =
+    'Cobertura: SEFIN y ONCAE. ONCAE 2019–2022 está cargado de forma parcial (≈31% de los contratos de 2022, casi sin licitaciones públicas).';
 
   document.getElementById('exec-criticos').textContent       = criticos.length.toLocaleString();
   document.getElementById('exec-criticos-monto').textContent = fmtL(sumMonto(criticos));

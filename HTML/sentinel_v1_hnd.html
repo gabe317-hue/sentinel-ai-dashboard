@@ -8618,9 +8618,18 @@ function sgBtnCaso(entidad, proveedor, esquema, backFn) {
     ` onclick="event.stopPropagation();sgCrearCaso(this)" title="Abrir el Constructor de Caso con estos datos">Crear caso</button>`;
 }
 
+// Filas que solo traen proveedor: se propone la entidad con más contratos suyos
+function _sgEntidadPrincipal(proveedor) {
+  const p = (proveedor || '').toLowerCase();
+  if (!p || !window.allAlerts || !allAlerts.length) return '';
+  const cuenta = {};
+  allAlerts.forEach(a => { if ((a.proveedor_nombre || '').toLowerCase() === p && a.entity_name) cuenta[a.entity_name] = (cuenta[a.entity_name] || 0) + 1; });
+  return Object.entries(cuenta).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+}
+
 function sgCrearCaso(btn) {
-  const entidad = decodeURIComponent(btn.dataset.ent || '');
   const proveedor = decodeURIComponent(btn.dataset.prov || '');
+  const entidad = decodeURIComponent(btn.dataset.ent || '') || _sgEntidadPrincipal(proveedor);
   const back = window[btn.dataset.back];
   abrirConstructorCaso(typeof back === 'function' ? () => back() : () => sgAbrirGrupo('senales'));
   setTimeout(() => {
@@ -8628,7 +8637,8 @@ function sgCrearCaso(btn) {
     document.getElementById('ccProveedor').value = proveedor;
     const sel = document.getElementById('ccEsquema');
     if (sel && [...sel.options].some(o => o.value === btn.dataset.esq)) sel.value = btn.dataset.esq;
-    if (proveedor || entidad) ccAnalizar();
+    if (proveedor && entidad) ccAnalizar();
+    else document.getElementById(entidad ? 'ccProveedor' : 'ccEntidad').focus();
   }, 250);
 }
 
@@ -8756,7 +8766,7 @@ function casosCartaReplica(id) {
   }));
 }
 
-const APP_VERSION = 'v2.34';
+const APP_VERSION = 'v2.35';
 const APP_BUILD   = '2026-10-22';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {

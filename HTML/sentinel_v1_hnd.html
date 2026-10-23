@@ -2892,6 +2892,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <button onclick="ccExportPDF()" style="background:rgba(220,38,38,0.15);color:#f87171;border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> REPORTE DE INVESTIGACIÓN (PDF)</button>
         <button onclick="ccExportExcel()" style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg> EVIDENCIA COMPLETA (Excel)</button>
         <button id="ccBtnExpediente" onclick="ccGenerarExpediente()" style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.35);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;">✦ EXPEDIENTE NARRATIVO (IA)</button>
+        <button onclick="ccCartaReplica()" title="Borrador de carta de réplica a la institución (10 días hábiles)" style="background:rgba(0,200,255,0.1);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;">✉ Carta de réplica</button>
         <button onclick="ccGuardarExpediente()" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 20px;font-size:11px;font-weight:800;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg> GUARDAR EXPEDIENTE</button>
       </div>
     </div>
@@ -3567,6 +3568,7 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
             <th style="text-align:left;padding:8px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">#</th>
             <th style="text-align:left;padding:8px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Nombre</th>
             <th style="text-align:center;padding:8px 12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Estado</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="cpc-inhab-tbody"></tbody>
@@ -4858,6 +4860,15 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
         <button id="ve-back-pe" onclick="volverAPanelEjecutivo()" style="display:none;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--electric);padding:4px 12px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='rgba(0,200,255,0.2)'" onmouseout="this.style.background='rgba(0,200,255,0.1)'">← Panel Ejecutivo</button>
       </div>
       <button onclick="exportVistaEjecutivaPDF()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg> PDF</button>
+    </div>
+
+    <!-- S439 fase D — casos arriba (solo con sesión; expedientes_master) -->
+    <div id="panCasos" hidden style="margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--electric);text-transform:uppercase;">⚖ Casos con documentos</span>
+        <button class="cs-btn" onclick="sgAbrirGrupo('casos')">Ver casos →</button>
+      </div>
+      <div class="cs-kpis" id="panCasosKpis" style="margin-bottom:0;"></div>
     </div>
 
     <!-- Ticker bar — live data feed (inside Vista Ejecutiva) -->
@@ -8365,7 +8376,8 @@ function casosAbrirFicha(id) {
   f.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
       <button class="cs-btn" onclick="casosVolverLista()">← Lista de casos</button>
-      <button class="cs-btn" onclick="casosAbrirConstructor('${c.id}')">Abrir en Constructor de Caso</button>
+      <span style="display:flex;gap:8px;flex-wrap:wrap;"><button class="cs-btn" onclick="casosCartaReplica('${c.id}')">✉ Carta de réplica</button>
+      <button class="cs-btn" onclick="casosAbrirConstructor('${c.id}')">Abrir en Constructor de Caso</button></span>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 2px;">
       <span class="mono" style="font-size:15px;font-weight:700;">${_csEsc(c.folio)}</span> ${_csEstadoTag(c.estado_caso)}
@@ -8563,7 +8575,188 @@ async function detCrearCaso(loteId, btn) {
   }
 }
 
-const APP_VERSION = 'v2.33';
+// ════════════════════════════════════════════════════════════
+// S439 fase D (rediseño S436 §5) — Panorama con casos arriba ·
+// "Crear caso" en las pestañas de Señales que no lo tenían ·
+// carta de réplica (borrador) desde el Constructor y desde la ficha.
+// No toca `alerts` ni la cifra.
+// ════════════════════════════════════════════════════════════
+
+// ─── Panorama: franja de casos ───────────────────────────────
+async function panCasosCargar() {
+  const box = document.getElementById('panCasos');
+  if (!box) return;
+  if (!currentUser) { box.hidden = true; return; }
+  let d = _casosData;
+  if (!d) {
+    const { data, error } = await db.from('expedientes_master')
+      .select('id,folio,tipo,entidad,proveedor,monto,anio,estado,estado_caso,patron,norma,hallazgo,notas,prueba_json,documentos_json,replica_enviada,replica_vence,replica_respuesta,ficha_md,lote_id,fecha_actualizacion')
+      .not('estado_caso', 'is', null)
+      .order('folio');
+    if (error || !data) { box.hidden = true; return; }
+    d = _casosData = data;
+  }
+  const por = e => d.filter(c => c.estado_caso === e);
+  const suma = arr => arr.reduce((s, c) => s + (Number(c.monto) || 0), 0);
+  const enReplica = d.filter(c => c.replica_enviada && !c.replica_respuesta && c.estado_caso !== 'RETIRADO');
+  const vencen = enReplica.filter(c => c.replica_vence && _csFecha(c.replica_vence) >= _csHoy())
+    .sort((a, b) => a.replica_vence.localeCompare(b.replica_vence))[0];
+  document.getElementById('panCasosKpis').innerHTML = [
+    ['Presentables', por('PRESENTABLE').length, fmtLpsCompact(suma(por('PRESENTABLE'))) + ' documentado', '#10b981'],
+    ['En réplica', enReplica.length, vencen ? 'próximo vence ' + _csFmtFecha(vencen.replica_vence) : 'cartas enviadas sin respuesta', 'var(--amber)'],
+    ['Verificadas', por('VERIFICADA').length, fmtLpsCompact(suma(por('VERIFICADA'))) + ' con documentos', '#f59e0b'],
+    ['Detectadas', por('DETECTADA').length, 'sin verificar con documentos', '#94a3b8'],
+  ].map(([l, v, s, c]) => `<div class="cs-kpi"><div class="cs-kpi-l">${l}</div><div class="cs-kpi-v" style="color:${c};">${v}</div><div class="cs-kpi-s">${s}</div></div>`).join('');
+  box.hidden = false;
+}
+
+// ─── Señales: "Crear caso" por fila ──────────────────────────
+// Los datos van en data-* (codificados) para no romper el onclick con comillas.
+function sgBtnCaso(entidad, proveedor, esquema, backFn) {
+  const e = encodeURIComponent(entidad || ''), p = encodeURIComponent(proveedor || '');
+  return `<button class="cs-btn" style="padding:2px 9px;font-size:10px;" data-ent="${e}" data-prov="${p}" data-esq="${esquema || 'GENERAL'}" data-back="${backFn}"` +
+    ` onclick="event.stopPropagation();sgCrearCaso(this)" title="Abrir el Constructor de Caso con estos datos">Crear caso</button>`;
+}
+
+function sgCrearCaso(btn) {
+  const entidad = decodeURIComponent(btn.dataset.ent || '');
+  const proveedor = decodeURIComponent(btn.dataset.prov || '');
+  const back = window[btn.dataset.back];
+  abrirConstructorCaso(typeof back === 'function' ? () => back() : () => sgAbrirGrupo('senales'));
+  setTimeout(() => {
+    document.getElementById('ccEntidad').value = entidad;
+    document.getElementById('ccProveedor').value = proveedor;
+    const sel = document.getElementById('ccEsquema');
+    if (sel && [...sel.options].some(o => o.value === btn.dataset.esq)) sel.value = btn.dataset.esq;
+    if (proveedor || entidad) ccAnalizar();
+  }, 250);
+}
+
+// ─── Carta de réplica (borrador) ─────────────────────────────
+// Mismo formato que las cartas S436 (REPORTES SENTINEL/Casos_Salud_2022/
+// Cartas_replica/): hechos de documentos públicos, norma, tres preguntas,
+// plazo de 10 días hábiles y lenguaje no acusatorio (Regla #29).
+function _cartaReplicaHTML(o) {
+  const e = _csEsc;
+  const fecha = new Date().toLocaleDateString('es-HN', { day: 'numeric', month: 'long', year: 'numeric' });
+  const filas = (o.contratos || []).map(c =>
+    `<tr><td>${e(c.id || '—')}</td><td>${e(c.fecha || '—')}</td><td>${e(c.tipo || '—')}</td><td>${e(c.desc || '')}</td><td class="n">${c.monto != null ? fmtLps(Number(c.monto)) : '—'}</td></tr>`).join('');
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Carta de réplica — ${e(o.entidad)}</title>
+  <style>
+    body { background:#fff; color:#111; font-family:Georgia,'Times New Roman',serif; margin:0; font-size:13px; line-height:1.55; }
+    .page { max-width:760px; margin:0 auto; padding:48px 56px; }
+    .borrador { font-family:Arial,sans-serif; font-size:10px; color:#b45309; border:1px solid #f59e0b; background:#fffbeb; padding:6px 10px; border-radius:4px; margin-bottom:24px; }
+    @media print { .borrador { display:none; } .ph { background:none; } }
+    .ph { background:#fef3c7; padding:0 3px; }
+    .page:focus { outline:none; }
+    h3 { font-size:13px; margin:18px 0 8px; }
+    table { border-collapse:collapse; width:100%; font-family:Arial,sans-serif; font-size:10.5px; margin:8px 0 4px; }
+    th, td { border:1px solid #d1d5db; padding:4px 6px; text-align:left; vertical-align:top; }
+    th { background:#f3f4f6; }
+    td.n { text-align:right; white-space:nowrap; }
+    ol li { margin-bottom:4px; }
+    .firma { margin-top:28px; }
+  </style></head><body><div class="page" contenteditable="true" spellcheck="true">
+  <div class="borrador" contenteditable="false">BORRADOR generado por Sentinel-AI el ${e(fecha)} — se puede editar aquí mismo: completar los campos resaltados, revisar los hechos con los documentos de HonduCompras y no enviar sin el OK de Gabe. Este aviso no sale al imprimir.</div>
+  <p>Tegucigalpa, M.D.C., <span class="ph">[fecha de envío]</span></p>
+  <p>Señor(a)<br><span class="ph">[Nombre del titular — verificar el titular actual]</span><br><span class="ph">[Cargo]</span><br>${e(o.entidad)}<br><span class="ph">[Ciudad]</span></p>
+  <p><b>Asunto: Solicitud de aclaración sobre ${e(o.asunto)}</b></p>
+  <p>Estimado(a) señor(a):</p>
+  <p>Reciba un cordial saludo. Sentinel-AI es una iniciativa ciudadana de análisis de datos de contratación pública en Honduras. Trabaja exclusivamente con información publicada en el sistema HonduCompras, en el Portal Único de Transparencia y en el Diario Oficial La Gaceta.</p>
+  <p>Al revisar los procesos que su institución publicó${o.periodo ? ' durante ' + e(o.periodo) : ''}, observamos lo siguiente:</p>
+  <ul>${(o.hechos || []).map(h => `<li>${e(h)}</li>`).join('')}</ul>
+  ${filas ? `<table><thead><tr><th>Proceso / ID</th><th>Fecha</th><th>Modalidad</th><th>Objeto</th><th>Monto</th></tr></thead><tbody>${filas}</tbody></table>
+  <div style="font-family:Arial,sans-serif;font-size:10px;color:#6b7280;">${o.contratosNota ? e(o.contratosNota) : ''}</div>` : ''}
+  <p>${e(o.norma)}${o.normaExtra ? ' ' + e(o.normaExtra) : ''} En los documentos publicados no encontramos una justificación de la forma en que se tramitaron estas compras.</p>
+  <p>Antes de incluir este caso en un informe público, queremos darle la oportunidad de aclararlo. Le solicitamos de manera respetuosa:</p>
+  <ol>
+    <li>Copia de la <b>opinión de la auditoría interna</b> o de cualquier otro documento que autorice la forma en que se tramitaron estas compras.</li>
+    <li>La <b>justificación</b> de la institución para tramitar estas compras en procesos separados y no en un solo proceso.</li>
+    <li>Cualquier otra aclaración o documento que considere pertinente (por ejemplo, un proceso previo declarado desierto, una emergencia o urgencia calificada, o etapas planificadas).</li>
+  </ol>
+  <p>Le agradeceremos su respuesta <b>dentro de los diez (10) días hábiles</b> siguientes a la recepción de esta nota, al correo <b>alerts@sentinelai-hn.com</b>. Su respuesta se incluirá íntegra o resumida en el informe, y si aporta documentos que expliquen la compra, el caso se corregirá o se retirará. Si no recibimos respuesta en ese plazo, el informe indicará que se le solicitó la aclaración en esta fecha y que no se recibió respuesta.</p>
+  <p>Este análisis no afirma la existencia de delito ni de responsabilidad de ninguna persona. Señala un patrón en documentos públicos que, en nuestra lectura, merece aclaración.</p>
+  <p class="firma">Atentamente,<br><br><span class="ph">[Nombre]</span><br><span class="ph">[Cargo]</span> — Sentinel-AI<br>alerts@sentinelai-hn.com</p>
+  ${o.anexo ? `<h3>Anexo — documentos de referencia</h3><p style="font-size:11px;">${e(o.anexo)}</p>` : ''}
+  </div></body></html>`;
+}
+
+// Excepción a la Regla PDF (OK de Gabe, 22-oct-2026): la carta va dirigida a
+// la institución, así que no lleva el aviso "documento confidencial" que
+// agrega addPrintBtn(). Sigue siendo popup + botón Imprimir / Guardar como PDF.
+function _cartaConBotonImprimir(html) {
+  const css = '<style>@media print { .no-print { display: none !important; } @page { margin: 2cm; } }</style>';
+  const btn = '<button class="no-print" onclick="window.print()" style="position:fixed;top:14px;right:14px;background:#1a56db;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-family:Arial,sans-serif;">Imprimir / Guardar como PDF</button>';
+  return html.replace('</head>', css + '</head>').replace('<body>', '<body>' + btn);
+}
+
+function _cartaAbrir(html) {
+  const pw = window.open('', '_blank', 'width=1100,height=800');
+  if (!pw) { alert('Habilita ventanas emergentes para abrir la carta.'); return; }
+  pw.document.write(_cartaConBotonImprimir(html));
+  pw.document.close();
+  pw.addEventListener('load', () => pw.focus());
+}
+
+const CC_CARTA_PATRON = {
+  FRACCIONAMIENTO: 'Varios procesos con el mismo proveedor en fechas cercanas que, sumados, superan el monto desde el cual corresponde licitación pública.',
+  SOBRECOSTO: 'Contratos cuyo monto supera el presupuesto o el valor de referencia publicado para la misma compra.',
+  CAPTURA_INSTITUCIONAL: 'Una proporción alta de las compras de la institución adjudicada al mismo proveedor.',
+  CONSULTOR_DOMINANTE: 'Contratos de consultoría recurrentes con el mismo proveedor.',
+  IDENTIDAD_DUPLICADA: 'Contratos con proveedores que comparten datos de identificación.',
+};
+
+function ccCartaReplica() {
+  if (!_ccData) { showToast('⚠️ Primero analiza un caso en el Constructor', 'warn'); return; }
+  const { entidad, proveedor, esquema, vendorContratos } = _ccData;
+  const cs = [...(vendorContratos || [])].sort((a, b) => String(a.fecha_contrato || '').localeCompare(String(b.fecha_contrato || '')));
+  if (!cs.length) { showToast('⚠️ El análisis no tiene contratos de este proveedor en la entidad', 'warn'); return; }
+  const total = cs.reduce((s, a) => s + (Number(a.monto_contrato) || 0), 0);
+  const fechas = cs.map(a => a.fecha_contrato).filter(Boolean);
+  const periodo = fechas.length ? `${_csFmtFecha(String(fechas[0]).slice(0, 10))} y ${_csFmtFecha(String(fechas[fechas.length - 1]).slice(0, 10))}` : '';
+  const MAX = 25;
+  _cartaAbrir(_cartaReplicaHTML({
+    entidad: entidad || '[Institución]',
+    asunto: `los procesos de compra adjudicados a ${proveedor}`,
+    periodo: periodo ? 'el periodo entre ' + periodo : '',
+    hechos: [
+      `${cs.length} ${cs.length === 1 ? 'contrato u orden de compra' : 'contratos u órdenes de compra'} adjudicados a ${proveedor}, por un total de ${fmtLps(total)}.`,
+      CC_CARTA_PATRON[esquema] || 'Un patrón en los contratos con este proveedor que, en nuestra lectura, merece aclaración.',
+    ],
+    contratos: cs.slice(0, MAX).map(a => ({
+      id: a.alert_id || a.contract_id, fecha: String(a.fecha_contrato || '').slice(0, 10), tipo: a.tipo_contratacion,
+      desc: String(a.description || a.title || '').slice(0, 90), monto: a.monto_contrato })),
+    contratosNota: cs.length > MAX ? `Se muestran ${MAX} de ${cs.length}; la lista completa se puede enviar como anexo.` : 'Fuente: datos abiertos de contratación (HonduCompras / SEFIN / IAIP). Verificar cada monto con el documento original.',
+    norma: 'El Artículo 25 de la Ley de Contratación del Estado prohíbe dividir una compra para eludir el procedimiento que corresponde por su monto, y las Disposiciones Generales del Presupuesto del año contienen una prohibición en el mismo sentido',
+    normaExtra: '[citar el artículo de las Disposiciones Generales del año, p. ej. Art. 79 del Decreto 107-2021 para 2022].',
+    anexo: '[Enlaces de HonduCompras a las órdenes de compra, actas y pliegos de cada proceso.]',
+  }));
+}
+
+function casosCartaReplica(id) {
+  const c = (_casosData || []).find(x => x.id === id);
+  if (!c) return;
+  const p = c.prueba_json || {};
+  const d = c.documentos_json || {};
+  const contratos = (p.detalle || []).map(t => {
+    const [proc, tipo, monto] = String(t).split(' · ');
+    return { id: proc, tipo, monto: monto ? Number(monto.replace(/[^\d.]/g, '')) : null };
+  });
+  _cartaAbrir(_cartaReplicaHTML({
+    entidad: c.entidad || '[Institución]',
+    asunto: `los procesos de compra adjudicados a ${c.proveedor}${c.anio ? ' en ' + c.anio : ''}`,
+    periodo: c.anio ? 'el año ' + c.anio : '',
+    hechos: [c.hallazgo || p.prueba || 'Un patrón en estos procesos que, en nuestra lectura, merece aclaración.',
+             `Monto total de los procesos: ${fmtLps(Number(c.monto))}.`],
+    contratos,
+    contratosNota: p.fecha_publicacion ? `Procesos publicados el ${_csFmtFecha(p.fecha_publicacion)} en HonduCompras.` : '',
+    norma: (c.norma ? `Normas aplicables: ${c.norma}.` : 'El Artículo 25 de la Ley de Contratación del Estado prohíbe dividir una compra para eludir el procedimiento que corresponde por su monto.'),
+    normaExtra: 'Estas normas prohíben dividir una compra para eludir el procedimiento que corresponde por su monto, salvo justificación documentada.',
+    anexo: d.carpeta_local ? `Copias locales: ${d.carpeta_local}${d.patron_archivo ? ' / ' + d.patron_archivo : ''}. [Agregar los enlaces de HonduCompras.]` : '[Enlaces de HonduCompras a las órdenes de compra, actas y pliegos.]',
+  }));
+}
+
+const APP_VERSION = 'v2.34';
 const APP_BUILD   = '2026-10-22';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -12210,12 +12403,13 @@ function filtrarCpcLista(q) {
 function _renderCpcInhabLista(list) {
   const tb = document.getElementById('cpc-inhab-tbody');
   if (!tb) return;
-  if (!list.length) { tb.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados.</td></tr>'; return; }
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-dim);">Sin resultados.</td></tr>'; return; }
   tb.innerHTML = list.map((e, i) => `
     <tr style="border-bottom:1px solid rgba(255,255,255,0.05);${i%2?'background:rgba(255,255,255,0.02)':''}">
       <td style="padding:7px 12px;color:var(--text-dim);font-size:11px;">${i+1}</td>
       <td style="padding:7px 12px;font-weight:500;">${e.full}</td>
       <td style="padding:7px 12px;text-align:center;"><span style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">INHABILITADO</span></td>
+      <td style="padding:7px 12px;text-align:right;">${sgBtnCaso('', e.full, 'GENERAL', 'showCpcInhabPanel')}</td>
     </tr>`).join('');
 }
 
@@ -17880,6 +18074,7 @@ function populateGlobalSobrecostos() {
           <div style="text-align:right;flex-shrink:0;">
             <div style="color:var(--red);font-weight:600;font-size:12px;">+${s.pct}%</div>
             <div style="color:var(--amber);font-weight:600;font-size:11px;margin-top:2px;">${fmtL(s.diff)}</div>
+            <div style="margin-top:4px;">${sgBtnCaso(s.entityName, s.vendorName, 'SOBRECOSTO', 'showGlobalSobrecostos')}</div>
           </div>
         </div>`;
       }).join('')
@@ -18653,7 +18848,7 @@ function populatePhase4Detection() {
   // Populate Velocity Threats (top 10)
   const velocityHTML = velocityThreats.slice(0, 10).map(threat => `
     <div class="fuente-list-item" style="border-left: 4px solid ${threat.severity === 'critical' ? '#e63946' : threat.severity === 'high' ? '#f77f00' : '#fcbf49'};">
-      <div style="font-weight:600;color:#00c8ff;">${threat.vendor}</div>
+      <div style="font-weight:600;color:#00c8ff;display:flex;justify-content:space-between;align-items:center;gap:8px;"><span>${threat.vendor}</span>${sgBtnCaso('', threat.vendor, 'SOBRECOSTO', 'showPhase4Detection')}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
         🔴 Incidentes: ${threat.count} | Puntaje de Riesgo: ${threat.risk_score.toFixed(0)}/100 | Severidad: <strong>${threat.severity === 'critical' ? 'CRÍTICA' : threat.severity === 'high' ? 'ALTA' : threat.severity.toUpperCase()}</strong>
       </div>
@@ -18667,7 +18862,7 @@ function populatePhase4Detection() {
   // Populate Risk Scores (top 10)
   const riskHTML = riskScores.slice(0, 10).map(supplier => `
     <div class="fuente-list-item" style="border-left: 4px solid ${supplier.severity === 'critical' ? '#e63946' : supplier.severity === 'high' ? '#f77f00' : '#fcbf49'};">
-      <div style="font-weight:600;color:#00c8ff;">${supplier.vendor}</div>
+      <div style="font-weight:600;color:#00c8ff;display:flex;justify-content:space-between;align-items:center;gap:8px;"><span>${supplier.vendor}</span>${sgBtnCaso('', supplier.vendor, 'SOBRECOSTO', 'showPhase4Detection')}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
         📊 Puntaje de Riesgo: <strong>${supplier.risk_score.toFixed(0)}/100</strong> | Severidad: ${supplier.severity === 'critical' ? 'CRÍTICA' : supplier.severity === 'high' ? 'ALTA' : supplier.severity.toUpperCase()} | Contratos: ${supplier.total_contracts}
       </div>
@@ -18682,7 +18877,7 @@ function populatePhase4Detection() {
   // Populate Anomalies (top 5)
   const anomalyHTML = anomalies.slice(0, 5).map(anom => `
     <div class="fuente-list-item" style="border-left: 4px solid #e63946;">
-      <div style="font-weight:600;color:#00c8ff;">Alert ID: ${anom.alert_id} | ${anom.vendor}</div>
+      <div style="font-weight:600;color:#00c8ff;display:flex;justify-content:space-between;align-items:center;gap:8px;"><span>Alert ID: ${anom.alert_id} | ${anom.vendor}</span>${sgBtnCaso(anom.entity, anom.vendor, 'SOBRECOSTO', 'showPhase4Detection')}</div>
       <div style="font-size:12px;color:var(--text-dim);margin:4px 0;">
         📍 Entidad: ${anom.entity} | Desviación: <strong>${anom.deviation_score.toFixed(1)}σ</strong> | Severidad: ${anom.severity === 'critical' ? 'CRÍTICA' : anom.severity === 'high' ? 'ALTA' : anom.severity.toUpperCase()}
       </div>
@@ -24346,6 +24541,7 @@ function calculateAndDisplayVendorConcentration(alerts) {
           <span style="font-size:18px;">${riskEmoji}</span>
           <span style="font-weight:600;color:var(--text);">${v.name}</span>
           <span style="color:var(--text-dim);font-size:11px;margin-left:auto;">${v.alerts} contratos • L. ${(v.monto/1000).toFixed(0)}K</span>
+          ${sgBtnCaso('', v.name, 'CAPTURA_INSTITUCIONAL', 'showVendorConcentrationPanel')}
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="background:rgba(0,200,255,0.1);border-radius:4px;height:20px;flex:1;position:relative;border:1px solid var(--border);">
@@ -25432,6 +25628,7 @@ function showVistaEjecutiva() {
   idLoadKPI();
   monLoadKPI();
   drLoadKPI();
+  panCasosCargar();
 }
 
 // ── P5 Drilldown — desde Vista Ejecutiva a contratos filtrados por entidad ──

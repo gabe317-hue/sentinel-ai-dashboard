@@ -400,6 +400,47 @@ body::after {
   color: var(--text-dim); opacity: .5; flex-shrink: 0;
 }
 
+/* ─── S439 fase C: Casos y Detección ─── */
+.cs-kpis { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.cs-kpi { flex: 1; min-width: 120px; border-radius: 8px; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
+.cs-kpi-l { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; }
+.cs-kpi-v { font-size: 20px; font-weight: 700; margin-top: 2px; }
+.cs-kpi-s { font-size: 11px; color: var(--text-dim); }
+.cs-filtros { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.cs-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.cs-chip { background: none; border: 1px solid var(--border); color: var(--text-dim); border-radius: 999px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: 'Inter', sans-serif; }
+.cs-chip.active { color: var(--electric); border-color: rgba(0,200,255,0.4); background: var(--electric-dim); }
+.cs-input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 7px 10px; color: var(--text); font-size: 12px; outline: none; font-family: 'Inter', sans-serif; }
+.cs-input option { background: var(--navy); }
+.cs-count { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.cs-tabla-wrap { overflow: auto; max-height: calc(100vh - 330px); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; }
+.cs-tabla { width: 100%; border-collapse: collapse; font-size: 12px; }
+.cs-tabla thead th { position: sticky; top: 0; background: var(--navy); text-align: left; padding: 8px 10px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
+.cs-tabla td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
+.cs-tabla tr.cs-fila:hover td { background: rgba(255,255,255,0.03); cursor: pointer; }
+.cs-tabla .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cs-tabla .mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.cs-vacio { text-align: center; padding: 24px; color: var(--text-dim); }
+.cs-estado { display: inline-block; border-radius: 4px; padding: 2px 7px; font-size: 10px; font-family: 'JetBrains Mono', monospace; border: 1px solid currentColor; white-space: nowrap; }
+.cs-btn { background: rgba(0,200,255,0.08); color: var(--electric); border: 1px solid rgba(0,200,255,0.3); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; white-space: nowrap; font-family: 'Inter', sans-serif; }
+.cs-btn:disabled { opacity: .5; cursor: default; }
+.cs-btn.cs-verde { background: rgba(16,185,129,0.1); color: #10b981; border-color: rgba(16,185,129,0.35); }
+.cs-detalle td { background: rgba(255,255,255,0.02); font-size: 11px; color: var(--text-dim); }
+.cs-detalle ul { margin: 0; padding-left: 18px; columns: 2; }
+.cs-ficha-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+.cs-ficha-sec { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+.cs-ficha-sec h4 { margin: 0 0 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+.cs-ficha-md table { border-collapse: collapse; width: 100%; font-size: 12px; margin: 6px 0; }
+.cs-ficha-md td { border: 1px solid rgba(255,255,255,0.08); padding: 6px 8px; vertical-align: top; }
+.cs-ficha-md td:first-child { width: 22%; color: var(--text-dim); }
+.cs-ficha-md h3 { font-size: 15px; margin: 4px 0 8px; }
+.cs-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; align-items: end; }
+.cs-form label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; display: block; margin-bottom: 4px; }
+.cs-form .cs-input { width: 100%; box-sizing: border-box; }
+.cs-nota { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+.cs-ficha-sec ul, .cs-ficha-md p { font-size: 12px; }
+.cs-ficha-md ul { margin: 4px 0; padding-left: 18px; }
+
 /* ─── S439 fase B: menú por grupos + pestañas ─── */
 .sg-sistema > summary { cursor: pointer; list-style: none; }
 .sg-sistema > summary::-webkit-details-marker { display: none; }
@@ -4232,11 +4273,11 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
   <div class="nav">
-    <!-- S439 fase B (rediseño S436 §2): menú de 26 → 7 entradas + Sistema.
+    <!-- S439 fases B–C (rediseño S436 §2): menú de 26 → 8 entradas + Sistema.
          Cada entrada abre su primera pestaña; la barra #sgTabs muestra las demás.
          Los botones originales siguen en #navLegacy (ocultos): las funciones
          show…Panel() les ponen .active y sgSync() lo traduce al grupo.
-         Detección entra en la fase C. Noticias y Canal Denuncias quedan
+         Detección y Casos (fase C, S439). Noticias y Canal Denuncias quedan
          archivadas (sin entrada, el código se conserva). -->
     <div class="nav-section">
       <div class="nav-section-label">Investigación</div>
@@ -4245,6 +4286,9 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
       </button>
       <button class="nav-item" id="nav-g-casos" onclick="sgAbrirGrupo('casos')" aria-label="Ir a Casos">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="m9 14 2 2 4-4"/></svg></span> Casos
+      </button>
+      <button class="nav-item" id="nav-g-deteccion" onclick="sgAbrirGrupo('deteccion')" aria-label="Ir a Detección">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M8 11h6"/><path d="M11 8v6"/></svg></span> Detección
       </button>
       <button class="nav-item" id="nav-g-contratos" onclick="sgAbrirGrupo('contratos')" aria-label="Ir a Contratos">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg></span> Contratos
@@ -4287,6 +4331,8 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
     </details>
 
     <div id="navLegacy" hidden aria-hidden="true">
+      <button class="nav-item" id="nav-casos" onclick="showCasosPanel()">Casos</button>
+      <button class="nav-item" id="nav-deteccion" onclick="showDeteccionPanel()">Detección</button>
       <button class="nav-item" id="nav-ejecutiva" onclick="showVistaEjecutiva()" aria-label="Ir a Vista Ejecutiva">
         <span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M13 17V5"/><path d="M18 17v-6"/></svg></span> Vista Ejecutiva
       </button>
@@ -5723,6 +5769,76 @@ body.modo-demo * { -webkit-user-select: none !important; user-select: none !impo
   </div>
 
   <!-- ═══════════════════ ANALYTICS PANEL ═══════════════════ -->
+  <!-- ═══ S439 fase C — CASOS (expedientes_master con estado_caso) ═══ -->
+  <div class="fuente-panel" id="casosPanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+      <button class="fuente-back" style="margin-bottom:0;" onclick="hideCasosPanel()">← Contratos</button>
+      <button style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;" onclick="casosCargar(true)">↻ Recargar</button>
+    </div>
+    <div class="fuente-header" style="flex-direction:column;align-items:flex-start;gap:4px;">
+      <div class="fuente-title">⚖️ <span>Casos</span></div>
+      <div style="font-size:11px;color:var(--text-dim);">Señal → caso → ficha + réplica → <b>PRESENTABLE</b>. PRESENTABLE = documentos públicos + Regla #30 + carta de réplica con plazo vencido o respondida (criterio 19-oct-2026).</div>
+    </div>
+    <div id="casosLista">
+      <div class="cs-kpis" id="casosKpis"></div>
+      <div class="cs-filtros">
+        <div id="casosChips" class="cs-chips"></div>
+        <select id="casosOrigen" onchange="casosFiltrar()" class="cs-input">
+          <option value="">Todos los orígenes</option>
+          <option value="SAL-CASO">Casos 2022 (S435/S436)</option>
+          <option value="SAL-MUESTRA">Muestra S437 (60 lotes)</option>
+          <option value="SAL-DET">Creados desde Detección</option>
+        </select>
+        <input id="casosQ" class="cs-input" style="flex:1;min-width:180px;" placeholder="Buscar hospital, proveedor o folio…" oninput="casosFiltrar()">
+        <span id="casosCount" class="cs-count"></span>
+      </div>
+      <div class="cs-tabla-wrap">
+        <table class="cs-tabla">
+          <thead><tr><th>Folio</th><th>Entidad</th><th>Proveedor</th><th>Año</th><th class="num">Monto</th><th>Estado</th><th>Réplica</th><th></th></tr></thead>
+          <tbody id="casosTbody"><tr><td colspan="8" class="cs-vacio">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="casoFicha" hidden></div>
+  </div>
+
+  <!-- ═══ S439 fase C — DETECCIÓN (RPC sentinel_salud_r1_deteccion) ═══ -->
+  <div class="fuente-panel" id="deteccionPanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+      <button class="fuente-back" style="margin-bottom:0;" onclick="hideDeteccionPanel()">← Contratos</button>
+      <button style="background:rgba(0,200,255,0.08);color:var(--electric);border:1px solid rgba(0,200,255,0.3);border-radius:6px;padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;" onclick="detCargar(true)">↻ Recargar</button>
+    </div>
+    <div class="fuente-header" style="flex-direction:column;align-items:flex-start;gap:4px;">
+      <div class="fuente-title">🔎 <span>Detección — R1 Salud 2019–2022</span></div>
+      <div style="font-size:11px;color:var(--text-dim);">Lotes de compras del <b>mismo hospital al mismo proveedor el mismo día</b> que juntos superan el techo de licitación pública (ONCAE HC1, sin combustible). Patrón compatible con el fraccionamiento que prohíbe el Art. 25 LCE; cada lote requiere verificación con documentos.</div>
+    </div>
+    <div class="sg-banner" style="margin:0 0 12px;">Son <b>lotes que requieren revisión</b>, no hallazgos. En la muestra S437 se confirmó el 58.5% (IC 46.5–70.4%). Fuera de ene–abr 2022 había emergencias decretadas: revisar la vía alternativa antes de presentar.</div>
+    <div class="cs-kpis" id="detKpis"></div>
+    <div class="cs-filtros">
+      <select id="detTramo" onchange="detFiltrar()" class="cs-input">
+        <option value="">Todos los tramos</option>
+        <option value="2019">2019</option>
+        <option value="2020-21">2020–21 (emergencia COVID)</option>
+        <option value="ene-abr-2022">ene–abr 2022 (sin emergencia)</option>
+        <option value="may-dic-2022">may–dic 2022</option>
+      </select>
+      <select id="detEstado" onchange="detFiltrar()" class="cs-input">
+        <option value="">Todos</option>
+        <option value="sin">Sin caso</option>
+        <option value="con">Con caso</option>
+        <option value="muestra">En la muestra S437</option>
+      </select>
+      <input id="detQ" class="cs-input" style="flex:1;min-width:180px;" placeholder="Buscar hospital o proveedor…" oninput="detFiltrar()">
+      <span id="detCount" class="cs-count"></span>
+    </div>
+    <div class="cs-tabla-wrap">
+      <table class="cs-tabla">
+        <thead><tr><th>Fecha</th><th>Comprador</th><th>Proveedor</th><th class="num">Proc.</th><th class="num">Monto</th><th class="num">× techo</th><th>Tramo</th><th>Muestra</th><th>Caso</th></tr></thead>
+        <tbody id="detTbody"><tr><td colspan="9" class="cs-vacio">Cargando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
   <div class="fuente-panel" id="analyticsPanel">
     <button class="fuente-back" onclick="hideAnalyticsPanel()">← Contratos</button>
 
@@ -7932,9 +8048,13 @@ const SG_GRUPOS = {
     { label: 'Cronología',        nav: 'nav-timeline',  fn: () => showTimelinePanel() },
   ]},
   casos: { titulo: 'Casos', tabs: [
+    { label: 'Casos',               nav: 'nav-casos',      fn: () => showCasosPanel() },
     { label: 'Candidatos',          nav: 'nav-candidatos', fn: () => showCandidatosPanel() },
     { label: 'Reportes',            nav: 'nav-reportes',   fn: () => showReportesPanel() },
     { label: 'Constructor de Caso', nav: null, accion: true, fn: () => abrirConstructorCaso(() => sgAbrirGrupo('casos')) },
+  ]},
+  deteccion: { titulo: 'Detección', tabs: [
+    { label: 'R1 Salud 2019–2022', nav: 'nav-deteccion', fn: () => showDeteccionPanel() },
   ]},
   contratos: { titulo: 'Contratos', tabs: [
     { label: 'Registro',       nav: 'nav-contratos', fn: () => hideAllPanels() },
@@ -8057,7 +8177,393 @@ function sgSync() {
   window.addEventListener('resize', () => sgSync());
 })();
 
-const APP_VERSION = 'v2.32';
+// ════════════════════════════════════════════════════════════
+// S439 fase C — CASOS y DETECCIÓN (rediseño S436 §2, §5)
+// Casos: lee expedientes_master (estado_caso no nulo; RLS solo authenticated)
+//        y escribe estado + réplica por casos-admin → expm_caso_update.
+// Detección: RPC sentinel_salud_r1_deteccion() (528 lotes R1 Salud, solo
+//        authenticated); "Crear caso" → casos-admin → expm_insert.
+// Ninguna de las dos toca `alerts` ni la cifra.
+// ════════════════════════════════════════════════════════════
+const CS_ESTADOS = {
+  DETECTADA:   { label: 'Detectada',   color: '#94a3b8' },
+  VERIFICADA:  { label: 'Verificada',  color: '#f59e0b' },
+  PRESENTABLE: { label: 'Presentable', color: '#10b981' },
+  RETIRADO:    { label: 'Retirado',    color: '#64748b' },
+};
+const CS_ORDEN = ['PRESENTABLE', 'VERIFICADA', 'DETECTADA', 'RETIRADO'];
+let _casosData = null;
+let _casosEstado = '';
+let _detData = null;
+let _detAbierto = null;
+
+const _csEsc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const _csHoy = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const _csFecha = s => s ? new Date(s + 'T00:00:00') : null;
+const _csFmtFecha = s => s ? _csFecha(s).toLocaleDateString('es-HN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
+function _csEstadoTag(e) {
+  const d = CS_ESTADOS[e] || { label: e || '—', color: '#94a3b8' };
+  return `<span class="cs-estado" style="color:${d.color};">${d.label}</span>`;
+}
+
+// 10 días hábiles (lunes–viernes; no descuenta feriados nacionales)
+function _csSumarHabiles(desde, n) {
+  const d = _csFecha(desde);
+  if (!d) return null;
+  let k = 0;
+  while (k < n) { d.setDate(d.getDate() + 1); const w = d.getDay(); if (w !== 0 && w !== 6) k++; }
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function _csReplicaTxt(c) {
+  if (c.replica_respuesta) return '<span style="color:#10b981;">Respondida</span>';
+  if (!c.replica_enviada) return '<span style="color:var(--text-dim);">Sin enviar</span>';
+  const vence = _csFecha(c.replica_vence);
+  if (!vence) return 'Enviada ' + _csFmtFecha(c.replica_enviada);
+  const dias = Math.round((vence - _csHoy()) / 86400000);
+  return dias >= 0
+    ? `<span style="color:var(--amber);">Vence en ${dias} d</span>`
+    : '<span style="color:#10b981;">Plazo vencido</span>';
+}
+
+function _csOcultarResto() {
+  document.getElementById('vistaEjecutiva').style.display = 'none';
+  ['risk-band', 'mainTableContainer'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  const sg = document.querySelector('.stats-grid'); if (sg) sg.style.display = 'none';
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = 'none');
+}
+
+function _csVolverAContratos(panelId, navId) {
+  document.getElementById(panelId).classList.remove('open');
+  document.getElementById(navId).classList.remove('active');
+  document.getElementById('risk-band')       && (document.getElementById('risk-band').style.display = '');
+  document.querySelector('.stats-grid')      && (document.querySelector('.stats-grid').style.display = '');
+  document.querySelectorAll('.controls-bar').forEach(el => el.style.display = '');
+  document.getElementById('mainTableContainer') && (document.getElementById('mainTableContainer').style.display = '');
+  document.getElementById('nav-contratos') && document.getElementById('nav-contratos').classList.add('active');
+}
+
+// ─── CASOS ───────────────────────────────────────────────────
+function showCasosPanel() {
+  _closeAllFuentePanels();
+  _csOcultarResto();
+  document.getElementById('nav-casos').classList.add('active');
+  document.getElementById('casosPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  casosVolverLista();
+  casosCargar(false);
+}
+
+function hideCasosPanel() { _csVolverAContratos('casosPanel', 'nav-casos'); }
+
+async function casosCargar(forzar) {
+  const tb = document.getElementById('casosTbody');
+  if (_casosData && !forzar) { casosPintarKpis(); casosFiltrar(); return; }
+  tb.innerHTML = '<tr><td colspan="8" class="cs-vacio">Cargando…</td></tr>';
+  const { data, error } = await db.from('expedientes_master')
+    .select('id,folio,tipo,entidad,proveedor,monto,anio,estado,estado_caso,patron,norma,hallazgo,notas,prueba_json,documentos_json,replica_enviada,replica_vence,replica_respuesta,ficha_md,lote_id,fecha_actualizacion')
+    .not('estado_caso', 'is', null)
+    .order('folio');
+  if (error || !data) {
+    const sinSesion = !currentUser;
+    tb.innerHTML = `<tr><td colspan="8" class="cs-vacio">${sinSesion
+      ? 'Los casos solo se ven con sesión iniciada.'
+      : 'No se pudieron cargar los casos' + (error ? ': ' + _csEsc(error.message) : '') + '.'}</td></tr>`;
+    document.getElementById('casosKpis').innerHTML = '';
+    return;
+  }
+  _casosData = data;
+  casosPintarKpis();
+  casosFiltrar();
+}
+
+function casosPintarKpis() {
+  const d = _casosData || [];
+  const por = e => d.filter(c => c.estado_caso === e);
+  const suma = arr => arr.reduce((s, c) => s + (Number(c.monto) || 0), 0);
+  const enReplica = d.filter(c => c.replica_enviada && !c.replica_respuesta && c.estado_caso !== 'RETIRADO');
+  document.getElementById('casosKpis').innerHTML = [
+    ['Presentables', por('PRESENTABLE').length, fmtLpsCompact(suma(por('PRESENTABLE'))), '#10b981'],
+    ['En réplica',   enReplica.length,          'cartas enviadas sin respuesta', 'var(--amber)'],
+    ['Verificadas',  por('VERIFICADA').length,  fmtLpsCompact(suma(por('VERIFICADA'))), '#f59e0b'],
+    ['Detectadas',   por('DETECTADA').length,   'sin verificar con documentos', '#94a3b8'],
+  ].map(([l, v, s, c]) => `<div class="cs-kpi"><div class="cs-kpi-l">${l}</div><div class="cs-kpi-v" style="color:${c};">${v}</div><div class="cs-kpi-s">${s}</div></div>`).join('');
+  const conteo = e => d.filter(c => !e || c.estado_caso === e).length;
+  document.getElementById('casosChips').innerHTML = ['', ...CS_ORDEN].map(e =>
+    `<button class="cs-chip${_casosEstado === e ? ' active' : ''}" onclick="casosElegirEstado('${e}')">${e ? CS_ESTADOS[e].label : 'Todos'} · ${conteo(e)}</button>`).join('');
+}
+
+function casosElegirEstado(e) { _casosEstado = e; casosPintarKpis(); casosFiltrar(); }
+
+function casosFiltrar() {
+  const tb = document.getElementById('casosTbody');
+  if (!_casosData) return;
+  const q = (document.getElementById('casosQ').value || '').trim().toLowerCase();
+  const origen = document.getElementById('casosOrigen').value;
+  const filas = _casosData
+    .filter(c => !_casosEstado || c.estado_caso === _casosEstado)
+    .filter(c => !origen || (c.folio || '').startsWith(origen))
+    .filter(c => !q || [c.folio, c.entidad, c.proveedor].some(v => (v || '').toLowerCase().includes(q)))
+    .sort((a, b) => CS_ORDEN.indexOf(a.estado_caso) - CS_ORDEN.indexOf(b.estado_caso) || (a.folio || '').localeCompare(b.folio || ''));
+  document.getElementById('casosCount').textContent = `${filas.length} de ${_casosData.length}`;
+  tb.innerHTML = filas.length ? filas.map(c => `
+    <tr class="cs-fila" onclick="casosAbrirFicha('${c.id}')">
+      <td class="mono">${_csEsc(c.folio)}</td>
+      <td>${_csEsc(c.entidad)}</td>
+      <td>${_csEsc(c.proveedor)}</td>
+      <td>${c.anio || '—'}</td>
+      <td class="num">${fmtLps(Number(c.monto))}</td>
+      <td>${_csEstadoTag(c.estado_caso)}</td>
+      <td>${_csReplicaTxt(c)}</td>
+      <td><button class="cs-btn" onclick="event.stopPropagation();casosAbrirFicha('${c.id}')">Ficha →</button></td>
+    </tr>`).join('') : '<tr><td colspan="8" class="cs-vacio">Ningún caso con esos filtros.</td></tr>';
+}
+
+function casosVolverLista() {
+  document.getElementById('casoFicha').hidden = true;
+  document.getElementById('casosLista').hidden = false;
+}
+
+// Markdown mínimo de las fichas S436 (títulos, negritas, listas, tablas)
+function _csMd(md) {
+  const lineas = _csEsc(md).split('\n');
+  let html = '', tabla = false, lista = false;
+  const inline = s => s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`(.+?)`/g, '<code>$1</code>').replace(/(^|\s)\*(.+?)\*/g, '$1<i>$2</i>');
+  const cerrar = () => { if (tabla) { html += '</table>'; tabla = false; } if (lista) { html += '</ul>'; lista = false; } };
+  for (const l of lineas) {
+    if (/^\s*\|/.test(l)) {
+      if (/^\s*\|[\s:\-|]+\|\s*$/.test(l)) continue;
+      if (!tabla) { cerrar(); html += '<table>'; tabla = true; }
+      html += '<tr>' + l.trim().replace(/^\||\|$/g, '').split('|').map(c => `<td>${inline(c.trim())}</td>`).join('') + '</tr>';
+    } else if (/^\s*[-*] /.test(l)) {
+      if (!lista) { cerrar(); html += '<ul>'; lista = true; }
+      html += `<li>${inline(l.replace(/^\s*[-*] /, ''))}</li>`;
+    } else {
+      cerrar();
+      const h = l.match(/^(#{1,4})\s+(.*)/);
+      if (h) html += `<h3>${inline(h[2])}</h3>`;
+      else if (l.trim()) html += `<p>${inline(l)}</p>`;
+    }
+  }
+  cerrar();
+  return html;
+}
+
+function casosAbrirFicha(id) {
+  const c = (_casosData || []).find(x => x.id === id);
+  if (!c) return;
+  const p = c.prueba_json || {};
+  const d = c.documentos_json || {};
+  const dato = (l, v) => `<div class="cs-kpi"><div class="cs-kpi-l">${l}</div><div style="font-size:13px;margin-top:4px;">${v}</div></div>`;
+  const docs = Array.isArray(d.documentos) && d.documentos.length
+    ? '<ul style="margin:6px 0 0;padding-left:18px;">' + d.documentos.map(x => `<li>${_csEsc(x)}</li>`).join('') + '</ul>' : '';
+  const procesos = Array.isArray(p.detalle) && p.detalle.length
+    ? '<ul style="margin:6px 0 0;padding-left:18px;">' + p.detalle.map(x => `<li class="mono">${_csEsc(x)}</li>`).join('') + '</ul>' : '';
+  const opciones = CS_ORDEN.map(e => `<option value="${e}"${e === c.estado_caso ? ' selected' : ''}>${CS_ESTADOS[e].label}</option>`).join('');
+  const f = document.getElementById('casoFicha');
+  f.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+      <button class="cs-btn" onclick="casosVolverLista()">← Lista de casos</button>
+      <button class="cs-btn" onclick="casosAbrirConstructor('${c.id}')">Abrir en Constructor de Caso</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 2px;">
+      <span class="mono" style="font-size:15px;font-weight:700;">${_csEsc(c.folio)}</span> ${_csEstadoTag(c.estado_caso)}
+    </div>
+    <div style="font-size:13px;">${_csEsc(c.entidad)} × <b>${_csEsc(c.proveedor)}</b></div>
+    <div class="cs-ficha-grid">
+      ${dato('Monto', fmtLps(Number(c.monto)))}
+      ${dato('Año', c.anio || '—')}
+      ${dato('Tramo legal', _csEsc(p.tramo || '—') + (p.emergencia_vigente === true ? ' · con emergencia' : p.emergencia_vigente === false ? ' · sin emergencia' : ''))}
+      ${dato('Patrón', _csEsc(c.patron || '—'))}
+    </div>
+    <div class="cs-ficha-sec"><h4>Hallazgo y prueba</h4>
+      <div>${_csEsc(c.hallazgo || p.prueba || '—')}</div>
+      ${p.resultado ? `<div class="cs-nota">Resultado de la muestra: <b>${_csEsc(p.resultado)}</b>${p.prueba ? ' · ' + _csEsc(p.prueba) : ''}</div>` : ''}
+      ${procesos}
+      <div class="cs-nota">Norma: ${_csEsc(c.norma || '—')}</div>
+    </div>
+    <div class="cs-ficha-sec"><h4>Documentos</h4>
+      ${d.carpeta_local ? `<div class="mono" style="font-size:11px;">${_csEsc(d.carpeta_local)}${d.patron_archivo ? ' / ' + _csEsc(d.patron_archivo) : ''}</div>` : '<div class="cs-nota">Sin carpeta registrada.</div>'}
+      ${d.n_documentos ? `<div class="cs-nota">${d.n_documentos} documento(s) de HonduCompras · índice: ${_csEsc(d.indice || '—')}</div>` : ''}
+      ${docs}
+      ${d.carta_replica ? `<div class="cs-nota">Carta de réplica: <span class="mono">${_csEsc(d.carta_replica)}</span></div>` : ''}
+    </div>
+    ${c.ficha_md ? `<div class="cs-ficha-sec cs-ficha-md"><h4>Ficha</h4>${_csMd(c.ficha_md)}</div>` : ''}
+    <div class="cs-ficha-sec"><h4>Estado y réplica</h4>
+      <div class="cs-form">
+        <div><label for="csEstado">Estado del caso</label><select id="csEstado" class="cs-input">${opciones}</select></div>
+        <div><label for="csEnviada">Carta enviada</label><input type="date" id="csEnviada" class="cs-input" value="${c.replica_enviada || ''}" onchange="casosCalcVence()"></div>
+        <div><label for="csVence">Vence (10 días hábiles)</label><input type="date" id="csVence" class="cs-input" value="${c.replica_vence || ''}"></div>
+      </div>
+      <div style="margin-top:10px;"><label for="csRespuesta" class="cs-kpi-l" style="display:block;margin-bottom:4px;">Respuesta del hospital</label>
+        <textarea id="csRespuesta" class="cs-input" rows="3" style="width:100%;box-sizing:border-box;resize:vertical;" placeholder="Resumen de la respuesta, fecha y medio. Vacío = sin respuesta.">${_csEsc(c.replica_respuesta || '')}</textarea></div>
+      <div style="margin-top:10px;"><label for="csNotas" class="cs-kpi-l" style="display:block;margin-bottom:4px;">Notas internas</label>
+        <textarea id="csNotas" class="cs-input" rows="2" style="width:100%;box-sizing:border-box;resize:vertical;">${_csEsc(c.notas || '')}</textarea></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+        <button class="cs-btn cs-verde" id="csGuardar" onclick="casosGuardar('${c.id}')">Guardar</button>
+        <span id="csMsg" class="cs-nota" style="margin:0;"></span>
+      </div>
+      <div class="cs-nota">PRESENTABLE exige documentos públicos, Regla #30 y la carta de réplica respondida o con el plazo vencido. Plazo calculado de lunes a viernes, sin descontar feriados.</div>
+    </div>`;
+  document.getElementById('casosLista').hidden = true;
+  f.hidden = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function casosCalcVence() {
+  const env = document.getElementById('csEnviada').value;
+  document.getElementById('csVence').value = env ? _csSumarHabiles(env, 10) : '';
+}
+
+async function casosGuardar(id) {
+  const c = (_casosData || []).find(x => x.id === id);
+  const msg = document.getElementById('csMsg');
+  const btn = document.getElementById('csGuardar');
+  const patch = {
+    estado_caso:       document.getElementById('csEstado').value,
+    replica_enviada:   document.getElementById('csEnviada').value,
+    replica_vence:     document.getElementById('csVence').value,
+    replica_respuesta: document.getElementById('csRespuesta').value.trim(),
+    notas:             document.getElementById('csNotas').value.trim(),
+  };
+  patch.estado = patch.estado_caso === 'RETIRADO' ? 'Archivado' : 'Activo';
+  if (patch.estado_caso === 'PRESENTABLE') {
+    const vencido = patch.replica_vence && _csFecha(patch.replica_vence) < _csHoy();
+    if (!patch.replica_respuesta && !vencido &&
+        !confirm('La réplica no tiene respuesta y el plazo no ha vencido. ¿Marcar PRESENTABLE de todos modos?')) return;
+  }
+  btn.disabled = true; msg.style.color = 'var(--text-dim)'; msg.textContent = 'Guardando…';
+  try {
+    const r = await _casosAdminCall({ action: 'expm_caso_update', id, patch });
+    Object.assign(c, r.data || {});
+    msg.style.color = '#10b981'; msg.textContent = '✅ Guardado';
+    casosPintarKpis();
+    casosFiltrar();
+  } catch (e) {
+    msg.style.color = 'var(--red, #ef4444)';
+    msg.textContent = /autorizado/i.test(e.message) ? 'Solo un administrador puede cambiar el caso.' : 'Error: ' + e.message;
+  } finally { btn.disabled = false; }
+}
+
+function casosAbrirConstructor(id) {
+  const c = (_casosData || []).find(x => x.id === id);
+  abrirConstructorCaso(() => { sgAbrirGrupo('casos'); if (c) casosAbrirFicha(c.id); });
+  if (c) {
+    document.getElementById('ccEntidad').value = c.entidad || '';
+    document.getElementById('ccProveedor').value = c.proveedor || '';
+  }
+}
+
+// ─── DETECCIÓN ───────────────────────────────────────────────
+function showDeteccionPanel() {
+  _closeAllFuentePanels();
+  _csOcultarResto();
+  document.getElementById('nav-deteccion').classList.add('active');
+  document.getElementById('deteccionPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  detCargar(false);
+}
+
+function hideDeteccionPanel() { _csVolverAContratos('deteccionPanel', 'nav-deteccion'); }
+
+async function detCargar(forzar) {
+  const tb = document.getElementById('detTbody');
+  if (_detData && !forzar) { detPintarKpis(); detFiltrar(); return; }
+  tb.innerHTML = '<tr><td colspan="9" class="cs-vacio">Cargando…</td></tr>';
+  const { data, error } = await db.rpc('sentinel_salud_r1_deteccion');
+  if (error || !data) {
+    tb.innerHTML = `<tr><td colspan="9" class="cs-vacio">${!currentUser
+      ? 'Detección solo se ve con sesión iniciada.'
+      : 'No se pudo cargar la detección' + (error ? ': ' + _csEsc(error.message) : '') + '.'}</td></tr>`;
+    document.getElementById('detKpis').innerHTML = '';
+    return;
+  }
+  _detData = data;
+  detPintarKpis();
+  detFiltrar();
+}
+
+function detPintarKpis() {
+  const d = _detData || [];
+  const monto = d.reduce((s, x) => s + (Number(x.monto_total) || 0), 0);
+  const conCaso = d.filter(x => x.expediente_folio).length;
+  const muestra = d.filter(x => x.muestra_resultado).length;
+  const compradores = new Set(d.map(x => x.buyer_nombre)).size;
+  document.getElementById('detKpis').innerHTML = [
+    ['Lotes', d.length.toLocaleString('es-HN'), compradores + ' compradores'],
+    ['Monto', fmtLpsCompact(monto), 'suma de los lotes'],
+    ['Con caso', conCaso, 'en expedientes'],
+    ['En la muestra S437', muestra, 'lotes revisados con documentos'],
+  ].map(([l, v, s]) => `<div class="cs-kpi"><div class="cs-kpi-l">${l}</div><div class="cs-kpi-v">${v}</div><div class="cs-kpi-s">${s}</div></div>`).join('');
+}
+
+function detFiltrar() {
+  const tb = document.getElementById('detTbody');
+  if (!_detData) return;
+  const tramo = document.getElementById('detTramo').value;
+  const est = document.getElementById('detEstado').value;
+  const q = (document.getElementById('detQ').value || '').trim().toLowerCase();
+  const filas = _detData
+    .filter(x => !tramo || x.tramo === tramo)
+    .filter(x => !est || (est === 'sin' && !x.expediente_folio) || (est === 'con' && x.expediente_folio) || (est === 'muestra' && x.muestra_resultado))
+    .filter(x => !q || [x.buyer_nombre, x.proveedor, x.institucion].some(v => (v || '').toLowerCase().includes(q)));
+  const total = filas.reduce((s, x) => s + (Number(x.monto_total) || 0), 0);
+  document.getElementById('detCount').textContent = `${filas.length} ${filas.length === 1 ? 'lote' : 'lotes'} · ${fmtLpsCompact(total)}`;
+  const MAX = 300;
+  tb.innerHTML = filas.length ? filas.slice(0, MAX).map(x => {
+    const veces = x.techo ? (Number(x.monto_total) / Number(x.techo)) : null;
+    const abierto = _detAbierto === x.lote_id;
+    const caso = x.expediente_folio
+      ? `<span class="mono" style="font-size:10px;">${_csEsc(x.expediente_folio)}</span> ${_csEstadoTag(x.estado_caso)}`
+      : `<button class="cs-btn" onclick="event.stopPropagation();detCrearCaso('${x.lote_id}', this)">Crear caso</button>`;
+    return `<tr class="cs-fila" onclick="detToggle('${x.lote_id}')">
+      <td class="mono">${_csEsc(x.fecha_publicacion || '—')}</td>
+      <td>${_csEsc(x.buyer_nombre)}</td>
+      <td>${_csEsc(x.proveedor)}</td>
+      <td class="num">${x.procesos}</td>
+      <td class="num">${fmtLps(Number(x.monto_total))}</td>
+      <td class="num">${veces ? veces.toFixed(1) + '×' : '—'}</td>
+      <td class="mono">${_csEsc(x.tramo)}</td>
+      <td>${x.muestra_resultado ? _csEsc(x.muestra_resultado.replace('_', ' ').toLowerCase()) : '—'}</td>
+      <td>${caso}</td>
+    </tr>` + (abierto ? `<tr class="cs-detalle"><td colspan="9"><ul>${(x.detalle || []).map(t => `<li class="mono">${_csEsc(t)}</li>`).join('')}</ul>
+      <div class="cs-nota">Techo de licitación pública del año: ${fmtLps(Number(x.techo))} · ${_csEsc(x.institucion || '')}</div></td></tr>` : '');
+  }).join('') + (filas.length > MAX ? `<tr><td colspan="9" class="cs-vacio">Se muestran ${MAX} de ${filas.length}; afina los filtros.</td></tr>` : '')
+  : '<tr><td colspan="9" class="cs-vacio">Ningún lote con esos filtros.</td></tr>';
+}
+
+function detToggle(loteId) { _detAbierto = _detAbierto === loteId ? null : loteId; detFiltrar(); }
+
+async function detCrearCaso(loteId, btn) {
+  const x = (_detData || []).find(r => r.lote_id === loteId);
+  if (!x) return;
+  if (!confirm(`¿Crear un caso DETECTADA para ${x.buyer_nombre} × ${x.proveedor} (${fmtLps(Number(x.monto_total))})?`)) return;
+  const folio = `SAL-DET-${x.anio}-${loteId.slice(0, 8).toUpperCase()}`;
+  const record = {
+    folio, tipo: 'SALUD_R1', clasificacion: 'SALUD', estado: 'Activo', estado_caso: 'DETECTADA',
+    entidad: x.buyer_nombre || '', proveedor: x.proveedor || '', monto: x.monto_total, anio: x.anio,
+    patron: 'R1 amplio: mismo comprador + proveedor + día',
+    norma: 'Art. 25 LCE; prohibición de fraccionar de las Disposiciones Generales del Presupuesto del año',
+    senales: ['R1_SALUD'], lote_id: loteId,
+    hallazgo: `${x.procesos} procesos del mismo día (${x.fecha_publicacion}) que suman ${fmtLps(Number(x.monto_total))}; techo de licitación pública ${fmtLps(Number(x.techo))}. Requiere verificación con documentos.`,
+    prueba_json: { origen: 'Detección (dashboard)', tramo: x.tramo, ocids: x.ocids, detalle: x.detalle, procesos: x.procesos, fecha_publicacion: x.fecha_publicacion },
+    notas: 'Creado desde Detección R1 Salud' + (currentUser && currentUser.email ? ' por ' + currentUser.email : '') + '.',
+  };
+  btn.disabled = true; btn.textContent = 'Creando…';
+  try {
+    await _casosAdminCall({ action: 'expm_insert', record });
+    x.expediente_folio = folio; x.estado_caso = 'DETECTADA';
+    _casosData = null;                 // la lista de Casos se recarga al abrirla
+    showToast(`✅ Caso ${folio} creado`);
+    detPintarKpis(); detFiltrar();
+  } catch (e) {
+    btn.disabled = false; btn.textContent = 'Crear caso';
+    showToast(/autorizado/i.test(e.message) ? '⚠️ Solo un administrador puede crear casos' : '❌ ' + e.message, 'error');
+  }
+}
+
+const APP_VERSION = 'v2.33';
 const APP_BUILD   = '2026-10-22';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -11196,7 +11702,7 @@ function hideEntityPanel() {
 // GLOBAL SOBRECOSTOS SUMMARY
 // ─── Cierra todos los paneles fuente (helper centralizado) ───────────────────
 function _closeAllFuentePanels() {
-  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','dobleRolPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','redSociosPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel','bcaiPanel','validacionPanel']
+  ['fuentePanel','entityPanel','auditPanel','analyticsPanel','vendorConcentrationPanel','sobrecostoPanel','phase4Panel','candidatosPanel','tscPanel','sectorPanel','timelinePanel','newsPanel','listasPanel','reportesPanel','ocdsPanel','cruceSefinPanel','scannerPanel','ingestPanel','busquedaBDPanel','moduloFPanel','adminPanel','clientAdminPanel','monopolioPanel','dobleRolPanel','entityRankingPanel','oncaePanel','redesCorporativasPanel','redSociosPanel','monogamiaPanel','ventanaFiscalPanel','debutAnomalyPanel','twinContractsPanel','surgeRecientePanel','thresholdHuggingPanel','seguimientoPanel','bcaiPanel','validacionPanel','casosPanel','deteccionPanel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
   // Also close the alert detail panel so it doesn't bleed into other panels
   const _adp = document.getElementById('alertDetailPanel'); if (_adp) _adp.classList.remove('open');

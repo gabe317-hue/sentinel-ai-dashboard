@@ -8766,7 +8766,7 @@ function casosCartaReplica(id) {
   }));
 }
 
-const APP_VERSION = 'v2.37';
+const APP_VERSION = 'v2.38';
 const APP_BUILD   = '2026-10-22';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -24544,8 +24544,8 @@ function calculateAndDisplayVendorConcentration(alerts) {
   const montoSefin = sefin.reduce((s, v) => s + v.monto, 0);
   const notaSefin = sefin.length ? `
       <div style="background:rgba(255,165,0,0.08);border:1px solid rgba(255,165,0,0.35);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span>${_vcIncluirSefin ? 'Incluidos' : 'Excluidos'} <b>${sefin.length.toLocaleString('es-HN')} generadoras de energía que le venden a ENEE</b> (${fmtLpsCompact(montoSefin)}): son pagos SEFIN bajo contratos de compra de energía (PPA), no compras ONCAE. Las constructoras y contratistas de ENEE sí se analizan.</span>
-        <button class="cs-btn" onclick="vcToggleSefin()">${_vcIncluirSefin ? 'Excluirlos' : 'Incluirlos'}</button>
+        <span>${_vcIncluirSefin ? 'Incluidas' : 'Excluidas'} <b>${sefin.length.toLocaleString('es-HN')} generadoras de energía que le venden a ENEE</b> (${fmtLpsCompact(montoSefin)}): son pagos SEFIN bajo contratos de compra de energía (PPA), no compras ONCAE. Las constructoras y contratistas de ENEE sí se analizan.</span>
+        <button class="cs-btn" onclick="vcToggleSefin()">${_vcIncluirSefin ? 'Excluirlas' : 'Incluirlas'}</button>
       </div>` : '';
 
   // Calculate HHI

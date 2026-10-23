@@ -8766,7 +8766,7 @@ function casosCartaReplica(id) {
   }));
 }
 
-const APP_VERSION = 'v2.36';
+const APP_VERSION = 'v2.37';
 const APP_BUILD   = '2026-10-22';
 function _pintarVersion() {
   document.querySelectorAll('[data-app-version]').forEach(el => {
@@ -24489,13 +24489,22 @@ window.vcPaginationState = {
   allEntities: []
 };
 
-// S439 — proveedores con SOLO pagos SEFIN (EDCA/CSV/F01): suelen ser pagos bajo
-// PPA de energía o contratos marco, no compras ONCAE (mismo criterio que
-// isSEFINOnly en Candidatos). Se excluyen por defecto con nota y botón para
-// incluirlos; incluidos, llevan una marca. Caso que lo motivó: LUZ Y FUERZA DE
-// SAN LORENZO (generadora que vende a ENEE) salía #1 por monto.
+// S439 — generadoras de energía que le venden a ENEE (pagos SEFIN bajo PPA):
+// no son compras ONCAE y distorsionaban el ranking (LUZ Y FUERZA DE SAN LORENZO
+// salía #1). Criterio, medido sobre `alerts` el 22-oct (53 proveedores, L6.8B):
+// solo pagos SEFIN + todas sus filas de ENEE + nombre de generadora, sin
+// constructoras/contratistas (Gabe: las constructoras que venden a ENEE sí se
+// analizan). Se excluyen por defecto con nota y botón para incluirlas.
 let _vcIncluirSefin = false;
 const _vcEsFuenteSefin = s => s.includes('EDCA-SEFIN') || s.includes('SEFIN-CSV') || s.includes('SEFIN_F') || s === '';
+const _VC_RE_GEN = /(ENERG|ELECTRIC|EOLIC|VIENTOS|SOLAR|FOTOVOLT|HIDROEL|HIDRO-CENTRAL|POWER|LUZ Y FUERZA|GENERAC|GENERAD|TERMIC|BIOMASA|BIOGAS|GEOTERM|RENOVABLE|AZUCARER)/;
+const _VC_RE_NO_GEN = /(CONSTRUC|MANTENIM|CONSULTOR|CONTRACT|TRANSMISI|SUMINISTRO|INGENIER)/;
+const _vcEsEnee = e => /energ[ií]a el[eé]ctrica|\bENEE\b/i.test(e || '');
+function _vcEsGeneradora(v) {
+  const n = (v.name || '').toUpperCase();
+  return [...v.sources].every(_vcEsFuenteSefin) && [...v.entities].every(_vcEsEnee) &&
+         _VC_RE_GEN.test(n) && !_VC_RE_NO_GEN.test(n);
+}
 function vcToggleSefin() { _vcIncluirSefin = !_vcIncluirSefin; renderVendorConcentration(); }
 
 function calculateAndDisplayVendorConcentration(alerts) {
@@ -24528,14 +24537,14 @@ function calculateAndDisplayVendorConcentration(alerts) {
   });
 
   const todos = Object.values(vendors);
-  todos.forEach(v => { v.soloSefin = [...v.sources].every(_vcEsFuenteSefin); });
+  todos.forEach(v => { v.soloSefin = _vcEsGeneradora(v); });
   const sefin = todos.filter(v => v.soloSefin);
   const vendorArray = (_vcIncluirSefin ? todos : todos.filter(v => !v.soloSefin)).sort((a, b) => b.monto - a.monto);
   totalMonto = vendorArray.reduce((s, v) => s + v.monto, 0);
   const montoSefin = sefin.reduce((s, v) => s + v.monto, 0);
   const notaSefin = sefin.length ? `
       <div style="background:rgba(255,165,0,0.08);border:1px solid rgba(255,165,0,0.35);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span>${_vcIncluirSefin ? 'Incluidos' : 'Excluidos'} <b>${sefin.length.toLocaleString('es-HN')} proveedores con solo pagos SEFIN</b> (${fmtLpsCompact(montoSefin)}): suelen ser pagos bajo PPA de energía o contratos marco, no compras ONCAE. Algunos sí son contratos de obra: revisar antes de descartarlos.</span>
+        <span>${_vcIncluirSefin ? 'Incluidos' : 'Excluidos'} <b>${sefin.length.toLocaleString('es-HN')} generadoras de energía que le venden a ENEE</b> (${fmtLpsCompact(montoSefin)}): son pagos SEFIN bajo contratos de compra de energía (PPA), no compras ONCAE. Las constructoras y contratistas de ENEE sí se analizan.</span>
         <button class="cs-btn" onclick="vcToggleSefin()">${_vcIncluirSefin ? 'Excluirlos' : 'Incluirlos'}</button>
       </div>` : '';
 
@@ -24569,7 +24578,7 @@ function calculateAndDisplayVendorConcentration(alerts) {
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
           <span style="font-size:18px;">${riskEmoji}</span>
           <span style="font-weight:600;color:var(--text);">${v.name}</span>
-          ${v.soloSefin ? '<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(255,165,0,0.15);color:var(--amber);border:1px solid rgba(255,165,0,0.35);white-space:nowrap;">solo pagos SEFIN · posible PPA o contrato marco</span>' : ''}
+          ${v.soloSefin ? '<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(255,165,0,0.15);color:var(--amber);border:1px solid rgba(255,165,0,0.35);white-space:nowrap;">generadora · pagos PPA a ENEE</span>' : ''}
           <span style="color:var(--text-dim);font-size:11px;margin-left:auto;">${v.alerts} contratos • L. ${(v.monto/1000).toFixed(0)}K</span>
           ${sgBtnCaso('', v.name, 'CAPTURA_INSTITUCIONAL', 'showVendorConcentrationPanel')}
         </div>
